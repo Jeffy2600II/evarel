@@ -109,3 +109,69 @@ body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-
 .ev-mini .ev-icon,.ev-step .ev-icon{width:18px;height:18px}
 .ev-form-err{color:var(--c-danger);font-size:14px;font-weight:500}
 .ev-form-err[hidden]{display:none}
+
+/* ======== เฟส 3D: หน้าจับเวลาเต็มจอ / เมนูสามจุด / เตือนอิสระ (โทเคนเดิมล้วน) ======== */
+
+/* --- หน้าจับเวลาเต็มจอ --- */
+.ev-focus{position:fixed;inset:0;z-index:20;background:var(--c-bg);color:var(--c-text);display:flex;flex-direction:column;align-items:center;
+  padding:calc(env(safe-area-inset-top,0) + var(--s2)) var(--s3) calc(env(safe-area-inset-bottom,0) + var(--s3));
+  transform:translateY(100%);opacity:0;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity var(--t-fast);visibility:hidden}
+.ev-focus[data-open="true"]{transform:none;opacity:1;visibility:visible}
+.ev-focus-top{width:100%;max-width:var(--col-max);display:flex;align-items:center;justify-content:space-between}
+.ev-focus-body{flex:1;width:100%;max-width:var(--col-max);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--s3);text-align:center}
+.ev-focus-title{font-size:20px;font-weight:700;margin:0}
+.ev-focus-state{font-size:14px;color:var(--c-muted);margin:0}
+.ev-dial{--p:0;position:relative;width:min(78vw,300px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--c-accent) calc(var(--p)*1%),var(--c-line) 0)}
+.ev-dial::before{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--c-surface);box-shadow:var(--shadow)}
+.ev-dial-face{position:relative;display:grid;gap:4px;justify-items:center}
+.ev-digits{font:700 clamp(40px,13vw,56px)/1 var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ev-digits[data-run="false"]{color:var(--c-muted)}
+.ev-goal{font-size:14px;color:var(--c-muted)}
+.ev-focus-actions{display:flex;align-items:center;justify-content:center;gap:var(--s3)}
+.ev-round{width:72px;height:72px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;background:var(--c-surface);color:var(--c-text);box-shadow:var(--shadow);transition:transform var(--t-fast)}
+.ev-round:active{transform:scale(.94)}
+.ev-round[data-big="true"]{width:88px;height:88px;background:var(--c-accent);color:var(--c-on-accent)}
+.ev-round[data-tone="ok"]{background:var(--c-ok);color:var(--c-on-ok)}
+.ev-round .ev-icon{width:30px;height:30px}
+.ev-round-label{font-size:12px;color:var(--c-muted);margin-top:6px;display:block}
+.ev-focus-actions>div{display:grid;justify-items:center}
+
+/* --- แถบ "กำลังจับเวลา" ลอยเหนือแถบนำทาง --- */
+.ev-live{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0) + var(--s1));
+  width:min(calc(100% - var(--s4)),calc(var(--col-max) - var(--s4)));display:flex;align-items:center;gap:var(--s1);padding:10px var(--s2);border:0;border-radius:var(--r-pill);
+  background:var(--c-accent);color:var(--c-on-accent);font:600 14px var(--font);box-shadow:var(--shadow);cursor:pointer;z-index:8}
+.ev-live[hidden]{display:none}
+.ev-live i{width:8px;height:8px;border-radius:50%;background:var(--c-on-accent);flex:none}
+.ev-live[data-run="true"] i{animation:ev-pulse 1.4s ease-in-out infinite}
+.ev-live b{margin-left:auto;font-variant-numeric:tabular-nums}
+@keyframes ev-pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.ev-live[data-run="true"] i{animation:none}.ev-focus{transition:none}}
+
+/* --- เมนูสามจุด --- */
+.ev-kebab{width:36px;height:36px;border-radius:50%;border:0;background:none;color:var(--c-muted);display:grid;place-items:center;cursor:pointer;flex:none}
+.ev-kebab:hover,.ev-kebab[aria-expanded="true"]{background:var(--c-accent-soft);color:var(--c-accent)}
+.ev-kebab .ev-icon{width:20px;height:20px}
+.ev-menu{position:fixed;z-index:30;min-width:200px;padding:6px;border-radius:16px;background:var(--c-surface);box-shadow:0 12px 40px rgba(20,20,26,.18),0 0 0 1px var(--c-line);
+  transform-origin:top right;transform:scale(.96);opacity:0;transition:transform var(--t-fast),opacity var(--t-fast);visibility:hidden}
+.ev-menu[data-open="true"]{transform:none;opacity:1;visibility:visible}
+.ev-menu button{width:100%;display:flex;align-items:center;gap:12px;padding:12px;border:0;border-radius:12px;background:none;color:var(--c-text);font:500 15px var(--font);text-align:left;cursor:pointer}
+.ev-menu button:hover,.ev-menu button:focus-visible{background:var(--c-accent-soft);outline:none}
+.ev-menu button[data-tone="danger"]{color:var(--c-danger)}
+.ev-menu button[data-tone="danger"]:hover{background:var(--c-danger-soft)}
+.ev-menu .ev-icon{width:18px;height:18px;flex:none}
+.ev-menu hr{border:0;border-top:1px solid var(--c-line);margin:6px 0}
+
+/* --- เตือนอิสระในฟอร์ม --- */
+.ev-rem{display:grid;gap:var(--s1)}
+.ev-rem-list{display:flex;flex-wrap:wrap;gap:var(--s1)}
+.ev-rem-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;border-radius:var(--r-pill);background:var(--c-accent-soft);color:var(--c-accent);font:600 14px var(--font)}
+.ev-rem-tag button{width:22px;height:22px;border:0;border-radius:50%;background:none;color:inherit;display:grid;place-items:center;cursor:pointer;padding:0}
+.ev-rem-tag button:hover{background:var(--c-accent);color:var(--c-on-accent)}
+.ev-rem-tag .ev-icon{width:14px;height:14px}
+.ev-rem-add{display:flex;gap:var(--s1);align-items:center}
+.ev-rem-add .ev-input{flex:1}
+.ev-rem-hint{font-size:13px;color:var(--c-muted);margin:0}
+.ev-sub-row{display:flex;align-items:center;gap:4px}
+/* ไอคอนกระดิ่งในบรรทัดย่อย: ขนาดเท่าตัวอักษร ไม่ดันความสูงแถว */
+.ev-icon-inline{width:13px;height:13px;vertical-align:-2px;margin:0 2px 0 0;stroke:currentColor;fill:none;display:inline-block}
