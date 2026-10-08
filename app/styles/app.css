@@ -93,3 +93,19 @@ body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-
 .ev-filters[data-wrap="true"]{padding:0;flex-wrap:wrap;overflow:visible}
 .ev-card[data-tone="soft"]{background:var(--c-accent-soft);box-shadow:none}
 .ev-ring span{color:var(--c-text)}
+
+/* ---- เฟส 3C: ส่วนใหม่ (สร้างจากโทเคนเดิมทั้งหมด ไม่เพิ่มสีใหม่) ---- */
+.ev-toast{position:fixed;left:50%;transform:translate(-50%,16px);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0) + var(--s2) + 64px);
+  width:min(calc(100% - var(--s4)),calc(var(--col-max) - var(--s4)));display:flex;align-items:center;justify-content:space-between;gap:var(--s2);
+  padding:12px var(--s2);border-radius:var(--r-card);background:var(--c-text);color:var(--c-bg);font:500 14px var(--font);
+  box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity var(--t-fast),transform var(--t-fast);z-index:9}
+.ev-toast[data-open="true"]{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.ev-toast-btn{border:0;background:none;color:var(--c-accent-2);font:700 14px var(--font);cursor:pointer;padding:6px 4px}
+.ev-card[data-tone="alert"]{background:var(--c-danger-soft);box-shadow:none}
+.ev-card[data-tone="alert"]>b{color:var(--c-danger);display:block;margin-bottom:var(--s1)}
+.ev-timer{display:flex;align-items:center;gap:6px}
+.ev-clock{font:700 15px var(--font);font-variant-numeric:tabular-nums;color:var(--c-accent);min-width:64px;text-align:right}
+.ev-mini[data-tone="ok"]{background:var(--c-ok);color:var(--c-on-ok)}
+.ev-mini .ev-icon,.ev-step .ev-icon{width:18px;height:18px}
+.ev-form-err{color:var(--c-danger);font-size:14px;font-weight:500}
+.ev-form-err[hidden]{display:none}
