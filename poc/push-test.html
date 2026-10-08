@@ -53,7 +53,10 @@ $("test").onclick = async () => {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title: "Evarel", message: "การแจ้งเตือนจริงจาก Workers 🎉" }),
   });
-  log("send: " + (r.ok ? "สำเร็จ — ดูที่แถบแจ้งเตือนเครื่อง" : "พลาด " + hint(await r.text())));
+  const d = await r.json().catch(() => null);
+  if (d && d.count > 0) log("send: ส่งถึง " + d.count + " เครื่องแล้ว — ดูที่แถบแจ้งเตือนเครื่อง");
+  else if (d && d.count === 0) log("send: ไม่มีเครื่องที่สมัครรับไว้ในระบบ — กดปุ่ม 1 ให้สำเร็จก่อน");
+  else log("send: พลาด " + hint(JSON.stringify(d)));
 };
 
 $("ai").onclick = async () => {
@@ -67,6 +70,7 @@ $("ai").onclick = async () => {
 
 function hint(t) {
   if (t.includes("PGRST205")) return "ตารางยังไม่ถูกสร้าง — ต้องรันไฟล์ poc/schema.sql ใน Supabase SQL Editor ก่อน แล้วลองใหม่";
+  if (t.includes("23502")) return "คอลัมน์ user_id บังคับ NOT NULL แต่ยังไม่มีระบบล็อกอิน — ต้องรันคำสั่ง alter (ดู README-POC.md) ก่อน แล้วลองใหม่";
   return t.slice(0, 200);
 }
 function urlB64ToUint8Array(b64) {

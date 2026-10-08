@@ -36,8 +36,8 @@ export default {
     if (url.pathname === "/api/push/send" && request.method === "POST") {
       const body = await request.json().catch(() => ({}));
       try {
-        await handleSend(env, body);
-        return json({ sent: true });
+        const results = await handleSend(env, body);
+        return json({ sent: true, count: results.filter(r => !r.error).length, total: results.length, results });
       } catch (e) {
         return json({ sent: false, error: e?.message ?? String(e) }, 500);
       }

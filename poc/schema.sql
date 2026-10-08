@@ -64,10 +64,11 @@ create table if not exists public.routine_events (
 create index if not exists routine_events_user_time_idx
   on public.routine_events (user_id, checked_at desc);
 
--- 6) push subscription
+-- 6) push subscription (PoC: user_id อนุญาต null ได้ เพราะยังไม่มีระบบล็อกอิน
+--    เมื่อเฟส 4 มี auth จริง ค่อยคืนสถานะ NOT NULL)
 create table if not exists public.push_subscriptions (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
   endpoint text not null unique,
   p256dh text not null,
   auth text not null,
@@ -104,3 +105,6 @@ create policy "own sleep_logs" on public.sleep_logs for all using (auth.uid() = 
 create policy "own routine_events" on public.routine_events for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own push_subscriptions" on public.push_subscriptions for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own settings" on public.settings for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- แพตช์สำหรับผู้ที่รัน schema เดิมไปแล้ว (รันใน SQL Editor ครั้งเดียว)
+alter table public.push_subscriptions alter column user_id drop not null;
