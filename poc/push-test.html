@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evarel PoC — ทดสอบแจ้งเตือน</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 24px auto; padding: 0 16px; }
+  button { display: block; width: 100%; margin: 8px 0; padding: 14px; font-size: 16px; border-radius: 8px; border: 0; background: #4f46e5; color: #fff; }
+  button:disabled { background: #c7c7c7; }
+  #log { background: #f4f4f5; border-radius: 8px; padding: 12px; min-height: 80px; font-size: 14px; white-space: pre-wrap; }
+  h1 { font-size: 20px; }
+</style>
+</head>
+<body>
+<h1>Evarel PoC — ทดสอบแจ้งเตือน</h1>
+<p id="status">สถานะ: ยังไม่ได้ขอสิทธิ์</p>
+<button id="ask">1) ขอสิทธิ์แจ้งเตือน + สมัครรับ</button>
+<button id="test" disabled>2) ทดสอบรับแจ้งเตือน</button>
+<button id="ai" disabled>3) ทดสอบ AI เพิ่มงาน (function calling)</button>
+<div id="log">ผลลัพธ์จะแสดงที่นี่</div>
+
+<script>
+const API = ""; // ปล่อยว่างไว้ = domain เดียวกัน (ใช้ค่าที่ deploy จริง)
+const log = (m) => { document.getElementById("log").textContent += m + "\n"; };
+const $ = (id) => document.getElementById(id);
+
+navigator.serviceWorker.register("sw.js").catch(e => log("SW error: " + e.message));
+
+$("ask").onclick = async () => {
+  try {
+    const perm = await Notification.requestPermission();
+    $("status").textContent = "สถานะ: " + perm;
+    if (perm !== "granted") return log("สิทธิ์ถูกปฏิเสธ");
+    const reg = await navigator.serviceWorker.ready;
+    const { publicKey } = await (await fetch(API + "/api/push/key")).json();
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlB64ToUint8Array(publicKey),
+    });
+    const r = await fetch(API + "/api/push/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sub.toJSON()),
+    });
+    log("subscribe: " + (r.ok ? "สำเร็จ" : "พลาด " + await r.text()));
+    $("test").disabled = false; $("ai").disabled = false;
+  } catch (e) { log("error: " + e.message); }
+};
+
+$("test").onclick = async () => {
+  const r = await fetch(API + "/api/push/send", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: "Evarel", message: "การแจ้งเตือนจริงจาก Workers 🎉" }),
+  });
+  log("send: " + (r.ok ? "สำเร็จ — ดูที่แถบแจ้งเตือนเครื่อง" : "พลาด " + await r.text()));
+};
+
+$("ai").onclick = async () => {
+  const r = await fetch(API + "/api/ai/chat", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "ช่วยเพิ่มงานส่งคณิตศาสตร์ ส่งวันศุกร์นี้บ่ายสี่โมง" }),
+  });
+  const data = await r.json();
+  log("AI: " + JSON.stringify(data, null, 2));
+};
+
+function urlB64ToUint8Array(b64) {
+  const padding = "=".repeat((4 - (b64.length % 4)) % 4);
+  const base64 = (b64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+</script>
+</body>
+</html>
