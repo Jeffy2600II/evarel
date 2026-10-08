@@ -35,8 +35,12 @@ export default {
 
     if (url.pathname === "/api/push/send" && request.method === "POST") {
       const body = await request.json().catch(() => ({}));
-      await handleSend(env, body);
-      return json({ sent: true });
+      try {
+        await handleSend(env, body);
+        return json({ sent: true });
+      } catch (e) {
+        return json({ sent: false, error: e?.message ?? String(e) }, 500);
+      }
     }
 
     if (url.pathname === "/api/ai/chat" && request.method === "POST") {
