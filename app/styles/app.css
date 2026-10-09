@@ -298,3 +298,16 @@ fieldset.ev-field>legend{padding:0;margin-bottom:0;font-size:13px;font-weight:50
 
 .ev-backup-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
 .ev-backup-row button { width: 100%; white-space: nowrap; }
+
+/* ---- ไอคอนในปุ่มกลม ต้องอยู่กึ่งกลางจริง: ล้าง padding เริ่มต้นของ <button> และจัด grid ---- */
+.ev-check,.ev-kebab,.ev-icon-btn,.ev-fab,.ev-round{padding:0}
+.ev-mini,.ev-step button{display:inline-grid;place-items:center;line-height:1}
+.ev-icon-btn svg,.ev-mini svg,.ev-check svg{display:block}
+
+/* ---- แถวเตือนแบบ "กี่วันก่อนวันส่ง เวลา": 4 ชิ้นไม่พอดี 1 บรรทัดบนจอแคบ จึงใช้ grid 2 แถวที่ระบุตำแหน่งชัดเจน ----
+   แถว 1: [ช่องจำนวนวัน 88px] [ข้อความ]    แถว 2: [ช่องเวลา 152px] [ปุ่มเพิ่ม] */
+.ev-rem-add[data-layout="days"]{display:grid;grid-template-columns:152px minmax(0,1fr);grid-template-rows:auto auto;gap:var(--s1);align-items:center}
+.ev-rem-add[data-layout="days"] input[name="remDays"]{grid-column:1;grid-row:1;width:88px;min-width:0;text-align:center;padding:0 8px;flex:none}
+.ev-rem-add[data-layout="days"] .ev-sub{grid-column:2;grid-row:1;white-space:normal;margin:0}
+.ev-rem-add[data-layout="days"] input[name="remTime"]{grid-column:1;grid-row:2;width:152px;min-width:0;flex:none}
+.ev-rem-add[data-layout="days"] button{grid-column:2;grid-row:2;width:100%}
