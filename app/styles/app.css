@@ -9,7 +9,7 @@ body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-
 .ev-header{display:flex;align-items:center;justify-content:space-between;padding:var(--s2) var(--s2) var(--s1)}
 .ev-title{font-size:32px;font-weight:700;letter-spacing:-.5px;padding:0 var(--s2) var(--s2)}
 .ev-sub{color:var(--c-muted);font-size:14px}
-.ev-main{padding:0 var(--s2);display:grid;gap:var(--s2)}
+.ev-main{padding:0 var(--s2);display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s2)}
 .ev-section-title{font-size:18px;font-weight:600;margin-top:var(--s1)}
 .ev-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
