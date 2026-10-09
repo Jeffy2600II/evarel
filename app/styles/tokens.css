@@ -4,17 +4,17 @@
 /* ============ TOKENS (แก้ที่นี่ที่เดียว = เปลี่ยนทั้งแอป) ============ */
 :root{
   --font:'IBM Plex Sans Thai',system-ui,sans-serif;
-  --c-bg:#F7F7F9; --c-surface:#fff; --c-text:#14141A; --c-muted:#767683; --c-line:#ECECF0;
-  --c-accent:#4B2FF5; --c-accent-soft:#EEEBFF; --c-on-accent:#fff;
+  --c-bg:#F7F7F9; --c-surface:#fff; --c-text:#14141A; --c-muted:#6A6A77; --c-line:#ECECF0;
+  --c-accent:#4B2FF5; --c-accent-text:#4B2FF5; --c-accent-soft:#EEEBFF; --c-on-accent:#fff;
   --c-ok:#18A66A; --c-on-ok:#fff; --c-warn:#E8890C; --c-danger:#E5484D;
   --s1:8px; --s2:16px; --s3:24px; --s4:32px;           /* 8px scale */
   --r-card:20px; --r-pill:999px; --r-sheet:28px;
   --shadow:0 1px 2px rgba(20,20,26,.04),0 8px 24px rgba(20,20,26,.06);
   --t-fast:.18s; --nav-h:64px; --col-max:480px;
   --c-accent-2:#7A5CFF; --c-danger-soft:#FDECEC; --c-warn-soft:#FFF3E0; --c-scrim:rgba(0,0,0,.4);
-  --shadow-fab:0 8px 24px rgba(75,47,245,.35);
+  --shadow-fab:0 2px 8px rgba(20,20,26,.22);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --c-bg:#0E0E12; --c-surface:#1A1A21; --c-text:#F2F2F5; --c-muted:#9A9AA8; --c-line:#2A2A33;
-  --c-accent:#7C69FF; --c-accent-soft:#25214A; --shadow:none; --c-danger-soft:#3A1E21; --c-warn-soft:#3A2D14; --c-accent-2:#9A8AFF; --shadow-fab:0 8px 24px rgba(124,105,255,.35)}}
-:root[data-theme="dark"]{--c-bg:#0E0E12;--c-surface:#1A1A21;--c-text:#F2F2F5;--c-muted:#9A9AA8;--c-line:#2A2A33;--c-accent:#7C69FF;--c-accent-soft:#25214A;--shadow:none;--c-danger-soft:#3A1E21;--c-warn-soft:#3A2D14;--c-accent-2:#9A8AFF;--shadow-fab:0 8px 24px rgba(124,105,255,.35)}
+  --c-accent:#6E5BEF; --c-accent-text:#9585FF; --c-accent-soft:#25214A; --shadow:none; --c-danger-soft:#3A1E21; --c-warn-soft:#3A2D14; --c-accent-2:#9A8AFF; --shadow-fab:0 2px 8px rgba(0,0,0,.45)}}
+:root[data-theme="dark"]{--c-bg:#0E0E12;--c-surface:#1A1A21;--c-text:#F2F2F5;--c-muted:#9A9AA8;--c-line:#2A2A33;--c-accent:#6E5BEF; --c-accent-text:#9585FF;--c-accent-soft:#25214A;--shadow:none;--c-danger-soft:#3A1E21;--c-warn-soft:#3A2D14;--c-accent-2:#9A8AFF;--shadow-fab:0 2px 8px rgba(0,0,0,.45)}

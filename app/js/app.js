@@ -14,7 +14,7 @@ const MAX_REMINDERS = 8;
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 /* ข้อความอ่านง่ายของการเตือนหนึ่งรายการ */
 const fmtLead = m => m === 0 ? 'ตรงเวลา' : m % 1440 === 0 ? `ก่อน ${m / 1440} วัน` : m % 60 === 0 ? `ก่อน ${m / 60} ชม.` : m > 60 ? `ก่อน ${Math.floor(m / 60)} ชม. ${m % 60} นาที` : `ก่อน ${m} นาที`;
-const remText = r => r.k === 'at' ? `เวลา ${r.t} น.` : r.k === 'day' ? `ก่อนกำหนด ${r.d} วัน · ${r.t} น.` : fmtLead(r.m);
+const remText = r => r.k === 'at' ? `เวลา ${r.t} น.` : r.k === 'day' ? `ก่อนวันส่ง ${r.d} วัน · ${r.t} น.` : fmtLead(r.m);
 /* ทำให้ reminders สะอาด: ตัดค่าเสีย/ซ้ำ จำกัดจำนวน เรียงตามเวลา */
 function cleanReminders(list) {
   const seen = new Set(), out = [];
@@ -34,7 +34,7 @@ const TRACK_OPTS = [['check', 'ติ๊ก'], ['count', 'นับเป้า'
 const ICONS = {
   home: 'M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9',
   cal: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', chart: 'M5 20V10M12 20V4M19 20v-7', spark: 'M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z',
-  plus: 'M12 5v14M5 12h14', x: 'M6 6l12 12M18 6L6 18', check: 'M5 12l5 5 9-10', play: 'M7 4l13 8-13 8z', pause: 'M8 5v14M16 5v14', more: 'M12 5.5v.01M12 12v.01M12 18.5v.01', edit: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4', copy: 'M9 9h11v11H9zM5 15V5h10', skip: 'M5 5l10 7-10 7zM19 5v14', reset: 'M4 12a8 8 0 1 0 3-6.2M4 4v5h5', trash: 'M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13', bell: 'M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4', stop: 'M6 6h12v12H6z', down: 'M6 9l6 6 6-6', menu: 'M4 7h16M4 12h10M4 17h16', search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5', up: 'M12 19V5M5 12l7-7 7 7', newchat: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4', chat: 'M4 5h16v11H9l-5 4z', clock: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 7v5l3 2',
+  plus: 'M12 5v14M5 12h14', x: 'M6 6l12 12M18 6L6 18', check: 'M5 12l5 5 9-10', play: 'M7 4l13 8-13 8z', pause: 'M8 5v14M16 5v14', more: 'M12 5.5v.01M12 12v.01M12 18.5v.01', edit: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4', copy: 'M9 9h11v11H9zM5 15V5h10', skip: 'M5 5l10 7-10 7zM19 5v14', reset: 'M4 12a8 8 0 1 0 3-6.2M4 4v5h5', trash: 'M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13', bell: 'M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4', stop: 'M6 6h12v12H6z', down: 'M6 9l6 6 6-6', repeat: 'M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3', task: 'M9 11l3 3 8-8M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9', event: 'M8 2v4M16 2v4M3 9h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', book: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z', menu: 'M4 7h16M4 12h10M4 17h16', search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5', up: 'M12 19V5M5 12l7-7 7 7', newchat: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4', chat: 'M4 5h16v11H9l-5 4z', clock: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 7v5l3 2',
 };
 
 /* ---------- Date helpers ---------- */
@@ -207,15 +207,32 @@ const overdue = (it, ds) => it.type === 'task' && tracked(it) && it.start < ds &
 const overdueList = () => S.items.filter(it => it.type === 'task' && tracked(it) && it.repeat.unit === 'none' && it.start < TODAY && !isDone(it, it.start))
   .sort((a, b) => a.start.localeCompare(b.start));
 
+
+/* สรุปหัวการ์ดวันนี้: บอกสิ่งที่ผู้ใช้ต้องรู้ก่อน แล้วค่อยรายละเอียด */
+const nowHM = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+function summaryHead(tr, done) {
+  if (!tr.length) return 'วันนี้ไม่มีอะไรต้องติ๊ก';
+  if (done === tr.length) return 'ทำครบทุกอย่างแล้ว';
+  return `ทำแล้ว ${done} จาก ${tr.length}`;
+}
+function summarySub(list, tr, done) {
+  if (tr.length && done === tr.length) return 'วันนี้เสร็จหมดแล้ว พักได้เลย';
+  const next = list.filter(it => tracked(it) && !isDone(it, UI.date)).sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+  const upcoming = UI.date === TODAY ? (next.find(it => it.time && it.time >= nowHM()) || next[0]) : next[0];
+  if (upcoming) return `${UI.date === TODAY ? 'ถัดไป' : 'รายการแรก'}: ${esc(upcoming.title)}${upcoming.time ? ` · ${upcoming.time} น.` : ''}`;
+  const others = list.length - tr.length;
+  return others ? `มี ${others} คาบเรียน/นัดหมายในวันนี้` : 'ว่างทั้งวัน';
+}
+const TYPE_ICON = { habit: 'repeat', task: 'task', event: 'event', class: 'book' };
 function itemRow(it, ds) {
   const v = val(it, ds), tg = target(it), done = tracked(it) && isDone(it, ds), multi = it.track === 'count' || it.track === 'timer';
   const lead = it.track === 'check'
     ? `<button class="ev-check" role="checkbox" aria-checked="${done}" aria-label="ทำแล้ว" data-act="check" data-id="${it.id}">${icon('check')}</button>`
-    : `<span class="ev-chip">${TYPES[it.type]}</span>`;
+    : `<span class="ev-type" data-type="${it.type}" role="img" aria-label="${TYPES[it.type]}">${icon(TYPE_ICON[it.type])}</span>`;
   const tail = it.track === 'count'
     ? `<div class="ev-step"><button data-act="dec" data-id="${it.id}" aria-label="ลด">−</button><button data-act="inc" data-id="${it.id}" aria-label="เพิ่ม">+</button></div>`
     : it.track === 'timer' ? timerControls(it, ds) : '';
-  const sub = [timeText(it), multi ? `${v}/${tg} ${esc(it.unitName)}` : esc(it.subject), it.type === 'task' && overdue(it, ds) ? 'เลยกำหนด' : ''].filter(Boolean).join(' · ');
+  const sub = [timeText(it), multi ? `${v}/${tg} ${esc(it.unitName)}` : esc(it.subject), it.type === 'task' && overdue(it, ds) ? 'เลยวันส่ง' : ''].filter(Boolean).join(' · ');
   return `<li class="ev-list-item" data-state="${done ? 'done' : 'todo'}">${lead}<div class="grow"><b>${esc(it.title)}</b><span class="ev-sub">${sub}</span>
     ${multi ? `<div class="ev-bar"><i style="width:${Math.min(100, v / tg * 100)}%"></i></div>` : ''}</div>${tail}${kebab(it)}</li>`;
 }
@@ -353,20 +370,20 @@ const VIEWS = {
     return `${header(new Date(parse(UI.date)).toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' }), 'วันนี้')}
     <div class="ev-week" role="group" aria-label="เลือกวัน">${week.map(d => `<button aria-pressed="${UI.date === d}" data-today="${d === TODAY}" data-act="date" data-id="${d}">${WD[parse(d).getDay()]}<b>${parse(d).getDate()}</b></button>`).join('')}</div>
     <main class="ev-main"><section class="ev-card ev-row" data-tone="accent"><div class="ev-ring" style="--p:${p}"><span>${p}%</span></div>
-      <div class="grow"><b>ทำแล้ว ${done}/${tr.length}</b><p class="ev-lead">${list.length - tr.length ? `ไม่นับ ${list.length - tr.length} รายการที่ไม่ต้องติ๊ก (คาบเรียน/นัดหมาย)` : (tr.length ? (done === tr.length ? 'ครบหมดแล้ว เก่งมาก' : `เหลืออีก ${tr.length - done} อย่าง`) : 'วันนี้ไม่มีอะไรให้ติ๊ก')}</p></div></section>
+      <div class="grow"><b>${summaryHead(tr, done)}</b><p class="ev-lead">${summarySub(list, tr, done)}</p></div></section>
     ${UI.date === TODAY && overdueList().length ? `<section class="ev-card" data-tone="alert"><b>ค้างอยู่ ${overdueList().length} งาน</b><ul class="ev-plain-list">${overdueList().map(it => `<li class="ev-list-item"><button class="ev-check" role="checkbox" aria-checked="false" aria-label="ทำแล้ว" data-act="checkdue" data-id="${it.id}">${icon('check')}</button><div class="grow"><b>${esc(it.title)}</b><span class="ev-sub">กำหนด ${it.start}${it.subject ? ' · ' + esc(it.subject) : ''}</span></div><span class="ev-chip" data-state="late">เลยกำหนด</span></li>`).join('')}</ul></section>` : ''}
     <section class="ev-card">${list.length ? `<ul class="ev-plain-list">${list.map(it => itemRow(it, UI.date)).join('')}</ul>` : empty('วันนี้ว่าง', 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')}</section></main>`;
   },
   all() {
     const list = S.items.filter(it => UI.type === 'all' || it.type === UI.type);
-    const row = it => `<li class="ev-list-item"><span class="ev-chip">${TYPES[it.type]}</span><div class="grow"><b>${esc(it.title)}</b><span class="ev-sub">${repeatText(it)}${it.reminders.length ? ` · ${icon('bell').replace('class="ev-icon"', 'class="ev-icon ev-icon-inline"')}${it.reminders.length}` : ''}</span></div>${kebab(it)}</li>`;
+    const row = it => `<li class="ev-list-item"><span class="ev-type" data-type="${it.type}" title="${TYPES[it.type]}" role="img" aria-label="${TYPES[it.type]}">${icon(TYPE_ICON[it.type])}</span><div class="grow"><b>${esc(it.title)}</b><span class="ev-sub">${repeatText(it)}${it.reminders.length ? ` · ${icon('bell').replace('class="ev-icon"', 'class="ev-icon ev-icon-inline"')}${it.reminders.length}` : ''}</span></div>${kebab(it)}</li>`;
     return `${header('ทุกอย่างที่ตั้งไว้', 'รายการ')}${chipsRow('type', [['all', 'ทั้งหมด'], ...Object.entries(TYPES)], UI.type)}
     <main class="ev-main"><section class="ev-card">${list.length ? `<ul class="ev-plain-list">${list.map(row).join('')}</ul>` : empty('ยังไม่มีรายการ', 'กดปุ่ม + เพื่อสร้าง')}</section></main>`;
   },
   schedule() {
     const date = ymd(addDays(new Date(), UI.cday - new Date().getDay())), list = onDate(date).filter(it => it.type === 'class');
     return `${header('คาบเรียนแต่ละวัน', 'ตารางเรียน')}<div class="ev-week">${[1, 2, 3, 4, 5].map(i => `<button aria-pressed="${UI.cday === i}" data-act="cday" data-id="${i}">${WD[i]}</button>`).join('')}</div>
-    <main class="ev-main"><section class="ev-card">${list.length ? list.map(it => `<div class="ev-list-item"><span class="ev-chip">${it.time}</span><div class="grow"><b>${esc(it.title)}</b></div><span class="ev-sub">ถึง ${it.timeEnd}</span></div>`).join('') : empty('วันนี้ไม่มีคาบเรียน', 'กด + แล้วเลือก “คาบเรียน”')}</section></main>`;
+    <main class="ev-main"><section class="ev-card">${list.length ? list.map(it => `<div class="ev-list-item ev-period"><span class="ev-period-time"><b>${it.time}</b><span>${it.timeEnd}</span></span><div class="grow"><b>${esc(it.title)}</b></div></div>`).join('') : empty('วันนี้ไม่มีคาบเรียน', 'กด + แล้วเลือก “คาบเรียน”')}</section></main>`;
   },
   stats() {
     const habits = S.items.filter(it => it.type === 'habit');
@@ -387,46 +404,54 @@ const closeSheet = () => { sheetEl.dataset.open = scrim.dataset.open = 'false'; 
 
 /* ---------- Add form (draft D) ---------- */
 let D = {};
-const newDraft = type => ({ type, title: '', subject: '', start: TODAY, end: '', endMode: 'never', time: '', timeEnd: '', unit: type === 'habit' ? 'day' : 'none', every: 1, days: [], track: 'check', target: 1, unitName: '', reminders: [], remTime: '', remMode: 'at', remNum: '', remUnit: 1, remDays: 1, editId: null });
+const newDraft = type => ({ type, title: '', subject: '', start: TODAY, end: '', endMode: 'never', time: '', timeEnd: '', unit: type === 'habit' ? 'day' : 'none', every: 1, days: [], track: 'check', target: 1, unitName: '', reminders: [], remTime: '', remMode: 'before', _modePicked: false, remNum: '', remUnit: 1, remDays: 1, editId: null });
 const seg = (act, opts, cur) => `<div class="ev-seg">${opts.map(([k, l]) => `<button type="button" aria-pressed="${cur === k}" data-act="${act}" data-id="${k}">${l}</button>`).join('')}</div>`;
 const chips = (act, opts, arr) => `<div class="ev-filters" data-wrap="true">${opts.map(([k, l]) => `<button type="button" aria-pressed="${arr.includes(k)}" data-act="${act}" data-id="${k}">${l}</button>`).join('')}</div>`;
-const field = (l, h) => `<label class="ev-field"><span>${l}</span>${h}</label>`;
+const field = (l, h) => h.startsWith('<div class="ev-seg"') || h.startsWith('<div class="ev-filters"') ? `<div class="ev-field" role="group"><span>${l}</span>${h}</div>` : `<label class="ev-field"><span>${l}</span>${h}</label>`;
 const inp = (n, t, ph = '') => `<input class="ev-input" name="${n}" type="${t}" value="${esc(D[n])}" placeholder="${ph}">`;
 const row2 = (a, b) => `<div class="ev-row2">${a}${b}</div>`;
-const rangeBlock = () => field('วันเริ่ม', inp('start', 'date')) + seg('dend', [['never', 'ไม่สิ้นสุด'], ['date', 'ถึงวันที่']], D.endMode) + (D.endMode === 'date' ? field('วันสิ้นสุด', inp('end', 'date')) : '');
-const repeatBlock = () => seg('dunit', [['none', 'ไม่ซ้ำ'], ['day', 'วัน'], ['week', 'สัปดาห์'], ['month', 'เดือน']], D.unit)
-  + (D.unit === 'none' ? field(D.type === 'event' ? 'วันที่จัด' : 'วันที่', inp('start', 'date')) : field(`ทำซ้ำทุกกี่${UNIT_TH[D.unit]}`, inp('every', 'number')) + (D.unit === 'week' ? field('เลือกวัน', chips('dday', WEEK_OPTS, D.days)) : '') + rangeBlock());
-
+const rangeBlock = () => field('สิ้นสุด', seg('dend', [['never', 'ไม่สิ้นสุด'], ['date', 'ถึงวันที่']], D.endMode)) + (D.endMode === 'date' ? field('วันสิ้นสุด', inp('end', 'date')) : '');
+const repeatBlock = () => field('ทำซ้ำ', seg('dunit', [['none', 'ไม่ซ้ำ'], ['day', 'ทุกวัน'], ['week', 'ทุกสัปดาห์'], ['month', 'ทุกเดือน']], D.unit))
+  + (D.unit === 'none'
+    ? field(D.type === 'event' ? 'วันที่จัด' : 'วันที่', inp('start', 'date'))
+    : (D.unit === 'week' ? field('เลือกวัน', chips('dday', WEEK_OPTS, D.days)) : '')
+      + row2(field(`ทุกกี่${UNIT_TH[D.unit]}`, inp('every', 'number')), field('เริ่มวันที่', inp('start', 'date'))) + rangeBlock());
 /* ---------- ส่วนเตือนในฟอร์ม: เวลาเจาะจงหลายเวลา + เตือนล่วงหน้า ---------- */
+/* การเตือน: เลือกจากรายการสำเร็จรูปแบบปฏิทิน + "กำหนดเอง" (ศัพท์เดียวกับช่องเวลาในฟอร์ม) */
 function remBlock() {
-  const T = D.type, hasTime = !!D.time;
-  const list = D.reminders.map((r, i) => `<span class="ev-rem-tag">${remText(r)}<button type="button" data-act="rrem" data-id="${i}" aria-label="ลบการเตือน ${remText(r)}">${icon('x')}</button></span>`).join('');
-  const modes = [['at', 'เวลาเจาะจง'], ['before', T === 'task' ? 'ก่อนเวลาส่ง' : 'ก่อนเริ่ม']];
+  const T = D.type, hasTime = !!D.time, lab = timeLabel(T);
+  const tags = D.reminders.map((r, i) => `<span class="ev-rem-tag">${remText(r)}<button type="button" data-act="rrem" data-id="${i}" aria-label="ลบการเตือน ${remText(r)}">${icon('x')}</button></span>`).join('');
+  const modes = [['before', hasTime ? `ก่อน${lab}` : null], ['at', 'ตามนาฬิกา']];
   if (T === 'task') modes.push(['day', 'ก่อนวันส่ง']);
-  if (!modes.some(m => m[0] === D.remMode)) D.remMode = 'at';
+  const avail = modes.filter(m => m[1]);
+  /* โหมดที่เลือกอยู่ต้องมีให้เลือกจริง ถ้าไม่มี (เช่น ยังไม่ใส่เวลา) ให้ใช้ตัวแรกที่มี
+     และถ้าผู้ใช้ยังไม่เคยเลือกเอง พอมีเวลาแล้วให้เป็น "ก่อน…" เสมอ เพื่อให้ปุ่มด่วนกับช่องกรอกเป็นชุดเดียวกัน */
+  if (!avail.some(m => m[0] === D.remMode) || (!D._modePicked && hasTime && D.remMode !== 'before')) D.remMode = avail[0][0];
   const mode = D.remMode;
-  let adder = '';
-  if (mode === 'at') adder = `<p class="ev-rem-hint">เตือนตามเวลาที่ตั้ง ไม่ผูกกับเวลาของรายการ เช่น 07:00, 12:30 ตั้งได้หลายเวลา</p>
-    <div class="ev-rem-add"><input class="ev-input" type="time" name="remTime" value="${esc(D.remTime)}" aria-label="เวลาที่ต้องการให้เตือน"><button type="button" class="ev-mini ev-mini-wide" data-act="radd">เพิ่ม</button></div>`;
-  else if (mode === 'before') adder = hasTime
-    ? `<p class="ev-rem-hint">เตือนก่อน ${esc(D.time)} น. เลือกด่วนหรือกำหนดเอง</p>
-       <div class="ev-filters" data-wrap="true">${REM_OPTS.map(([m, l]) => `<button type="button" aria-pressed="${D.reminders.some(r => r.k === 'before' && r.m === m)}" data-act="rquick" data-id="${m}">${m === 0 ? 'ตรงเวลา' : l}</button>`).join('')}</div>
-       <div class="ev-rem-add"><input class="ev-input" type="number" inputmode="numeric" min="1" max="999" name="remNum" value="${esc(D.remNum)}" placeholder="กำหนดเอง"><select class="ev-input ev-select" name="remUnit" aria-label="หน่วย"><option value="1" ${D.remUnit == 1 ? 'selected' : ''}>นาที</option><option value="60" ${D.remUnit == 60 ? 'selected' : ''}>ชั่วโมง</option><option value="1440" ${D.remUnit == 1440 ? 'selected' : ''}>วัน</option></select><button type="button" class="ev-mini ev-mini-wide" data-act="rcustom">เพิ่ม</button></div>`
-    : `<p class="ev-rem-hint" data-tone="warn">ใส่${T === 'task' ? 'เวลาส่ง' : 'เวลาเริ่ม'}ด้านบนก่อน จึงจะเตือน “ก่อนเวลา” ได้</p>`;
-  else adder = `<p class="ev-rem-hint">เตือนก่อนถึงวันส่ง เช่น 1 วันก่อน เวลา 18:00 (ใช้ได้แม้ไม่ได้ใส่เวลาส่ง)</p>
-    <div class="ev-rem-add"><input class="ev-input" type="number" inputmode="numeric" min="1" max="30" name="remDays" value="${esc(D.remDays)}" aria-label="กี่วันก่อน" placeholder="กี่วัน"><span class="ev-sub">วันก่อน</span><input class="ev-input" type="time" name="remTime" value="${esc(D.remTime || '18:00')}" aria-label="เวลาที่เตือน"><button type="button" class="ev-mini ev-mini-wide" data-act="rday">เพิ่ม</button></div>`;
-  return `<div class="ev-field" id="remBlock"><span>การแจ้งเตือน ${D.reminders.length ? `(${D.reminders.length}/${MAX_REMINDERS})` : ''}</span>
-    <div class="ev-rem">${list ? `<div class="ev-rem-list">${list}</div>` : '<p class="ev-rem-hint">ยังไม่ได้ตั้งเตือน</p>'}
-    ${modes.length > 1 ? seg('rmode', modes, mode) : ''}${adder}</div></div>`;
+  const quick = hasTime && mode === 'before'
+    ? REM_OPTS.map(([m, l]) => `<button type="button" aria-pressed="${D.reminders.some(r => r.k === 'before' && r.m === m)}" data-act="rquick" data-id="${m}">${m === 0 ? `ตรง${lab}` : l}</button>`).join('')
+    : '';
+  let custom = '';
+  if (mode === 'before') custom = `<div class="ev-rem-add"><input class="ev-input" type="number" inputmode="numeric" min="1" max="999" name="remNum" value="${esc(D.remNum)}" placeholder="กำหนดเอง" aria-label="จำนวนที่ต้องการเตือนก่อน"><select class="ev-input ev-select" name="remUnit" aria-label="หน่วย"><option value="1" ${D.remUnit == 1 ? 'selected' : ''}>นาที</option><option value="60" ${D.remUnit == 60 ? 'selected' : ''}>ชั่วโมง</option><option value="1440" ${D.remUnit == 1440 ? 'selected' : ''}>วัน</option></select><button type="button" class="ev-mini ev-mini-wide" data-act="rcustom">เพิ่ม</button></div>`;
+  else if (mode === 'at') custom = `<div class="ev-rem-add"><input class="ev-input" type="time" name="remTime" value="${esc(D.remTime)}" aria-label="เวลานาฬิกาที่ต้องการให้เตือน"><button type="button" class="ev-mini ev-mini-wide" data-act="radd">เพิ่ม</button></div>`;
+  else custom = `<div class="ev-rem-add"><input class="ev-input" type="number" inputmode="numeric" min="1" max="30" name="remDays" value="${esc(D.remDays)}" aria-label="จำนวนวันก่อนวันส่ง" placeholder="กี่วัน"><span class="ev-sub">วันก่อนวันส่ง เวลา</span><input class="ev-input" type="time" name="remTime" value="${esc(D.remTime || '18:00')}" aria-label="เวลานาฬิกาที่เตือน"><button type="button" class="ev-mini ev-mini-wide" data-act="rday">เพิ่ม</button></div>`;
+  const hint = mode === 'before' && !hasTime ? '' : mode === 'before' ? `เตือนก่อนถึง${lab} ${esc(D.time)} น.` : mode === 'at' ? 'เตือนตามเวลานาฬิกา ไม่ขึ้นกับเวลาของรายการ เช่น 07:00' : 'เตือนก่อนถึงวันที่ส่ง ใช้ได้แม้ไม่ได้ใส่เวลาส่ง';
+  return `<fieldset class="ev-field ev-rem" id="remBlock"><legend>เตือนล่วงหน้า ${D.reminders.length ? `<span class="ev-opt">${D.reminders.length}/${MAX_REMINDERS}</span>` : '<span class="ev-opt">ไม่บังคับ</span>'}</legend>
+    ${tags ? `<div class="ev-rem-list">${tags}</div>` : ''}
+    ${quick ? `<div class="ev-filters" data-wrap="true">${quick}</div>` : (avail.length && !hasTime && T !== 'task' ? `<p class="ev-rem-hint" data-tone="warn">ใส่<b>${lab}</b>ด้านบนก่อน ถึงจะเตือนก่อนเวลานั้นได้ หรือเลือก “ตามนาฬิกา” แทน</p>` : '')}
+    ${avail.length > 1 ? seg('rmode', avail, mode) : ''}
+    ${hint ? `<p class="ev-rem-hint">${hint}</p>` : ''}${custom}</fieldset>`;
 }
+const timeLabel = T => T === 'task' ? 'เวลาส่ง' : T === 'habit' ? 'เวลาที่ทำ' : 'เวลาเริ่ม';
 function formHTML() {
   const T = D.type, multi = D.track !== 'check';
-  let h = seg('dtype', Object.entries(TYPES), T) + field(T === 'class' ? 'ชื่อวิชา' : 'ชื่อ', inp('title', 'text', T === 'habit' ? 'เช่น ดื่มน้ำ' : ''));
-  if (T === 'task') h += field('วิชา/หมวด', inp('subject', 'text')) + row2(field('วันกำหนดส่ง', inp('start', 'date')), field('เวลา', inp('time', 'time')));
-  if (T === 'habit') h += field('เวลาที่ควรทำ (ไม่บังคับ)', inp('time', 'time')) + field('วิธีติดตามผล', seg('dtrack', TRACK_OPTS, D.track))
-    + (multi ? row2(field('เป้าหมาย', inp('target', 'number')), field('หน่วย', inp('unitName', 'text'))) : '') + repeatBlock();
-  if (T === 'event') h += row2(field('เริ่ม', inp('time', 'time')), field('จบ', inp('timeEnd', 'time'))) + repeatBlock();
-  if (T === 'class') h += field('วันที่เรียน', chips('dday', WEEK_OPTS, D.days)) + row2(field('เริ่ม', inp('time', 'time')), field('จบ', inp('timeEnd', 'time'))) + rangeBlock();
+  const opt = '<span class="ev-opt">ไม่บังคับ</span>';
+  let h = seg('dtype', Object.entries(TYPES), T) + field(T === 'class' ? 'ชื่อวิชา' : 'ชื่อ', inp('title', 'text', T === 'habit' ? 'เช่น ดื่มน้ำ' : T === 'task' ? 'เช่น การบ้านคณิตศาสตร์' : T === 'class' ? 'เช่น ฟิสิกส์' : 'เช่น ประชุมชมรม'));
+  if (T === 'task') h += field(`หมวดวิชา ${opt}`, inp('subject', 'text', 'เช่น คณิต')) + row2(field('วันที่ส่ง', inp('start', 'date')), field(`เวลาส่ง ${opt}`, inp('time', 'time')));
+  if (T === 'habit') h += field(`เวลาที่ทำ ${opt}`, inp('time', 'time')) + field('นับผลแบบไหน', seg('dtrack', TRACK_OPTS, D.track))
+    + (multi ? row2(field('เป้าหมายต่อวัน', inp('target', 'number')), field('หน่วย', inp('unitName', 'text', 'เช่น แก้ว'))) : '') + repeatBlock();
+  if (T === 'event') h += row2(field('เวลาเริ่ม', inp('time', 'time')), field(`เวลาจบ ${opt}`, inp('timeEnd', 'time'))) + repeatBlock();
+  if (T === 'class') h += field('เรียนวันไหน', chips('dday', WEEK_OPTS, D.days)) + row2(field('เวลาเริ่ม', inp('time', 'time')), field('เวลาจบ', inp('timeEnd', 'time'))) + field('เริ่มเรียนวันที่', inp('start', 'date')) + rangeBlock();
   return `<form class="ev-form" id="addForm" novalidate>${h}${remBlock()}<p class="ev-form-err" id="formErr" role="alert" hidden></p><button class="ev-btn-primary ev-btn-block" type="submit">${D.editId ? 'บันทึกการแก้ไข' : 'บันทึก'}</button></form>`;
 }
 function renderForm() { const y = sheetEl.scrollTop; openSheet(D.editId ? 'แก้ไข' : 'เพิ่มใหม่', formHTML()); sheetEl.scrollTop = y; }
@@ -445,7 +470,7 @@ function openEdit(id) {
   closeMenu();
   D = { type: it.type, title: it.title, subject: it.subject || '', start: it.start, end: it.end || '', endMode: it.end ? 'date' : 'never', time: it.time || '', timeEnd: it.timeEnd || '',
     unit: it.repeat.unit, every: it.repeat.every, days: [...it.repeat.days], track: it.track === 'none' ? 'check' : it.track, target: it.target, unitName: it.unitName || '',
-    reminders: it.reminders.map(r => ({ ...r })), remTime: '', remMode: 'at', remNum: '', remUnit: 1, remDays: 1, editId: it.id };
+    reminders: it.reminders.map(r => ({ ...r })), remTime: '', remMode: 'before', _modePicked: false, remNum: '', remUnit: 1, remDays: 1, editId: it.id };
   renderForm();
 }
 const openAdd = type => { D = newDraft(type); renderForm(); };
@@ -651,7 +676,7 @@ const ACTIONS = {
     if (D.reminders.length >= MAX_REMINDERS) return toast(`ตั้งเตือนได้สูงสุด ${MAX_REMINDERS} ครั้ง`);
     D.reminders = cleanReminders([...D.reminders, { k: 'at', t: v }]); D.remTime = ''; return FORM; },
   rrem: id => { D.reminders.splice(+id, 1); return FORM; },
-  rmode: id => { D.remMode = id; return FORM; },
+  rmode: id => { D.remMode = id; D._modePicked = true; return FORM; },
   rcustom: () => { const n = Math.round(+D.remNum), u = +D.remUnit || 1, m = n * u;
     if (!(n >= 1)) return toast('ใส่ตัวเลขก่อน เช่น 15');
     if (m > 10080) return toast('ล่วงหน้าได้มากสุด 7 วัน');
@@ -729,6 +754,12 @@ document.addEventListener('input', e => {
   const had = !!D.time; D[e.target.name] = e.target.value;
   /* เวลาของรายการเพิ่งมี/หาย -> วาดเฉพาะส่วนเตือนใหม่ (ไม่แตะช่องที่กำลังพิมพ์) */
   if (e.target.name === 'time' && had !== !!D.time) {
+    /* ล้างเวลาแล้ว เตือนแบบ "ก่อน…" ไม่มีเวลาให้อ้างอิง -> เอาออกและบอกผู้ใช้ตรงๆ (ไม่ปล่อยเตือนที่ไม่มีวันยิง) */
+    if (!D.time) {
+      const dropped = D.reminders.filter(r => r.k === 'before');
+      if (dropped.length) { D.reminders = D.reminders.filter(r => r.k !== 'before'); toast(`เอาการเตือน “ก่อนเวลา” ออก ${dropped.length} รายการ เพราะไม่มี${timeLabel(D.type)}แล้ว`); }
+      if (D.remMode === 'before') D.remMode = 'at';
+    }
     const blk = document.getElementById('remBlock'); if (!blk) return;
     const tmp = document.createElement('div'); tmp.innerHTML = remBlock(); blk.replaceWith(tmp.firstElementChild);
   }
@@ -738,9 +769,10 @@ function validateDraft() {
   if (!D.title.trim()) return 'ใส่ชื่อก่อนนะ';
   if (!D.start) return 'เลือกวันที่ก่อนนะ';
   if (D.time && D.timeEnd && D.timeEnd <= D.time) return 'เวลาจบต้องหลังเวลาเริ่ม';
+  if (!D.time && D.reminders.some(r => r.k === 'before')) return `ตั้งเตือน “ก่อนเวลา” ไว้ แต่ยังไม่ได้ใส่${timeLabel(D.type)} ใส่เวลา หรือลบการเตือนนั้นก่อน`;
   if (D.type === 'class' && !D.days.length) return 'เลือกวันที่เรียนอย่างน้อย 1 วัน';
   if (D.endMode === 'date' && D.end && D.end < D.start) return 'วันสิ้นสุดต้องไม่ก่อนวันเริ่ม';
-  if (D.type === 'habit' && D.track !== 'check' && !(+D.target >= 1)) return 'เป้าหมายต้องอย่างน้อย 1';
+  if (D.type === 'habit' && D.track !== 'check' && !(+D.target >= 1)) return 'เป้าหมายต่อวันต้องอย่างน้อย 1';
   if (D.unit !== 'none' && !(+D.every >= 1)) return 'ความถี่ต้องอย่างน้อย 1';
   return '';
 }
