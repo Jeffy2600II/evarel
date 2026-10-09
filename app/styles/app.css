@@ -256,3 +256,5 @@ fieldset.ev-field>legend{padding:0;margin-bottom:0;font-size:13px;font-weight:50
 .ev-check,.ev-kebab,.ev-mini,.ev-step button{position:relative}
 .ev-check::after,.ev-kebab::after,.ev-mini::after,.ev-step button::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}
 .ev-list-item{min-height:56px}
+
+.ev-sched-day{margin:0 0 var(--s1)}

@@ -30,6 +30,7 @@
 <script>
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW register fail', err));
+  navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'update-ready') window.dispatchEvent(new Event('evarel-update')); });
 }
 </script>
 </body>

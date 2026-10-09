@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v5';
+const VERSION = 'evarel-v11';
 const CORE = [
   './',
   './index.html',
@@ -27,18 +27,36 @@ self.addEventListener('activate', e => {
   );
 });
 
-/* Cache-first: โหลดจากแคชก่อน ถ้าไม่มีค่อยออกเน็ต แล้วเก็บกลับเข้าแคช */
+/* Stale-while-revalidate: เปิดจากแคชทันที (เร็ว + ออฟไลน์ได้) แล้วดึงฉบับใหม่เบื้องหลังเสมอ
+   ครั้งถัดไปจะได้ของใหม่ และถ้าไฟล์หลักเปลี่ยนจะแจ้งหน้าเว็บให้ผู้ใช้กดรีเฟรช */
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-      if (res.ok && new URL(e.request.url).origin === self.location.origin) {
-        const copy = res.clone();
-        caches.open(VERSION).then(c => c.put(e.request, copy));
-      }
+  const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+  /* งานเบื้องหลังต้องผูกกับ event ทันที (ก่อนมี await ใดๆ) ไม่งั้นเบราว์เซอร์อาจปิด SW ก่อนอัปเดตแคชเสร็จ */
+  let bg;
+  const done = new Promise(r => { bg = r; });
+  e.waitUntil(done);
+  e.respondWith((async () => {
+    const cache = await caches.open(VERSION);
+    const hit = await cache.match(e.request);
+    /* อ่านฉบับเก่าไว้เทียบก่อนส่ง hit ให้หน้า (body อ่านได้ครั้งเดียว) */
+    const oldText = hit && /\.(js|css|html)$|\/$/.test(url.pathname) ? await hit.clone().text().catch(() => null) : null;
+    const net = fetch(url.href, { cache: 'no-cache', credentials: 'same-origin' }).then(async res => {
+      if (!res.ok) return res;
+      /* เขียนแคชก่อนเสมอ แล้วค่อยเทียบ ถ้าเทียบพังก็ไม่กระทบการอัปเดต */
+      const copy = res.clone();
+      await cache.put(e.request, res.clone());
+      try {
+        if (oldText !== null && (await copy.text()) !== oldText) (await self.clients.matchAll()).forEach(c => c.postMessage({ type: 'update-ready' }));
+      } catch (err) { console.warn('SW compare fail', err); }
       return res;
-    }).catch(() => caches.match('./index.html')))
-  );
+    }).catch(err => { console.warn('SW refresh fail', url.pathname, err); return null; });
+    net.finally(() => bg());
+    if (hit) return hit;
+    const fresh = await net;
+    return fresh || (await cache.match('./index.html')) || new Response('ออฟไลน์', { status: 503 });
+  })().catch(err => { bg(); throw err; }));
 });
 
 /* ---------- Web Push (ขั้น F จะมี Cron ยิงมา) ---------- */

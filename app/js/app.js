@@ -85,7 +85,7 @@ function loadState() {
   catch (err) { console.warn('โหลดข้อมูลไม่สำเร็จ ใช้ข้อมูลตัวอย่าง', err); return structuredClone(SEED); }
 }
 function saveState() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (err) { console.warn('บันทึกไม่สำเร็จ', err); } }
-const S = loadState();
+let S = loadState();
 const UI = { tab: 'today', date: TODAY, type: 'all', cday: Math.min(Math.max(new Date().getDay(), 1), 5), loading: true };
 
 /* ---------- Service layer ---------- */
@@ -224,6 +224,12 @@ function summarySub(list, tr, done) {
   return others ? `มี ${others} คาบเรียน/นัดหมายในวันนี้` : 'ว่างทั้งวัน';
 }
 const TYPE_ICON = { habit: 'repeat', task: 'task', event: 'event', class: 'book' };
+/* ข้อความความคืบหน้าของกิจวัตรแบบนับ/จับเวลา: บอกสิ่งที่เหลือ ไม่ใช่แค่เลข */
+function progressText(it, v, tg) {
+  const unit = esc(it.unitName || (it.track === 'timer' ? 'นาที' : ''));
+  if (v >= tg) return v > tg ? `ครบแล้ว (${v}/${tg} ${unit})`.trim() : `ครบแล้ว ${v}/${tg} ${unit}`.trim();
+  return `${v}/${tg} ${unit} · เหลืออีก ${tg - v}`.replace(/\s+/g, ' ').trim();
+}
 function itemRow(it, ds) {
   const v = val(it, ds), tg = target(it), done = tracked(it) && isDone(it, ds), multi = it.track === 'count' || it.track === 'timer';
   const lead = it.track === 'check'
@@ -232,7 +238,7 @@ function itemRow(it, ds) {
   const tail = it.track === 'count'
     ? `<div class="ev-step"><button data-act="dec" data-id="${it.id}" aria-label="ลด">−</button><button data-act="inc" data-id="${it.id}" aria-label="เพิ่ม">+</button></div>`
     : it.track === 'timer' ? timerControls(it, ds) : '';
-  const sub = [timeText(it), multi ? `${v}/${tg} ${esc(it.unitName)}` : esc(it.subject), it.type === 'task' && overdue(it, ds) ? 'เลยวันส่ง' : ''].filter(Boolean).join(' · ');
+  const sub = [timeText(it), multi ? progressText(it, v, tg) : esc(it.subject), it.type === 'task' && overdue(it, ds) ? 'เลยวันส่ง' : ''].filter(Boolean).join(' · ');
   return `<li class="ev-list-item" data-state="${done ? 'done' : 'todo'}">${lead}<div class="grow"><b>${esc(it.title)}</b><span class="ev-sub">${sub}</span>
     ${multi ? `<div class="ev-bar"><i style="width:${Math.min(100, v / tg * 100)}%"></i></div>` : ''}</div>${tail}${kebab(it)}</li>`;
 }
@@ -381,9 +387,13 @@ const VIEWS = {
     <main class="ev-main"><section class="ev-card">${list.length ? `<ul class="ev-plain-list">${list.map(row).join('')}</ul>` : empty('ยังไม่มีรายการ', 'กดปุ่ม + เพื่อสร้าง')}</section></main>`;
   },
   schedule() {
-    const date = ymd(addDays(new Date(), UI.cday - new Date().getDay())), list = onDate(date).filter(it => it.type === 'class');
-    return `${header('คาบเรียนแต่ละวัน', 'ตารางเรียน')}<div class="ev-week">${[1, 2, 3, 4, 5].map(i => `<button aria-pressed="${UI.cday === i}" data-act="cday" data-id="${i}">${WD[i]}</button>`).join('')}</div>
-    <main class="ev-main"><section class="ev-card">${list.length ? list.map(it => `<div class="ev-list-item ev-period"><span class="ev-period-time"><b>${it.time}</b><span>${it.timeEnd}</span></span><div class="grow"><b>${esc(it.title)}</b></div></div>`).join('') : empty('วันนี้ไม่มีคาบเรียน', 'กด + แล้วเลือก “คาบเรียน”')}</section></main>`;
+    /* ตารางเรียนเป็นแม่แบบรายสัปดาห์: เลือก "ครั้งถัดไป" ของวันนั้น (วันนี้นับด้วย) เพื่อไม่ให้ว่างเพราะวันเริ่มอยู่หลังวันในอดีต */
+    const nextOf = i => { const diff = (i - new Date().getDay() + 7) % 7; return ymd(addDays(new Date(), diff)); };
+    const date = nextOf(UI.cday), list = onDate(date).filter(it => it.type === 'class');
+    const dayName = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'][UI.cday];
+    const sub = date === TODAY ? 'วันนี้' : parse(date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long' });
+    return `${header('คาบเรียนแต่ละวัน', 'ตารางเรียน')}<div class="ev-week" role="group" aria-label="เลือกวันเรียน">${[1, 2, 3, 4, 5].map(i => `<button aria-pressed="${UI.cday === i}" data-act="cday" data-id="${i}">${WD[i]}</button>`).join('')}</div>
+    <main class="ev-main"><section class="ev-card">${list.length ? `<p class="ev-sub ev-sched-day">วัน${dayName} · ${sub} · ${list.length} คาบ</p>` + list.map(it => `<div class="ev-list-item ev-period"><span class="ev-period-time"><b>${it.time}</b><span>${it.timeEnd}</span></span><div class="grow"><b>${esc(it.title)}</b></div></div>`).join('') : empty(`วัน${dayName}ไม่มีคาบเรียน`, 'กด + แล้วเลือก “คาบเรียน”')}</section></main>`;
   },
   stats() {
     const habits = S.items.filter(it => it.type === 'habit');
@@ -473,7 +483,7 @@ function openEdit(id) {
     reminders: it.reminders.map(r => ({ ...r })), remTime: '', remMode: 'before', _modePicked: false, remNum: '', remUnit: 1, remDays: 1, editId: it.id };
   renderForm();
 }
-const openAdd = type => { D = newDraft(type); renderForm(); };
+const openAdd = type => { D = newDraft(type); renderForm(); setTimeout(() => document.querySelector('#addForm input[name="title"]')?.focus({ preventScroll: true }), 60); };
 const toggle = (arr, v) => { const i = arr.indexOf(v); if (i < 0) arr.push(v); else arr.splice(i, 1); };
 
 /* ---------- AI mock (การ์ดยืนยันก่อนเพิ่ม) ---------- */
@@ -518,8 +528,19 @@ const AIClient = {
   async reply(text, { memories = [] } = {}) {
     await new Promise(r => setTimeout(r, 450));
     const t = text.trim();
-    const m = t.match(/^(?:เพิ่มงาน|เพิ่ม\s*งาน)\s*(.+)$/);
-    if (m) return { kind: 'confirm-task', title: m[1].trim(), text: `เพิ่มงาน “${m[1].trim()}” กำหนดส่งพรุ่งนี้ ใช่ไหม?` };
+    const m = t.match(/^(?:เพิ่มงาน|เพิ่ม\s*งาน)\s*(.*)$/);
+    if (m) {
+      /* แยกวันที่ออกจากชื่อ: รองรับ วันนี้ / พรุ่งนี้ / มะรืนนี้ / วัน(จันทร์-อาทิตย์) ถ้าไม่ระบุ = วันนี้ */
+      let title = m[1].trim(), due = TODAY, said = '';
+      const days = { 'อาทิตย์': 0, 'จันทร์': 1, 'อังคาร': 2, 'พุธ': 3, 'พฤหัสบดี': 4, 'พฤหัส': 4, 'ศุกร์': 5, 'เสาร์': 6 };
+      const rel = title.match(/\s*(วันนี้|พรุ่งนี้|มะรืนนี้|มะรืน)\s*$/);
+      const wd = title.match(/\s*(?:ภายใน|ก่อน|ส่ง)?\s*วัน(อาทิตย์|จันทร์|อังคาร|พุธ|พฤหัสบดี|พฤหัส|ศุกร์|เสาร์)\s*$/);
+      if (rel) { due = ymd(addDays(new Date(), { 'วันนี้': 0, 'พรุ่งนี้': 1, 'มะรืนนี้': 2, 'มะรืน': 2 }[rel[1]])); said = rel[1]; title = title.slice(0, rel.index).trim(); }
+      else if (wd) { const diff = (days[wd[1]] - new Date().getDay() + 7) % 7 || 7; due = ymd(addDays(new Date(), diff)); said = 'วัน' + wd[1]; title = title.slice(0, wd.index).trim(); }
+      if (!title) return { kind: 'text', text: 'อยากให้เพิ่มงานอะไรครับ ลองพิมพ์ เช่น “เพิ่มงาน การบ้านอังกฤษ พรุ่งนี้”' };
+      const when = said ? `ส่ง${said} (${parse(due).toLocaleDateString('th-TH', { day: 'numeric', month: 'long' })})` : 'ส่งวันนี้ (ยังไม่ได้ระบุวัน)';
+      return { kind: 'confirm-task', title, due, text: `เพิ่มงาน “${title}” ${when} ใช่ไหม?` };
+    }
     return { kind: 'text', text: 'ตอนนี้ AI ยังเป็นแบบทดลอง ยังไม่ได้เชื่อมกับโมเดลจริง จึงตอบอิสระยังไม่ได้ ลองพิมพ์ว่า “เพิ่มงาน การบ้านอังกฤษ” เพื่อดูการสั่งงานในแอป' };
   },
 };
@@ -544,7 +565,7 @@ function groupChats(list) {
 }
 function msgHTML(m) {
   if (m.role === 'user') return `<div class="ev-bubble-user">${esc(m.text)}</div>`;
-  if (m.kind === 'confirm-task') return `<div class="ev-card" data-tone="soft"><b>${esc(m.text)}</b>${m.done ? `<p class="ev-sub">${m.done === 'ok' ? 'ยืนยันแล้ว เปิดฟอร์มให้ตรวจก่อนบันทึก' : 'ยกเลิกแล้ว'}</p>` : `<div class="ev-row ev-gap-top-sm"><button class="ev-btn-primary" data-act="ai-ok" data-id="${encodeURIComponent(m.title)}">ยืนยัน</button><button class="ev-btn-ghost" data-act="ai-no">ยกเลิก</button></div>`}</div>`;
+  if (m.kind === 'confirm-task') return `<div class="ev-card" data-tone="soft"><b>${esc(m.text)}</b>${m.done ? `<p class="ev-sub">${m.done === 'ok' ? 'ยืนยันแล้ว เปิดฟอร์มให้ตรวจก่อนบันทึก' : 'ยกเลิกแล้ว'}</p>` : `<div class="ev-row ev-gap-top-sm"><button class="ev-btn-primary" data-act="ai-ok" data-id="${encodeURIComponent(m.title)}" data-due="${esc(m.due || '')}">ยืนยัน</button><button class="ev-btn-ghost" data-act="ai-no">ยกเลิก</button></div>`}</div>`;
   return `<div class="ev-bubble-ai">${esc(m.text)}</div>`;
 }
 function aiBody(chat) {
@@ -615,7 +636,9 @@ function openSettings() {
     <section class="ev-card" data-tone="soft"><div class="ev-stat"><div><b>การแจ้งเตือนบนเครื่องนี้</b><p class="ev-sub">${note}</p></div><span class="ev-chip">${state}</span></div>
       ${'Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied' ? '<button class="ev-btn-primary ev-btn-block ev-gap-top-sm" data-act="notify">อนุญาตการแจ้งเตือน</button>' : ''}</section>
     <section class="ev-card"><b>เวลาเตือนที่ตั้งไว้</b><p class="ev-sub">ตั้งไว้แล้ว ${total} รายการเตือน ตอนนี้แอปบันทึกเวลาไว้ให้เรียบร้อย แต่ <b>ยังไม่เด้งเตือนจริงบนมือถือ</b> เพราะยังไม่ได้เชื่อมระบบส่งการแจ้งเตือน จะใช้ได้เมื่อเชื่อมระบบเสร็จ</p></section>
-    <section class="ev-card"><b>ข้อมูลของคุณ</b><p class="ev-sub">ตอนนี้ข้อมูลเก็บอยู่ในเครื่องนี้เท่านั้น ถ้าล้างข้อมูลเบราว์เซอร์ ข้อมูลจะหาย</p></section></div>`);
+    <section class="ev-card"><b>ข้อมูลของคุณ</b><p class="ev-sub">ตอนนี้ข้อมูลเก็บอยู่ในเครื่องนี้เท่านั้น ถ้าล้างข้อมูลเบราว์เซอร์ ข้อมูลจะหาย สำรองเป็นไฟล์ไว้ได้ที่นี่</p>
+      <div class="ev-row ev-gap-top-sm"><button class="ev-btn-ghost" data-act="export">สำรองข้อมูล</button><button class="ev-btn-ghost" data-act="import">นำข้อมูลกลับมา</button></div>
+      <input type="file" id="importFile" accept="application/json,.json" hidden></section></div>`);
 }
 
 /* ---------- Actions ---------- */
@@ -644,6 +667,13 @@ const ACTIONS = {
     if (isFuture(UI.date)) return toast('ยังไม่ถึงวันนี้ ติ๊กล่วงหน้าไม่ได้');
     const was = isDone(it, UI.date); withUndo(it, UI.date, was ? `ยกเลิก “${it.title}”` : `ทำแล้ว “${it.title}”`, () => { it.log[UI.date] = was ? 0 : 1; }); },
   checkdue: id => { const it = find(id); if (it) withUndo(it, it.start, `ทำแล้ว “${it.title}”`, () => { it.log[it.start] = 1; }); },
+  /* สำรอง/นำกลับข้อมูลเป็นไฟล์ JSON (ยังไม่มีบัญชี จึงเป็นทางเดียวที่ย้ายเครื่องหรือกันข้อมูลหาย) */
+  export: () => {
+    const blob = new Blob([JSON.stringify({ app: 'evarel', version: 1, exportedAt: new Date().toISOString(), data: S }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `evarel-backup-${TODAY}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast(`สำรองแล้ว ${S.items.length} รายการ`); return NOREDRAW;
+  },
+  import: () => { document.getElementById('importFile')?.click(); return NOREDRAW; },
   inc: id => bump(id, 1), dec: id => bump(id, -1),
   /* ตัวจับเวลา: ทีละตัวเท่านั้น, เก็บเป็น timestamp */
   tstart: id => { if (isFuture(UI.date)) return toast('ยังไม่ถึงวันนี้ จับเวลาล่วงหน้าไม่ได้');
@@ -703,8 +733,8 @@ const ACTIONS = {
   ainew: () => { const cur = ChatStore.get(ChatStore.current()); if (!cur || cur.msgs.length) ChatStore.setCurrent(null); AIUI.drawer = false; AIUI.q = ''; renderAI(false); setTimeout(() => document.getElementById('aiText')?.focus(), 60); return NOREDRAW; },
   aiopen: id => { ChatStore.setCurrent(id); AIUI.drawer = false; renderAI(false); return NOREDRAW; },
   'ai-sugg': id => { aiSend(decodeURIComponent(id)); return NOREDRAW; },
-  'ai-ok': id => { const title = decodeURIComponent(id), cid = ChatStore.current(); if (cid) ChatStore.patchLast(cid, { done: 'ok' });
-    closeAI(); openAdd('task'); D.title = title; D.start = ymd(addDays(new Date(), 1)); renderForm(); return NOREDRAW; },
+  'ai-ok': (id, el) => { const title = decodeURIComponent(id), due = el?.dataset?.due || TODAY, cid = ChatStore.current(); if (cid) ChatStore.patchLast(cid, { done: 'ok' });
+    closeAI(); openAdd('task'); D.title = title; D.start = due; renderForm(); return NOREDRAW; },
   'ai-no': () => { const cid = ChatStore.current(); if (cid) ChatStore.patchLast(cid, { done: 'no' }); renderAI(true); return NOREDRAW; },
   aimenu: (id, el) => { openChatMenu(el, id); return NOREDRAW; },
   'cm-pin': id => { closeMenu(); ChatStore.pin(id); renderDrawer(); return NOREDRAW; },
@@ -780,7 +810,13 @@ document.addEventListener('submit', e => {
   if (e.target.id !== 'addForm') return; /* ฟอร์มอื่น (เช่น แชท AI) มีตัวจัดการของตัวเอง */
   e.preventDefault();
   const bad = validateDraft();
-  if (bad) { const box = document.getElementById('formErr'); if (box) { box.textContent = bad; box.hidden = false; } return; }
+  if (bad) {
+    const box = document.getElementById('formErr'); if (box) { box.textContent = bad; box.hidden = false; }
+    /* พาโฟกัสไปที่ช่องที่ต้องแก้ ผู้ใช้ไม่ต้องหาเอง */
+    const target = !D.title.trim() ? 'title' : !D.start ? 'start' : /เวลา/.test(bad) ? (D.time && D.timeEnd ? 'timeEnd' : 'time') : /เป้าหมาย/.test(bad) ? 'target' : /ทุกกี่|จำนวน/.test(bad) ? 'every' : /สิ้นสุด/.test(bad) ? 'end' : '';
+    if (target) document.querySelector(`#addForm [name="${target}"]`)?.focus();
+    return;
+  }
   const next = buildItem();
   if (D.editId) {
     const idx = S.items.findIndex(x => x.id == D.editId), prev = S.items[idx];
@@ -799,13 +835,28 @@ document.addEventListener('submit', e => {
     S.items[idx] = next;
     pushUndo({ label: `แก้ไข “${next.title}” แล้ว`, restore: () => { const k = S.items.findIndex(x => x.id == next.id); if (k >= 0) S.items[k] = snapshot; } });
   } else {
+    const dup = S.items.some(x => x.type === next.type && x.title.trim().toLowerCase() === next.title.toLowerCase());
     S.items.push(next);
-    pushUndo({ label: `เพิ่ม “${next.title}” แล้ว`, restore: () => { S.items = S.items.filter(x => x.id != next.id); } });
+    pushUndo({ label: dup ? `เพิ่ม “${next.title}” แล้ว (มีชื่อนี้อยู่แล้ว)` : `เพิ่ม “${next.title}” แล้ว`, restore: () => { S.items = S.items.filter(x => x.id != next.id); } });
   }
   saveState(); closeSheet(); render();
 });
+
+/* เลือกไฟล์สำรอง: ตรวจรูปแบบก่อนแทนที่ และเก็บสำเนาข้อมูลเดิมให้ย้อนกลับได้ */
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'importFile') return;
+  const f = e.target.files?.[0]; e.target.value = ''; if (!f) return;
+  try {
+    if (f.size > 5e6) throw new Error('ไฟล์ใหญ่เกินไป');
+    const j = JSON.parse(await f.text());
+    if (j?.app !== 'evarel' || !Array.isArray(j?.data?.items)) throw new Error('ไม่ใช่ไฟล์สำรองของ Evarel');
+    const next = normalize(j.data), prev = S;
+    S = next; saveState(); closeSheet(); render();
+    pushUndo({ label: `นำข้อมูลกลับมาแล้ว ${next.items.length} รายการ`, restore: () => { S = prev; } });
+  } catch (err) { toast(err.message === 'ไฟล์ใหญ่เกินไป' || err.message.startsWith('ไม่ใช่') ? err.message : 'อ่านไฟล์ไม่ได้ ลองเลือกไฟล์สำรองของ Evarel'); }
+});
 scrim.addEventListener('click', closeSheet);
-document.getElementById('fab').addEventListener('click', () => openAdd(UI.tab === 'schedule' ? 'class' : 'habit'));
+document.getElementById('fab').addEventListener('click', () => openAdd(UI.tab === 'schedule' ? 'class' : UI.tab === 'stats' ? 'habit' : 'task'));
 document.getElementById('nav').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { UI.tab = b.dataset.tab; render(); scrollTo(0, 0); } });
 
 /* ---------- Render ---------- */
@@ -820,3 +871,7 @@ function render() {
 render();
 ensureTick();
 setTimeout(() => { UI.loading = false; render(); ensureTick(); }, SKELETON_MS);
+
+/* มีเวอร์ชันใหม่: บอกผู้ใช้ครั้งเดียวต่อรอบการเปิด ไม่รีเฟรชเองเพราะอาจกำลังกรอกฟอร์ม */
+let updateShown = false;
+window.addEventListener('evarel-update', () => { if (updateShown) return; updateShown = true; toast('มีเวอร์ชันใหม่ ปิดแล้วเปิดแอปใหม่เพื่อใช้งาน'); });
