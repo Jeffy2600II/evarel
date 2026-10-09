@@ -403,7 +403,7 @@ Toast: "ไม่รองรับ" Show "อนุญาต" Button   Show Sta
 
 
 ---
-## สถานะปัจจุบัน (9 ต.ค. 2026 ค่ำ): แอปที่ deploy คือ v7 (app-v7/) ไม่ใช่ app/ เดิม
+## (ประวัติ) 9 ต.ค. ค่ำ: v7 (app-v7/) — ถูกแทนที่ด้วย v11 แล้ว ดูหัวข้อ "สถานะปัจจุบัน v11" ท้ายไฟล์
 
 **เอกสารส่วนอื่นด้านบนอธิบายแอปเดิม (`app/`, 25 โมดูล, storage key `evarel-demo-v2`) ซึ่งยังเก็บไว้เป็นข้อมูลอ้างอิง/ย้อนกลับ แต่ไม่ได้ถูก deploy แล้ว**
 
@@ -425,3 +425,37 @@ Toast: "ไม่รองรับ" Show "อนุญาต" Button   Show Sta
 - ฟอร์มเพิ่ม/แก้ไขเป็น 2 ขั้น (เลือกประเภท → กรอกเท่าที่จำเป็น ตัวเลือกขั้นสูงพับเก็บ)
 - การทดสอบหลักที่ใช้ยืนยัน: เทียบภาพกับ v7 ต้นฉบับ (diff 0 พิกเซลทุกแท็บ สว่าง/มืด; หน้าเพิ่มต่างเฉพาะเคอร์เซอร์กะพริบ), route 22 ข้อ, PWA ออฟไลน์, ล้นจอ 360/390/412/457
 - ข้อควรระวังการวัด: สคริปต์ทดสอบต้องพิสูจน์กับ v7 ต้นฉบับก่อนเสมอ (ผลของ v7 คือความจริง ไม่ใช่การเดา)
+
+
+---
+## สถานะปัจจุบัน (10 ต.ค. 2026): แอปที่ deploy คือ v11 (app-v11/)
+
+**canonical design = `design/master-demo-v11.html`** (แทน v7) | sw.js `evarel-v18` | ข้อมูลเริ่มใหม่เหมือนเดิม (storage key `evarel-demo-v3`, `evarel-timer-v3`, `evarel-theme-v3`, `evarel-chats-v3`)
+
+### ต่างจาก v7 อย่างไร (วัดจากโค้ดจริง)
+| หัวข้อ | v7 | v11 |
+|---|---|---|
+| แท็บ | วันนี้ รายการ **ตารางเรียน** สถิติ (`schedule`) | วันนี้ รายการ **ปฏิทิน** สถิติ (`calendar`) → route `#/calendar` |
+| ปุ่ม "+" | เปิดเมนูเลือกประเภท (`#pop`) | เปิดฟอร์มทันที เลือกประเภทในฟอร์ม (`dtype`) |
+| ปฏิทิน | ไม่มี | **FullCalendar 6.1.19** เดือน/สัปดาห์ (`services/calendar`) |
+| รายละเอียดรายการ | ไม่มี | `detail` = หน้าเต็ม ปฏิทินรายเดือน + แก้สถานะย้อนหลัง (`views/detail`) |
+| ชั้นข้อมูล | อ่านเขียน localStorage ตรง | **`Repo`** (LocalAdapter / HttpAdapter) + `syncChanges` diff upserts/removes — จุดต่อ backend เปลี่ยนที่เดียว |
+| boot | sync | **async** `boot()` โหลดผ่าน Repo + มี error state + ปุ่ม `retry` |
+| สถิติ | ในไฟล์ views | แยก `services/stats` |
+| ขนาด | JS 53,864 / CSS 28,158 | JS 74,326 / CSS 37,034 |
+
+### สิ่งที่ผมเพิ่มเหนือ v11 (ไม่แก้ตรรกะ v11)
+- `vendor/fullcalendar.min.js` (283,987 ไบต์, MIT) **เก็บในแอปเอง** แทน CDN jsdelivr เพื่อให้ปฏิทินใช้ออฟไลน์ได้ (v11 ต้นฉบับพึ่ง CDN)
+- `js/route.js` (hash route `#/today #/all #/calendar #/stats` + deep link `#/ai` `#/settings`), `js/boot.js` (ลงทะเบียน SW + toast แจ้งอัปเดต), `sw.js` (CORE 10 ไฟล์)
+- ลำดับโหลด: fullcalendar → app.js → route.js → boot.js
+
+### จุดต่อ backend (พร้อมแล้ว)
+`const Repo=LocalAdapter;` → เปลี่ยนเป็น `HttpAdapter('/api')` สัญญา: `load():Promise<{items}>` · `apply({upserts,removes},full):Promise<void>` (โยน error = UI แสดง error). Endpoint ที่ HttpAdapter คาด: `GET /items`, `PUT /items/:id`, `DELETE /items/:id` (ยังไม่มีฝั่ง Worker)
+
+### ผลตรวจ (เบราว์เซอร์จริง 412x915)
+เทียบภาพกับ v11 ต้นฉบับ 10 หน้า (4 แท็บ+ฟอร์ม × สว่าง/มืด) = 0 พิกเซล | route 22/22 | ฟีเจอร์ v11 13/13 | ออฟไลน์รวมปฏิทิน (บล็อก CDN) ผ่าน | ไม่ล้นจอ 360/390/412/457 × สว่าง/มืด
+
+### บทเรียนการวัด
+- ปฏิทิน FullCalendar: `.fc-timegrid-col` รวม **แกนเวลา** (8 = 7 วัน + 1 แกน) นับวันจริงด้วย `[data-date]`
+- ความต่างหน้า "สถิติ" ที่เจอครั้งหนึ่งเป็น noise ของ `countUp` — พิสูจน์โดยถ่าย v11 ต้นฉบับเทียบตัวเอง
+- ปุ่มเลื่อนปฏิทินหลัก = `cal-nav` (`prev|next|today`); `cal-prev/cal-next` เป็นของปฏิทินในหน้า detail
