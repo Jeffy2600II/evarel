@@ -3,14 +3,38 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v11';
+const VERSION = 'evarel-v14';
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
   './styles/tokens.css',
   './styles/app.css',
-  './js/app.js',
+  './js/actions.js',
+  './js/core/bus.js',
+  './js/core/constants.js',
+  './js/core/dates.js',
+  './js/core/dom.js',
+  './js/core/history.js',
+  './js/core/seed.js',
+  './js/core/state-ui.js',
+  './js/core/state.js',
+  './js/core/store.js',
+  './js/core/timer.js',
+  './js/core/undo.js',
+  './js/main.js',
+  './js/router.js',
+  './js/services/chat-store.js',
+  './js/services/reminders.js',
+  './js/services/schedule.js',
+  './js/ui/focus.js',
+  './js/ui/form.js',
+  './js/ui/menu.js',
+  './js/ui/primitives.js',
+  './js/ui/sheet.js',
+  './js/views/ai.js',
+  './js/views/settings.js',
+  './js/views/views.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];

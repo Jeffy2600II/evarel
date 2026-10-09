@@ -64,8 +64,8 @@ body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-
 /* แถบนำทาง: แค่ 4 ปุ่ม สะอาดตา */
 .ev-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--c-surface);border-top:1px solid var(--c-line);padding-bottom:env(safe-area-inset-bottom,0)}
 .ev-nav ul{list-style:none;padding:0;margin:0 auto;max-width:var(--col-max);display:grid;grid-template-columns:repeat(4,1fr)}
-.ev-nav button{width:100%;height:var(--nav-h);border:0;background:none;color:var(--c-muted);display:grid;justify-items:center;align-content:center;gap:2px;font:500 12px var(--font);cursor:pointer}
-.ev-nav button[aria-current="page"]{color:var(--c-accent-text,var(--c-accent));font-weight:600}
+.ev-nav button, .ev-nav a{text-decoration:none;width:100%;height:var(--nav-h);border:0;background:none;color:var(--c-muted);display:grid;justify-items:center;align-content:center;gap:2px;font:500 12px var(--font);cursor:pointer}
+.ev-nav button[aria-current="page"], .ev-nav a[aria-current="page"]{color:var(--c-accent-text,var(--c-accent));font-weight:600}
 
 /* Bottom sheet (AI / เพิ่ม / นอน / ตั้งค่า) */
 .ev-scrim{position:fixed;inset:0;background:var(--c-scrim);z-index:10;display:none}
@@ -258,3 +258,43 @@ fieldset.ev-field>legend{padding:0;margin-bottom:0;font-size:13px;font-weight:50
 .ev-list-item{min-height:56px}
 
 .ev-sched-day{margin:0 0 var(--s1)}
+
+
+/* ---- UI Fix Implementations ---- */
+
+.ev-list-item .grow { flex: 1; min-width: 0; margin: 0; }
+.ev-list-item .ev-sub { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+
+.ev-filters[data-type="dday"],
+.ev-filters[data-wrap="true"]:has(button[data-act="dday"]) {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.ev-filters[data-type="dday"] button,
+.ev-filters[data-wrap="true"]:has(button[data-act="dday"]) button {
+  min-height: 44px;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.ev-filters[data-type="rquick"],
+.ev-filters[data-wrap="true"]:has(button[data-act="rquick"]) {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.ev-filters[data-type="rquick"] button,
+.ev-filters[data-wrap="true"]:has(button[data-act="rquick"]) button {
+  min-height: 44px;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.ev-rem-add { display: flex; gap: var(--s1); align-items: center; }
+.ev-rem-add .ev-input,
+.ev-rem-add .ev-select,
+.ev-rem-add button { height: 48px; }
+
+.ev-backup-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+.ev-backup-row button { width: 100%; white-space: nowrap; }
