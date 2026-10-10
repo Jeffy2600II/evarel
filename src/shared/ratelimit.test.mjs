@@ -97,5 +97,12 @@ await t('fail-open: ตัวนับล่ม (throw/500) แล้วคน�
 await t('เส้นทางที่ไม่ใช่ auth (items) ไม่ถูกด่านนี้แตะ (ไม่เรียก rl_hit)', async () => {
   const w = world(); globalThis.fetch = w.f; await W.fetch(new Request('https://w/api/items', { method: 'GET', headers: { 'cf-connecting-ip': '1.1.1.1' } }), w.env); assert.equal(w.rpc, 0);
 });
+await t('R1 body ใหญ่ที่ /api/auth/login: ด่านต้องไม่ parse ก้อนใหญ่ (ตอบ 4xx โดยไม่ถึง Supabase Auth)', async () => {
+  const w = world(); globalThis.fetch = w.f;
+  const huge = JSON.stringify({ email: 'a@example.com', password: 'x', pad: 'z'.repeat(500_000) });
+  const r = await W.fetch(new Request('https://w/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'cf-connecting-ip': '1.1.1.1' }, body: huge }), w.env);
+  assert.ok(r.status >= 400 && r.status < 500, 'ได้ ' + r.status); assert.equal(w.auth, 0, 'ถึง Supabase Auth');
+  assert.equal(w.rpc, 0, 'ด่าน parse ก้อนใหญ่แล้วเรียก rl_hit (ควรตัดก่อน)');
+});
 globalThis.fetch = original;
 console.log(`\nผ่าน / ไม่ผ่าน: ${pass} / ${fail}`); process.exit(fail ? 1 : 0);

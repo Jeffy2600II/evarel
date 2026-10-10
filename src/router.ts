@@ -14,6 +14,8 @@ import { jsonResponse } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
 import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession } from './systems/auth/account';
 
+const AUTH_BODY_MAX = 2048;
+
 export async function handleRequest(request: Request, baseEnv: Env): Promise<Response> {
   /* สำเนา env ต่อคำขอ: เก็บ origin ของคำขอนี้ไว้ใช้ตอบ CORS (ไม่แชร์สถานะข้ามคำขอ) */
   const env: Env = { ...baseEnv, __origin: request.headers.get('Origin') };
@@ -35,7 +37,13 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
     const ip = clientIp(request);
     let who = '';
     if (path === '/api/auth/login' || path === '/api/auth/signup' || path === '/api/auth/forgot' || path === '/api/auth/resend') {
-      try { const b: any = await request.clone().json(); if (b && typeof b.email === 'string') who = await emailKey(b.email); } catch { /* body เสีย: ปล่อยให้ handler ตอบ 400 */ }
+      /* เพดาน 2KB เท่ากับ handler (MAX_BODY): ตัดก่อน parse ไม่งั้นด่านนี้กลายเป็นช่องให้ยัด body ใหญ่ */
+      if (Number(request.headers.get('content-length') || 0) > AUTH_BODY_MAX) return jsonResponse({ code: 'unknown' }, 413, env);
+      try {
+        const txt = await request.clone().text();
+        if (txt.length > AUTH_BODY_MAX) return jsonResponse({ code: 'unknown' }, 413, env);
+        const b: any = JSON.parse(txt); if (b && typeof b.email === 'string') who = await emailKey(b.email);
+      } catch { /* body เสีย: ปล่อยให้ handler ตอบ 400 */ }
     }
     const checks: [any, string][] = [];
     if (path === '/api/auth/login') { checks.push([RULES.loginIp, ip]); if (who) checks.push([RULES.loginIpEmail, ip + '|' + who]); }
