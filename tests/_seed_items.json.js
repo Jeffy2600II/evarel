@@ -1,0 +1,6 @@
+[
+ {id:1760100000001,type:'habit',title:'วิ่งเช้า',subject:'',time:'05:30',timeEnd:'06:00',track:'timer',target:30,unitName:'นาที',repeat:{unit:'day',every:1,days:[]},start:'2026-10-01',end:'',skip:{},rem:[{min:10}],log:{'2026-10-09':20}},
+ {id:1760100000002,type:'task',title:'การบ้านฟิสิกส์',subject:'ฟิสิกส์',time:'18:00',timeEnd:'',track:'check',target:1,unitName:'',repeat:{unit:'none',every:1,days:[]},start:'2026-10-12',end:'',skip:{},rem:[],log:{}},
+ {id:1760100000003,type:'event',title:'ประชุมชมรม',subject:'',time:'15:00',timeEnd:'16:30',track:'check',target:1,unitName:'',repeat:{unit:'week',every:2,days:[1,3]},start:'2026-10-14',end:'2026-12-01',skip:{},rem:[{min:5}],log:{}},
+ {id:1760100000004,type:'class',title:'เคมี',subject:'เคมี',time:'10:30',timeEnd:'11:20',track:'count',target:3,unitName:'ข้อ',repeat:{unit:'week',every:1,days:[1]},start:'2026-05-15',end:'',skip:{},rem:[],log:{'2026-10-06':2}},
+ {id:1760100000005,type:'habit',title:'อ่านหนังสือ',subject:'',time:'21:00',timeEnd:'',track:'count',target:10,unitName:'หน้า',repeat:{unit:'day',every:1,days:[]},start:'2026-10-01',end:'',skip:{},rem:[],log:{'2026-10-10':4}}]
