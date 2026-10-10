@@ -107,7 +107,7 @@ const SupaAuth=api=>{const c=SupaCore(api);let pending=null;/* pending: ที�
   async signOut(){supaClear()},
   async deleteAccount(pw){await c.raw('/auth/account',{method:'DELETE',body:{password:pw},token:await c.token()});supaClear()}}};
 const SupaAdapter=api=>{const c=SupaCore(api);const call=async(path,o={})=>{const t=await c.token();const r=await fetch(`${api}${path}`,{...o,headers:{'Content-Type':'application/json',Authorization:'Bearer '+t}});if(!r.ok)throw new Error(`${o.method||'GET'} ${path} ${r.status}`);return r};
- return {async load(){return {items:(await (await call('/items')).json()).items}},
+ return {token:c.token,async load(){return {items:(await (await call('/items')).json()).items}},
   async apply({upserts,removes}){await Promise.all([...upserts.map(it=>call(`/items/${it.id}`,{method:'PUT',body:JSON.stringify(it)})),...removes.map(id=>call(`/items/${id}`,{method:'DELETE'}))])}}};
 const SUPA_API=typeof window!=='undefined'&&window.EVAREL_API?String(window.EVAREL_API).replace(/\/+$/,'')+'/api':null;
 const Auth=SUPA_API?SupaAuth(SUPA_API):MockAuth;if(SUPA_API)Repo=SupaAdapter(SUPA_API);
@@ -624,15 +624,35 @@ document.addEventListener('focusout',e=>{const t=e.target;if(t.name!=='email'||!
 /* ===== ซิงก์ข้ามอุปกรณ์ (เปิดเฉพาะโหมด Supabase) =====
    ต้นฉบับอยู่ที่ Supabase: ดึงใหม่เมื่อกลับมาเห็นหน้าจอ/กลับมาออนไลน์ และทุก LIVE_MS ขณะเปิดอยู่
    เทียบลายนิ้วมือข้อมูลก่อน ไม่เปลี่ยนก็ไม่วาดซ้ำ; ข้ามรอบถ้ากำลังบันทึก (PENDING) หรือกำลังพิมพ์ในฟอร์ม */
-const LIVE_MS=12000;let liveT=null,liveBusy=false;
+let liveBusy=false;
 const sigOf=items=>{const t=JSON.stringify([...items].sort((a,b)=>a.id-b.id).map(i=>[i.id,i.type,i.title,i.subject,i.time,i.timeEnd,i.track,i.target,i.unitName,i.repeat,i.start,i.end,i.log,i.skip,i.rem]));let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return h+':'+items.length};
 const typingNow=()=>{const a=document.activeElement;return !!a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!!a.closest('#sheet,#dialog,#page')};
 async function liveRefresh(){if(!SUPA_API||liveBusy||PENDING>0||UI.auth.status!=='in'||UI.loading||document.hidden||typingNow())return;liveBusy=true;
  try{const r=await Repo.load();if(PENDING>0)return;if(sigOf(r.items)!==sigOf(S.items)){S.items=r.items;render()}}
  catch(err){console.warn('live refresh',err)}finally{liveBusy=false}}
-function startLiveSync(){if(!SUPA_API)return;stopLiveSync();liveT=setInterval(liveRefresh,LIVE_MS)}
-function stopLiveSync(){clearInterval(liveT);liveT=null}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveRefresh()});window.addEventListener('online',liveRefresh);window.addEventListener('focus',liveRefresh);
+/* Realtime: ฟังการเปลี่ยนแปลงตาราง items ผ่าน WebSocket ของ Supabase (กุญแจสาธารณะ + JWT ของผู้ใช้ → RLS กรองให้เห็นเฉพาะของตัวเอง)
+   เหตุการณ์ที่มาแค่ "กระตุ้น" liveRefresh (ดึงแล้วเทียบลายนิ้วมือ) → ตรรกะตัดสินความถูกต้องอยู่จุดเดียว ไม่มีข้อมูลซ้ำ/ตีกันกับการแก้ในเครื่อง */
+const SUPA_PK='sb_publishable_91KcKgK7ujojcnIynSoXyQ_8f85NcBL';
+let rtWs=null,rtOn=false,rtRef=0,rtHb=null,rtRetry=0,rtTimer=null,rtDeb=null,rtTokT=null;
+const rtSend=(topic,event,payload)=>{try{rtWs&&rtWs.readyState===1&&rtWs.send(JSON.stringify({topic,event,payload,ref:String(++rtRef)}))}catch(e){console.warn('rt send',e)}};
+const rtKick=()=>{clearTimeout(rtDeb);rtDeb=setTimeout(liveRefresh,250)};
+async function rtConnect(){if(!rtOn||rtWs)return;let tok;try{tok=await Repo.token()}catch(e){rtSchedule();return}
+ let ws;try{ws=new WebSocket(SUPA_HOST.replace('https','wss')+'/realtime/v1/websocket?apikey='+SUPA_PK+'&vsn=1.0.0')}catch(e){rtSchedule();return}
+ rtWs=ws;
+ ws.onopen=()=>{rtSend('realtime:evarel-items','phx_join',{config:{broadcast:{self:false},presence:{key:''},postgres_changes:[{event:'*',schema:'public',table:'items'}]},access_token:tok});
+  clearInterval(rtHb);rtHb=setInterval(()=>rtSend('phoenix','heartbeat',{}),25000);
+  clearInterval(rtTokT);rtTokT=setInterval(async()=>{try{rtSend('realtime:evarel-items','access_token',{access_token:await Repo.token()})}catch(e){console.warn('rt token',e)}},10*60*1000)};
+ ws.onmessage=m=>{let d;try{d=JSON.parse(m.data)}catch(e){return}
+  if(d.event==='phx_reply'&&d.topic==='realtime:evarel-items'){if(d.payload?.status==='ok'){rtRetry=0;rtKick()}else{console.warn('rt join',d.payload);try{ws.close()}catch(e){}}}
+  else if(d.event==='postgres_changes')rtKick();
+  else if(d.event==='phx_error'||d.event==='phx_close'){try{ws.close()}catch(e){}}};
+ ws.onclose=()=>{if(rtWs===ws)rtWs=null;clearInterval(rtHb);clearInterval(rtTokT);rtSchedule()};
+ ws.onerror=()=>{try{ws.close()}catch(e){}}}
+function rtSchedule(){if(!rtOn||rtTimer)return;const wait=Math.min(30000,1000*Math.pow(2,rtRetry++));rtTimer=setTimeout(()=>{rtTimer=null;rtConnect()},wait)}
+function startLiveSync(){if(!SUPA_API)return;stopLiveSync();rtOn=true;rtRetry=0;rtConnect()}
+function stopLiveSync(){rtOn=false;clearTimeout(rtTimer);rtTimer=null;clearTimeout(rtDeb);clearInterval(rtHb);clearInterval(rtTokT);const w=rtWs;rtWs=null;if(w){w.onclose=null;try{w.close()}catch(e){}}}
+const rtResume=()=>{if(rtOn&&!rtWs){clearTimeout(rtTimer);rtTimer=null;rtRetry=0;rtConnect()}liveRefresh()};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)rtResume()});window.addEventListener('online',rtResume);window.addEventListener('focus',rtResume);
 async function enterApp(user){USER=user;await loadApp();startLiveSync()}
 async function doSignOut(del){stopLiveSync();try{if(del)await Auth.deleteAccount();else await Auth.signOut()}catch(err){console.warn('signout',err);toast(AU_MSG.unknown);return}
  while(LAYERS.length)popLayer();closePop();destroyCal('main');destroyCal('habit');DETAIL=null;S.items=[];CH={list:[],cur:null};TM=null;USER=null;
@@ -647,7 +667,7 @@ const errorView=()=>`<div class="ev-error">${empty('x','โหลดข้อม
 function countUp(el){const to=+el.dataset.count,t0=performance.now(),dur=700;const f=t=>{const k=Math.min(1,(t-t0)/dur);el.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
 function setBar(el,v){const k=el.dataset.kind;if(k==='arc')el.style.strokeDashoffset=ARC_C*(1-v/100);else if(k==='col')el.style.transform=`scaleY(${v/100})`;else if(el.closest('.ev-prog'))el.style.setProperty('--w',v);else el.style.width=v+'%'}
 function growBars(root,anim){root.querySelectorAll('[data-to]').forEach(el=>{const to=Math.max(0,Math.min(100,+el.dataset.to||0)),k=el.dataset.k||'';setBar(el,anim?0:(UI.lastW[k]??0));UI.lastW[k]=to;requestAnimationFrame(()=>requestAnimationFrame(()=>setBar(el,to)))})}
-function render(){document.body.dataset.auth=UI.auth.status==='in'?'in':'out';if(UI.auth.status!=='in'){renderAuthRoot();return}$('auth').hidden=true;$('auth').dataset.screen='';
+function render(){document.body.dataset.auth=UI.auth.status==='in'?'in':'out';if(UI.auth.status!=='in'){$('app').innerHTML='';$('sheet')&&($('sheet').innerHTML='');renderAuthRoot();return}$('auth').hidden=true;$('auth').dataset.screen='';
  const root=$('app'),anim=UI.animate&&!UI.loading;root.innerHTML=UI.loading?skeleton():UI.error?errorView():VIEWS[UI.tab]();
  root.classList.toggle('ev-enter',anim);[...root.children].forEach((c,i)=>c.style.setProperty('--i',i));
  root.querySelectorAll('[data-count]').forEach(el=>anim?countUp(el):(el.textContent=el.dataset.count));
