@@ -42,15 +42,30 @@ export const TOOL_DEFS = [
   fn('log_set', 'บันทึกค่ารายวันของกิจวัตร', { id: { type: 'number' }, date: { type: 'string' }, value: { type: 'number' } }, ['id', 'date', 'value']),
   fn('skip_set', 'ข้ามกิจวัตรในวันนั้น', { id: { type: 'number' }, date: { type: 'string' } }, ['id', 'date']),
   fn('reminder_set', 'ตั้งเตือนล่วงหน้าของรายการ (นาที)', { id: { type: 'number' }, rem: { type: 'array', items: { type: 'number' } } }, ['id', 'rem']),
+  fn('memory_save', 'จำข้อเท็จจริงถาวรเกี่ยวกับผู้ใช้ข้ามแชท (ความชอบ นิสัย ข้อมูลพื้นฐานที่ไม่เปลี่ยนบ่อย) ใช้เมื่อผู้ใช้สั่งให้จำ หรือบอกข้อเท็จจริงถาวรชัดเจน ห้ามใช้จดงาน/นัด/กิจวัตร (ใช้ item_create) ห้ามจดสิ่งชั่วคราว', { fact: { type: 'string', description: 'ข้อเท็จจริงหนึ่งข้อ ประโยคเดียว ขึ้นต้นด้วย "ผู้ใช้"' } }, ['fact']),
+  fn('memory_forget', 'ลืมข้อเท็จจริงที่เคยจำ ใช้เมื่อผู้ใช้สั่งให้ลืม/ลบความจำ ระบุ id จากบล็อก <ความจำเกี่ยวกับผู้ใช้> เท่านั้น ห้ามเดา id', { id: { type: 'string', description: 'id ขึ้นต้นด้วย fact-' } }, ['id']),
 ];
 
-export const WRITE_TOOLS = new Set(['item_create', 'item_update', 'item_delete', 'log_set', 'skip_set', 'reminder_set']);
+export const WRITE_TOOLS = new Set(['item_create', 'item_update', 'item_delete', 'log_set', 'skip_set', 'reminder_set', 'memory_save', 'memory_forget']);
+export const MEMORY_TOOLS = new Set(['memory_save', 'memory_forget']);
 
 export type Item = Record<string, any>;
 export type Check = { ok: true; args: Record<string, any> } | { ok: false; error: string };
 
 /* ตรวจพารามิเตอร์ด้วยโค้ด — ไม่เชื่อ LLM; คืนเฉพาะ key ที่อนุญาต */
-export function validate(name: string, raw: any, items: Item[]): Check {
+
+/* memory_save ต้องมาจากผู้ใช้ "สั่งให้จำ" หรือ "บอกข้อเท็จจริง" เท่านั้น — คำถามล้วน (ฉันชอบอะไร? ฉันเรียนชั้นไหน?) ห้ามกลายเป็นความจำ
+   บั๊กจริงที่เจอ 10 ต.ค. 2026: ไม่มีความจำที่เกี่ยวข้อง -> โมเดลเสนอจำ "ผู้ใช้เรียนระดับไม่ระบุ" ตัดสินในโค้ดไม่ฝากโมเดล */
+const REMEMBER_CMD = /จำ(ไว้|ด้วย|เลย|หน่อย|ว่า|เอาไว้)|อย่าลืม(ว่า)?|remember|note that|บันทึก(ไว้)?(ว่า)?ว่า/i;
+const QUESTION = /\?|ไหม|มั้ย|หรือเปล่า|หรือไม่|อะไร|ที่ไหน|เมื่อไหร่|เมื่อไร|ยังไง|อย่างไร|กี่(โมง|ครั้ง|วัน|ชั่วโมง|นาที|คน|ชิ้น|อัน)?|ใคร|ทำไม|ไหน|แค่ไหน|เท่าไหร่|เท่าไร|หรอ$|เหรอ$/;
+export function memorySaveAllowed(userText: string): boolean {
+  const t = String(userText || '').trim();
+  if (!t) return false;
+  if (REMEMBER_CMD.test(t)) return true; // สั่งจำชัดเจน ผ่านเสมอ
+  return !QUESTION.test(t);              // ไม่ใช่คำสั่งจำ: ผ่านเฉพาะที่ไม่ใช่คำถาม (เช่น "ฉันตื่น 5 โมงทุกวัน")
+}
+
+export function validate(name: string, raw: any, items: Item[], memFacts: { id: string; fact: string }[] = [], userText?: string): Check {
   const a = raw && typeof raw === 'object' ? raw : {};
   const need = (cond: boolean, msg: string): Check | null => (cond ? null : { ok: false, error: msg });
   const idOk = (): Check | null => {
@@ -108,6 +123,18 @@ export function validate(name: string, raw: any, items: Item[]): Check {
       e = idOk() || need(Array.isArray(a.rem), 'rem ต้องเป็น array');
       if (e) return e;
       return { ok: true, args: { id: Number(a.id), rem: [...new Set((a.rem as any[]).map(Number).filter((m) => m >= 0 && m <= 10080))].slice(0, 5) } };
+    case 'memory_save': {
+      if (userText !== undefined && !memorySaveAllowed(userText)) return { ok: false, error: 'ผู้ใช้ถามคำถาม ไม่ได้สั่งให้จำ ห้ามเสนอจำ ให้ตอบคำถามจากข้อมูลที่มี หรือบอกว่าไม่ทราบ' };
+      const fact = String(a.fact ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+      if (fact.length < 4) return { ok: false, error: 'fact สั้นเกินไป' };
+      return { ok: true, args: { fact } };
+    }
+    case 'memory_forget': {
+      const id = String(a.id ?? '');
+      const hit = memFacts.find((m) => m.id === id);
+      if (!hit) return { ok: false, error: 'ไม่พบความจำ id นี้ในบล็อกความจำ (ห้ามเดา id)' };
+      return { ok: true, args: { id, fact: hit.fact } };
+    }
     case 'item_query': {
       if (a.date !== undefined && !YMD.test(a.date)) return { ok: false, error: 'date ต้องเป็น YYYY-MM-DD' };
       if (a.type !== undefined && !TYPES.includes(a.type)) return { ok: false, error: 'type ไม่ถูกต้อง' };

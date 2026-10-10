@@ -325,7 +325,7 @@ function tmFinish(){const it=find(TM.id),mins=Math.round(tmMs()/60000),date=TM.d
 
 /* ===== MODULE: views/ai (จำลอง — ของจริงต้องเรียกผ่าน Server เท่านั้น) + ประวัติแชท ===== */
 const CHATS_KEY='evarel-chats-v3',SUGG=['สรุปวันนี้ให้หน่อย','เพิ่มงาน การบ้านอังกฤษ พรุ่งนี้ 18:00','เพิ่มกิจวัตร ยืดเส้น 07:00'],AI_TITLE_MAX=28,AI_REPLY_MS=750;
-let CH={list:[],cur:null};const loadChats=()=>{try{const j=JSON.parse(localStorage.getItem(uk(CHATS_KEY)));return j&&Array.isArray(j.list)?j:{list:[],cur:null}}catch(e){console.warn('chat load',e);return {list:[],cur:null}}};
+let CH={list:[],cur:null};const loadChats=()=>{try{const j=JSON.parse(localStorage.getItem(uk(CHATS_KEY)));if(!(j&&Array.isArray(j.list)))return {list:[],cur:null};for(const ch of j.list)for(const m of ch.msgs||[])for(const c of m.cards||[])if(c.status==='saving')c.status='failed';return j}catch(e){console.warn('chat load',e);return {list:[],cur:null}}};
 const saveCH=()=>{try{localStorage.setItem(uk(CHATS_KEY),JSON.stringify(CH))}catch(e){console.warn('chat save',e)}};
 const curChat=()=>CH.list.find(c=>c.id===CH.cur)||null;
 function aiReply(t){const m=t.match(/เพิ่ม(งาน|กิจวัตร|กิจกรรม|นัด)\s*(.*)/);
@@ -336,8 +336,9 @@ function aiReply(t){const m=t.match(/เพิ่ม(งาน|กิจวั�
  const tr=onDate(TODAY).filter(tracked),done=tr.filter(it=>isDone(it,TODAY)).length,nx=onDate(TODAY).find(it=>it.time&&it.time>=nowHM()&&!(tracked(it)&&isDone(it,TODAY))),od=overdue().length;
  return {text:`วันนี้ทำแล้ว ${done} จาก ${tr.length} รายการ${od?`\nมีงานค้าง ${od} งาน ควรเคลียร์ก่อน`:''}${nx?`\nถัดไป: ${nx.title} (${nx.time})`:'\nไม่มีรายการเหลือตามเวลาแล้ว'}`}}
 const cardsHTML=(m,i)=>(m.cards||[]).map((c,k)=>{const st=c.status,del=c.tool==='item_delete';
- return `<div class="ev-card" data-tone="soft" style="max-width:88%;animation:rise .35s var(--ease)"><b>${esc(c.summary||AI_TOOL_LABEL[c.tool]||c.tool)}</b>
- ${st==='pending'?`<div class="ev-row" style="margin-top:12px;gap:8px"><button class="${del?'ev-btn-solid-danger':'ev-btn-primary'} ev-btn-sm" data-act="ai-cok" data-id="${i}:${k}">ยืนยัน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-cno" data-id="${i}:${k}">ยกเลิก</button></div>`:`<span class="ev-chip" style="display:inline-block;margin-top:8px">${st==='added'?'ทำแล้ว':st==='failed'?'ไม่สำเร็จ':'ยกเลิกแล้ว'}</span>`}</div>`}).join('');
+ const mem=isMemTool(c.tool);
+ return `<div class="ev-card" data-tone="soft" style="max-width:88%;animation:rise .35s var(--ease)"><b>${esc(c.summary||AI_TOOL_LABEL[c.tool]||c.tool)}</b>${mem&&c.sensitive&&st==='pending'?'<p class="ev-sub" style="margin-top:6px">ข้อมูลนี้ค่อนข้างส่วนตัว การจำไว้จะส่งไปเก็บที่บริการความจำภายนอก</p>':''}
+ ${st==='pending'?`<div class="ev-row" style="margin-top:12px;gap:8px"><button class="${del?'ev-btn-solid-danger':'ev-btn-primary'} ev-btn-sm" data-act="ai-cok" data-id="${i}:${k}">${mem?(c.tool==='memory_save'?'จำไว้':'ลืม'):'ยืนยัน'}</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-cno" data-id="${i}:${k}">ยกเลิก</button></div>`:`<span class="ev-chip" style="display:inline-block;margin-top:8px">${st==='saving'?'กำลังบันทึก...':st==='added'?(mem?(c.tool==='memory_save'?'จำแล้ว':'ลืมแล้ว'):'ทำแล้ว'):st==='failed'?'ไม่สำเร็จ':'ยกเลิกแล้ว'}</span>`}</div>`}).join('');
 const cardHTML=(m,i)=>{if(m.cards)return cardsHTML(m,i);if(!m.card)return '';const p=m.card.p,st=m.card.status;return `<div class="ev-card" data-tone="soft" style="max-width:88%;animation:rise .35s var(--ease)"><b>${esc(p.title)}</b><p class="ev-sub">${TYPES[p.type]} · ${fmtDate(p.start)}${p.time?` · ${p.time}`:''}</p>
  ${st==='pending'?`<div class="ev-row" style="margin-top:12px;gap:8px"><button class="ev-btn-primary ev-btn-sm" data-act="ai-ok" data-id="${i}">ยืนยัน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-edit" data-id="${i}">แก้ก่อน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-no" data-id="${i}">ยกเลิก</button></div>`:`<span class="ev-chip" style="display:inline-block;margin-top:8px">${st==='added'?'เพิ่มแล้ว':'ยกเลิกแล้ว'}</span>`}</div>`};
 const AI_MARK='<svg class="ev-ai-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="5" fill="currentColor" stroke="none"/></svg>';
@@ -362,7 +363,7 @@ function openAI(){openPage(`<div class="ev-page-bar"><button class="ev-icon-btn"
 /* ===== MODULE: services/ai-live (AI จริง: เฉพาะโหมด Supabase) =====
    เซิร์ฟเวอร์คืน "ข้อเสนอ" ไม่เขียนฐานข้อมูล -> แอปแสดงการ์ดยืนยัน -> กดยืนยันแล้วเขียนผ่าน commit() เดิม (undo + sync + realtime ฟรี) */
 const AI_LIVE=()=>!!SUPA_API;
-const AI_TOOL_LABEL={item_create:'เพิ่ม',item_update:'แก้ไข',item_delete:'ลบ',log_set:'บันทึก',skip_set:'ข้าม',reminder_set:'ตั้งเตือน'};
+const AI_TOOL_LABEL={item_create:'เพิ่ม',item_update:'แก้ไข',item_delete:'ลบ',log_set:'บันทึก',skip_set:'ข้าม',reminder_set:'ตั้งเตือน',memory_save:'จำไว้',memory_forget:'ลืม'};
 async function aiAsk(text,history){
  const t=await Repo.token(),ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
  try{const r=await fetch(`${SUPA_API}/ai/chat`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({text,history})});
@@ -370,11 +371,18 @@ async function aiAsk(text,history){
   if(r.status===503)return {text:j.text||'ตอนนี้ AI ใช้งานไม่ได้ชั่วคราว ลองใหม่ภายหลังนะ',cards:[]};
   if(r.status===401)throw new Error('auth');
   if(!r.ok)return {text:'ขออภัย เกิดข้อผิดพลาด ลองใหม่อีกครั้งนะ',cards:[]};
-  return {text:j.text||'',cards:(j.proposals||[]).map(p=>({status:'pending',tool:p.tool,args:p.args,summary:p.summary}))}}
+  return {text:j.text||'',cards:(j.proposals||[]).map(p=>({status:'pending',tool:p.tool,args:p.args,summary:p.summary,...(p.sensitive?{sensitive:true}:{})}))}}
  catch(e){if(e.name==='AbortError')return {text:'AI ตอบช้าเกินไป ลองใหม่อีกครั้งนะ',cards:[]};return {text:'เชื่อมต่อ AI ไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่นะ',cards:[]}}
  finally{clearTimeout(tm)}}
 /* รูปแบบ rem ของแอปคือ [{k:'before',m:นาที}] ส่วนเซิร์ฟเวอร์ส่งเป็นตัวเลขนาที -> แปลงที่นี่ที่เดียว */
 const remFrom=a=>(Array.isArray(a)?a:[]).map(Number).filter(m=>m>=0).map(m=>({k:'before',m}));
+/* ความจำระยะยาว (MemoryLake ผ่าน Worker): ไม่ใช่ข้อมูลใน S.items จึงไม่ผ่าน commit() — เรียกเครือข่ายหลังผู้ใช้กดยืนยันเท่านั้น */
+const isMemTool=t=>t==='memory_save'||t==='memory_forget';
+async function memCall(c){const t=await Repo.token(),ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),15000);
+ try{const a=c.args||{},body=c.tool==='memory_save'?{op:'save',fact:a.fact,...(c.sensitive?{confirmSensitive:true}:{})}:{op:'forget',id:a.id};
+  const r=await fetch(`${SUPA_API}/ai/memory`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify(body)});
+  let j={};try{j=await r.json()}catch(e){}return r.ok&&j.ok!==false}
+ catch(e){return false}finally{clearTimeout(tm)}}
 function applyProposal(c){const a=c.args||{};
  switch(c.tool){
   case 'item_create':{const o={...a,id:Date.now()+Math.floor(Math.random()*1000)};if(a.rem)o.rem=remFrom(a.rem);if(!o.start)o.start=TODAY;if(!o.track)o.track=(o.type==='habit'||o.type==='task')?'check':'none';if(o.type==='habit'&&!a.repeat)o.repeat=daily();S.items.push(mk(o));return true}
@@ -540,6 +548,7 @@ const ACTIONS={
  'ai-q':id=>{if(id.startsWith('สรุป')){aiSend(id)}else{const t=$('aiText');t.value=id;aiAutosize();t.focus()}return NR},
  'ai-ok':id=>{const m=aiMsg(id);if(!m?.card)return NR;const p=m.card.p;commit('',()=>S.items.push(mk({...p,id:Date.now()})),true);m.card.status='added';saveCH();aiRefresh();return NR},
  'ai-cok':id=>{const [i,k]=String(id).split(':').map(Number),c=aiMsg(i)?.cards?.[k];if(!c||c.status!=='pending')return NR;
+  if(isMemTool(c.tool)){c.status='saving';aiRefresh();memCall(c).then(ok=>{c.status=ok?'added':'failed';if(!ok)toast('บันทึกความจำไม่สำเร็จ ลองใหม่ภายหลังนะ');saveCH();aiRefresh()});return NR}
   let ok=false;commit(c.tool==='item_delete'?'ลบแล้ว':'',()=>{ok=applyProposal(c)},c.tool!=='item_delete');
   c.status=ok?'added':'failed';if(!ok)toast('ไม่พบรายการนี้แล้ว');saveCH();aiRefresh();return NR},
  'ai-cno':id=>{const [i,k]=String(id).split(':').map(Number),c=aiMsg(i)?.cards?.[k];if(c&&c.status==='pending'){c.status='cancelled';saveCH();aiRefresh()}return NR},
