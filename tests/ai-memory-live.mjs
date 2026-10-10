@@ -12,7 +12,7 @@ try{
  await p.goto(APP);await p.waitForTimeout(1200);
  await p.click('[data-act="au-go"][data-id="login"]').catch(()=>{});await p.waitForTimeout(300);await p.fill('#f-email',em);await p.fill('#f-password',pw);await p.click('button[type="submit"]');
  await p.waitForFunction(()=>document.body.dataset.auth==='in',null,{timeout:25000});await p.waitForTimeout(2000);
- t('0 SW v29 ทำงานบนเว็บจริง',await p.evaluate(async()=>{const ks=await caches.keys();return ks.some(k=>/v29-mem/.test(k))}).catch(()=>false));
+ const want=(await (await fetch(APP+'sw.js')).text()).match(/evarel-v[0-9a-z-]+/)[0];t('0 SW บนเว็บจริงทำงานตรงกับที่เสิร์ฟ ('+want+')',await p.evaluate(async w=>{const ks=await caches.keys();return ks.some(k=>k.includes(w))},want).catch(()=>false));
  await p.click('[data-act="ai"]');await p.waitForTimeout(900);
  const send=async txt=>{await p.fill('#aiText',txt);await p.click('.ev-send');await p.waitForTimeout(500)};
  // 1) สั่งให้จำ

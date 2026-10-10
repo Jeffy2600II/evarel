@@ -2,7 +2,7 @@
    Flow: เปิดแอป -> มีเซสชันที่ใช้ได้ ? ใช้เลย : แสดงหน้าล็อกอิน -> ตั้ง Repo เป็น HttpAdapter -> (ถ้าเซิร์ฟเวอร์ว่าง + เครื่องมีข้อมูล) ถามนำเข้า
    ความปลอดภัย: ไม่มีกุญแจ Supabase ในเบราว์เซอร์ — ล็อกอินผ่าน Worker; เก็บ token ใน localStorage (แอปส่วนตัวบนเครื่องเดียว) */
 (() => {
-  const API = (window.EVAREL_API || 'https://evarel-api-test.nontakorn2600.workers.dev') + '/api';
+  const API = (window.EVAREL_API || 'https://evarel-api-b-test.nontakorn2600.workers.dev') + '/api';
   const SESS_KEY = 'evarel-session-v1';
   const IMPORTED_KEY = 'evarel-imported-v1';
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

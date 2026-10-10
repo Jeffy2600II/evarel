@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v29-mem';
+const VERSION = 'evarel-v30-authfix';
 const CORE = [
   './',
   './index.html',
