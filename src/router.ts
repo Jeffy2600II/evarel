@@ -8,8 +8,11 @@ import {
   handleGetLogs,
   handlePostLog
 } from './systems/items/routes';
+import { handleLogin, handleRefresh } from './systems/auth/routes';
 
-export async function handleRequest(request: Request, env: Env): Promise<Response> {
+export async function handleRequest(request: Request, baseEnv: Env): Promise<Response> {
+  /* สำเนา env ต่อคำขอ: เก็บ origin ของคำขอนี้ไว้ใช้ตอบ CORS (ไม่แชร์สถานะข้ามคำขอ) */
+  const env: Env = { ...baseEnv, __origin: request.headers.get('Origin') };
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method.toUpperCase();
@@ -18,9 +21,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
-      headers: getCorsHeaders(env)
+      headers: getCorsHeaders(env, request.headers.get('Origin'))
     });
   }
+
+  if (path === '/api/auth/login' && method === 'POST') return handleLogin(request, env);
+  if (path === '/api/auth/refresh' && method === 'POST') return handleRefresh(request, env);
 
   if (path === '/api/items' && method === 'GET') {
     return handleGetItems(request, env);

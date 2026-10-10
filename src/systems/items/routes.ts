@@ -7,10 +7,14 @@ export interface Env {
   [key: string]: any;
 }
 
-export function getCorsHeaders(env: Env): Record<string, string> {
-  const origin = env.ALLOWED_ORIGIN || 'https://evarel-poc.nontakorn2600.workers.dev';
+export function getCorsHeaders(env: Env, requestOrigin?: string | null): Record<string, string> {
+  /* ALLOWED_ORIGIN = รายการ origin คั่นด้วยจุลภาค ตรวจแบบตรงตัวเท่านั้น (ไม่มี wildcard)
+     ถ้า origin ของคำขออยู่ในรายการ -> สะท้อนกลับ; ไม่อยู่ -> ใช้ origin แรกในรายการ (เบราว์เซอร์จะปฏิเสธเอง) */
+  const list = (env.ALLOWED_ORIGIN || 'https://evarel-poc.nontakorn2600.workers.dev').split(',').map(x => x.trim()).filter(Boolean);
+  const origin = requestOrigin && list.includes(requestOrigin) ? requestOrigin : list[0];
   return {
     'Access-Control-Allow-Origin': origin,
+    'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'Authorization, Content-Type',
     'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
     'Access-Control-Max-Age': '86400',
@@ -22,7 +26,7 @@ export function jsonResponse(data: any, status = 200, env?: Env): Response {
     'Content-Type': 'application/json',
   };
   if (env) {
-    Object.assign(headers, getCorsHeaders(env));
+    Object.assign(headers, getCorsHeaders(env, (env as any).__origin));
   }
   return new Response(JSON.stringify(data), { status, headers });
 }
