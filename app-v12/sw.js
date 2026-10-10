@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v19-auth';
+const VERSION = 'evarel-v21-auth';
 const CORE = [
   './',
   './index.html',
@@ -48,6 +48,11 @@ self.addEventListener('fetch', e => {
     const oldText = hit && /\.(js|css|html)$|\/$/.test(url.pathname) ? await hit.clone().text().catch(() => null) : null;
     const net = fetch(url.href, { cache: 'no-cache', credentials: 'same-origin' }).then(async res => {
       if (!res.ok) return res;
+      /* response ที่ผ่าน redirect (เช่น /index.html -> /) เบราว์เซอร์ห้ามใช้ตอบ navigation จากแคช (ERR_FAILED) จึงไม่เก็บ */
+      if (res.redirected) {
+        /* ล้าง redirected flag: ห่อ body เป็น Response ใหม่ แล้วค่อยส่งให้หน้า (ถ้าส่งตัวเดิม เบราว์เซอร์ปฏิเสธ navigation) */
+        return new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers });
+      }
       /* เขียนแคชก่อนเสมอ แล้วค่อยเทียบ ถ้าเทียบพังก็ไม่กระทบการอัปเดต */
       const copy = res.clone();
       await cache.put(e.request, res.clone());
@@ -57,7 +62,7 @@ self.addEventListener('fetch', e => {
       return res;
     }).catch(err => { console.warn('SW refresh fail', url.pathname, err); return null; });
     net.finally(() => bg());
-    if (hit) return hit;
+    if (hit && !hit.redirected) return hit;
     const fresh = await net;
     return fresh || (await cache.match('./index.html')) || new Response('ออฟไลน์', { status: 503 });
   })().catch(err => { bg(); throw err; }));
