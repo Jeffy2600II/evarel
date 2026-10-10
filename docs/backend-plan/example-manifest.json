@@ -1,0 +1,306 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "system": "items",
+  "purpose": "จัดการรายการประจำวัน (habit, task, count, timer) บันทึกประวัติการทำ (log) และติดตามความคืบหน้าสถิติ",
+  "entities": [
+    {
+      "name": "Item",
+      "fields": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ (Date.now()) — ซ้ำข้ามผู้ใช้ได้ คีย์จริงคือ (user_id,id)"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "habit",
+            "task",
+            "event",
+            "class"
+          ],
+          "description": "ประเภทรายการ (4 ชนิด)"
+        },
+        "title": {
+          "type": "string",
+          "description": "ชื่อรายการ"
+        },
+        "subject": {
+          "type": "string",
+          "description": "หมวดหมู่หรือวิชาที่เกี่ยวข้อง"
+        },
+        "time": {
+          "type": "string",
+          "description": "เวลาเริ่มต้น (HH:mm)"
+        },
+        "timeEnd": {
+          "type": "string",
+          "description": "เวลาสิ้นสุด (HH:mm)"
+        },
+        "track": {
+          "type": "string",
+          "enum": [
+            "check",
+            "count",
+            "timer"
+          ],
+          "description": "โหมดติดตาม: check=ติ๊ก, count=นับครั้ง, timer=จับเวลา"
+        },
+        "target": {
+          "type": "number",
+          "description": "เป้าหมายการทำต่อวัน"
+        },
+        "unitName": {
+          "type": "string",
+          "description": "หน่วยนับสำหรับรายการประเภท count หรือ timer"
+        },
+        "repeat": {
+          "type": "object",
+          "properties": {
+            "unit": {
+              "type": "string",
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ]
+            },
+            "every": {
+              "type": "number"
+            },
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "start": {
+          "type": "string",
+          "description": "วันที่เริ่มรายการ (YYYY-MM-DD)"
+        },
+        "end": {
+          "type": "string",
+          "description": "วันที่สิ้นสุดรายการ (YYYY-MM-DD)"
+        },
+        "skip": {
+          "type": "object",
+          "description": "แมปวันที่ที่ข้ามการทำ { 'YYYY-MM-DD': true }"
+        },
+        "rem": {
+          "type": "array",
+          "description": "รายการการตั้งแจ้งเตือน"
+        }
+      }
+    },
+    {
+      "name": "ItemLog",
+      "fields": {
+        "id": {
+          "type": "string",
+          "description": "UUID ของประวัติการทำ"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "รหัสผู้ใช้งานใน Supabase Auth"
+        },
+        "item_id": {
+          "type": "number",
+          "description": "รหัสรายการที่อ้างอิง"
+        },
+        "date": {
+          "type": "string",
+          "description": "วันที่ทำรายการ (YYYY-MM-DD)"
+        },
+        "value": {
+          "type": "number",
+          "description": "ค่าที่บันทึกได้ (1 สำหรับ check, จำนวนนับสำหรับ count/timer)"
+        }
+      }
+    }
+  ],
+  "actions": [
+    {
+      "name": "check",
+      "description": "ติ๊กทำแล้วหรือยกเลิกการทำ สำหรับรายการประเภท habit หรือ task ในวันที่ระบุ",
+      "params": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ"
+        },
+        "ds": {
+          "type": "string",
+          "description": "วันที่เลือก (YYYY-MM-DD)"
+        }
+      },
+      "sideEffects": [
+        "อัปเดต S.items[id].log[ds]",
+        "ส่ง haptic feedback"
+      ],
+      "tool": false,
+      "toolNote": "ปุ่มของ UI — agent ใช้เครื่องมือระดับข้อมูล (item_*/log_set/skip_set) แทน"
+    },
+    {
+      "name": "inc",
+      "description": "เพิ่มค่าบันทึกสำหรับรายการประเภท count ขึ้น 1 หน่วย",
+      "params": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ"
+        },
+        "ds": {
+          "type": "string",
+          "description": "วันที่เลือก (YYYY-MM-DD)"
+        }
+      },
+      "sideEffects": [
+        "อัปเดต S.items[id].log[ds] เพิ่มขึ้น 1"
+      ],
+      "tool": false,
+      "toolNote": "ปุ่มของ UI — agent ใช้เครื่องมือระดับข้อมูล (item_*/log_set/skip_set) แทน"
+    },
+    {
+      "name": "m-skip",
+      "description": "ทำเครื่องหมายข้ามรายการในวันที่ระบุ",
+      "params": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ"
+        },
+        "ds": {
+          "type": "string",
+          "description": "วันที่เลือก (YYYY-MM-DD)"
+        }
+      },
+      "sideEffects": [
+        "กำหนด S.items[id].skip[ds] = true"
+      ],
+      "tool": false,
+      "toolNote": "ปุ่มของ UI — agent ใช้เครื่องมือระดับข้อมูล (item_*/log_set/skip_set) แทน"
+    },
+    {
+      "name": "m-unskip",
+      "description": "ยกเลิกการข้ามรายการในวันที่ระบุ",
+      "params": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ"
+        },
+        "ds": {
+          "type": "string",
+          "description": "วันที่เลือก (YYYY-MM-DD)"
+        }
+      },
+      "sideEffects": [
+        "ลบฟิลด์ S.items[id].skip[ds]"
+      ],
+      "tool": false,
+      "toolNote": "ปุ่มของ UI — agent ใช้เครื่องมือระดับข้อมูล (item_*/log_set/skip_set) แทน"
+    },
+    {
+      "name": "m-delask",
+      "description": "ลบรายการออกจากระบบหลังผ่านการยืนยัน",
+      "params": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ"
+        }
+      },
+      "sideEffects": [
+        "ลบรายการออกจาก S.items",
+        "เก็บบันทึกสำหรับการ Undo"
+      ],
+      "tool": false,
+      "toolNote": "ปุ่มของ UI — agent ใช้เครื่องมือระดับข้อมูล (item_*/log_set/skip_set) แทน"
+    },
+    {
+      "name": "tstart",
+      "description": "เริ่มต้นจับเวลา Focus Mode สำหรับรายการประเภท timer",
+      "params": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ"
+        }
+      },
+      "sideEffects": [
+        "ตั้งค่า TIMER.activeId",
+        "เริ่มตัวนับเวลาสตรีม"
+      ],
+      "tool": false,
+      "toolNote": "ปุ่มของ UI — agent ใช้เครื่องมือระดับข้อมูล (item_*/log_set/skip_set) แทน"
+    },
+    {
+      "name": "tpause",
+      "description": "หยุดจับเวลาชั่วคราว",
+      "params": {
+        "id": {
+          "type": "number",
+          "description": "รหัสรายการ"
+        }
+      },
+      "sideEffects": [
+        "สะสมเวลาลง TIMER.acc"
+      ],
+      "tool": false,
+      "toolNote": "ปุ่มของ UI — agent ใช้เครื่องมือระดับข้อมูล (item_*/log_set/skip_set) แทน"
+    },
+    {
+      "name": "add",
+      "description": "เปิดฟอร์มหรือสร้างรายการใหม่ลงในระบบ",
+      "params": {
+        "item": {
+          "type": "object",
+          "description": "ข้อมูลรายการใหม่"
+        }
+      },
+      "sideEffects": [
+        "เพิ่มรายการลงใน S.items"
+      ],
+      "tool": true
+    }
+  ],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/items",
+      "description": "ดึงรายการทั้งหมดของผู้ใช้งานที่ล็อกอิน"
+    },
+    {
+      "method": "PUT",
+      "path": "/items/:id",
+      "description": "สร้างหรืออัปเดตข้อมูลรายการ"
+    },
+    {
+      "method": "DELETE",
+      "path": "/items/:id",
+      "description": "ลบรายการออกจากระบบ"
+    },
+    {
+      "method": "POST",
+      "path": "/items/:id/logs",
+      "description": "บันทึกหรือแก้ไขประวัติการทำรายการ (log) ประจำวันที่"
+    },
+    {
+      "method": "GET",
+      "path": "/items/logs",
+      "description": "ค้นหาและเรียกดูประวัติการทำรายการตามช่วงเวลา"
+    }
+  ],
+  "events": [
+    "item.created",
+    "item.updated",
+    "item.deleted",
+    "item.log_updated"
+  ],
+  "invariants": [
+    "id ของ Item ต้องเป็นค่าที่ไม่ซ้ำกันในระบบ",
+    "ห้ามบันทึก log สำหรับวันที่ในอนาคต (isFuture(ds) == false)",
+    "ค่า value ของ count และ timer log ต้องมีค่ามากกว่าหรือเท่ากับ 0 เสมอ"
+  ],
+  "tests": [
+    "tests/items.mjs",
+    "tests/occurrences.mjs",
+    "tests/done-status.mjs"
+  ],
+  "_reviewNote": "ตรวจโดย coordinator 10 ต.ค. 2026: ตัด action ที่ไม่มีใน ACTIONS จริง: dec, tstop; แก้ type เป็น habit|task|event|class; ตั้ง tool:false สำหรับปุ่ม UI"
+}
