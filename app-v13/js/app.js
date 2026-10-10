@@ -370,6 +370,7 @@ async function aiAsk(text,history){
   let j={};try{j=await r.json()}catch(e){}
   if(r.status===503)return {text:j.text||'ตอนนี้ AI ใช้งานไม่ได้ชั่วคราว ลองใหม่ภายหลังนะ',cards:[]};
   if(r.status===401)throw new Error('auth');
+  if(r.status===429)return {text:j.text||'วันนี้ใช้ AI ครบโควตาแล้ว โควตาจะรีเซ็ตตอนเที่ยงคืน',cards:[]};
   if(!r.ok)return {text:'ขออภัย เกิดข้อผิดพลาด ลองใหม่อีกครั้งนะ',cards:[]};
   return {text:j.text||'',cards:(j.proposals||[]).map(p=>({status:'pending',tool:p.tool,args:p.args,summary:p.summary,...(p.sensitive?{sensitive:true}:{})}))}}
  catch(e){if(e.name==='AbortError')return {text:'AI ตอบช้าเกินไป ลองใหม่อีกครั้งนะ',cards:[]};return {text:'เชื่อมต่อ AI ไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่นะ',cards:[]}}
