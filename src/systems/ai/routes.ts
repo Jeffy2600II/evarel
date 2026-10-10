@@ -2,6 +2,7 @@ import { Env, errorResponse, jsonResponse } from '../items/routes';
 import { extractBearer, verifyJWT } from '../../shared/auth';
 import { runAgent } from './agent';
 import { recall, saveFacts, forgetFact, isSensitive, Fact } from './memory';
+import { reserve, settle, limitMessage } from './quota';
 
 const MAX_TEXT = 1000;
 
@@ -23,25 +24,37 @@ export async function handleAiChat(request: Request, env: Env): Promise<Response
     ? body.history.filter((h: any) => h && (h.who === 'u' || h.who === 'a') && typeof h.text === 'string').slice(-8)
     : [];
 
-  const f: typeof fetch = (env as any).CUSTOM_FETCH || globalThis.fetch;
-  const base = env.SUPABASE_URL.replace(/\/+$/, '');
-  // อ่านรายการด้วย JWT ของผู้ใช้เอง -> RLS กันข้อมูลคนอื่นให้อีกชั้น
-  const h = { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${token}`, Accept: 'application/json' };
-  const [ir, memFacts] = await Promise.all([
-    f(`${base}/rest/v1/items?select=*&limit=300`, { headers: h }),
-    recall(env as any, userId, text), // ล้ม/ช้า = คืน [] ไม่ขวางแชท (timeout 2.5 วินาทีในตัว)
-  ]);
-  if (!ir.ok) return errorResponse('Failed to load items', 502, env);
-  const rows: any[] = await ir.json();
-  const items = rows.map((r) => ({ id: Number(r.id), type: r.type, title: r.title, subject: r.subject, time: r.time, timeEnd: r.timeEnd, track: r.track, target: r.target, repeat: r.repeat, start: r.start, end: r.end, log: {} as Record<string, number> }));
+  // โควตา (ADR 0002): จองก่อนทำงานหนักใดๆ เต็ม = 429 ทันทีโดยไม่เรียก LLM/MemoryLake/ฐานข้อมูลเลย
+  const q = await reserve(env as any, userId);
+  if (!q.allowed) {
+    const res = jsonResponse({ error: 'quota_exceeded', reason: q.reason, text: limitMessage(q), proposals: [], quota: { reason: q.reason, resetAt: q.resetAt, used: q.calls, limit: q.limits.calls } }, 429, env);
+    res.headers.set('Retry-After', String(Math.max(1, Math.ceil((+new Date(q.resetAt) - Date.now()) / 1000))));
+    return res;
+  }
 
   try {
+    const f: typeof fetch = (env as any).CUSTOM_FETCH || globalThis.fetch;
+    const base = env.SUPABASE_URL.replace(/\/+$/, '');
+    // อ่านรายการด้วย JWT ของผู้ใช้เอง -> RLS กันข้อมูลคนอื่นให้อีกชั้น
+    const h = { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${token}`, Accept: 'application/json' };
+    const [ir, memFacts] = await Promise.all([
+      f(`${base}/rest/v1/items?select=*&limit=300`, { headers: h }),
+      recall(env as any, userId, text), // ล้ม/ช้า = คืน [] ไม่ขวางแชท (timeout 2.5 วินาทีในตัว)
+    ]);
+    if (!ir.ok) throw new Error('items_unavailable');
+    const rows: any[] = await ir.json();
+    const items = rows.map((r) => ({ id: Number(r.id), type: r.type, title: r.title, subject: r.subject, time: r.time, timeEnd: r.timeEnd, track: r.track, target: r.target, repeat: r.repeat, start: r.start, end: r.end, log: {} as Record<string, number> }));
+
     const out = await runAgent(env, text, history, items, new Date(), memFacts);
     // memory_save ที่โดนตัวกรองอ่อนไหว: ติดป้ายให้แอปเตือนก่อนกดยืนยัน (ข้อมูลจะออกไปบริการภายนอก)
     const proposals = out.proposals.map((p) => (p.tool === 'memory_save' && isSensitive(String(p.args.fact)) ? { ...p, sensitive: true } : p));
-    return jsonResponse({ text: out.text, proposals, usage: { rounds: out.rounds, tokens: out.tokens, provider: out.provider, memory: memFacts.length } }, 200, env);
+    if (q.metered) await settle(env as any, userId, q.day, out.tokens, false);
+    return jsonResponse({ text: out.text, proposals, usage: { rounds: out.rounds, tokens: out.tokens, provider: out.provider, memory: memFacts.length }, quota: q.metered ? { used: q.calls, limit: q.limits.calls } : undefined }, 200, env);
   } catch (e: any) {
     const m = String(e?.message || '');
+    // ระบบล่ม (ไม่ใช่ความผิดผู้ใช้) = คืนโควตา 1 ครั้ง
+    if (q.metered) await settle(env as any, userId, q.day, 0, true);
+    if (m === 'items_unavailable') return errorResponse('Failed to load items', 502, env);
     if (m.startsWith('llm_unavailable')) return jsonResponse({ error: 'ai_unavailable', text: 'ตอนนี้ AI ใช้งานไม่ได้ชั่วคราว (โควตาเต็มหรือระบบขัดข้อง) ลองใหม่ภายหลังนะ', proposals: [] }, 503, env);
     return errorResponse('ai_error', 500, env);
   }
