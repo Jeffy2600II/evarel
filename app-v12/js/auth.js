@@ -108,9 +108,16 @@
   /* ---------- ประตูก่อนบูต: app.js เรียก window.EvarelGate() ก่อน Repo.load() ---------- */
   window.EvarelGate = async () => {
     let s = loadSess();
-    if (s) { try { await getToken(); s = loadSess(); } catch { s = null; } }
+    if (s) {
+      try { await getToken(); s = loadSess(); }
+      catch (e) {
+        /* รีเฟรชล้มเหลว: ถ้าเพราะเครือข่าย (TypeError ไม่ใช่ 401/400) คงเซสชันไว้ ให้เปิดแอปจากแคชได้
+           ถ้าเซิร์ฟเวอร์ปฏิเสธจริง (getToken ล้าง session แล้ว) loadSess() จะคืน null -> ไปหน้าล็อกอิน */
+        s = loadSess();
+      }
+    }
     if (!s) s = await showLogin();
-    const adapter = window.EvarelHttpAdapter(API, getToken, () => { clearSess(); showLogin('เซสชันหมดอายุ').then(() => location.reload()); });
+    const adapter = window.EvarelHttpAdapter(API, getToken, () => { clearSess(); showLogin('เซสชันหมดอายุ').then(() => location.reload()); }, () => s.user.id);
     window.EvarelRepo.use(adapter);
     await maybeImport(adapter, s.user.id);
   };

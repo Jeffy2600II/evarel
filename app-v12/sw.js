@@ -3,12 +3,14 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v18';
+const VERSION = 'evarel-v19-auth';
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
   './styles/app.css',
+  './js/http-adapter.js',
+  './js/auth.js',
   './js/app.js',
   './js/route.js',
   './js/boot.js',
