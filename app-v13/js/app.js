@@ -335,7 +335,10 @@ function aiReply(t){const m=t.match(/เพิ่ม(งาน|กิจวั�
   return {text:'เข้าใจแล้ว ตรวจรายละเอียดก่อนเพิ่มนะ',card:{status:'pending',p:{type,title,start:date,time,repeat:type==='habit'?daily():{unit:'none',every:1,days:[]},track:type==='habit'||type==='task'?'check':'none'}}}}
  const tr=onDate(TODAY).filter(tracked),done=tr.filter(it=>isDone(it,TODAY)).length,nx=onDate(TODAY).find(it=>it.time&&it.time>=nowHM()&&!(tracked(it)&&isDone(it,TODAY))),od=overdue().length;
  return {text:`วันนี้ทำแล้ว ${done} จาก ${tr.length} รายการ${od?`\nมีงานค้าง ${od} งาน ควรเคลียร์ก่อน`:''}${nx?`\nถัดไป: ${nx.title} (${nx.time})`:'\nไม่มีรายการเหลือตามเวลาแล้ว'}`}}
-const cardHTML=(m,i)=>{if(!m.card)return '';const p=m.card.p,st=m.card.status;return `<div class="ev-card" data-tone="soft" style="max-width:88%;animation:rise .35s var(--ease)"><b>${esc(p.title)}</b><p class="ev-sub">${TYPES[p.type]} · ${fmtDate(p.start)}${p.time?` · ${p.time}`:''}</p>
+const cardsHTML=(m,i)=>(m.cards||[]).map((c,k)=>{const st=c.status,del=c.tool==='item_delete';
+ return `<div class="ev-card" data-tone="soft" style="max-width:88%;animation:rise .35s var(--ease)"><b>${esc(c.summary||AI_TOOL_LABEL[c.tool]||c.tool)}</b>
+ ${st==='pending'?`<div class="ev-row" style="margin-top:12px;gap:8px"><button class="${del?'ev-btn-solid-danger':'ev-btn-primary'} ev-btn-sm" data-act="ai-cok" data-id="${i}:${k}">ยืนยัน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-cno" data-id="${i}:${k}">ยกเลิก</button></div>`:`<span class="ev-chip" style="display:inline-block;margin-top:8px">${st==='added'?'ทำแล้ว':st==='failed'?'ไม่สำเร็จ':'ยกเลิกแล้ว'}</span>`}</div>`}).join('');
+const cardHTML=(m,i)=>{if(m.cards)return cardsHTML(m,i);if(!m.card)return '';const p=m.card.p,st=m.card.status;return `<div class="ev-card" data-tone="soft" style="max-width:88%;animation:rise .35s var(--ease)"><b>${esc(p.title)}</b><p class="ev-sub">${TYPES[p.type]} · ${fmtDate(p.start)}${p.time?` · ${p.time}`:''}</p>
  ${st==='pending'?`<div class="ev-row" style="margin-top:12px;gap:8px"><button class="ev-btn-primary ev-btn-sm" data-act="ai-ok" data-id="${i}">ยืนยัน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-edit" data-id="${i}">แก้ก่อน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-no" data-id="${i}">ยกเลิก</button></div>`:`<span class="ev-chip" style="display:inline-block;margin-top:8px">${st==='added'?'เพิ่มแล้ว':'ยกเลิกแล้ว'}</span>`}</div>`};
 const AI_MARK='<svg class="ev-ai-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="5" fill="currentColor" stroke="none"/></svg>';
 function aiBodyHTML(){const c=curChat();if(!c||!c.msgs.length)return `<div class="ev-ai-hello">${AI_MARK}<h3>มีอะไรให้ช่วยวันนี้</h3><div class="ev-sugg">${SUGG.map(s=>`<button data-act="sugg" data-id="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>`;
@@ -356,10 +359,37 @@ function openAI(){openPage(`<div class="ev-page-bar"><button class="ev-icon-btn"
  <form class="ev-composer" id="aiForm"><textarea id="aiText" rows="1" placeholder="ถาม AI…" aria-label="ข้อความถึง AI"></textarea><div class="ev-composer-bar"><button type="button" class="ev-plus" data-act="ai-plus" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวช่วยพิมพ์">${icon('plus')}</button><button class="ev-send" data-empty="true" aria-label="ส่ง">${icon('send')}</button></div></form>
  <div class="ev-drawer-scrim" id="dScrim" data-open="false" data-act="ai-hist"></div>
  <aside class="ev-drawer" id="drawer" data-open="false" aria-label="ประวัติแชท"><div class="ev-drawer-head"><h2>Evarel AI</h2><label class="ev-search">${icon('search')}<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท"></label></div><div class="ev-drawer-list" id="drawerList"></div><div class="ev-drawer-foot"><button class="ev-avatar" data-act="settings" aria-label="ตั้งค่า">${initial()}</button><button class="ev-btn-ink" data-act="ai-new">${icon('plus')}แชทใหม่</button></div></aside>`);aiRefresh()}
+/* ===== MODULE: services/ai-live (AI จริง: เฉพาะโหมด Supabase) =====
+   เซิร์ฟเวอร์คืน "ข้อเสนอ" ไม่เขียนฐานข้อมูล -> แอปแสดงการ์ดยืนยัน -> กดยืนยันแล้วเขียนผ่าน commit() เดิม (undo + sync + realtime ฟรี) */
+const AI_LIVE=()=>!!SUPA_API;
+const AI_TOOL_LABEL={item_create:'เพิ่ม',item_update:'แก้ไข',item_delete:'ลบ',log_set:'บันทึก',skip_set:'ข้าม',reminder_set:'ตั้งเตือน'};
+async function aiAsk(text,history){
+ const t=await Repo.token(),ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
+ try{const r=await fetch(`${SUPA_API}/ai/chat`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({text,history})});
+  let j={};try{j=await r.json()}catch(e){}
+  if(r.status===503)return {text:j.text||'ตอนนี้ AI ใช้งานไม่ได้ชั่วคราว ลองใหม่ภายหลังนะ',cards:[]};
+  if(r.status===401)throw new Error('auth');
+  if(!r.ok)return {text:'ขออภัย เกิดข้อผิดพลาด ลองใหม่อีกครั้งนะ',cards:[]};
+  return {text:j.text||'',cards:(j.proposals||[]).map(p=>({status:'pending',tool:p.tool,args:p.args,summary:p.summary}))}}
+ catch(e){if(e.name==='AbortError')return {text:'AI ตอบช้าเกินไป ลองใหม่อีกครั้งนะ',cards:[]};return {text:'เชื่อมต่อ AI ไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่นะ',cards:[]}}
+ finally{clearTimeout(tm)}}
+/* รูปแบบ rem ของแอปคือ [{k:'before',m:นาที}] ส่วนเซิร์ฟเวอร์ส่งเป็นตัวเลขนาที -> แปลงที่นี่ที่เดียว */
+const remFrom=a=>(Array.isArray(a)?a:[]).map(Number).filter(m=>m>=0).map(m=>({k:'before',m}));
+function applyProposal(c){const a=c.args||{};
+ switch(c.tool){
+  case 'item_create':{const o={...a,id:Date.now()+Math.floor(Math.random()*1000)};if(a.rem)o.rem=remFrom(a.rem);if(!o.start)o.start=TODAY;if(!o.track)o.track=(o.type==='habit'||o.type==='task')?'check':'none';if(o.type==='habit'&&!a.repeat)o.repeat=daily();S.items.push(mk(o));return true}
+  case 'item_update':{const it=find(a.id);if(!it)return false;const {id,rem,...rest}=a;Object.assign(it,rest);if(rem)it.rem=remFrom(rem);return true}
+  case 'item_delete':{const i=S.items.findIndex(x=>x.id==a.id);if(i<0)return false;S.items.splice(i,1);return true}
+  case 'log_set':{const it=find(a.id);if(!it)return false;it.log[a.date]=a.value;return true}
+  case 'skip_set':{const it=find(a.id);if(!it)return false;it.skip[a.date]=true;return true}
+  case 'reminder_set':{const it=find(a.id);if(!it)return false;it.rem=remFrom(a.rem);return true}}
+ return false}
 function aiSend(text){text=text.trim();if(!text)return;let c=curChat();
  if(!c){c={id:Date.now(),title:text.slice(0,AI_TITLE_MAX),t:Date.now(),msgs:[]};CH.list.unshift(c);CH.cur=c.id}
+ const hist=c.msgs.filter(m=>m.text).map(m=>({who:m.who,text:m.text})).slice(-8);
  c.msgs.push({who:'u',text});c.t=Date.now();saveCH();aiRefresh(true);
  $('aiBody').firstElementChild?.insertAdjacentHTML('beforeend','<div class="ev-bubble-ai ev-typing" id="typing"><i></i><i></i><i></i></div>');$('aiScroll').scrollTo({top:$('aiScroll').scrollHeight,behavior:'smooth'});
+ if(AI_LIVE()){aiAsk(text,hist).then(r=>{c.msgs.push({who:'a',text:r.text,...(r.cards.length?{cards:r.cards}:{})});c.t=Date.now();saveCH();if(CH.cur===c.id)aiRefresh(true)}).catch(()=>{c.msgs.push({who:'a',text:'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง'});saveCH();if(CH.cur===c.id)aiRefresh(true)});return}
  setTimeout(()=>{const r=aiReply(text);c.msgs.push({who:'a',...r});c.t=Date.now();saveCH();if(CH.cur===c.id)aiRefresh(true)},AI_REPLY_MS)}
 
 /* ===== MODULE: views/settings ===== */
@@ -509,6 +539,10 @@ const ACTIONS={
  'ai-plus':(id,el)=>{openPop(el,aiPlusItems,{prefer:'up',align:'left'});return NR},
  'ai-q':id=>{if(id.startsWith('สรุป')){aiSend(id)}else{const t=$('aiText');t.value=id;aiAutosize();t.focus()}return NR},
  'ai-ok':id=>{const m=aiMsg(id);if(!m?.card)return NR;const p=m.card.p;commit('',()=>S.items.push(mk({...p,id:Date.now()})),true);m.card.status='added';saveCH();aiRefresh();return NR},
+ 'ai-cok':id=>{const [i,k]=String(id).split(':').map(Number),c=aiMsg(i)?.cards?.[k];if(!c||c.status!=='pending')return NR;
+  let ok=false;commit(c.tool==='item_delete'?'ลบแล้ว':'',()=>{ok=applyProposal(c)},c.tool!=='item_delete');
+  c.status=ok?'added':'failed';if(!ok)toast('ไม่พบรายการนี้แล้ว');saveCH();aiRefresh();return NR},
+ 'ai-cno':id=>{const [i,k]=String(id).split(':').map(Number),c=aiMsg(i)?.cards?.[k];if(c&&c.status==='pending'){c.status='cancelled';saveCH();aiRefresh()}return NR},
  'ai-no':id=>{const m=aiMsg(id);if(m?.card){m.card.status='cancelled';saveCH();aiRefresh()}return NR},
  'ai-edit':id=>{const p=aiMsg(id)?.card?.p;if(!p)return NR;openForm(p.type);Object.assign(D,{title:p.title,start:p.start,time:p.time});renderForm();return NR},
  tstart:id=>{const it=find(id);if(!it||isFuture(UI.fdate)){toast('ยังไม่ถึงวัน จึงจับเวลาไม่ได้');return NR}TM={id:it.id,date:UI.fdate,startedAt:Date.now(),acc:0};saveTM();refreshFocus();haptic();return NR},
