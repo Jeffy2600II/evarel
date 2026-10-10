@@ -136,3 +136,20 @@ export async function handleDeleteAccount(request: Request, env: Env): Promise<R
   const del = await f(env)(`${base(env)}/auth/v1/admin/users/${claims.sub}`, { method: 'DELETE', headers: admin(env) });
   return del.ok ? jsonResponse({ status: 'deleted' }, 200, env) : fail('unknown', 502, env);
 }
+
+/* รับ token ที่ Supabase ส่งกลับหลัง Google: ตรวจลายเซ็น/ผู้ออก/หมดอายุก่อน ไม่เชื่อ token จาก URL เฉยๆ
+   แล้วคืนรูปแบบ session เดียวกับ login (แอปจะเก็บและรีเฟรชเอง) */
+export async function handleOAuthSession(request: Request, env: Env): Promise<Response> {
+  const b = await body(request);
+  if (!b || typeof b.access_token !== 'string' || !b.access_token) return fail('unverified', 400, env);
+  let claims: any;
+  try { claims = await verifyJWT(b.access_token, env as any); } catch { return fail('unverified', 401, env); }
+  /* verifyJWT ผ่านแล้ว (ลายเซ็น+ผู้ออก+หมดอายุ) จึงอ่าน payload ส่วนที่เหลือได้อย่างปลอดภัย; verifyJWT คืนแค่ sub/email */
+  let full: any = {};
+  try { const seg = b.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); const bin = atob(seg + '='.repeat((4 - seg.length % 4) % 4)); full = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)))); } catch { /* ใช้ค่าว่าง */ }
+  const meta = full.user_metadata || {};
+  return jsonResponse({
+    access_token: b.access_token, refresh_token: String(b.refresh_token || ''), expires_at: Number(b.expires_at) || Number(full.exp) || 0,
+    user: { id: claims.sub, email: claims.email, name: String(meta.name || meta.full_name || '').slice(0, 60), provider: full.app_metadata?.provider || 'google' },
+  }, 200, env);
+}

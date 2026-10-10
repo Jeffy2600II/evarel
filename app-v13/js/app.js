@@ -88,11 +88,16 @@ const SupaCore=api=>{
   refreshing=refreshing||raw('/auth/refresh',{method:'POST',body:{refresh_token:s.refresh_token}}).then(n=>{supaSave(n);return n}).catch(e=>{if(e.status===401||e.status===400)supaClear();throw e}).finally(()=>{refreshing=null});return (await refreshing).access_token};
  const userOf=s=>({id:s.user.id,name:s.user.name||(s.user.email||'').split('@')[0],email:s.user.email,provider:s.user.provider||'email'});
  return {raw,token,userOf}};
+const SUPA_HOST='https://vdbmwmmsfrgpaauzspup.supabase.co';
 const SupaAuth=api=>{const c=SupaCore(api);let pending=null;/* pending: ที่รอยืนยันรหัส 6 หลัก {email,type} */
  const take=s=>{supaSave({access_token:s.access_token,refresh_token:s.refresh_token,expires_at:s.expires_at,user:s.user});return c.userOf(s)};
  return {
   async session(){const s=supaLoad();if(!s)return null;try{await c.token();return c.userOf(supaLoad())}catch(err){console.warn('session',err);return null}},
-  async signInGoogle(){throw authErr('unknown')/* รอเปิด Google provider: ยังไม่มี Client ID */},
+  /* Google: เบราว์เซอร์ไปหน้า Google ผ่าน Supabase แล้วกลับมาพร้อม token ใน URL hash (ดู takeOAuthReturn) */
+  async signInGoogle(){location.assign(`${SUPA_HOST}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(location.origin+location.pathname)}`);return new Promise(()=>{})},
+  async takeOAuthReturn(){const h=new URLSearchParams(location.hash.replace(/^#/,''));if(!h.get('access_token'))return null;
+   history.replaceState(null,'',location.pathname+location.search);/* ล้าง token ออกจาก URL ทันที */
+   const j=await c.raw('/auth/session',{method:'POST',body:{access_token:h.get('access_token'),refresh_token:h.get('refresh_token')||'',expires_at:+h.get('expires_at')||0}});return take(j)},
   async signInEmail(email,pw){return take(await c.raw('/auth/login',{method:'POST',body:{email,password:pw}}))},
   async signUp({name,email,password}){const j=await c.raw('/auth/signup',{method:'POST',body:{name,email,password}});if(j.status==='verify'){pending={email,type:'signup'};throw authErr('verify_needed')}return take(j)},
   async sendReset(email){await c.raw('/auth/forgot',{method:'POST',body:{email}});pending={email,type:'recovery'}},
@@ -648,6 +653,6 @@ function claimLegacyData(){try{if(!USER||localStorage.getItem('evarel-legacy-cla
 async function loadApp(){claimLegacyData();UI.auth.status='in';CH=loadChats();TM=loadTM();UI.loading=true;UI.error=null;render();
  try{const [s]=await Promise.all([Repo.load(),wait(SKELETON_MS)]);S.items=s.items}catch(err){console.warn('load failed',err);UI.error=err}
  UI.loading=false;UI.animate=true;render()}
-async function boot(){UI.auth.status='loading';render();try{USER=await Auth.session()}catch(err){console.warn('session failed',err);USER=null}
+async function boot(){UI.auth.status='loading';render();try{USER=(Auth.takeOAuthReturn&&await Auth.takeOAuthReturn())||await Auth.session()}catch(err){console.warn('session failed',err);USER=null}
  if(!USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp()}
 boot();

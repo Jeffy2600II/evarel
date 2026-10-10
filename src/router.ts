@@ -9,7 +9,7 @@ import {
   handlePostLog
 } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
-import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount } from './systems/auth/account';
+import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession } from './systems/auth/account';
 
 export async function handleRequest(request: Request, baseEnv: Env): Promise<Response> {
   /* สำเนา env ต่อคำขอ: เก็บ origin ของคำขอนี้ไว้ใช้ตอบ CORS (ไม่แชร์สถานะข้ามคำขอ) */
@@ -33,6 +33,7 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
   if (path === '/api/auth/verify' && method === 'POST') return handleVerify(request, env);
   if (path === '/api/auth/resend' && method === 'POST') return handleResend(request, env);
   if (path === '/api/auth/password' && method === 'POST') return handleSetPassword(request, env);
+  if (path === '/api/auth/session' && method === 'POST') return handleOAuthSession(request, env);
   if (path === '/api/auth/account' && method === 'DELETE') return handleDeleteAccount(request, env);
 
   if (path === '/api/items' && method === 'GET') {
