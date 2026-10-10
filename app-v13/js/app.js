@@ -154,9 +154,10 @@ function toast(msg,undo){clearTimeout(toastTimer);toastEl.style.setProperty('--t
  toastEl.dataset.open='false';void toastEl.offsetWidth;toastEl.dataset.open='true';toastTimer=setTimeout(()=>{toastEl.dataset.open='false'},TOAST_MS)}
 const clone=x=>JSON.parse(JSON.stringify(x));
 function syncFail(err,restore){console.warn('sync failed',err);restore();render();toast('บันทึกไม่สำเร็จ จึงย้อนค่ากลับให้แล้ว')}
-function commit(msg,fn,quiet){const prev=clone(S.items);fn();const next=clone(S.items);render();
- syncChanges(prev,next).catch(err=>syncFail(err,()=>{S.items=prev}));
- if(!quiet)toast(msg,()=>{S.items=clone(prev);render();syncChanges(next,prev).catch(err=>syncFail(err,()=>{S.items=next}))})}
+let PENDING=0;
+function commit(msg,fn,quiet){const prev=clone(S.items);fn();const next=clone(S.items);render();PENDING++;
+ syncChanges(prev,next).catch(err=>syncFail(err,()=>{S.items=prev})).finally(()=>{PENDING--});
+ if(!quiet)toast(msg,()=>{S.items=clone(prev);render();PENDING++;syncChanges(next,prev).catch(err=>syncFail(err,()=>{S.items=next})).finally(()=>{PENDING--})})}
 
 /* ===== MODULE: ui/layers (sheet · page · lock · focus trap · history · drag) ===== */
 const $=id=>document.getElementById(id),sheet=$('sheet'),scrim=$('scrim'),page=$('page'),dialog=$('dialog'),pop=$('pop');
@@ -220,7 +221,7 @@ function itemRow(it,ds,i,opts={}){const v=val(it,ds),tg=target(it),done=tracked(
 
 /* ===== MODULE: views ===== */
 const VIEWS={
- today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button><button class="ev-btn-ghost ev-btn-block" data-act="seed-demo">ลองด้วยข้อมูลตัวอย่าง</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
+ today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
   const start=addDays(new Date(),-new Date().getDay()+7*UI.weekOff),week=Array.from({length:7},(_,i)=>ymd(addDays(start,i)));
   const nextId=ds===TODAY?(list.find(it=>it.time&&it.time>=nowHM()&&!(tracked(it)&&isDone(it,ds))))?.id:null;const nextIt=list.find(it=>it.id===nextId);let idx=0;
   const groups=PERIODS.map((n,g)=>[n,list.filter(it=>periodOf(it)===g)]).filter(([,l])=>l.length);
@@ -369,8 +370,8 @@ function settingsHTML(){const [st,note]=notifInfo(),total=S.items.reduce((n,it)=
  <section class="ev-card ev-row" style="gap:14px"><span class="ev-avatar" style="width:52px;height:52px;font-size:20px;display:grid">${initial()}</span><div class="grow"><b>${esc(USER?.name||'ผู้ใช้')}</b><p class="ev-sub" style="overflow:hidden;text-overflow:ellipsis">${esc(USER?.email||'')}</p></div><span class="ev-chip">${USER?.provider==='google'?'Google':'อีเมล'}</span></section>
  <section class="ev-card"><b>ธีม</b><div style="margin-top:12px">${seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow())}</div></section>
  <section class="ev-card"><div class="ev-stat"><div><b>การแจ้งเตือน</b><p class="ev-sub">${note}</p></div><span class="ev-chip">${st}</span></div>${'Notification' in window&&Notification.permission==='default'?'<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">อนุญาตการแจ้งเตือน</button>':''}
-  <p class="ev-sub" style="margin-top:12px">ตั้งเวลาเตือนไว้ ${total} รายการ เตือนเฉพาะเวลาที่คุณตั้งเท่านั้น เดโมบันทึกค่าไว้แต่ <b>ยังไม่เด้งจริง</b> ต้องเชื่อมระบบ Push จากฝั่ง Server</p></section>
- <section class="ev-card"><b>ข้อมูลของคุณ</b><p class="ev-sub">ข้อมูลเก็บในเครื่องนี้เท่านั้น ล้างข้อมูลเบราว์เซอร์แล้วจะหาย</p><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="export">ดาวน์โหลดไฟล์สำรอง</button><button class="ev-btn-ghost ev-btn-block" data-act="import">นำเข้าจากไฟล์</button><button class="ev-btn-danger ev-btn-block" data-act="reset-ask">รีเซ็ตข้อมูลทั้งหมด</button></div></section>
+  <p class="ev-sub" style="margin-top:12px">ตั้งเวลาเตือนไว้ ${total} รายการ เตือนเฉพาะเวลาที่คุณตั้งเท่านั้น การแจ้งเตือนแบบเด้งขึ้นเองยังอยู่ระหว่างพัฒนา <b>ตอนนี้ยังไม่เด้งจริง</b> แต่เวลาที่ตั้งไว้ถูกบันทึกกับบัญชีของคุณแล้ว</p></section>
+ <section class="ev-card"><b>ข้อมูลของคุณ</b><p class="ev-sub">${SUPA_API?'รายการ กิจวัตร และบันทึกของคุณเก็บในบัญชี เข้าสู่ระบบจากเครื่องไหนก็เห็นข้อมูลเดียวกัน (ประวัติแชท ธีม และตัวจับเวลายังเก็บในเครื่องนี้)':'ข้อมูลเก็บในเครื่องนี้เท่านั้น ล้างข้อมูลเบราว์เซอร์แล้วจะหาย'}</p><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="export">ดาวน์โหลดไฟล์สำรอง</button><button class="ev-btn-ghost ev-btn-block" data-act="import">นำเข้าจากไฟล์</button><button class="ev-btn-danger ev-btn-block" data-act="reset-ask">ลบรายการทั้งหมด</button></div></section>
  <section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div><input type="file" id="importFile" accept="application/json,.json" hidden></section></div>`}
 function exportData(){const url=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`evarel-backup-${TODAY}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('สร้างไฟล์สำรองแล้ว')}
 function importData(file){const fr=new FileReader();fr.onerror=()=>toast('อ่านไฟล์ไม่สำเร็จ');fr.onload=()=>{try{const j=JSON.parse(fr.result);if(!Array.isArray(j.items))throw new Error('no items');
@@ -485,12 +486,11 @@ const ACTIONS={
  'cal-nav':id=>{FCS.main?.[id]?.();return NR},
  wk:id=>{UI.weekOff+=+id;UI.weekDir=+id},today:()=>{UI.date=TODAY;UI.weekOff=0},
  retry:()=>{boot();return NR},
- 'seed-demo':()=>{commit('',()=>{S.items=seed().items},true);return NR},
  'au-go':id=>{stopCool();UI.auth.screen=id;renderAuthRoot();return NR},
  'au-google':(id,el)=>{authGoogle(el.closest('button'));return NR},
  'au-eye':(id,el)=>{const i=$(id),show=i.type==='password';i.type=show?'text':'password';el.innerHTML=icon(show?'eyeoff':'eye');el.setAttribute('aria-pressed',String(show));el.setAttribute('aria-label',show?'ซ่อนรหัสผ่าน':'แสดงรหัสผ่าน');return NR},
  'au-fixmail':(id)=>{const i=document.querySelector('.ev-authform [name="email"]');if(i)i.value=id;const b=$('e-email');if(b){b.hidden=true;b.innerHTML=''}return NR},
- 'au-terms':id=>{openDialog(`<h3>${id==='terms'?'ข้อกำหนดการใช้งาน':'นโยบายความเป็นส่วนตัว'}</h3><p class="ev-sub">เอกสารตัวอย่างสำหรับเดโม ใส่ข้อความจริงก่อนเปิดใช้งาน</p><div class="ev-dlg-actions" style="grid-template-columns:1fr"><button class="ev-btn-primary" data-act="close">เข้าใจแล้ว</button></div>`);return NR},
+ 'au-terms':id=>{openDialog(`<h3>${id==='terms'?'ข้อกำหนดการใช้งาน':'นโยบายความเป็นส่วนตัว'}</h3><p class="ev-sub">เอกสารฉบับเต็มกำลังจัดทำและจะเผยแพร่ก่อนเปิดให้ผู้อื่นใช้งาน</p><div class="ev-dlg-actions" style="grid-template-columns:1fr"><button class="ev-btn-primary" data-act="close">เข้าใจแล้ว</button></div>`);return NR},
  'au-resend':()=>{resendReset();return NR},
  'au-signout-ask':()=>{confirmDialog({title:'ออกจากระบบ?',msg:'ข้อมูลของคุณยังอยู่ และเข้าสู่ระบบกลับมาได้เสมอ',keep:'อยู่ต่อ',ok:'ออกจากระบบ',tone:'primary',fn:()=>doSignOut(false)});return NR},
  'au-delete-ask':()=>{confirmDialog({title:'ลบบัญชีถาวร?',msg:'บัญชีและข้อมูลทั้งหมดของคุณจะถูกลบ และกู้คืนไม่ได้',ok:'ลบบัญชี',fn:()=>doSignOut(true)});return NR},
@@ -518,7 +518,7 @@ const ACTIONS={
  theme:id=>{applyTheme(id);page.innerHTML=settingsHTML();return NR},
  notify:()=>{Notification.requestPermission().then(()=>{page.innerHTML=settingsHTML()});return NR},
  export:()=>{exportData();return NR},import:()=>{$('importFile').click();return NR},
- 'reset-ask':()=>{confirmDialog({title:'รีเซ็ตข้อมูลทั้งหมด?',msg:'ข้อมูลทั้งหมดจะถูกแทนที่ด้วยข้อมูลตัวอย่าง',ok:'รีเซ็ต',fn:()=>commit('รีเซ็ตเป็นข้อมูลตัวอย่างแล้ว',()=>{Object.assign(S,seed())})});return NR},
+ 'reset-ask':()=>{confirmDialog({title:'ลบรายการทั้งหมด?',msg:'รายการ กิจวัตร และประวัติทั้งหมดของบัญชีนี้จะถูกลบถาวร กู้คืนไม่ได้ (บัญชีและการตั้งค่ายังอยู่)',ok:'ลบทั้งหมด',fn:()=>commit('ลบรายการทั้งหมดแล้ว',()=>{S.items=[]},true)});return NR},
  dopen:id=>{D.open=D.open===id?'':id;sheet.querySelectorAll('.ev-panel').forEach(p=>{p.dataset.open=String(p.dataset.key===D.open)});sheet.querySelectorAll('[data-act="dopen"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===D.open)));
   setTimeout(()=>sheet.querySelector('.ev-panel[data-open="true"]')?.scrollIntoView({block:'nearest',behavior:'smooth'}),320);return NR},
  dunit:id=>{D.unit=id;if(id==='week'&&!D.days.length)D.days=[parse(D.start).getDay()];renderForm();return NR},
@@ -620,8 +620,21 @@ document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t
  if(t.closest('.ev-authform')&&t.getAttribute('aria-invalid')==='true'){t.setAttribute('aria-invalid','false');const b=$('e-'+t.name);if(b){b.hidden=true;b.innerHTML=''}}});
 document.addEventListener('focusout',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const [u,dom]=t.value.trim().split('@'),fix=dom&&MAIL_TYPO[dom.toLowerCase()],b=$('e-email');
  if(fix&&b){b.hidden=false;b.dataset.tone='hint';b.innerHTML=`<span>หมายถึง ${esc(u)}@${fix} หรือเปล่า?</span><button type="button" data-act="au-fixmail" data-id="${esc(u)}@${fix}">ใช้อันนี้</button>`}});
-async function enterApp(user){USER=user;await loadApp()}
-async function doSignOut(del){try{if(del)await Auth.deleteAccount();else await Auth.signOut()}catch(err){console.warn('signout',err);toast(AU_MSG.unknown);return}
+
+/* ===== ซิงก์ข้ามอุปกรณ์ (เปิดเฉพาะโหมด Supabase) =====
+   ต้นฉบับอยู่ที่ Supabase: ดึงใหม่เมื่อกลับมาเห็นหน้าจอ/กลับมาออนไลน์ และทุก LIVE_MS ขณะเปิดอยู่
+   เทียบลายนิ้วมือข้อมูลก่อน ไม่เปลี่ยนก็ไม่วาดซ้ำ; ข้ามรอบถ้ากำลังบันทึก (PENDING) หรือกำลังพิมพ์ในฟอร์ม */
+const LIVE_MS=12000;let liveT=null,liveBusy=false;
+const sigOf=items=>{const t=JSON.stringify([...items].sort((a,b)=>a.id-b.id).map(i=>[i.id,i.type,i.title,i.subject,i.time,i.timeEnd,i.track,i.target,i.unitName,i.repeat,i.start,i.end,i.log,i.skip,i.rem]));let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return h+':'+items.length};
+const typingNow=()=>{const a=document.activeElement;return !!a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!!a.closest('#sheet,#dialog,#page')};
+async function liveRefresh(){if(!SUPA_API||liveBusy||PENDING>0||UI.auth.status!=='in'||UI.loading||document.hidden||typingNow())return;liveBusy=true;
+ try{const r=await Repo.load();if(PENDING>0)return;if(sigOf(r.items)!==sigOf(S.items)){S.items=r.items;render()}}
+ catch(err){console.warn('live refresh',err)}finally{liveBusy=false}}
+function startLiveSync(){if(!SUPA_API)return;stopLiveSync();liveT=setInterval(liveRefresh,LIVE_MS)}
+function stopLiveSync(){clearInterval(liveT);liveT=null}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveRefresh()});window.addEventListener('online',liveRefresh);window.addEventListener('focus',liveRefresh);
+async function enterApp(user){USER=user;await loadApp();startLiveSync()}
+async function doSignOut(del){stopLiveSync();try{if(del)await Auth.deleteAccount();else await Auth.signOut()}catch(err){console.warn('signout',err);toast(AU_MSG.unknown);return}
  while(LAYERS.length)popLayer();closePop();destroyCal('main');destroyCal('habit');DETAIL=null;S.items=[];CH={list:[],cur:null};TM=null;USER=null;
  Object.assign(UI,{tab:'today',date:TODAY,type:'all',weekOff:0,loading:true,error:null});UI.auth={status:'out',screen:'welcome',email:'',cool:0};$('auth').dataset.screen='';render();if(del)toast('ลบบัญชีแล้ว')}
 
@@ -654,5 +667,5 @@ async function loadApp(){claimLegacyData();UI.auth.status='in';CH=loadChats();TM
  try{const [s]=await Promise.all([Repo.load(),wait(SKELETON_MS)]);S.items=s.items}catch(err){console.warn('load failed',err);UI.error=err}
  UI.loading=false;UI.animate=true;render()}
 async function boot(){UI.auth.status='loading';render();try{USER=(Auth.takeOAuthReturn&&await Auth.takeOAuthReturn())||await Auth.session()}catch(err){console.warn('session failed',err);USER=null}
- if(!USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp()}
+ if(!USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp();startLiveSync()}
 boot();
