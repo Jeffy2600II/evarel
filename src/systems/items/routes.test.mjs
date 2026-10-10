@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { execSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 // Build the bundle using esbuild
 const bundlePath = '/tmp/p1-bundle.mjs';
 try {
-  execSync(`/tmp/evarel-deploy/node_modules/.bin/esbuild /app/conversations/6ac77d8632a1ea4bea84b135/evarel/src/index.ts --bundle --format=esm --outfile=${bundlePath}`);
+  execSync(`/tmp/evarel-deploy/node_modules/.bin/esbuild ${path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../index.ts')} --bundle --format=esm --outfile=${bundlePath}`);
 } catch (err) {
   console.error('esbuild compilation failed:', err);
   process.exit(1);
@@ -446,6 +447,21 @@ async function runTests() {
     assert.equal(res.status, 400);
     console.log('✓ 400 on bad type verified');
   }
+
+  // v11 ใช้ track='none' กับคาบเรียน/กิจกรรม — ต้องรับได้ (บั๊กที่เคยทำให้นำเข้าข้อมูลจริงหายครึ่งหนึ่ง)
+  for (const [id, type] of [[203, 'class'], [204, 'event']]) {
+    const req = new Request(`https://evarel-poc.nontakorn2600.workers.dev/api/items/${id}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${user1Token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, type, title: 'no-track', track: 'none' })
+    });
+    const res = await worker.fetch(req, testEnv);
+    assert.equal(res.status, 200, `track none must be accepted for ${type}: ${await res.clone().text()}`);
+    /* ลบทิ้งทันที ให้การทดสอบถัดไปไม่ขึ้นกับข้อมูลที่เพิ่มในกรณีนี้ */
+    const del = await worker.fetch(new Request(`https://evarel-poc.nontakorn2600.workers.dev/api/items/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${user1Token}` } }), testEnv);
+    assert.equal(del.status, 200);
+  }
+  console.log("✓ track='none' accepted for class and event");
 
   // Bad track
   {

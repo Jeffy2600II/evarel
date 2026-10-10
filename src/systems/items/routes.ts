@@ -157,7 +157,7 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
   if (!['habit', 'task', 'event', 'class'].includes(body.type)) {
     return errorResponse('Invalid item type', 400, env);
   }
-  if (!['check', 'count', 'timer'].includes(body.track)) {
+  if (!['check', 'count', 'timer', 'none'].includes(body.track)) {
     return errorResponse('Invalid track mode', 400, env);
   }
   if (typeof body.title !== 'string' || body.title.length > 200) {

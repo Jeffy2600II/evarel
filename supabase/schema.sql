@@ -13,7 +13,7 @@ create table if not exists public.items (
   subject   text   not null default '',
   time      text   not null default '',
   "timeEnd" text   not null default '',
-  track     text   not null default 'check' check (track in ('check','count','timer')),
+  track     text   not null default 'check' check (track in ('check','count','timer','none')),
   target    numeric not null default 1,
   "unitName" text  not null default '',
   repeat    jsonb  not null default '{"unit":"day","every":1,"days":[]}'::jsonb,
