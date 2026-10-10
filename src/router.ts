@@ -9,6 +9,8 @@ import {
   handlePostLog
 } from './systems/items/routes';
 import { handleAiChat, handleAiMemory } from './systems/ai/routes';
+import { RULES, clientIp, emailKey, check, tooMany } from './shared/ratelimit';
+import { jsonResponse } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
 import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession } from './systems/auth/account';
 
@@ -25,6 +27,22 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
       status: 204,
       headers: getCorsHeaders(env, request.headers.get('Origin'))
     });
+  }
+
+
+  /* ด่าน rate limit เฉพาะเส้นทาง auth (ที่คนหัวหมอโจมตี) -- items/AI มีเพดานของตัวเองแล้ว */
+  if (method === 'POST' && path.startsWith('/api/auth/') && path !== '/api/auth/session') {
+    const ip = clientIp(request);
+    let who = '';
+    if (path === '/api/auth/login' || path === '/api/auth/signup' || path === '/api/auth/forgot' || path === '/api/auth/resend') {
+      try { const b: any = await request.clone().json(); if (b && typeof b.email === 'string') who = await emailKey(b.email); } catch { /* body เสีย: ปล่อยให้ handler ตอบ 400 */ }
+    }
+    const checks: [any, string][] = [];
+    if (path === '/api/auth/login') { checks.push([RULES.loginIp, ip]); if (who) checks.push([RULES.loginIpEmail, ip + '|' + who]); }
+    else if (path === '/api/auth/signup') checks.push([RULES.signupIp, ip]);
+    else if (path === '/api/auth/forgot' || path === '/api/auth/resend') { checks.push([RULES.mailIp, ip]); if (who) checks.push([RULES.mailEmail, who]); }
+    else if (path === '/api/auth/refresh') checks.push([RULES.refreshIp, ip]);
+    if (checks.length) { const v = await check(env, checks); if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse); }
   }
 
   if (path === '/api/auth/login' && method === 'POST') return handleLogin(request, env);

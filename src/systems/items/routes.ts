@@ -1,4 +1,5 @@
 import { verifyJWT, extractBearer } from '../../shared/auth';
+import { LIMITS, validateItemShape, readJsonLimited } from './validate';
 
 export interface Env {
   SUPABASE_URL: string;
@@ -132,12 +133,9 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
     return errorResponse('Invalid item ID in path', 400, env);
   }
 
-  let body: any;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse('Invalid JSON body', 400, env);
-  }
+  const parsed = await readJsonLimited(request);
+  if (!parsed.ok) return errorResponse(parsed.msg, parsed.status, env);
+  const body: any = parsed.body;
 
   if (typeof body !== 'object' || body === null || Array.isArray(body)) {
     return errorResponse('Body must be a JSON object', 400, env);
@@ -160,17 +158,14 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
   if (!['check', 'count', 'timer', 'none'].includes(body.track)) {
     return errorResponse('Invalid track mode', 400, env);
   }
-  if (typeof body.title !== 'string' || body.title.length > 200) {
-    return errorResponse('Title must be string <= 200 chars', 400, env);
-  }
-  if (body.target !== undefined && (typeof body.target !== 'number' || !Number.isFinite(body.target))) {
-    return errorResponse('Target must be a finite number', 400, env);
-  }
+  const shapeErr = validateItemShape(body);
+  if (shapeErr) return errorResponse(shapeErr, 400, env);
 
   if (body.log !== undefined) {
     if (typeof body.log !== 'object' || body.log === null || Array.isArray(body.log)) {
       return errorResponse('log must be object', 400, env);
     }
+    if (Object.keys(body.log).length > LIMITS.LOG_KEYS) return errorResponse('log has too many entries', 400, env);
     for (const [d, v] of Object.entries(body.log)) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
         return errorResponse(`Invalid log date: ${d}`, 400, env);
@@ -184,6 +179,19 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
   const fetchImpl = (env as any).CUSTOM_FETCH || globalThis.fetch;
   const baseUrl = env.SUPABASE_URL.replace(/\/+$/, '');
   const headers = getSupabaseHeaders(token, env);
+
+  /* เพดานจำนวน items ต่อคน: ตรวจเฉพาะ id ที่ยังไม่มี (แก้ของเดิมต้องทำได้เสมอ) */
+  try {
+    const exist = await fetchImpl(`${baseUrl}/rest/v1/items?select=id&id=eq.${idNum}&limit=1`, { headers });
+    const isNew = exist.ok ? ((await exist.json()) as any[]).length === 0 : false;
+    if (isNew) {
+      const cnt = await fetchImpl(`${baseUrl}/rest/v1/items?select=id&limit=1`, { headers: { ...headers, Prefer: 'count=exact' } });
+      const total = Number((cnt.headers.get('content-range') || '').split('/')[1]);
+      if (cnt.ok && Number.isFinite(total) && total >= LIMITS.ITEMS_PER_USER) {
+        return errorResponse(`Item limit reached (${LIMITS.ITEMS_PER_USER})`, 403, env);
+      }
+    }
+  } catch { /* นับไม่ได้ = ปล่อยผ่าน (fail-open) ไม่ให้ระบบนับพังแล้วคนจริงใช้ไม่ได้ */ }
 
   const itemDbRow = {
     user_id: user.sub,
@@ -330,12 +338,9 @@ export async function handlePostLog(request: Request, env: Env): Promise<Respons
   const token = extractBearer(request)!;
   const user = auth;
 
-  let body: any;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse('Invalid JSON body', 400, env);
-  }
+  const parsed = await readJsonLimited(request);
+  if (!parsed.ok) return errorResponse(parsed.msg, parsed.status, env);
+  const body: any = parsed.body;
 
   if (typeof body !== 'object' || body === null || Array.isArray(body)) {
     return errorResponse('Body must be a JSON object', 400, env);
@@ -357,7 +362,7 @@ export async function handlePostLog(request: Request, env: Env): Promise<Respons
     return errorResponse('Invalid date format (YYYY-MM-DD required)', 400, env);
   }
 
-  if (typeof body.value !== 'number' || !Number.isFinite(body.value)) {
+  if (typeof body.value !== 'number' || !Number.isFinite(body.value) || Math.abs(body.value) > 1e9) {
     return errorResponse('Value must be a finite number', 400, env);
   }
 

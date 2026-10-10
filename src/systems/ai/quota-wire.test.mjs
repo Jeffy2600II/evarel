@@ -134,4 +134,10 @@ await t('คำตอบ 429 ไม่รั่ว user id/คีย์/รา�
   for (const bad of ['secret-user-id-123', 'svc', 'sb_secret', 'gsk_', 'SUPABASE']) assert.ok(!txt.includes(bad), 'รั่ว: ' + bad);
 });
 globalThis.fetch = originalFetch;
+await t('T6 body AI ใหญ่เกินต้อง 413 ก่อน parse และไม่ถึง LLM/โควตา', async () => {
+  const w = world({ calls: 5 }); globalThis.fetch = w.f;
+  const big = JSON.stringify({ text: 'ก', history: [], pad: 'x'.repeat(200_000) });
+  const r = await R.handleAiChat(new Request('https://w/api/ai/chat', { method: 'POST', headers: { Authorization: 'Bearer ' + (await mkJwt('ubig')), 'Content-Type': 'application/json' }, body: big }), w.env);
+  assert.equal(r.status, 413); assert.equal(w.llm, 0, 'ถึง LLM'); assert.equal(w.rpc.filter(x => x.name === 'ai_usage_take').length, 0, 'กินโควตา');
+});
 console.log(`\n${pass} ผ่าน / ${fail} ตก`); process.exit(fail ? 1 : 0);

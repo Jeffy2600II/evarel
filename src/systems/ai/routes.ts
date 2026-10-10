@@ -3,8 +3,10 @@ import { extractBearer, verifyJWT } from '../../shared/auth';
 import { runAgent } from './agent';
 import { recall, saveFacts, forgetFact, isSensitive, Fact } from './memory';
 import { reserve, settle, limitMessage } from './quota';
+import { readJsonLimited } from '../items/validate';
 
 const MAX_TEXT = 1000;
+const AI_BODY_BYTES = 16 * 1024; /* text 1000 + history 8x600 ~ 6KB; เผื่อ 2 เท่า */
 
 /* POST /api/ai/chat  body: { text, history:[{who,text}] }  -> { text, proposals, usage }
    ไม่เขียนฐานข้อมูลเลย: การเขียนจริงทำโดยแอปหลังผู้ใช้กดยืนยัน ผ่าน PUT /api/items เดิม (RLS ตรวจซ้ำอีกชั้น) */
@@ -16,7 +18,7 @@ export async function handleAiChat(request: Request, env: Env): Promise<Response
   catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
 
   let body: any;
-  try { body = await request.json(); } catch { return errorResponse('Invalid JSON', 400, env); }
+  { const p = await readJsonLimited(request, AI_BODY_BYTES); if (!p.ok) return errorResponse(p.msg, p.status, env); body = p.body; }
   const text = String(body?.text ?? '').trim();
   if (!text) return errorResponse('text required', 400, env);
   if (text.length > MAX_TEXT) return errorResponse('text too long', 413, env);
@@ -69,7 +71,7 @@ export async function handleAiMemory(request: Request, env: Env): Promise<Respon
   try { userId = (await verifyJWT(token, env, (env as any).CUSTOM_FETCH)).sub; }
   catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
   let body: any;
-  try { body = await request.json(); } catch { return errorResponse('Invalid JSON', 400, env); }
+  { const p = await readJsonLimited(request, AI_BODY_BYTES); if (!p.ok) return errorResponse(p.msg, p.status, env); body = p.body; }
 
   if (body?.op === 'save') {
     const fact = String(body.fact ?? '').trim();
