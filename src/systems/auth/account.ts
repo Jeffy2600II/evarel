@@ -85,7 +85,8 @@ export async function handleForgot(request: Request, env: Env): Promise<Response
   const b = await body(request);
   if (!b || typeof b.email !== 'string' || !EMAIL_RE.test(b.email.trim())) return fail('unknown', 400, env);
   const r = await f(env)(`${base(env)}/auth/v1/recover`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: b.email.trim().toLowerCase() }) });
-  if (r.status === 429) return fail('too_many_requests', 429, env);
+  /* ตอบ 200 เหมือนกันเสมอ แม้ถูกจำกัดอัตรา: ถ้าตอบ 429 เฉพาะอีเมลที่มีบัญชี จะเปิดช่องให้เดาว่าอีเมลไหนมีบัญชีอยู่ */
+  void r;
   return jsonResponse({ status: 'sent' }, 200, env);
 }
 
@@ -107,7 +108,7 @@ export async function handleResend(request: Request, env: Env): Promise<Response
   const r = type === 'recovery'
     ? await f(env)(`${base(env)}/auth/v1/recover`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
     : await f(env)(`${base(env)}/auth/v1/resend`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'signup', email }) });
-  if (r.status === 429) return fail('too_many_requests', 429, env);
+  void r; /* ตอบ 200 เสมอ เหตุผลเดียวกับ forgot (กันเดาอีเมล) */
   return jsonResponse({ status: 'sent' }, 200, env);
 }
 

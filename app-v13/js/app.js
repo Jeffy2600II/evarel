@@ -51,7 +51,7 @@ const LocalAdapter={
 const HttpAdapter=base=>{const call=(url,o)=>fetch(url,{credentials:'include',headers:{'Content-Type':'application/json'},...o}).then(r=>{if(!r.ok)throw new Error(`${o?.method||'GET'} ${url} ${r.status}`);return r});
  return {async load(){return {items:(await (await call(`${base}/items`)).json()).items}},
   async apply({upserts,removes}){await Promise.all([...upserts.map(it=>call(`${base}/items/${it.id}`,{method:'PUT',body:JSON.stringify(it)})),...removes.map(id=>call(`${base}/items/${id}`,{method:'DELETE'}))])}}};
-const Repo=LocalAdapter;/* เมื่อมี backend: const Repo=HttpAdapter('/api'); */
+let Repo=LocalAdapter;/* เมื่อมี backend: ตั้ง window.EVAREL_API แล้ว Repo จะเป็น SupaAdapter (ดูท้ายโมดูล auth) */
 function diffItems(prev,next){const m=new Map(prev.map(x=>[x.id,JSON.stringify(x)])),ids=new Set(next.map(x=>x.id));return {upserts:next.filter(x=>m.get(x.id)!==JSON.stringify(x)),removes:prev.filter(x=>!ids.has(x.id)).map(x=>x.id)}}
 async function syncChanges(prev,next){const ch=diffItems(prev,next);if(!ch.upserts.length&&!ch.removes.length)return;await Repo.apply(ch,{items:next})}
 /* ===== MODULE: data/auth — จุดต่อระบบบัญชี: เปลี่ยน `Auth` ตัวเดียว (UI ไม่รู้ว่าล็อกอินทำงานอย่างไร) =====
@@ -76,7 +76,36 @@ const MockAuth={
 const HttpAuth=base=>{const call=(p,o={})=>fetch(`${base}${p}`,{credentials:'include',headers:{'Content-Type':'application/json'},...o}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw authErr(j.code||'unknown');return j}).catch(err=>{throw err.code?err:authErr('network')});
  const post=(p,b)=>call(p,{method:'POST',body:b?JSON.stringify(b):undefined});
  return {session:()=>fetch(`${base}/auth/me`,{credentials:'include'}).then(r=>r.ok?r.json():null),signInGoogle:idToken=>post('/auth/google',{idToken}),signInEmail:(email,password)=>post('/auth/login',{email,password}),signUp:b=>post('/auth/signup',b),sendReset:email=>post('/auth/forgot',{email}),signOut:()=>post('/auth/logout'),deleteAccount:()=>call('/auth/me',{method:'DELETE'})}};
-const Auth=MockAuth;/* backend จริง: const Auth=HttpAuth('/api'); แล้วให้ปุ่ม Google เรียก Google Identity Services เพื่อได้ idToken ส่งให้ Server ตรวจสอบ */
+
+/* ===== Supabase จริงผ่าน Worker (เปิดใช้เมื่อตั้ง window.EVAREL_API) — ไม่มีกุญแจ Supabase ในเบราว์เซอร์ ===== */
+const SUPA_SESS='evarel-session-v2',nowS=()=>Math.floor(Date.now()/1000);
+const supaLoad=()=>{try{return JSON.parse(localStorage.getItem(SUPA_SESS))}catch(err){return null}},supaSave=t=>localStorage.setItem(SUPA_SESS,JSON.stringify(t)),supaClear=()=>localStorage.removeItem(SUPA_SESS);
+const SupaCore=api=>{
+ const raw=async(path,{method='GET',body,token}={})=>{let r;try{r=await fetch(`${api}${path}`,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined})}catch(err){throw authErr('network')}
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(authErr(j.code||(r.status===401?'invalid_credentials':'unknown')),{status:r.status});return j};
+ let refreshing=null;
+ const token=async()=>{const s=supaLoad();if(!s)throw authErr('unverified');if(s.expires_at-nowS()>60)return s.access_token;
+  refreshing=refreshing||raw('/auth/refresh',{method:'POST',body:{refresh_token:s.refresh_token}}).then(n=>{supaSave(n);return n}).catch(e=>{if(e.status===401||e.status===400)supaClear();throw e}).finally(()=>{refreshing=null});return (await refreshing).access_token};
+ const userOf=s=>({id:s.user.id,name:s.user.name||(s.user.email||'').split('@')[0],email:s.user.email,provider:s.user.provider||'email'});
+ return {raw,token,userOf}};
+const SupaAuth=api=>{const c=SupaCore(api);let pending=null;/* pending: ที่รอยืนยันรหัส 6 หลัก {email,type} */
+ const take=s=>{supaSave({access_token:s.access_token,refresh_token:s.refresh_token,expires_at:s.expires_at,user:s.user});return c.userOf(s)};
+ return {
+  async session(){const s=supaLoad();if(!s)return null;try{await c.token();return c.userOf(supaLoad())}catch(err){console.warn('session',err);return null}},
+  async signInGoogle(){throw authErr('unknown')/* รอเปิด Google provider: ยังไม่มี Client ID */},
+  async signInEmail(email,pw){return take(await c.raw('/auth/login',{method:'POST',body:{email,password:pw}}))},
+  async signUp({name,email,password}){const j=await c.raw('/auth/signup',{method:'POST',body:{name,email,password}});if(j.status==='verify'){pending={email,type:'signup'};throw authErr('verify_needed')}return take(j)},
+  async sendReset(email){await c.raw('/auth/forgot',{method:'POST',body:{email}});pending={email,type:'recovery'}},
+  async verifyCode(email,code,type){return take(await c.raw('/auth/verify',{method:'POST',body:{email,code,type}}))},
+  async resend(email,type){await c.raw('/auth/resend',{method:'POST',body:{email,type}})},
+  async setPassword(password){await c.raw('/auth/password',{method:'POST',body:{password},token:await c.token()})},
+  async signOut(){supaClear()},
+  async deleteAccount(pw){await c.raw('/auth/account',{method:'DELETE',body:{password:pw},token:await c.token()});supaClear()}}};
+const SupaAdapter=api=>{const c=SupaCore(api);const call=async(path,o={})=>{const t=await c.token();const r=await fetch(`${api}${path}`,{...o,headers:{'Content-Type':'application/json',Authorization:'Bearer '+t}});if(!r.ok)throw new Error(`${o.method||'GET'} ${path} ${r.status}`);return r};
+ return {async load(){return {items:(await (await call('/items')).json()).items}},
+  async apply({upserts,removes}){await Promise.all([...upserts.map(it=>call(`/items/${it.id}`,{method:'PUT',body:JSON.stringify(it)})),...removes.map(id=>call(`/items/${id}`,{method:'DELETE'}))])}}};
+const SUPA_API=typeof window!=='undefined'&&window.EVAREL_API?String(window.EVAREL_API).replace(/\/+$/,'')+'/api':null;
+const Auth=SUPA_API?SupaAuth(SUPA_API):MockAuth;if(SUPA_API)Repo=SupaAdapter(SUPA_API);
 const initial=()=>((USER?.name||USER?.email||'?').trim()[0]||'?').toUpperCase();
 
 const S={items:[]};
@@ -521,7 +550,7 @@ document.addEventListener('pointerout',e=>{const d=e.target.closest?.('.ev-fcday
 document.addEventListener('contextmenu',e=>{if(e.target.closest?.('.ev-fcday'))e.preventDefault()});
 
 /* ===== MODULE: views/auth (เข้าสู่ระบบ / สร้างบัญชี / ลืมรหัสผ่าน) ===== */
-const AU_MSG={invalid_credentials:'อีเมลหรือรหัสผ่านไม่ถูกต้อง',email_taken:'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน',network:'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',unknown:'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง'};
+const AU_MSG={invalid_credentials:'อีเมลหรือรหัสผ่านไม่ถูกต้อง',email_taken:'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน',network:'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',unknown:'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง',needs_link:'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบด้วยบัญชีเดิมก่อน',code_invalid:'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง',code_expired:'รหัสหมดอายุแล้ว กดส่งรหัสใหม่',too_many_requests:'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่',unverified:'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'};
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,PW_MIN=8,RESEND_SEC=30;
 const MAIL_TYPO={'gmial.com':'gmail.com','gmai.com':'gmail.com','gamil.com':'gmail.com','gmail.co':'gmail.com','gmail.con':'gmail.com','gmil.com':'gmail.com','hotmial.com':'hotmail.com','yaho.com':'yahoo.com'};
 const GLOGO='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
@@ -549,28 +578,37 @@ const AUTH_VIEWS={
  forgot:()=>`${authBack('login')}<div><h1 class="ev-auth-title">ลืมรหัสผ่าน</h1><p class="ev-sub" style="margin-top:6px">ใส่อีเมลที่ใช้สมัคร เราจะส่งลิงก์ตั้งรหัสผ่านใหม่ให้</p></div>
   <form class="ev-form ev-authform" data-kind="forgot" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('อีเมล','email','email',EMAIL_X)}${submitBtn('ส่งลิงก์รีเซ็ต')}</form>`,
  sent:()=>`${authBack('login')}<div class="ev-sent"><div class="orb">${icon('mail')}</div><h1 class="ev-auth-title" style="font-size:24px">ตรวจสอบอีเมลของคุณ</h1><p class="ev-sub" style="max-width:300px">ถ้ามีบัญชีที่ใช้ <b>${esc(UI.auth.email)}</b> เราได้ส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้แล้ว</p></div>
-  <button class="ev-btn-auth" data-kind="accent" data-act="au-go" data-id="login">กลับไปเข้าสู่ระบบ</button><button class="ev-btn-auth" data-kind="google" id="resendBtn" data-act="au-resend" disabled></button>`};
+  <button class="ev-btn-auth" data-kind="accent" data-act="au-go" data-id="login">กลับไปเข้าสู่ระบบ</button><button class="ev-btn-auth" data-kind="google" id="resendBtn" data-act="au-resend" disabled></button>`,
+ code:()=>`${authBack(UI.auth.codeType==='recovery'?'forgot':'signup')}<div><h1 class="ev-auth-title">ใส่รหัส 6 หลัก</h1><p class="ev-sub" style="margin-top:6px">เราส่งรหัสไปที่ <b>${esc(UI.auth.email)}</b> ใส่รหัสเพื่อ${UI.auth.codeType==='recovery'?'ตั้งรหัสผ่านใหม่':'ยืนยันอีเมล'}</p></div>
+  <form class="ev-form ev-authform" data-kind="code" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('รหัส 6 หลัก','code','text','inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="000000"')}${submitBtn('ยืนยัน')}</form>
+  <button class="ev-btn-auth" data-kind="google" id="resendBtn" data-act="au-resend" disabled></button>`,
+ newpw:()=>`<div><h1 class="ev-auth-title">ตั้งรหัสผ่านใหม่</h1><p class="ev-sub" style="margin-top:6px">ตั้งรหัสผ่านใหม่ให้บัญชี <b>${esc(UI.auth.email)}</b></p></div>
+  <form class="ev-form ev-authform" data-kind="newpw" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('รหัสผ่านใหม่','password','password',`autocomplete="new-password" placeholder="อย่างน้อย ${PW_MIN} ตัวอักษร"`,eyeBtn('f-password'))}${submitBtn('บันทึกรหัสผ่าน')}</form>`};
 const AUTH_SPLASH=`<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Evarel</b></div>`;
 function renderAuthRoot(){const au=$('auth');au.hidden=false;const sc=UI.auth.status==='loading'?'loading':UI.auth.screen;if(au.dataset.screen===sc)return;au.dataset.screen=sc;
  au.innerHTML=`<div class="ev-auth-in">${sc==='loading'?AUTH_SPLASH:AUTH_VIEWS[sc]()}</div>`;au.scrollTop=0;[...au.firstElementChild.children].forEach((el,i)=>el.style.setProperty('--i',i));
- if(sc==='sent')startCool();if(['login','signup','forgot'].includes(sc))setTimeout(()=>au.querySelector('input')?.focus({preventScroll:true}),400)}
+ if(sc==='sent'||sc==='code')startCool();if(['login','signup','forgot','code','newpw'].includes(sc))setTimeout(()=>au.querySelector('input')?.focus({preventScroll:true}),400)}
 let coolT=null;
-function paintCool(){const b=$('resendBtn');if(!b)return;const n=UI.auth.cool;b.disabled=n>0;b.innerHTML=n>0?`<span>ส่งอีกครั้งได้ใน ${n} วินาที</span>`:'<span>ส่งลิงก์อีกครั้ง</span>'}
+function paintCool(){const b=$('resendBtn');if(!b)return;const n=UI.auth.cool;b.disabled=n>0;b.innerHTML=n>0?`<span>ส่งอีกครั้งได้ใน ${n} วินาที</span>`:`<span>${UI.auth.screen==='code'?'ส่งรหัสอีกครั้ง':'ส่งลิงก์อีกครั้ง'}</span>`}
 function startCool(){stopCool();UI.auth.cool=RESEND_SEC;paintCool();coolT=setInterval(()=>{UI.auth.cool=Math.max(0,UI.auth.cool-1);paintCool();if(!UI.auth.cool)stopCool()},1000)}
 function stopCool(){clearInterval(coolT);coolT=null}
-async function resendReset(){if(UI.auth.cool>0)return;const b=$('resendBtn');b.disabled=true;b.innerHTML='<span class="ev-spin"></span>';try{await Auth.sendReset(UI.auth.email);toast('ส่งลิงก์อีกครั้งแล้ว')}catch(err){toast(AU_MSG[err.code]||AU_MSG.unknown)}startCool()}
+async function resendReset(){if(UI.auth.cool>0)return;const b=$('resendBtn');b.disabled=true;b.innerHTML='<span class="ev-spin"></span>';try{if(UI.auth.screen==='code'&&Auth.resend)await Auth.resend(UI.auth.email,UI.auth.codeType);else await Auth.sendReset(UI.auth.email);toast(UI.auth.screen==='code'?'ส่งรหัสอีกครั้งแล้ว':'ส่งลิงก์อีกครั้งแล้ว')}catch(err){toast(AU_MSG[err.code]||AU_MSG.unknown)}startCool()}
 const fieldErr=(form,name,msg)=>{const inp=form.querySelector(`[name="${name}"]`),box=form.querySelector(`#e-${name}`);if(inp&&inp.type!=='checkbox')inp.setAttribute('aria-invalid',String(!!msg));if(box){box.hidden=!msg;box.removeAttribute('data-tone');box.innerHTML=msg?`${icon('alert')}<span>${esc(msg)}</span>`:''}};
 function clearErrs(form){form.querySelectorAll('.ev-input').forEach(i=>i.setAttribute('aria-invalid','false'));form.querySelectorAll('.ev-field-err').forEach(b=>{b.hidden=true;b.innerHTML=''});const fe=form.querySelector('#form-err');if(fe){fe.hidden=true;fe.textContent=''}}
 function setBusy(form,on){const b=form.querySelector('button[type="submit"]');b.disabled=on;b.innerHTML=on?'<span class="ev-spin"></span>':`<span>${b.dataset.label}</span>`;form.querySelectorAll('input').forEach(i=>{i.readOnly=on})}
 function authValidate(kind,v){const e={},em=(v.email||'').trim();if(!em)e.email='กรุณากรอกอีเมล';else if(!EMAIL_RE.test(em))e.email='รูปแบบอีเมลไม่ถูกต้อง (เช่น name@gmail.com)';
  if(kind==='signup'){if(!(v.name||'').trim())e.name='กรุณากรอกชื่อ';if((v.password||'').length<PW_MIN)e.password=`รหัสผ่านอย่างน้อย ${PW_MIN} ตัวอักษร`;if(!v.terms)e.terms='ต้องยอมรับข้อกำหนดก่อนสร้างบัญชี'}
- if(kind==='login'&&!v.password)e.password='กรุณากรอกรหัสผ่าน';return e}
+ if(kind==='login'&&!v.password)e.password='กรุณากรอกรหัสผ่าน';
+ if(kind==='code'){delete e.email;if(!/^\d{6}$/.test((v.code||'').trim()))e.code='ใส่ตัวเลข 6 หลัก'}
+ if(kind==='newpw'){delete e.email;if((v.password||'').length<PW_MIN)e.password=`รหัสผ่านอย่างน้อย ${PW_MIN} ตัวอักษร`}return e}
 async function authSubmit(kind,form){clearErrs(form);const v=Object.fromEntries(new FormData(form)),errs=authValidate(kind,v),keys=Object.keys(errs);
  if(keys.length){keys.forEach(k=>fieldErr(form,k,errs[k]));form.querySelector(`[name="${keys[0]}"]`)?.focus();haptic();return}
  setBusy(form,true);
- try{if(kind==='forgot'){await Auth.sendReset(v.email.trim());UI.auth.email=v.email.trim();UI.auth.screen='sent';renderAuthRoot();return}
+ try{if(kind==='forgot'){await Auth.sendReset(v.email.trim());UI.auth.email=v.email.trim();UI.auth.codeType='recovery';UI.auth.screen=Auth.verifyCode?'code':'sent';renderAuthRoot();return}
+  if(kind==='code'){const u=await Auth.verifyCode(UI.auth.email,v.code.trim(),UI.auth.codeType);if(UI.auth.codeType==='recovery'){UI.auth.pendingUser=u;UI.auth.screen='newpw';renderAuthRoot();return}await enterApp(u);return}
+  if(kind==='newpw'){await Auth.setPassword(v.password);const u=UI.auth.pendingUser;UI.auth.pendingUser=null;toast('ตั้งรหัสผ่านใหม่แล้ว');await enterApp(u);return}
   const user=kind==='login'?await Auth.signInEmail(v.email.trim(),v.password):await Auth.signUp({name:v.name.trim(),email:v.email.trim(),password:v.password});await enterApp(user)}
- catch(err){setBusy(form,false);if(err.code==='email_taken')fieldErr(form,'email',AU_MSG.email_taken);else{const fe=form.querySelector('#form-err');fe.textContent=AU_MSG[err.code]||AU_MSG.unknown;fe.hidden=false;fe.style.animation='none';void fe.offsetWidth;fe.style.animation=''}haptic()}}
+ catch(err){setBusy(form,false);if(err.code==='verify_needed'){UI.auth.email=v.email.trim();UI.auth.codeType='signup';UI.auth.screen='code';renderAuthRoot();return}if(err.code==='email_taken'||err.code==='needs_link')fieldErr(form,'email',AU_MSG[err.code]);else if(err.code==='code_invalid'||err.code==='code_expired')fieldErr(form,'code',AU_MSG[err.code]);else{const fe=form.querySelector('#form-err');fe.textContent=AU_MSG[err.code]||AU_MSG.unknown;fe.hidden=false;fe.style.animation='none';void fe.offsetWidth;fe.style.animation=''}haptic()}}
 async function authGoogle(btn){const old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="ev-spin"></span>';try{await enterApp(await Auth.signInGoogle())}catch(err){btn.disabled=false;btn.innerHTML=old;toast(AU_MSG[err.code]||AU_MSG.unknown)}}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t.closest('[data-kind="signup"]')){const p=t.value,s=[p.length>=PW_MIN,p.length>=12,/[a-z]/.test(p)&&/[A-Z]/.test(p),/\d/.test(p),/[^\w]/.test(p)].filter(Boolean).length,lv=p.length<PW_MIN?(p?1:0):Math.min(4,Math.max(1,s-1));
  $('pwMeter').dataset.lv=lv;$('pwLabel').textContent=p?(p.length<PW_MIN?`อีก ${PW_MIN-p.length} ตัวอักษรจึงจะใช้ได้`:['','อ่อน','พอใช้','ดี','แข็งแรง'][lv]):'ใช้ตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ผสมกันจะปลอดภัยขึ้น'}
