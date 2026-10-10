@@ -15,6 +15,8 @@ function world(o = {}) {
   const lock = new Map();
   w.f = async (url, init = {}) => {
     const u = new URL(url);
+    if (u.pathname.endsWith('/rpc/rl_cleanup')) { w.cleanup = (w.cleanup || 0) + 1; return json(0); }
+    if (u.pathname.endsWith('/rpc/rl_hit') && o.noFn) return json({ code: 'PGRST202', message: 'function not found' }, 404);
     if (u.pathname.endsWith('/rpc/rl_hit')) {
       w.rpc++; if (o.rlDown) throw new Error('down'); if (o.rl500) return json({}, 500);
       const b = JSON.parse(init.body); const k = b.p_bucket + '|' + b.p_key;
@@ -27,7 +29,7 @@ function world(o = {}) {
         row.hits++; w.rows.set(k, row); return json([{ ok: true, hits: row.hits, retry_after: 0 }]);
       } finally { done(); }
     }
-    if (u.pathname.includes('/auth/v1/')) { w.auth++; return json({ error: 'invalid_grant' }, 400); }
+    if (u.pathname.includes('/auth/v1/')) { w.auth++; (w.authHeaders ||= []).push(new Headers(init.headers || {}).get('sb-forwarded-for')); return json({ error: 'invalid_grant' }, 400); }
     return json({}, 404);
   };
   w.env = { SUPABASE_URL: 'https://x.supabase.co', SUPABASE_SERVICE_KEY: 'svc', ALLOWED_ORIGIN: 'https://app.example', CUSTOM_FETCH: w.f };
@@ -103,6 +105,40 @@ await t('R1 body ใหญ่ที่ /api/auth/login: ด่านต้อง
   const r = await W.fetch(new Request('https://w/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'cf-connecting-ip': '1.1.1.1' }, body: huge }), w.env);
   assert.ok(r.status >= 400 && r.status < 500, 'ได้ ' + r.status); assert.equal(w.auth, 0, 'ถึง Supabase Auth');
   assert.equal(w.rpc, 0, 'ด่าน parse ก้อนใหญ่แล้วเรียก rl_hit (ควรตัดก่อน)');
+});
+await t('ข้อ1 /api/health รายงานสถานะด่าน: active เมื่อ rl_hit มี, inactive เมื่อยังไม่รัน migration', async () => {
+  const a = world(); globalThis.fetch = a.f; const ra = await W.fetch(new Request('https://w/api/health'), a.env); const ja = await ra.json();
+  assert.equal(ra.status, 200); assert.equal(ja.rate_limit, 'active');
+  const b = world({ noFn: true }); globalThis.fetch = b.f; const jb = await (await W.fetch(new Request('https://w/api/health'), b.env)).json();
+  assert.equal(jb.rate_limit, 'inactive', 'ต้องไม่ล้มเงียบ');
+  const c = world({ rlDown: true }); globalThis.fetch = c.f; const jc = await (await W.fetch(new Request('https://w/api/health'), c.env)).json();
+  assert.equal(jc.rate_limit, 'unknown');
+});
+await t('ข้อ1 /api/health ไม่เปิดเผยความลับ (ไม่มีกุญแจ/URL ใน body)', async () => {
+  const w = world(); globalThis.fetch = w.f; const txt = await (await W.fetch(new Request('https://w/api/health'), w.env)).text();
+  assert.ok(!/svc|supabase\.co|eyJ|sb_/i.test(txt), txt);
+});
+await t('ข้อ5 cleanup ถูกเรียกเป็นครั้งคราว (สุ่ม) ไม่ใช่ทุกคำขอ', async () => {
+  const w = world(); globalThis.fetch = w.f; w.env.__rand = () => 0; await login(w, 'a@example.com', '1.1.1.1');
+  assert.equal(w.cleanup || 0, 1, 'ไม่เรียก cleanup เมื่อสุ่มตก');
+  const v = world(); globalThis.fetch = v.f; v.env.__rand = () => 0.9; await login(v, 'a@example.com', '1.1.1.1'); assert.equal(v.cleanup || 0, 0, 'เรียกทุกคำขอ');
+});
+await t('Pre-Mortem ข้อ4 ส่งไอพีผู้ใช้จริงต่อให้ Supabase (Sb-Forwarded-For) เพื่อไม่ให้นับรวมเป็นไอพีของ Worker', async () => {
+  const w = world(); globalThis.fetch = w.f; await login(w, 'a@example.com', '203.0.113.7');
+  assert.deepEqual(w.authHeaders, ['203.0.113.7'], 'header ที่ไปถึง auth = ' + JSON.stringify(w.authHeaders));
+});
+await t('ข้อ4 ผู้โจมตีปลอม Sb-Forwarded-For มาเองไม่ได้ผล (ใช้ cf-connecting-ip ที่ Cloudflare ตั้งเท่านั้น)', async () => {
+  const w = world(); globalThis.fetch = w.f; await login(w, 'a@example.com', '203.0.113.7', { 'Sb-Forwarded-For': '8.8.8.8' });
+  assert.deepEqual(w.authHeaders, ['203.0.113.7']);
+});
+await t('ข้อ4 ไม่มี cf-connecting-ip: ไม่ส่ง header ปลอม (ไม่ส่งค่า noip ให้ Supabase)', async () => {
+  const w = world(); globalThis.fetch = w.f; await login(w, 'a@example.com', null);
+  assert.deepEqual(w.authHeaders, [null]);
+});
+await t('ข้อ4 คำขอที่ไม่ใช่ /auth/v1/ (เช่น rl_hit) ไม่ถูกใส่ header นี้', async () => {
+  const w = world(); const seen = []; const f = w.f; w.env.CUSTOM_FETCH = async (u, i) => { seen.push([new URL(u).pathname, new Headers(i?.headers || {}).get('sb-forwarded-for')]); return f(u, i); }; globalThis.fetch = w.env.CUSTOM_FETCH;
+  await login(w, 'a@example.com', '203.0.113.7');
+  const rl = seen.filter(([p]) => p.includes('/rpc/rl_hit')); assert.ok(rl.length > 0); assert.ok(rl.every(([, h]) => h === null), JSON.stringify(rl));
 });
 globalThis.fetch = original;
 console.log(`\nผ่าน / ไม่ผ่าน: ${pass} / ${fail}`); process.exit(fail ? 1 : 0);

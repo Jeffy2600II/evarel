@@ -56,3 +56,51 @@ export function tooMany(retryAfter: number, env: any, jsonResponse: (d: any, s?:
   r.headers.set('Retry-After', String(retryAfter));
   return r;
 }
+
+/* สถานะด่าน (ข้อ1 Pre-Mortem): ไม่ให้ fail-open ล้มเงียบ -- Master ดูได้ที่ GET /api/health
+   active = rl_hit ใช้ได้ | inactive = ยังไม่รัน migration 003 (ไม่มีฟังก์ชัน) | unknown = ติดต่อฐานข้อมูลไม่ได้ */
+export async function status(env: any): Promise<'active' | 'inactive' | 'unknown'> {
+  try {
+    const f: typeof fetch = env.CUSTOM_FETCH || fetch;
+    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 2500);
+    const res = await f(`${String(env.SUPABASE_URL).replace(/\/+$/, '')}/rest/v1/rpc/rl_hit`, {
+      method: 'POST', signal: ctl.signal,
+      headers: { apikey: env.SUPABASE_SERVICE_KEY, Authorization: 'Bearer ' + env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_bucket: 'health', p_key: 'probe', p_limit: 1000000, p_window_sec: 60 }),
+    });
+    clearTimeout(tm);
+    if (res.ok) return 'active';
+    const j: any = await res.json().catch(() => ({}));
+    return res.status === 404 || j?.code === 'PGRST202' ? 'inactive' : 'unknown';
+  } catch { return 'unknown'; }
+}
+
+/* เก็บกวาดแถวเก่าแบบสุ่ม ~1/200 คำขอ (ไม่ต้องมี cron: ฟรีเทียร์มีแค่ 5 ตัว) -- ไม่รอผล ไม่ล้มคำขอจริง */
+export function maybeCleanup(env: any, ctx?: any): void {
+  const rnd = typeof env.__rand === 'function' ? env.__rand() : Math.random();
+  if (rnd >= 1 / 200) return;   // rnd อยู่ในช่วง [0,1): ตกช่วงแรก 0.5% = เรียก cleanup
+  try {
+    const f: typeof fetch = env.CUSTOM_FETCH || fetch;
+    const p = f(`${String(env.SUPABASE_URL).replace(/\/+$/, '')}/rest/v1/rpc/rl_cleanup`, {
+      method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, Authorization: 'Bearer ' + env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: '{}',
+    }).catch(() => {});
+    ctx?.waitUntil?.(p);
+  } catch { /* ไม่กระทบคำขอ */ }
+}
+
+/* ส่งไอพีผู้ใช้จริงต่อให้ Supabase Auth (Sb-Forwarded-For) เพื่อให้ rate limit ของ Supabase นับต่อผู้ใช้ ไม่ใช่รวมเป็นไอพีของ Worker
+   (เอกสาร Supabase: ต้องใช้ secret key + เปิดสวิตช์ IP Address Forwarding ที่แดชบอร์ด; ถ้าสวิตช์ปิด header จะถูกเพิกเฉย ไม่พัง)
+   - ใส่เฉพาะคำขอไป /auth/v1/ และเฉพาะเมื่อมีไอพีจริง (ไม่ส่งค่า 'noip' ปลอม)
+   - ใช้ค่าจาก cf-connecting-ip เท่านั้น: ค่าที่ client ส่ง Sb-Forwarded-For มาเองถูกทิ้งเสมอ */
+export function withForwardedIp(env: any, ip: string): any {
+  const base: typeof fetch = env.CUSTOM_FETCH || fetch;
+  const wrapped: typeof fetch = (input: any, init?: any) => {
+    const url = typeof input === 'string' ? input : input?.url || String(input);
+    if (!url.includes('/auth/v1/')) return base(input, init);
+    const h = new Headers(init?.headers || {});
+    h.delete('sb-forwarded-for');
+    if (ip && ip !== 'noip') h.set('Sb-Forwarded-For', ip);
+    return base(input, { ...(init || {}), headers: h });
+  };
+  return { ...env, CUSTOM_FETCH: wrapped };
+}

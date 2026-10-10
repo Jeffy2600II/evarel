@@ -9,7 +9,7 @@ import {
   handlePostLog
 } from './systems/items/routes';
 import { handleAiChat, handleAiMemory } from './systems/ai/routes';
-import { RULES, clientIp, emailKey, check, tooMany } from './shared/ratelimit';
+import { RULES, clientIp, emailKey, check, tooMany, status as rlStatus, maybeCleanup, withForwardedIp } from './shared/ratelimit';
 import { jsonResponse } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
 import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession } from './systems/auth/account';
@@ -32,6 +32,9 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
   }
 
 
+  /* สถานะระบบ (ไม่เปิดเผยความลับ): ให้เห็นว่าด่านกันคนหัวหมอทำงานจริงหรือยังล้มเงียบ */
+  if (path === '/api/health' && method === 'GET') return jsonResponse({ ok: true, rate_limit: await rlStatus(env) }, 200, env);
+
   /* ด่าน rate limit เฉพาะเส้นทาง auth (ที่คนหัวหมอโจมตี) -- items/AI มีเพดานของตัวเองแล้ว */
   if (method === 'POST' && path.startsWith('/api/auth/') && path !== '/api/auth/session') {
     const ip = clientIp(request);
@@ -50,18 +53,21 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
     else if (path === '/api/auth/signup') checks.push([RULES.signupIp, ip]);
     else if (path === '/api/auth/forgot' || path === '/api/auth/resend') { checks.push([RULES.mailIp, ip]); if (who) checks.push([RULES.mailEmail, who]); }
     else if (path === '/api/auth/refresh') checks.push([RULES.refreshIp, ip]);
-    if (checks.length) { const v = await check(env, checks); if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse); }
+    if (checks.length) { maybeCleanup(env); const v = await check(env, checks); if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse); }
   }
 
-  if (path === '/api/auth/login' && method === 'POST') return handleLogin(request, env);
-  if (path === '/api/auth/refresh' && method === 'POST') return handleRefresh(request, env);
-  if (path === '/api/auth/signup' && method === 'POST') return handleSignup(request, env);
-  if (path === '/api/auth/forgot' && method === 'POST') return handleForgot(request, env);
-  if (path === '/api/auth/verify' && method === 'POST') return handleVerify(request, env);
-  if (path === '/api/auth/resend' && method === 'POST') return handleResend(request, env);
-  if (path === '/api/auth/password' && method === 'POST') return handleSetPassword(request, env);
-  if (path === '/api/auth/session' && method === 'POST') return handleOAuthSession(request, env);
-  if (path === '/api/auth/account' && method === 'DELETE') return handleDeleteAccount(request, env);
+  /* handler บัญชีทั้งหมดใช้ env ที่ส่งไอพีผู้ใช้จริงต่อให้ Supabase Auth */
+  const aenv: Env = path.startsWith('/api/auth/') ? withForwardedIp(env, clientIp(request)) : env;
+
+  if (path === '/api/auth/login' && method === 'POST') return handleLogin(request, aenv);
+  if (path === '/api/auth/refresh' && method === 'POST') return handleRefresh(request, aenv);
+  if (path === '/api/auth/signup' && method === 'POST') return handleSignup(request, aenv);
+  if (path === '/api/auth/forgot' && method === 'POST') return handleForgot(request, aenv);
+  if (path === '/api/auth/verify' && method === 'POST') return handleVerify(request, aenv);
+  if (path === '/api/auth/resend' && method === 'POST') return handleResend(request, aenv);
+  if (path === '/api/auth/password' && method === 'POST') return handleSetPassword(request, aenv);
+  if (path === '/api/auth/session' && method === 'POST') return handleOAuthSession(request, aenv);
+  if (path === '/api/auth/account' && method === 'DELETE') return handleDeleteAccount(request, aenv);
 
   if (path === '/api/ai/chat' && method === 'POST') return handleAiChat(request, env);
   if (path === '/api/ai/memory' && method === 'POST') return handleAiMemory(request, env);
