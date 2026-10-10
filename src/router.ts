@@ -8,6 +8,7 @@ import {
   handleGetLogs,
   handlePostLog
 } from './systems/items/routes';
+import { handleAiChat } from './systems/ai/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
 import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession } from './systems/auth/account';
 
@@ -35,6 +36,8 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
   if (path === '/api/auth/password' && method === 'POST') return handleSetPassword(request, env);
   if (path === '/api/auth/session' && method === 'POST') return handleOAuthSession(request, env);
   if (path === '/api/auth/account' && method === 'DELETE') return handleDeleteAccount(request, env);
+
+  if (path === '/api/ai/chat' && method === 'POST') return handleAiChat(request, env);
 
   if (path === '/api/items' && method === 'GET') {
     return handleGetItems(request, env);

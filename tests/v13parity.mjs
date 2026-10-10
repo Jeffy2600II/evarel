@@ -28,11 +28,15 @@ const steps={
  'auth-signup':[false,async p=>{await p.click('[data-act="au-go"][data-id="signup"]')}],
  'auth-forgot':[false,async p=>{await p.click('[data-act="au-go"][data-id="login"]');await p.waitForTimeout(300);await p.click('[data-act="au-go"][data-id="forgot"]')}],
 };
+/* ความต่างที่ "ตั้งใจ" จากเดโม v12 (Master สั่งเอาส่วนเดโมออก เมื่อ 10 ต.ค. 2026): ต้องอยู่ในกรอบนี้และไม่เกินเพดานพิกเซล ไม่งั้น FAIL
+   today/add: ปุ่ม "ลองด้วยข้อมูลตัวอย่าง" ถูกลบ | settings: ข้อความหมวดข้อมูล/ปุ่มลบทั้งหมด/ข้อกำหนดเขียนตามความจริง */
+const EXPECTED={'app-today':{box:[0,360,412,915],max:30000},'app-add':{box:[0,100,412,470],max:20000},'app-settings':{box:[0,370,412,915],max:100000}};
 let bad=0,total=0;
 for(const cs of ['light','dark']) for(const [n,[lg,st]] of Object.entries(steps)){
   const e1=await run(DEMO,cs,'o.png',st,lg), e2=await run(APP,cs,'n.png',st,lg);
   const r=execSync(`python3 -W ignore -c "from PIL import Image,ImageChops;a=Image.open('o.png').convert('RGB');b=Image.open('n.png').convert('RGB');print(a.size==b.size);d=ImageChops.difference(a,b);print(d.getbbox(), sum(1 for v in d.convert('L').getdata() if v>8))"`).toString().trim().replace(/\n/g,' ');
-  total++; const ok=r.endsWith(' 0')&&r.startsWith('True'); if(!ok)bad++;
-  console.log(ok?'PASS':'FAIL',cs,n,r,'| errs demo',e1.length,'app',e2.length, e2.slice(0,1).join(''));
+  total++; let ok=r.endsWith(' 0')&&r.startsWith('True'), tag='';
+  const ex=EXPECTED[n]; if(!ok&&ex&&r.startsWith('True')){const m=r.match(/\((\d+), (\d+), (\d+), (\d+)\) (\d+)/); if(m){const [x0,y0,x1,y1,cnt]=m.slice(1).map(Number); if(x0>=ex.box[0]&&y0>=ex.box[1]&&x1<=ex.box[2]&&y1<=ex.box[3]&&cnt<=ex.max){ok=true;tag='EXPECTED-DIFF '}}} if(!ok)bad++;
+  console.log(ok?(tag?'EXPECT':'PASS'):'FAIL',cs,n,r,'| errs demo',e1.length,'app',e2.length, e2.slice(0,1).join(''));
 }
 console.log(`\n${bad?bad+' FAILED of ':'ALL PASS '}${total}`); await b.close(); process.exit(bad?1:0);
