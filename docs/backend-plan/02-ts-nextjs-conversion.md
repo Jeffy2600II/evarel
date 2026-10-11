@@ -2,13 +2,17 @@
 
 ## 1. หลักการสำคัญและสถาปัตยกรรมระบบ (Core Principles & Standards)
 * **บริบทเดิม**: `app.js` มี 19 `MODULE:` markers, 176 top-level names, 10 reassigned globals (`sheetMode`, `drag`, `popBtn`, `D`, `TM`, `focusId`, `CH`, `DETAIL`, `DV`, `swipeX`), 366 template literals
+* **สถานะความก้าวหน้าล่าสุด (ยืนยันแล้ว)**:
+  - **การแยกโมดูล Classic Script**: การแยกโมดูลเป็น 25 ไฟล์ classic script เสร็จสิ้นแล้ว เส้นย้อนทิศ 0 วงจร 0 (evarel-ts-1a ถึง 1n)
+  - **Encapsulated State**: ใช้ `ST` state object ห่อตัวแปรร่วม 16 ตัวเสร็จแล้ว (evarel-esm-1a)
+  - **ES Module Status**: ES module ยังไม่ได้ทำ
 * **ข้อผิดพลาดในอดีต**: การให้ LLM เขียนรีโฟรคเตอร์ล้มเหลว (0/58 ฟังก์ชันตรงกัน) ดังนั้นการย้ายโค้ด *ต้อง* ทำด้วย **Mechanical Script** ตัดข้อความระดับ Top-level Statement เท่านั้น ห้ามพิมพ์ใหม่ด้วยมือหรือ LLM
 * **Next.js 15 Baseline**: Static Export (`output: 'export'`) Blank Page First Load JS อยู่ที่ ~102kB
 * **โครงสร้างโฟลเดอร์มาตรฐาน (System Module Standard)**:
   ใช้ `systems/<name>/{index.ts, types.ts, service.ts, view.ts, manifest.json}`
   *เปรียบเทียบกับ `assets/js` ของ fanhoard (ดีกว่า 3 ข้อ)*:
   1. **Domain Isolation**: แยกโค้ดตามขอบเขตหน้าที่ (Co-location) ป้องกันไฟล์โตเกินไปแบบ Flat List และจัดการขอบเขตได้ชัดเจน
-  2. **Encapsulated State & Bus**: ใช้ `ST` state object จัดการ 10 reassigned globals และ Event Bus แก้ Circular Dependency โดยไม่รั่วไหลเข้า Global Scope
+  2. **Encapsulated State & Bus**: ใช้ `ST` state object จัดการตัวแปรร่วม 16 ตัว (evarel-esm-1a) และ Event Bus แก้ Circular Dependency โดยไม่รั่วไหลเข้า Global Scope
   3. **Strict Boundaries & Manifest**: มี `manifest.json` และ `index.ts` กำหนด Public API ชัดเจน รองรับการเปลี่ยนผ่านเป็น React ทีละโมดูลอย่างปลอดภัย
 
 ---
@@ -16,14 +20,15 @@
 ## 2. ขั้นตอนการดำเนินงาน 3 ระยะ (3-Stage Execution Plan)
 
 ### Stage 1: JS -> TS Modules (แยกโมดูลตามโครงสร้าง System)
+* **สถานะความก้าวหน้า**: การแยกโมดูลเป็น 25 ไฟล์ classic script เสร็จสิ้นแล้ว เส้นย้อนทิศ 0 วงจร 0 (evarel-ts-1a ถึง 1n) และ `ST` ห่อตัวแปรร่วม 16 ตัวเสร็จแล้ว (evarel-esm-1a); **ส่วน ES module ยังไม่ได้ทำ**
 
 #### Sub-phase 1.1: Mechanical Cut & State Centralization (แบ่งเป็น 4 ชั้น แต่ละชั้นผ่าน 3 ประตูก่อนไปชั้นถัดไป)
-* **Scope**: ตัด `app.js` (19 MODULEs, 176 top-level names) ด้วยสคริปต์ที่ตัด "ข้อความต้นฉบับ" ตามขอบเขต statement ระดับบนสุด โดยสคริปต์เพิ่มได้เฉพาะ `export`/`import` และการเขียนซ้ำตัวแปร 10 ตัว (`sheetMode,drag,popBtn,D,TM,focusId,CH,DETAIL,DV,swipeX`) เป็น `ST.x`; ใช้ Event Bus (`core/bus`) ตัดวงจร import
+* **Scope**: ตัด `app.js` (19 MODULEs, 176 top-level names) ด้วยสคริปต์ที่ตัด "ข้อความต้นฉบับ" ตามขอบเขต statement ระดับบนสุด โดยสคริปต์เพิ่มได้เฉพาะ `export`/`import` และการเขียนซ้ำตัวแปรร่วม 16 ตัวเป็น `ST.x`; ใช้ Event Bus (`core/bus`) ตัดวงจร import (เสร็จสิ้นเป็น 25 ไฟล์ classic script เส้นย้อนทิศ 0 วงจร 0)
 * **ชั้น**: 1.1a `core` (constants, dates, store, state, bus, undo, timer) → 1.1b `services` (schedule, stats, calendar, repo) → 1.1c `ui` (primitives, layers, popover, form) → 1.1d `views` + `actions` + `main`
 * **หลักฐานบังคับทุกชั้น (ไม่ใช่คำบอกเล่าของ worker)**: เปรียบเทียบเนื้อฟังก์ชันกับต้นฉบับหลังย้อนการเขียนซ้ำเชิงกลไก = ตรงกัน 100% (รอบก่อนใช้วิธีนี้ผ่าน 58/58) และ storage key ทั้ง 4 ต้องไม่เปลี่ยน (ไม่เช่นนั้นข้อมูลผู้ใช้หาย)
 * **Mechanical vs Manual**:
   * *Mechanical*: สคริปต์ตัด/ย้าย ห้าม retype และห้ามให้ LLM พิมพ์โค้ดซ้ำ
-  * *Manual*: เขียน `types.ts` (ชนิดข้อมูล) และ `ST` object ตามรายการตัวแปร 10 ตัว
+  * *Manual*: เขียน `types.ts` (ชนิดข้อมูล) และ `ST` object ตามรายการตัวแปรร่วม 16 ตัว
 * **3 Gates** (coordinator เป็นผู้รัน ไม่ใช่ worker):
   1. *Pixel Parity Gate*: ต่าง 0 พิกเซลเทียบกับ `design/master-demo-v11.html` ผ่าน `v11parity.mjs` (10 หน้า สว่าง/มืด)
   2. *Tests Gate*: Route 22 + Feature 13 ผ่านทั้งหมด
@@ -45,7 +50,7 @@
 
 ---
 
-### Stage 2: Next.js 15 Static Export Wrapper
+### Stage 2: Next.js 15 Static Export Wrapper (ยังไม่ทำ - รอทำถัดจาก ES module)
 
 #### Sub-phase 2.1: Next.js Setup & Template-String Wrapper
 * **Scope**: ตั้งค่า Next.js 15 Static Export (`output: 'export'`) นำเสนอเพจผ่าน Client Component Wrapper ที่เรนเดอร์ 366 Template Literals ผ่าน DOM Container
@@ -73,7 +78,7 @@
 
 ---
 
-### Stage 3: Page-by-Page React Conversion
+### Stage 3: Page-by-Page React Conversion (ยังไม่ทำ)
 
 #### Sub-phase 3.1 (แบ่งเป็น 3.1a today · 3.1b all · 3.1c calendar · 3.1d stats): แปลงทีละแท็บเป็น React
 * **ข้อเท็จจริงที่ต้องยอมรับ**: การแปลง template string (ที่มี `${}` ซ้อนและอ้างตัวแปรนอกขอบเขต) เป็น JSX **ไม่ใช่การตัดข้อความ จึงทำเชิงกลไกทั้งหมดไม่ได้** — เป็นงานเขียนด้วยคนทีละหน้า โดย Pixel Parity Gate เป็นตาข่ายนิรภัยที่ตรวจว่าผลเหมือนเดิม

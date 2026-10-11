@@ -6,7 +6,7 @@
 ---
 
 ## 1. Tasks Only Coordinator / Owner Can Do (งานเฉพาะ Coordinator/Owner)
-- **Supabase Cloud Setup**: สร้าง Project, ออก Anon/Service Key, ตรวจ JWT Signing Method (HS256 vs JWKS) ใน Settings
+- **Supabase Cloud Setup**: สร้าง Project, ออก Anon/Service Key, ตรวจ JWT Signing Method ใน Settings (ยืนยันแล้วว่าเป็น ES256 ผ่าน JWKS ไม่ใช่ HS256)
 - **Secrets Management**: ตั้งค่า wrangler secret put (SUPABASE_URL, SUPABASE_SERVICE_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, MEMORYLAKE_API_KEY)
 - **Deployment & Git**: คำสั่ง wrangler deploy และ git push ไปยัง Remote Repository
 - **Verification Gates Execution**: รัน 3 Gates หลังจบ Sub-phase (v11parity.mjs, Route 22 + Feature 13 tests, Offline check)
@@ -16,8 +16,8 @@
 ## 2. Sub-agent Task Briefs
 
 ### Phase 1: Database, Auth & Core Worker API
-- **B-P1-00** [P1] Goal: ยืนยัน Supabase JWT signing method (HS256 vs JWKS) และวัด CPU/subrequests ของ scheduled() cron
-  In: 01-backend-architecture.md | Out: docs/backend/p1-decisions.json | Budget: <=8 | Conflict: p1_decisions | Dep: - | Check: test -f docs/backend/p1-decisions.json && jq .jwt_method docs/backend/p1-decisions.json | Salvage: สรุปเท่าที่มี Default เป็น HS256
+- **B-P1-00** [P1] [เสร็จสิ้น] Goal: ยืนยัน Supabase JWT signing method (ยืนยันแล้วว่าเป็น ES256 ผ่าน JWKS ไม่ใช่ HS256) และวัด CPU/subrequests ของ scheduled() cron
+  In: 01-backend-architecture.md | Out: docs/backend/p1-decisions.json | Budget: <=8 | Conflict: p1_decisions | Dep: - | Check: test -f docs/backend/p1-decisions.json && jq .jwt_method docs/backend/p1-decisions.json | Salvage: สรุปเท่าที่มี (ES256/JWKS)
 - **B-P1-01** [P1] Goal: สร้าง Supabase DDL SQL Schema และ RLS Policies ทุกตาราง (items, logs, push, chats, messages, settings)
   In: 01-backend-architecture.md | Out: supabase/schema.sql | Budget: <=10 | Conflict: db_schema | Dep: - | Check: grep -i "ROW LEVEL SECURITY" supabase/schema.sql | Salvage: บันทึก DDL เท่าที่สร้างเสร็จ
 - **B-P1-02** [P1] Goal: พัฒนา Cloudflare Worker Skeleton และ JWT Auth Verification Middleware
@@ -30,13 +30,14 @@
   In: 01-backend-architecture.md, 04-docs-system.md | Out: src/systems/items/manifest.json | Budget: <=8 | Conflict: backend_docs | Dep: B-P1-03 | Check: jq .name src/systems/items/manifest.json | Salvage: เขียน manifest เฉพาะ routes ที่เสร็จ
 
 ### Phase 2: TS & Next.js Conversion (ตาม sub-phases ของ 02 ตรงทุกประการ)
-- **B-P2-01a** [P2] Goal: Mechanical cut โมดูล 1.1a Core (constants, dates, store, state, bus, undo, timer)
+* **สถานะความก้าวหน้าปัจจุบัน**: การแยกโมดูลเป็น 25 ไฟล์ classic script เสร็จสิ้นแล้ว เส้นย้อนทิศ 0 วงจร 0 (evarel-ts-1a ถึง 1n) และ ST ห่อตัวแปรร่วม 16 ตัวเสร็จแล้ว (evarel-esm-1a); **ส่วน ES module ยังไม่ได้ทำ**
+- **B-P2-01a** [P2] [เสร็จสิ้น] Goal: Mechanical cut โมดูล 1.1a Core (constants, dates, store, state, bus, undo, timer)
   In: app.js, 02-ts-nextjs-conversion.md | Out: src/core/index.ts | Budget: <=12 | Conflict: ts_core | Dep: - | Check: python3 scripts/verify_statements.py core | Salvage: Git checkout คืนและเซฟสคริปต์สกัด
-- **B-P2-01b** [P2] Goal: Mechanical cut โมดูล 1.1b Services (schedule, stats, calendar, repo)
+- **B-P2-01b** [P2] [เสร็จสิ้น] Goal: Mechanical cut โมดูล 1.1b Services (schedule, stats, calendar, repo)
   In: app.js, src/core/index.ts | Out: src/services/index.ts | Budget: <=12 | Conflict: ts_services | Dep: B-P2-01a | Check: python3 scripts/verify_statements.py services | Salvage: บันทึกฟังก์ชันที่สกัดสำเร็จลง src/services/
-- **B-P2-01c** [P2] Goal: Mechanical cut โมดูล 1.1c UI (primitives, layers, popover, form)
+- **B-P2-01c** [P2] [เสร็จสิ้น] Goal: Mechanical cut โมดูล 1.1c UI (primitives, layers, popover, form)
   In: app.js, src/core/index.ts | Out: src/ui/index.ts | Budget: <=12 | Conflict: ts_ui | Dep: B-P2-01a | Check: python3 scripts/verify_statements.py ui | Salvage: คง UI primitives ที่ตัดเสร็จ
-- **B-P2-01d** [P2] Goal: Mechanical cut โมดูล 1.1d Views, Actions และ Main
+- **B-P2-01d** [P2] [เสร็จสิ้น] Goal: Mechanical cut โมดูล 1.1d Views, Actions และ Main
   In: app.js, src/ui/index.ts | Out: src/main.ts | Budget: <=12 | Conflict: ts_main | Dep: B-P2-01b, B-P2-01c | Check: python3 scripts/verify_statements.py main | Salvage: คืนไฟล์เดิมและเซฟสคริปต์ตัด
 - **B-P2-02** [P2] Goal: แปลง 1.2 Route & Boot เป็น Systems Router และ Boot
   In: js/route.js, js/boot.js | Out: src/systems/router/index.ts | Budget: <=10 | Conflict: ts_boot | Dep: B-P2-01d | Check: npx tsc --noEmit src/systems/router/index.ts | Salvage: ออก stub TS router interface
@@ -62,7 +63,7 @@
   In: 03-ai-agent.md, 04-docs-system.md | Out: src/systems/ai/manifest.json | Budget: <=10 | Conflict: ai_manifest | Dep: B-P1-05 | Check: jq .actions src/systems/ai/manifest.json | grep item_create | Salvage: บันทึก 7 tool actions ลง manifest
 - **B-P3-01** [P3] Goal: พัฒนา Deterministic Intent Parser และ Code-First Tools Engine
   In: 03-ai-agent.md, src/systems/ai/manifest.json | Out: src/systems/ai/intent-parser.ts | Budget: <=12 | Conflict: ai_intent | Dep: B-P3-00 | Check: npx tsc --noEmit src/systems/ai/intent-parser.ts | Salvage: คอมมิต regex parser & stub runner
-- **B-P3-02** [P3] Goal: สร้าง Agent Loop State Machine, Failover (Groq->OpenRouter) & Token Budget Counter
+- **B-P3-02** [P3] [เสร็จสิ้น/พิสูจน์บนระบบจริงแล้ว] Goal: สร้าง Agent Loop State Machine, Failover (Groq->OpenRouter) & Token Budget Counter / Quota system
   In: 03-ai-agent.md, src/systems/ai/intent-parser.ts | Out: src/systems/ai/agent-loop.ts | Budget: <=12 | Conflict: ai_agent_loop | Dep: B-P3-01 | Check: npx tsc --noEmit src/systems/ai/agent-loop.ts | Salvage: คง failover logic & token counter
 - **B-P3-03** [P3] Goal: สร้าง MemoryLake REST Provider และ Sensitive Fact Filter
   In: 03-ai-agent.md | Out: src/systems/ai/memorylake.ts | Budget: <=12 | Conflict: ai_memory | Dep: B-P3-00 | Check: npx tsc --noEmit src/systems/ai/memorylake.ts | Salvage: เซฟตัวกรองความจำอ่อนไหว & fetch wrapper
@@ -75,16 +76,16 @@
 
 | Brief ID | Est. Edits / Files | Budget | Risk | Status & Action |
 |---|---|---|---|---|
-| B-P1-00 | 2 files / ~50 lines | <=8 | Low | OK |
+| B-P1-00 | 2 files / ~50 lines | <=8 | Low | OK (เสร็จสิ้น: ES256/JWKS) |
 | B-P1-01 | 1 file / ~120 lines | <=10 | Low | OK |
 | B-P1-02 | 3 files / ~200 lines | <=12 | Medium | OK |
 | B-P1-03 | 4 files / ~250 lines | <=12 | Medium | OK |
 | B-P1-04 | 2 files / ~150 lines | <=10 | Low | OK |
 | B-P1-05 | 2 files / ~100 lines | <=8 | Low | OK |
-| B-P2-01a | 7 files / ~400 lines | <=12 | High | **TOO BIG (MUST SPLIT)**: แยกเป็น 01a1 (constants/dates/store) & 01a2 (state/bus/undo/timer) |
-| B-P2-01b | 5 files / ~350 lines | <=12 | High | **TOO BIG (MUST SPLIT)**: แยกเป็น 01b1 (sched/stats) & 01b2 (calendar/repo) |
-| B-P2-01c | 4 files / ~300 lines | <=12 | High | **TOO BIG (MUST SPLIT)**: แยกเป็น 01c1 (primitives/form) & 01c2 (layers/popover) |
-| B-P2-01d | 4 files / ~350 lines | <=12 | High | **TOO BIG (MUST SPLIT)**: แยกเป็น 01d1 (views/actions) & 01d2 (main entry) |
+| B-P2-01a | 7 files / ~400 lines | <=12 | High | OK (เสร็จสิ้นเป็น Classic script) |
+| B-P2-01b | 5 files / ~350 lines | <=12 | High | OK (เสร็จสิ้นเป็น Classic script) |
+| B-P2-01c | 4 files / ~300 lines | <=12 | High | OK (เสร็จสิ้นเป็น Classic script) |
+| B-P2-01d | 4 files / ~350 lines | <=12 | High | OK (เสร็จสิ้นเป็น Classic script) |
 | B-P2-02 | 3 files / ~150 lines | <=10 | Low | OK |
 | B-P2-03 | 3 files / ~180 lines | <=12 | Medium | OK |
 | B-P2-04 | 3 files / ~100 lines | <=10 | Low | OK |
@@ -96,12 +97,12 @@
 | B-P2-07 | 2 files / ~150 lines | <=10 | Low | OK |
 | B-P3-00 | 2 files / ~120 lines | <=10 | Low | OK |
 | B-P3-01 | 3 files / ~200 lines | <=12 | Medium | OK |
-| B-P3-02 | 3 files / ~250 lines | <=12 | High | OK |
+| B-P3-02 | 3 files / ~250 lines | <=12 | High | OK (เสร็จสิ้นและพิสูจน์บนระบบจริงแล้ว) |
 | B-P3-03 | 2 files / ~180 lines | <=12 | Medium | OK |
 | B-P3-04 | 3 files / ~220 lines | <=12 | Medium | OK |
 
 **สรุปการแบ่งภารกิจ (Split Actions)**:
-1. `B-P2-01a..d` ตัดโค้ดด้วย Mechanical Script ครอบคลุมหลายโมดูลเกินไป (เสี่ยงเกิน 12 tool calls) ต้อง split ครึ่งก่อนสั่งรันจริง
+1. `B-P2-01a..d` ตัดโค้ดด้วย Mechanical Script ครอบคลุมหลายโมดูล แยกเสร็จเป็น 25 ไฟล์ classic script แล้ว
 2. `B-P2-06` แปลง JSX ทั้ง Layers, Sheets และ Dialogs ยาวเกิน 350+ บรรทัด ต้อง split เป็น 06a (Dialogs) และ 06b (Layers)
 
 

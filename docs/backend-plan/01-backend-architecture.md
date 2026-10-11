@@ -119,8 +119,8 @@ CREATE POLICY "User settings access" ON public.settings FOR ALL USING (auth.uid(
 
 ### JWT Verification (CPU <= 10ms)
 - **ข้อเท็จจริง PoC:** PoC ใช้ `SUPABASE_SERVICE_KEY` (ข้าม RLS ทั้งหมด) และยังไม่มีการตรวจผู้ใช้ — ระบบล็อกอินเป็นของใหม่ทั้งหมด
-- **ต้องยืนยันก่อนล็อก (เฟส 1 งานแรก):** โปรเจกต์ Supabase ของ Master ใช้กุญแจเซ็น JWT แบบใด (HS256 secret ร่วม หรือกุญแจไม่สมมาตรผ่าน JWKS) เปิดดูที่ Project Settings > JWT/API Keys ห้ามเดา
-- **ทางเลือก:** (ก) HS256: `crypto.subtle.verify` กับ secret (ไม่มี network) (ข) JWKS/ES256: ดึง JWKS มาแคชใน Worker แล้วตรวจด้วย WebCrypto (ค) ฝากให้ Supabase ตรวจผ่าน `GET /auth/v1/user` (นับ 1 subrequest ต่อคำขอ)
+- **ยืนยันแล้ว:** โปรเจกต์ Supabase ใช้กุญแจเซ็น JWT แบบ **ES256 ผ่าน JWKS** ไม่ใช่ HS256 (ปิดข้อสงสัย HS256 vs JWKS แล้ว)
+- **กลไกการตรวจ:** JWKS/ES256 โดยดึง JWKS มาแคชใน Worker แล้วตรวจด้วย WebCrypto (`crypto.subtle.verify`)
 - **กฎเหล็ก:** Worker ต้องใช้ JWT ของผู้ใช้เรียก Supabase REST (ให้ RLS ทำงาน) ส่วน service key ใช้เฉพาะ cron/แอดมิน และห้ามส่งไปฝั่งเบราว์เซอร์
 
 ### Endpoints (Matching HttpAdapter & PoC)
@@ -159,8 +159,8 @@ CREATE POLICY "User settings access" ON public.settings FOR ALL USING (auth.uid(
 
 ## 6. Open Risks
 
-1. **JWT ยังไม่ยืนยัน**: ชนิดกุญแจของโปรเจกต์ Supabase ยังไม่ได้ตรวจ — งานแรกของเฟส 1 (ดูข้อ 3)
+1. **[ปิดแล้ว] JWT Supabase**: ยืนยันแล้วว่า JWT ของ Supabase เป็น ES256 ผ่าน JWKS ไม่ใช่ HS256 (ปิดข้อ Open Risks 1 แล้ว)
 2. **Cron ทุก 5 นาที**: ต้องวัด CPU/subrequest จริงของ `scheduled()` กับผู้ใช้หลายคน; ถ้ามีผู้ใช้เกิน ~40 คนที่ครบกำหนดพร้อมกัน ต้องมีคิวเลื่อนส่ง (ยังไม่มีบริการคิวใน free plan ที่ยืนยันแล้ว)
 3. **การย้ายข้อมูลเดิม**: ข้อมูลของ Master อยู่ใน localStorage (`evarel-demo-v3`) — ต้องมีขั้นนำเข้าครั้งเดียวผ่าน `PUT /items/:id` และต้องไม่ทำให้ข้อมูลหาย (id เป็น `Date.now()` ซ้ำข้ามผู้ใช้ได้ จึงใช้คีย์ `(user_id, id)`)
-4. **โควตา request ร่วมกัน**: 100,000/วันรวมทุกผู้ใช้ รวม cron 288 รอบ — ถ้าเปิดสาธารณะต้องมีโควตาต่อผู้ใช้
+4. **โควตา request ร่วมกัน**: 100,000/วันรวมทุกผู้ใช้ รวม cron 288 รอบ — ถ้าเปิดสาธารณะต้องมีโควตาต่อผู้ใช้ (ระบบโควตา AI พัฒนาเสร็จและพิสูจน์บนระบบจริงแล้ว)
 5. **service key**: อยู่เฉพาะ Worker secret ห้ามส่งไปเบราว์เซอร์; ใช้เฉพาะ cron
