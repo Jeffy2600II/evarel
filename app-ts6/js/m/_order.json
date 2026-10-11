@@ -1,0 +1,105 @@
+{
+ "src_sha256": "a743d408e969901cd185edf56f4f9cb8b778498278f5e54ade094d77336fb1d0",
+ "order": [
+  {
+   "file": "00-head.js",
+   "bytes": 330
+  },
+  {
+   "file": "01-core__constants.js",
+   "bytes": 2669
+  },
+  {
+   "file": "02-core__dates.js",
+   "bytes": 847
+  },
+  {
+   "file": "03-core__store.js",
+   "bytes": 2126
+  },
+  {
+   "file": "04-data__repo.js",
+   "bytes": 1956
+  },
+  {
+   "file": "05-data__auth.js",
+   "bytes": 8690
+  },
+  {
+   "file": "06-services__schedule.js",
+   "bytes": 2355
+  },
+  {
+   "file": "07-services__stats.js",
+   "bytes": 1194
+  },
+  {
+   "file": "08-core__undo.js",
+   "bytes": 1134
+  },
+  {
+   "file": "09-ui__layers.js",
+   "bytes": 4778
+  },
+  {
+   "file": "10-ui__popover.js",
+   "bytes": 1426
+  },
+  {
+   "file": "11-ui__primitives.js",
+   "bytes": 2758
+  },
+  {
+   "file": "12-views.js",
+   "bytes": 9280
+  },
+  {
+   "file": "13-ui__form.js",
+   "bytes": 9382
+  },
+  {
+   "file": "14-core__timer.js",
+   "bytes": 3820
+  },
+  {
+   "file": "15-services__ai-quota.js",
+   "bytes": 7997
+  },
+  {
+   "file": "16-views__ai.js",
+   "bytes": 9800
+  },
+  {
+   "file": "17-services__ai-live.js",
+   "bytes": 4360
+  },
+  {
+   "file": "18-views__settings.js",
+   "bytes": 5842
+  },
+  {
+   "file": "19-services__calendar.js",
+   "bytes": 4633
+  },
+  {
+   "file": "20-views__detail.js",
+   "bytes": 7698
+  },
+  {
+   "file": "21-actions.js",
+   "bytes": 16160
+  },
+  {
+   "file": "22-views__auth.js",
+   "bytes": 23431
+  },
+  {
+   "file": "23-render.js",
+   "bytes": 3025
+  },
+  {
+   "file": "24-services__legacy-import.js",
+   "bytes": 3986
+  }
+ ]
+}

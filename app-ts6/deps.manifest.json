@@ -1,0 +1,686 @@
+{
+ "schema": 1,
+ "files": 25,
+ "summary": {
+  "pairEdges": 159,
+  "backEdges": 12,
+  "loadTimeRefs": 8,
+  "loadTimeForwardRefs": 0,
+  "duplicateTopLevelNames": 0,
+  "cyclicGroups": [
+   9,
+   2
+  ],
+  "largestCycleFiles": [
+   "12-views.js",
+   "14-core__timer.js",
+   "16-views__ai.js",
+   "19-services__calendar.js",
+   "20-views__detail.js",
+   "21-actions.js",
+   "22-views__auth.js",
+   "23-render.js",
+   "24-services__legacy-import.js"
+  ]
+ },
+ "backEdges": [
+  "09-ui__layers.js -> 10-ui__popover.js",
+  "09-ui__layers.js -> 11-ui__primitives.js",
+  "10-ui__popover.js -> 11-ui__primitives.js",
+  "12-views.js -> 19-services__calendar.js",
+  "14-core__timer.js -> 20-views__detail.js",
+  "14-core__timer.js -> 21-actions.js",
+  "16-views__ai.js -> 21-actions.js",
+  "19-services__calendar.js -> 20-views__detail.js",
+  "19-services__calendar.js -> 21-actions.js",
+  "21-actions.js -> 22-views__auth.js",
+  "21-actions.js -> 24-services__legacy-import.js",
+  "22-views__auth.js -> 24-services__legacy-import.js"
+ ],
+ "loadTimeRefs": [
+  "05-data__auth.js -> 02-core__dates.js (TODAY)",
+  "05-data__auth.js -> 02-core__dates.js (TODAY)",
+  "05-data__auth.js -> 02-core__dates.js (TODAY)",
+  "05-data__auth.js -> 04-data__repo.js (Repo)",
+  "18-views__settings.js -> 01-core__constants.js (THEME_KEY)",
+  "21-actions.js -> 09-ui__layers.js ($)",
+  "21-actions.js -> 09-ui__layers.js ($)",
+  "23-render.js -> 00-head.js (_render)"
+ ],
+ "files_detail": {
+  "00-head.js": {
+   "declares": [
+    "ST",
+    "_render"
+   ],
+   "dependsOn": []
+  },
+  "01-core__constants.js": {
+   "declares": [
+    "STORE_KEY",
+    "TIMER_KEY",
+    "THEME_KEY",
+    "DAY_MS",
+    "TOAST_MS",
+    "SKELETON_MS",
+    "STREAK_LOOKBACK",
+    "STAT_DAYS",
+    "DRAG_CLOSE_PX",
+    "DRAG_CLOSE_V",
+    "HAPTIC_MS",
+    "LONG_PRESS_MS",
+    "LAYER_ANIM_MS",
+    "MAX_REM",
+    "TYPES",
+    "TABS",
+    "WD",
+    "WEEK_OPTS",
+    "TH_MON",
+    "TH_DAY",
+    "UNIT_TH",
+    "REM_PRESETS",
+    "TRACK_OPTS",
+    "HHMM",
+    "ICONS",
+    "seg",
+    "CHATS_KEY",
+    "AI_TOOL_LABEL",
+    "isMemTool",
+    "AI_PLACEHOLDER",
+    "TH_MONTH",
+    "NR"
+   ],
+   "dependsOn": []
+  },
+  "02-core__dates.js": {
+   "declares": [
+    "pad",
+    "ymd",
+    "parse",
+    "addDays",
+    "TODAY",
+    "fmtDate",
+    "nowHM",
+    "esc",
+    "fmtClock",
+    "haptic"
+   ],
+   "dependsOn": [
+    "01-core__constants.js"
+   ]
+  },
+  "03-core__store.js": {
+   "declares": [
+    "mk",
+    "fill",
+    "daily",
+    "weekly",
+    "cls",
+    "seed"
+   ],
+   "dependsOn": [
+    "02-core__dates.js"
+   ]
+  },
+  "04-data__repo.js": {
+   "declares": [
+    "USER",
+    "uk",
+    "wait",
+    "LocalAdapter",
+    "HttpAdapter",
+    "Repo",
+    "diffItems",
+    "syncChanges"
+   ],
+   "dependsOn": [
+    "01-core__constants.js"
+   ]
+  },
+  "05-data__auth.js": {
+   "declares": [
+    "USERS_KEY",
+    "SESSION_KEY",
+    "AUTH_DELAY_MS",
+    "authErr",
+    "readUsers",
+    "writeUsers",
+    "pubUser",
+    "hashPw",
+    "DEMO_GOOGLE",
+    "newId",
+    "MockAuth",
+    "HttpAuth",
+    "SUPA_SESS",
+    "nowS",
+    "supaLoad",
+    "supaSave",
+    "supaClear",
+    "SupaCore",
+    "SUPA_HOST",
+    "SupaAuth",
+    "SupaAdapter",
+    "SUPA_API",
+    "Auth",
+    "initial",
+    "S",
+    "UI",
+    "find",
+    "AI_LIVE"
+   ],
+   "dependsOn": [
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "04-data__repo.js"
+   ]
+  },
+  "06-services__schedule.js": {
+   "declares": [
+    "occursOn",
+    "val",
+    "target",
+    "tracked",
+    "isDone",
+    "skipped",
+    "isFuture",
+    "onDate",
+    "overdue",
+    "streak",
+    "rate",
+    "remText",
+    "repeatText",
+    "timeText",
+    "periodOf",
+    "PERIODS"
+   ],
+   "dependsOn": [
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "05-data__auth.js"
+   ]
+  },
+  "07-services__stats.js": {
+   "declares": [
+    "habits",
+    "typeIcon",
+    "periodStats",
+    "ARC_C",
+    "chartData",
+    "totalDone"
+   ],
+   "dependsOn": [
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "05-data__auth.js",
+    "06-services__schedule.js"
+   ]
+  },
+  "08-core__undo.js": {
+   "declares": [
+    "toastEl",
+    "toastTimer",
+    "toast",
+    "clone",
+    "syncFail",
+    "PENDING",
+    "commit"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "04-data__repo.js",
+    "05-data__auth.js"
+   ]
+  },
+  "09-ui__layers.js": {
+   "declares": [
+    "$",
+    "sheet",
+    "scrim",
+    "page",
+    "dialog",
+    "pop",
+    "LAYERS",
+    "BEHIND",
+    "scrollY0",
+    "lock",
+    "pushLayer",
+    "popLayer",
+    "CONFIRM",
+    "sheetGuard",
+    "closeTop",
+    "setSheet",
+    "openSheet",
+    "openDialog",
+    "confirmDialog",
+    "openPage",
+    "endDrag"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "10-ui__popover.js",
+    "11-ui__primitives.js"
+   ]
+  },
+  "10-ui__popover.js": {
+   "declares": [
+    "closePop",
+    "openPop"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "02-core__dates.js",
+    "09-ui__layers.js",
+    "11-ui__primitives.js"
+   ]
+  },
+  "11-ui__primitives.js": {
+   "declares": [
+    "icon",
+    "empty",
+    "skeleton",
+    "header",
+    "pills",
+    "itemRow"
+   ],
+   "dependsOn": [
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "05-data__auth.js",
+    "06-services__schedule.js"
+   ]
+  },
+  "12-views.js": {
+   "declares": [
+    "VIEWS"
+   ],
+   "dependsOn": [
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "05-data__auth.js",
+    "06-services__schedule.js",
+    "07-services__stats.js",
+    "11-ui__primitives.js",
+    "19-services__calendar.js"
+   ]
+  },
+  "13-ui__form.js": {
+   "declares": [
+    "TYPE_INFO",
+    "startBase",
+    "newDraft",
+    "draftFrom",
+    "chips",
+    "SR",
+    "PN",
+    "IR",
+    "ri",
+    "stepper",
+    "everyTxt",
+    "repSum",
+    "remSum",
+    "rangeSum",
+    "repPanel",
+    "rangePanel",
+    "remPanel",
+    "SET",
+    "remRow",
+    "formBody",
+    "typeBody",
+    "renderForm",
+    "openForm",
+    "validate",
+    "buildItem"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "03-core__store.js",
+    "05-data__auth.js",
+    "06-services__schedule.js",
+    "09-ui__layers.js",
+    "11-ui__primitives.js"
+   ]
+  },
+  "14-core__timer.js": {
+   "declares": [
+    "loadTM",
+    "saveTM",
+    "tmMs",
+    "focusBody",
+    "openFocus",
+    "refreshFocus",
+    "updateLive",
+    "tick",
+    "tmFinish"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "06-services__schedule.js",
+    "08-core__undo.js",
+    "09-ui__layers.js",
+    "11-ui__primitives.js",
+    "20-views__detail.js",
+    "21-actions.js"
+   ]
+  },
+  "15-services__ai-quota.js": {
+   "declares": [
+    "QUOTA_LOW",
+    "QUOTA_POLL_MAX",
+    "QUOTA_UNKNOWN",
+    "QUOTA",
+    "quotaTimer",
+    "quotaTick",
+    "quotaEnabled",
+    "quotaState",
+    "quotaShort",
+    "resetMs",
+    "resetClock",
+    "resetIn",
+    "quotaFetch",
+    "quotaPaint",
+    "quotaRefresh",
+    "quotaFromChat",
+    "quotaSheet"
+   ],
+   "dependsOn": [
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "09-ui__layers.js"
+   ]
+  },
+  "16-views__ai.js": {
+   "declares": [
+    "SUGG",
+    "AI_TITLE_MAX",
+    "AI_REPLY_MS",
+    "loadChats",
+    "saveCH",
+    "curChat",
+    "aiReply",
+    "cardsHTML",
+    "cardHTML",
+    "AI_MARK",
+    "aiBodyHTML",
+    "aiRefresh",
+    "aiRenderDrawer",
+    "chatItems",
+    "aiPlusItems",
+    "aiSync",
+    "drawerOpen",
+    "aiAutosize",
+    "openAI"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "03-core__store.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "06-services__schedule.js",
+    "09-ui__layers.js",
+    "11-ui__primitives.js",
+    "15-services__ai-quota.js",
+    "21-actions.js"
+   ]
+  },
+  "17-services__ai-live.js": {
+   "declares": [
+    "aiAsk",
+    "remFrom",
+    "memCall",
+    "applyProposal"
+   ],
+   "dependsOn": [
+    "02-core__dates.js",
+    "03-core__store.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "15-services__ai-quota.js"
+   ]
+  },
+  "18-views__settings.js": {
+   "declares": [
+    "notifInfo",
+    "themeNow",
+    "settingsHTML",
+    "exportData",
+    "importData",
+    "applyTheme"
+   ],
+   "dependsOn": [
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "03-core__store.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "08-core__undo.js",
+    "09-ui__layers.js",
+    "11-ui__primitives.js"
+   ]
+  },
+  "19-services__calendar.js": {
+   "declares": [
+    "FCS",
+    "destroyCal",
+    "addMin",
+    "occurrenceEvents",
+    "dotsFor",
+    "mountCal",
+    "mountMain",
+    "selectDay",
+    "agendaHTML",
+    "mountHabit",
+    "calDayTap"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "05-data__auth.js",
+    "06-services__schedule.js",
+    "08-core__undo.js",
+    "09-ui__layers.js",
+    "10-ui__popover.js",
+    "11-ui__primitives.js",
+    "20-views__detail.js",
+    "21-actions.js"
+   ]
+  },
+  "20-views__detail.js": {
+   "declares": [
+    "HIST_STEP_TIMER",
+    "dayLab",
+    "scheduled",
+    "dayState",
+    "detailHabit",
+    "detailTask",
+    "detailSchedule",
+    "DETAIL_BY_TYPE",
+    "metaCard",
+    "detailHTML",
+    "openDetail",
+    "refreshDetail",
+    "dayMenu",
+    "dvStep",
+    "dvHTML",
+    "hApply",
+    "calMove"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "05-data__auth.js",
+    "06-services__schedule.js",
+    "07-services__stats.js",
+    "08-core__undo.js",
+    "09-ui__layers.js",
+    "11-ui__primitives.js",
+    "19-services__calendar.js"
+   ]
+  },
+  "21-actions.js": {
+   "declares": [
+    "date",
+    "bump",
+    "aiMsg",
+    "closeAnyDrawer",
+    "itemMenu",
+    "promptRename",
+    "ACTIONS",
+    "LP",
+    "aiSend"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "02-core__dates.js",
+    "03-core__store.js",
+    "05-data__auth.js",
+    "06-services__schedule.js",
+    "08-core__undo.js",
+    "09-ui__layers.js",
+    "10-ui__popover.js",
+    "11-ui__primitives.js",
+    "13-ui__form.js",
+    "14-core__timer.js",
+    "15-services__ai-quota.js",
+    "16-views__ai.js",
+    "17-services__ai-live.js",
+    "18-views__settings.js",
+    "19-services__calendar.js",
+    "20-views__detail.js",
+    "22-views__auth.js",
+    "24-services__legacy-import.js"
+   ]
+  },
+  "22-views__auth.js": {
+   "declares": [
+    "AU_MSG",
+    "EMAIL_RE",
+    "PW_MIN",
+    "RESEND_SEC",
+    "MAIL_TYPO",
+    "GLOGO",
+    "EV_MARK",
+    "RINGS",
+    "authBack",
+    "gBtn",
+    "legal",
+    "eyeBtn",
+    "fld",
+    "EMAIL_X",
+    "submitBtn",
+    "AUTH_VIEWS",
+    "AUTH_SPLASH",
+    "renderAuthRoot",
+    "coolT",
+    "paintCool",
+    "startCool",
+    "stopCool",
+    "resendReset",
+    "fieldErr",
+    "clearErrs",
+    "setBusy",
+    "authValidate",
+    "authSubmit",
+    "authGoogle",
+    "liveBusy",
+    "sigOf",
+    "typingNow",
+    "liveRefresh",
+    "SUPA_PK",
+    "rtWs",
+    "rtOn",
+    "rtRef",
+    "rtHb",
+    "rtRetry",
+    "rtTimer",
+    "rtDeb",
+    "rtTokT",
+    "rtSend",
+    "rtKick",
+    "rtConnect",
+    "rtSchedule",
+    "startLiveSync",
+    "stopLiveSync",
+    "rtResume",
+    "enterApp",
+    "doSignOut",
+    "errorView"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "02-core__dates.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "08-core__undo.js",
+    "09-ui__layers.js",
+    "10-ui__popover.js",
+    "11-ui__primitives.js",
+    "19-services__calendar.js",
+    "24-services__legacy-import.js"
+   ]
+  },
+  "23-render.js": {
+   "declares": [
+    "countUp",
+    "setBar",
+    "growBars",
+    "render",
+    "claimLegacyData"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "07-services__stats.js",
+    "09-ui__layers.js",
+    "11-ui__primitives.js",
+    "12-views.js",
+    "14-core__timer.js",
+    "19-services__calendar.js",
+    "20-views__detail.js",
+    "22-views__auth.js"
+   ]
+  },
+  "24-services__legacy-import.js": {
+   "declares": [
+    "IMPORT_FLAG",
+    "readLegacyItems",
+    "importLegacy",
+    "maybeImportLegacy",
+    "IMPORT_PENDING",
+    "runImport",
+    "loadApp",
+    "boot"
+   ],
+   "dependsOn": [
+    "00-head.js",
+    "01-core__constants.js",
+    "04-data__repo.js",
+    "05-data__auth.js",
+    "08-core__undo.js",
+    "09-ui__layers.js",
+    "14-core__timer.js",
+    "16-views__ai.js",
+    "22-views__auth.js",
+    "23-render.js"
+   ]
+  }
+ }
+}

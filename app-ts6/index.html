@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4B2FF5">
+<title>Evarel</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/app.css">
+
+</head>
+<body>
+<div class="ev-app" id="app"></div>
+<button class="ev-live" id="live" data-show="false" aria-label="เปิดหน้าจับเวลา"></button>
+<nav class="ev-nav" aria-label="เมนูหลัก"><ul id="nav"></ul></nav>
+<div class="ev-toast" id="toast" role="status" aria-live="polite" data-open="false"></div>
+<div class="ev-scrim" id="scrim"></div>
+<aside class="ev-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden></aside>
+<section class="ev-page" id="page" role="dialog" aria-modal="true" hidden></section>
+<section class="ev-auth" id="auth" aria-live="polite" hidden></section>
+<div class="ev-dialog" id="dialog" role="alertdialog" aria-modal="true" hidden></div>
+<div class="ev-pop" id="pop" role="menu" hidden></div>
+<script src="vendor/fullcalendar.min.js"></script>
+<script src="js/m/00-head.js"></script><script src="js/m/01-core__constants.js"></script><script src="js/m/02-core__dates.js"></script><script src="js/m/03-core__store.js"></script><script src="js/m/04-data__repo.js"></script><script src="js/m/05-data__auth.js"></script><script src="js/m/06-services__schedule.js"></script><script src="js/m/07-services__stats.js"></script><script src="js/m/08-core__undo.js"></script><script src="js/m/09-ui__layers.js"></script><script src="js/m/10-ui__popover.js"></script><script src="js/m/11-ui__primitives.js"></script><script src="js/m/12-views.js"></script><script src="js/m/13-ui__form.js"></script><script src="js/m/14-core__timer.js"></script><script src="js/m/15-services__ai-quota.js"></script><script src="js/m/16-views__ai.js"></script><script src="js/m/17-services__ai-live.js"></script><script src="js/m/18-views__settings.js"></script><script src="js/m/19-services__calendar.js"></script><script src="js/m/20-views__detail.js"></script><script src="js/m/21-actions.js"></script><script src="js/m/22-views__auth.js"></script><script src="js/m/23-render.js"></script><script src="js/m/24-services__legacy-import.js"></script>
+<script src="js/route.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>
