@@ -73,6 +73,21 @@ try {
   t('G1 ชน 429 แล้วช่องพิมพ์ล็อกทันทีโดยไม่ต้องรีเฟรช', s.taDis && s.sendDis, JSON.stringify({ ta: s.taDis, send: s.sendDis }));
   const vis = await p.evaluate(() => { const vt = (el) => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden'; const txt = []; for (const el of document.querySelectorAll('#aiBody *, #aiQuota, #aiForm *')) { if (el.children.length === 0 && vt(el) && /หมด|ครบ|รีเซ็ต|โควตา/.test(el.textContent || '')) txt.push((el.id || el.className || el.tagName) + ': ' + el.textContent.trim().slice(0, 60)); } return txt; });
   console.log('INFO ข้อความโควตาที่ผู้ใช้เห็นหลังชน 429 (' + vis.length + ' จุด): ' + JSON.stringify(vis));
+  /* L: คอนทราสต์ตัวอักษรชิปทุกสถานะ x สองโหมด >= 4.5:1 (วัดจากสีที่คำนวณจริงบนจอ ไม่ใช่ค่าในไฟล์) */
+  const lum = (rgb) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]); };
+  const parse = (c) => (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+  const states = { ok: q(13, 21000), low: q(34, 21000), out: q(40, 21000) };
+  for (const theme of ['light', 'dark']) {
+    await p.evaluate((th) => document.documentElement.setAttribute('data-theme', th), theme);
+    for (const [st, body] of Object.entries(states)) {
+      quotaNext = { status: 200, body }; await closeAI(); await p.waitForTimeout(500); await open(); await p.waitForTimeout(700);
+      const cc = await p.evaluate(() => { const c = document.getElementById('aiQuota'); if (!c || c.hidden) return null; const cs = getComputedStyle(c); return { fg: cs.color, bg: cs.backgroundColor, state: c.dataset.state }; });
+      if (!cc) { t('L ' + theme + ' ' + st + ' มีชิปให้วัด', false, 'ไม่พบชิป'); continue; }
+      const a = lum(parse(cc.fg)), b = lum(parse(cc.bg)), r = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      t('L ' + theme + ' ' + st + ' (state=' + cc.state + ') คอนทราสต์ >= 4.5', r >= 4.5, r.toFixed(2) + ' fg=' + cc.fg + ' bg=' + cc.bg);
+    }
+  }
+  await p.evaluate(() => document.documentElement.removeAttribute('data-theme'));
   /* H: ผู้ใช้ใหม่/ไม่มี overflow ในจอแคบ */
   await p.setViewportSize({ width: 320, height: 640 }); await p.waitForTimeout(400);
   const ov = await p.evaluate(() => { const q = document.getElementById('aiQuota'); if (!q) return { has: false }; const r = q.getBoundingClientRect(); return { has: true, right: r.right, w: innerWidth, sw: q.scrollWidth, cw: q.clientWidth }; });

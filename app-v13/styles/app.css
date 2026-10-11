@@ -320,8 +320,12 @@ body[data-auth="out"] .ev-app,body[data-auth="out"] .ev-nav,body[data-auth="out"
 /* ===== ai-quota (evarel-quota-ui): ใช้โทเคนเดิมทั้งหมด ไม่เพิ่มสีใหม่ ===== */
 .ev-qchip{align-self:center;justify-self:center;margin:0 12px 6px;max-width:calc(100% - 24px);min-height:32px;padding:6px 14px;border-radius:var(--r-pill);border:0;background:var(--c-fill);color:var(--c-muted);font:600 13px/1.2 var(--font);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .2s,color .2s;cursor:pointer}
 .ev-qchip[hidden]{display:none}
-.ev-qchip[data-state="low"]{background:var(--c-warn-soft);color:var(--c-warn)}
-.ev-qchip[data-state="out"]{background:var(--c-danger-soft);color:var(--c-danger)}
+/* คอนทราสต์ตัวอักษรชิป >= 4.5:1 (วัดด้วย apca_contrast_checker): token แยกเฉพาะชิป ไม่แตะ --c-warn/--c-danger ที่ใช้ร่วมทั้งแอป */
+.ev-qchip{--qc-warn:#A25F08;--qc-danger:#B7393D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ev-qchip{--qc-warn:#E8890C;--qc-danger:#FB4F54}}
+:root[data-theme="dark"] .ev-qchip{--qc-warn:#E8890C;--qc-danger:#FB4F54}
+.ev-qchip[data-state="low"]{background:var(--c-warn-soft);color:var(--qc-warn)}
+.ev-qchip[data-state="out"]{background:var(--c-danger-soft);color:var(--qc-danger)}
 .ev-qchip:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
 .ev-composer[data-locked="true"]{opacity:.62}
 .ev-composer[data-locked="true"] textarea{cursor:not-allowed}

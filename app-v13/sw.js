@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v32-quota-ui';
+const VERSION = 'evarel-v33-quota-ui';
 const CORE = [
   './',
   './index.html',
