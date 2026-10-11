@@ -2,19 +2,18 @@
  "schema": 1,
  "files": 25,
  "summary": {
-  "pairEdges": 159,
-  "backEdges": 12,
+  "pairEdges": 157,
+  "backEdges": 10,
   "loadTimeRefs": 8,
   "loadTimeForwardRefs": 0,
   "duplicateTopLevelNames": 0,
   "cyclicGroups": [
-   9,
+   8,
    2
   ],
   "largestCycleFiles": [
    "12-views.js",
    "14-core__timer.js",
-   "16-views__ai.js",
    "19-services__calendar.js",
    "20-views__detail.js",
    "21-actions.js",
@@ -29,8 +28,6 @@
   "10-ui__popover.js -> 11-ui__primitives.js",
   "12-views.js -> 19-services__calendar.js",
   "14-core__timer.js -> 20-views__detail.js",
-  "14-core__timer.js -> 21-actions.js",
-  "16-views__ai.js -> 21-actions.js",
   "19-services__calendar.js -> 20-views__detail.js",
   "19-services__calendar.js -> 21-actions.js",
   "21-actions.js -> 22-views__auth.js",
@@ -368,8 +365,7 @@
     "08-core__undo.js",
     "09-ui__layers.js",
     "11-ui__primitives.js",
-    "20-views__detail.js",
-    "21-actions.js"
+    "20-views__detail.js"
    ]
   },
   "15-services__ai-quota.js": {
@@ -432,8 +428,7 @@
     "06-services__schedule.js",
     "09-ui__layers.js",
     "11-ui__primitives.js",
-    "15-services__ai-quota.js",
-    "21-actions.js"
+    "15-services__ai-quota.js"
    ]
   },
   "17-services__ai-live.js": {

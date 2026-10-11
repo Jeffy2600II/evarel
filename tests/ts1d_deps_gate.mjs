@@ -4,8 +4,8 @@
 import { execFileSync } from 'child_process'; import fs from 'fs'; import path from 'path';
 import { undefinedNames } from '/tmp/evarel-repo/tools/undef_names.mjs';
 const app = process.argv[2]; const mdir = path.join(app, 'js/m');
-const LIMIT_BACK = 12;             // เพดานเส้นย้อนทิศ: ห้ามเพิ่ม (ลดได้ และเมื่อลดต้องอัปเดตค่านี้) 22->17 ts-1f, 17->14 ts-1g, 14->12 ts-1i
-const LIMIT_CYCLE = 9;            // เพดานขนาดก้อนวงจรใหญ่สุด (ไฟล์): ห้ามโต เพราะเส้นย้อนทิศลดได้โดยวงจรรวมเป็นก้อนเดียว (พบใน ts-1g) 20->13->11->9 ใน ts-1f ถึง ts-1h
+const LIMIT_BACK = 10;             // เพดานเส้นย้อนทิศ: ห้ามเพิ่ม (ลดได้ และเมื่อลดต้องอัปเดตค่านี้) 22->17 ts-1f, 17->14 ts-1g, 14->12 ts-1i, 12->10 ts-1j (ตัวนับแยกขอบเขตท้องถิ่น ตัดเส้นเท็จ 2 เส้น)
+const LIMIT_CYCLE = 8;            // เพดานขนาดก้อนวงจรใหญ่สุด (ไฟล์): ห้ามโต 9->8 ใน ts-1j (เส้นเท็จที่ตัดอยู่ในก้อนเดิม)
 const tool = '/tmp/evarel-repo/tools/dep_manifest.mjs';
 const fails = [];
 const gen = (parser) => JSON.parse(execFileSync('node', [tool, mdir, '--parser', parser], { maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] }).toString());
