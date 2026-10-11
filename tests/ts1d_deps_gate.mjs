@@ -4,8 +4,8 @@
 import { execFileSync } from 'child_process'; import fs from 'fs'; import path from 'path';
 import { undefinedNames } from '/tmp/evarel-repo/tools/undef_names.mjs';
 const app = process.argv[2]; const mdir = path.join(app, 'js/m');
-const LIMIT_BACK = 10;             // เพดานเส้นย้อนทิศ: ห้ามเพิ่ม (ลดได้ และเมื่อลดต้องอัปเดตค่านี้) 22->17 ts-1f, 17->14 ts-1g, 14->12 ts-1i, 12->10 ts-1j (ตัวนับแยกขอบเขตท้องถิ่น ตัดเส้นเท็จ 2 เส้น)
-const LIMIT_CYCLE = 8;            // เพดานขนาดก้อนวงจรใหญ่สุด (ไฟล์): ห้ามโต 9->8 ใน ts-1j (เส้นเท็จที่ตัดอยู่ในก้อนเดิม)
+const LIMIT_BACK = 0;             // เพดานเส้นย้อนทิศ: ห้ามเพิ่ม (ลดได้ และเมื่อลดต้องอัปเดตค่านี้) 22->17 ts-1f, 17->14 ts-1g, 14->12 ts-1i, 12->10 ts-1j (ตัวนับแยกขอบเขตท้องถิ่น ตัดเส้นเท็จ 2 เส้น), 10->7 ts-1k (ย้าย icon ไป 01 และ closePop ไป 09), 7->5 ts-1l (ย้าย dayLab ไป 02 และ agendaHTML ไป 11), 5->3 ts-1m (ย้าย 11 นิยามของหน้ารายละเอียดและ LP), 3->0 ts-1n (ย้าย enterApp authSubmit authGoogle ไป 24 และสลับไฟล์ actions ไปท้ายสุด) เฟส B ถึงเป้า
+const LIMIT_CYCLE = 1;            // เพดานขนาดก้อนวงจรใหญ่สุด (ไฟล์): ห้ามโต 9->8 ts-1j (เส้นเท็จที่ตัดอยู่ในก้อนเดิม), 8->6 ts-1l วัดจริงแต่ยังไม่ล็อก, 6->3 ts-1m, 3->1 ts-1n (ไม่มีวงจร)
 const tool = '/tmp/evarel-repo/tools/dep_manifest.mjs';
 const fails = [];
 const gen = (parser) => JSON.parse(execFileSync('node', [tool, mdir, '--parser', parser], { maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] }).toString());

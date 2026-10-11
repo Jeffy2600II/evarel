@@ -1,0 +1,10 @@
+import { chromium } from 'playwright'; import fs from 'fs';
+const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/', exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
+const b=await chromium.launch({executablePath:exe}), ctx=await b.newContext({viewport:{width:412,height:915}}), p=await ctx.newPage();
+await p.route(/fonts\./,r=>r.abort()); await p.goto('http://localhost:8779/index.html'); await p.waitForTimeout(1200);
+await p.click('[data-act="au-go"][data-id="signup"]'); await p.waitForTimeout(300);
+await p.fill('#f-name','Nontakorn Nonsurat (Jeffy) ชื่อยาวมากๆๆ สำหรับทดสอบการล้น'); await p.fill('#f-email','nontakorn2600.very.long.address.test'+Date.now()+'@gmail.com'); await p.fill('#f-password','Passw0rd!x1'); await p.check('input[name="terms"]'); await p.click('button[type="submit"]'); await p.waitForTimeout(2500);
+const wide=()=>p.evaluate(()=>{const W=document.documentElement.clientWidth,out=[];document.querySelectorAll('body *').forEach(e=>{const r=e.getBoundingClientRect();if(r.width>0&&(r.right>W+1||r.left<-1))out.push((e.id?'#'+e.id:'')+'.'+String(e.className).split(' ')[0]+' <'+e.tagName+'> L'+Math.round(r.left)+' R'+Math.round(r.right))});return {W,scrollW:document.documentElement.scrollWidth,bodyW:document.body.scrollWidth,out:out.slice(0,10)}});
+await p.evaluate(()=>{location.hash='#/settings'}); await p.waitForTimeout(1200);
+console.log('settings',JSON.stringify(await wide()));
+await p.screenshot({path:'/tmp/ovf-settings.png'});await b.close();

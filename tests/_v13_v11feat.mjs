@@ -50,7 +50,7 @@ if(det){await det.click();await p.waitForTimeout(1200);
  await p.goBack();await p.waitForTimeout(800);
  ok('Back closes detail, stays on All',await p.evaluate(()=>document.getElementById('page').dataset.open!=='true')&&await p.evaluate(()=>location.hash)==='#/all');}
 // Repo error/retry: ทำให้ load ล้มแล้วกด retry
-await p.evaluate(()=>{window.__orig=Repo.load;});
+await p.evaluate(()=>{window.__RP=(typeof ST!=='undefined'&&ST.Repo)?ST:null;window.__orig=(window.__RP?ST.Repo:Repo).load;});
 ok('no pageerrors',errs.length===0,errs.join('|'));
 console.log(res.filter(Boolean).length+'/'+res.length);
 await b.close();

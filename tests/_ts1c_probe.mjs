@@ -1,0 +1,10 @@
+import { chromium } from 'playwright'; import fs from 'fs';
+const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
+const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
+const b=await chromium.launch({executablePath:exe}); const p=await b.newPage({viewport:{width:412,height:915},hasTouch:true});
+await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/,r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('/tmp/evarel-repo/app-v13/vendor/fullcalendar.min.js')}));
+await p.goto('http://localhost:8791/index.html'); await p.waitForTimeout(500); await p.evaluate(()=>localStorage.clear());
+await p.evaluate(()=>{const u={id:'u_test',name:'N',email:'a@b.c',provider:'google'};localStorage.setItem('evarel-demo-users',JSON.stringify([u]));localStorage.setItem('evarel-demo-session','u_test');});
+await p.reload(); await p.waitForTimeout(2000);
+const info=await p.evaluate(()=>({hash:location.hash,acts:[...new Set([...document.querySelectorAll('[data-act]')].map(e=>e.dataset.act))],rows:document.querySelectorAll('.ev-row').length,rowActs:[...document.querySelectorAll('.ev-row')].slice(0,2).map(e=>e.outerHTML.slice(0,160)),week:document.querySelectorAll('[class*=week]').length,weekCls:[...new Set([...document.querySelectorAll('[class*=week]')].map(e=>e.className))].slice(0,4),tabs:[...document.querySelectorAll('nav a,nav button')].map(e=>(e.getAttribute('href')||e.dataset.act||'')+':'+e.textContent.trim().slice(0,6)).slice(0,6)}));
+console.log(JSON.stringify(info,null,1).slice(0,1800)); await b.close();

@@ -1,0 +1,16 @@
+import { chromium } from 'playwright'; import fs from 'fs';
+const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
+const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
+const [,, email, pw] = process.argv;
+const b=await chromium.launch({executablePath:exe}); const c=await b.newContext({viewport:{width:412,height:915}}); const p=await c.newPage();
+const errs=[]; const apis=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('response',r=>{ if(r.url().includes('/api/')) apis.push(r.status()+' '+new URL(r.url()).pathname); });
+await p.route(/fonts\./,r=>r.abort());
+const ok=(n,v,x='')=>console.log((v?'PASS ':'FAIL ')+n,x);
+await p.goto('https://evarel-v13s-test.nontakorn2600.workers.dev/'); await p.waitForTimeout(3500);
+const before = await p.evaluate(()=>document.body.dataset.auth); ok('หน้าแรกโหลด (ยังไม่ล็อกอิน)', before==='out', before);
+await p.click('[data-act="au-go"][data-id="login"]'); await p.waitForTimeout(400); await p.fill('#f-email',email); await p.fill('#f-password',pw); await p.click('button[type="submit"]'); await p.waitForTimeout(4500);
+const after = await p.evaluate(()=>document.body.dataset.auth); ok('ล็อกอินผ่านหน้าเว็บจริง -> Worker ใหม่', after==='in', after);
+await p.waitForTimeout(1500);
+ok('ไม่มี JS error', errs.length===0, errs.slice(0,2).join('|'));
+ok('ไม่มี API ตอบ 4xx/5xx ระหว่างล็อกอิน', apis.every(a=>!/^(4|5)/.test(a)), apis.join(', '));
+await b.close();

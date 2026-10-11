@@ -1,0 +1,14 @@
+import { chromium } from 'playwright'; import fs from 'fs';
+const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
+const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
+const b=await chromium.launch({executablePath:exe}); const c=await b.newContext({viewport:{width:412,height:915},serviceWorkers:'allow'}); const p=await c.newPage();
+const errs=[]; p.on('pageerror',e=>errs.push(e.message)); await p.route(/fonts\./,r=>r.abort());
+const ok=(n,v,x='')=>console.log((v?'PASS ':'FAIL ')+n,x);
+await p.goto('https://evarel-v13-test.nontakorn2600.workers.dev/'); await p.waitForTimeout(3500);
+ok('หน้าต้อนรับขึ้น', (await p.evaluate(()=>document.body.dataset.auth))==='out' && /เริ่มต้นใช้งาน/.test(await p.evaluate(()=>document.body.innerText)));
+ok('Service Worker ตัวใหม่', JSON.stringify(await p.evaluate(async()=>await caches.keys()))==='["evarel-v22-ui13"]', JSON.stringify(await p.evaluate(async()=>await caches.keys())));
+await p.click('[data-act="au-go"][data-id="signup"]'); await p.waitForTimeout(300);
+await p.fill('#f-name','ทดสอบ'); await p.fill('#f-email','live.check@example.com'); await p.fill('#f-password','Password123!');
+await p.check('input[name="terms"]'); await p.click('button[type="submit"]'); await p.waitForTimeout(3200);
+ok('สมัครแล้วเข้าแอป', (await p.evaluate(()=>document.body.dataset.auth))==='in', (await p.evaluate(()=>document.body.innerText)).slice(0,60).replace(/\n/g,' | '));
+ok('ไม่มี pageerror', errs.length===0, errs.join('|')); await b.close();
