@@ -317,6 +317,18 @@ body[data-auth="out"] .ev-app,body[data-auth="out"] .ev-nav,body[data-auth="out"
 .ev-enter>*{animation:rise .5s var(--ease) both;animation-delay:calc(var(--i,0)*45ms)}
 .ev-enter .ev-list-item{animation:rise .45s var(--ease) both;animation-delay:calc(var(--i,0)*35ms + 120ms)}
 .ev-enter .ev-bars i{animation:barup .6s var(--ease) both;animation-delay:calc(var(--i,0)*40ms + 200ms)}@keyframes barup{from{transform:scaleY(0)}}
+/* ===== ai-quota (evarel-quota-ui): ใช้โทเคนเดิมทั้งหมด ไม่เพิ่มสีใหม่ ===== */
+.ev-qchip{align-self:center;justify-self:center;margin:0 12px 6px;max-width:calc(100% - 24px);min-height:32px;padding:6px 14px;border-radius:var(--r-pill);border:0;background:var(--c-fill);color:var(--c-muted);font:600 13px/1.2 var(--font);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .2s,color .2s;cursor:pointer}
+.ev-qchip[hidden]{display:none}
+.ev-qchip[data-state="low"]{background:var(--c-warn-soft);color:var(--c-warn)}
+.ev-qchip[data-state="out"]{background:var(--c-danger-soft);color:var(--c-danger)}
+.ev-qchip:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
+.ev-composer[data-locked="true"]{opacity:.62}
+.ev-composer[data-locked="true"] textarea{cursor:not-allowed}
+.ev-composer .ev-send:disabled{opacity:.28;cursor:not-allowed;transform:none}
+.ev-qrow{display:grid;gap:8px;margin-top:14px}.ev-qrow:first-child{margin-top:4px}
+.ev-qbar{height:8px;border-radius:var(--r-pill);background:var(--c-fill);overflow:hidden}
+.ev-qbar>i{display:block;width:100%;height:100%;border-radius:inherit;background:var(--c-accent);transform-origin:left;transform:scaleX(var(--p,0));transition:transform .4s var(--ease)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
 
 /* กันเนื้อหายาว (ชื่อ/อีเมล/ข้อความอธิบาย) ดันการ์ดกว้างเกินจอ */

@@ -8,7 +8,7 @@ import {
   handleGetLogs,
   handlePostLog
 } from './systems/items/routes';
-import { handleAiChat, handleAiMemory } from './systems/ai/routes';
+import { handleAiChat, handleAiMemory, handleAiQuota } from './systems/ai/routes';
 import { RULES, clientIp, emailKey, check, tooMany, status as rlStatus, maybeCleanup, withForwardedIp } from './shared/ratelimit';
 import { jsonResponse } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
@@ -69,6 +69,7 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
   if (path === '/api/auth/session' && method === 'POST') return handleOAuthSession(request, aenv);
   if (path === '/api/auth/account' && method === 'DELETE') return handleDeleteAccount(request, aenv);
 
+  if (path === '/api/ai/quota' && method === 'GET') return handleAiQuota(request, env);
   if (path === '/api/ai/chat' && method === 'POST') return handleAiChat(request, env);
   if (path === '/api/ai/memory' && method === 'POST') return handleAiMemory(request, env);
 

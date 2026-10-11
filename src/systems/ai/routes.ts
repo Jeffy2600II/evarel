@@ -1,8 +1,9 @@
 import { Env, errorResponse, jsonResponse } from '../items/routes';
 import { extractBearer, verifyJWT } from '../../shared/auth';
+import { check as rlCheck, RULES, tooMany } from '../../shared/ratelimit';
 import { runAgent } from './agent';
 import { recall, saveFacts, forgetFact, isSensitive, Fact } from './memory';
-import { reserve, settle, limitMessage } from './quota';
+import { reserve, settle, limitMessage, readOwn, bangkokDay } from './quota';
 import { readJsonLimited } from '../items/validate';
 
 const MAX_TEXT = 1000;
@@ -29,7 +30,7 @@ export async function handleAiChat(request: Request, env: Env): Promise<Response
   // โควตา (ADR 0002): จองก่อนทำงานหนักใดๆ เต็ม = 429 ทันทีโดยไม่เรียก LLM/MemoryLake/ฐานข้อมูลเลย
   const q = await reserve(env as any, userId);
   if (!q.allowed) {
-    const res = jsonResponse({ error: 'quota_exceeded', reason: q.reason, text: limitMessage(q), proposals: [], quota: { reason: q.reason, resetAt: q.resetAt, used: q.calls, limit: q.limits.calls } }, 429, env);
+    const res = jsonResponse({ error: 'quota_exceeded', reason: q.reason, text: limitMessage(q), proposals: [], quota: { reason: q.reason, resetAt: q.resetAt, used: q.calls, limit: q.limits.calls, tokens: { used: q.tokens, limit: q.limits.tokens } } }, 429, env);
     res.headers.set('Retry-After', String(Math.max(1, Math.ceil((+new Date(q.resetAt) - Date.now()) / 1000))));
     return res;
   }
@@ -51,7 +52,7 @@ export async function handleAiChat(request: Request, env: Env): Promise<Response
     // memory_save ที่โดนตัวกรองอ่อนไหว: ติดป้ายให้แอปเตือนก่อนกดยืนยัน (ข้อมูลจะออกไปบริการภายนอก)
     const proposals = out.proposals.map((p) => (p.tool === 'memory_save' && isSensitive(String(p.args.fact)) ? { ...p, sensitive: true } : p));
     if (q.metered) await settle(env as any, userId, q.day, out.tokens, false);
-    return jsonResponse({ text: out.text, proposals, usage: { rounds: out.rounds, tokens: out.tokens, provider: out.provider, memory: memFacts.length }, quota: q.metered ? { used: q.calls, limit: q.limits.calls } : undefined }, 200, env);
+    return jsonResponse({ text: out.text, proposals, usage: { rounds: out.rounds, tokens: out.tokens, provider: out.provider, memory: memFacts.length }, quota: q.metered ? { used: q.calls, limit: q.limits.calls, tokens: { used: q.tokens + (out.tokens || 0), limit: q.limits.tokens }, resetAt: bangkokDay().resetAt } : undefined }, 200, env);
   } catch (e: any) {
     const m = String(e?.message || '');
     // ระบบล่ม (ไม่ใช่ความผิดผู้ใช้) = คืนโควตา 1 ครั้ง
@@ -86,4 +87,36 @@ export async function handleAiMemory(request: Request, env: Env): Promise<Respon
     return jsonResponse(r, r.ok ? 200 : r.error === 'not_found' || r.error === 'bad_fact_id' ? 404 : 502, env);
   }
   return errorResponse('unknown op', 400, env);
+}
+
+
+/* GET /api/ai/quota -> โควตาของผู้ใช้เอง (อ่านอย่างเดียว ไม่หัก ไม่เรียก LLM)
+   ลำดับ: ตรวจ JWT -> จำกัดอัตราต่อ user id -> แคชสั้น -> อ่านฐาน
+   - จำกัดอัตราหลังตรวจ JWT: token ปลอมไม่ไปกินโควตา rl_hit และไม่ลงโทษคนอื่นที่ใช้ไอพีเดียวกัน
+   - rl_hit ยังไม่ติดตั้ง/ล่ม = fail-open (ตามกลไกกลางของระบบ) จึงมีแคชสั้นคุมภาระฐานข้อมูลอีกชั้นที่ไม่พึ่ง migration */
+const QUOTA_CACHE_MS = 3000, QUOTA_CACHE_MAX = 500;
+const quotaCache = new Map<string, { at: number; view: unknown }>();
+export function _clearQuotaCache() { quotaCache.clear(); }
+export async function handleAiQuota(request: Request, env: Env): Promise<Response> {
+  const token = extractBearer(request);
+  if (!token) return errorResponse('Missing authorization token', 401, env);
+  let userId = '';
+  try { userId = (await verifyJWT(token, env, (env as any).CUSTOM_FETCH)).sub; }
+  catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
+  const v = await rlCheck(env, [[RULES.quotaUser, userId]]);
+  if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse);
+  const now = Date.now(), hit = quotaCache.get(userId);
+  let view: unknown;
+  if (hit && now - hit.at < QUOTA_CACHE_MS) view = hit.view;
+  else {
+    view = await readOwn(env as any, token);
+    /* แคชเฉพาะค่าที่อ่านสำเร็จ: unknown ไม่แคช เพื่อให้ลองใหม่ได้ทันทีเมื่อฐานกลับมา */
+    if (!(view as any)?.unknown) {
+      if (quotaCache.size >= QUOTA_CACHE_MAX) quotaCache.delete(quotaCache.keys().next().value as string);
+      quotaCache.set(userId, { at: now, view });
+    }
+  }
+  const res = jsonResponse(view, 200, env);
+  res.headers.set('Cache-Control', 'no-store');
+  return res;
 }

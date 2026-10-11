@@ -12,6 +12,7 @@ export const RULES = {
   mailIp:       { bucket: 'mail_ip',        limit: 10, windowSec: 3600 },  // forgot/resend ต่อไอพี
   mailEmail:    { bucket: 'mail_email',     limit: 3,  windowSec: 3600 },  // ส่งเมลถึงอีเมลเดียว (กันถล่มกล่องเหยื่อ/กินโควตา SMTP)
   refreshIp:    { bucket: 'refresh_ip',     limit: 120, windowSec: 300 },
+  quotaUser:    { bucket: 'ai_quota_user',  limit: 30,  windowSec: 60 },     // อ่านโควตา AI ต่อผู้ใช้ (UI ถามไม่เกิน ~3 ครั้ง/นาที เผื่อ 10 เท่า)
 } as const satisfies Record<string, Rule>;
 
 export function clientIp(request: Request): string {

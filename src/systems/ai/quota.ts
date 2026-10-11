@@ -72,3 +72,40 @@ export function limitMessage(r: Extract<Reserve, { allowed: false }>): string {
   if (r.reason === 'tokens') return `วันนี้คุณคุยกับ AI ยาวจนใช้โควตาข้อความครบแล้ว โควตาจะรีเซ็ตตอนเที่ยงคืน (${hhmm} น.)`;
   return `วันนี้คุณใช้ AI ครบ ${r.limits.calls} ครั้งแล้ว โควตาจะรีเซ็ตตอนเที่ยงคืน (${hhmm} น.)`;
 }
+
+/* ===== อ่านโควตาของตัวเอง (evarel-quota-ui): อ่านอย่างเดียว ไม่หัก ไม่เรียก LLM =====
+   อ่านตาราง ai_usage ด้วย JWT ของผู้ใช้ -> RLS ("own ai_usage read") กันข้ามผู้ใช้ให้
+   หมายเหตุ: header apikey ยังเป็น SUPABASE_SERVICE_KEY (Worker ไม่มี anon key) แต่ PostgREST ตัดสินสิทธิ์จาก Authorization (JWT ผู้ใช้) ไม่ใช่ apikey
+   พิสูจน์บนระบบจริงแล้ว 11 ต.ค. 2026: JWT ของ A อ่านแถวของ B ไม่ได้ (A เห็น 0, B เห็น 33) ถ้าเพิ่ม anon key ภายหลังให้เปลี่ยน apikey เป็นตัวนั้น
+   ไม่รวมโควตาส่วนกลาง: RLS มองไม่เห็นแถวของคนอื่น และผู้ใช้ไม่ควรเห็นตัวเลขของระบบ
+   fail-open: อ่านไม่ได้ = { unknown: true, blocked: false } ห้ามล็อกผู้ใช้เพราะเราเองอ่านพลาด */
+export type QuotaView =
+  | { unknown: true; blocked: false }
+  | { unknown?: false; day: string; resetAt: string; blocked: boolean; reason?: 'calls' | 'tokens';
+      calls: { used: number; limit: number; remaining: number }; tokens: { used: number; limit: number; remaining: number } };
+
+export async function readOwn(env: any, userJwt: string, now = new Date()): Promise<QuotaView> {
+  const cfg = readCfg(env);
+  const { day, resetAt } = bangkokDay(now);
+  const f: typeof fetch = env.CUSTOM_FETCH || globalThis.fetch;
+  const base = String(env.SUPABASE_URL).replace(/\/+$/, '');
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 2500);
+  try {
+    const r = await f(`${base}/rest/v1/ai_usage?select=calls,tokens&day=eq.${day}&limit=1`, {
+      headers: { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${userJwt}`, Accept: 'application/json' }, signal: ctl.signal,
+    });
+    if (!r.ok) { console.warn('quota_read_failed', r.status); return { unknown: true, blocked: false }; }
+    const rows: any = await r.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+    const uc = Math.max(0, Number(row?.calls) || 0), ut = Math.max(0, Number(row?.tokens) || 0);
+    const calls = { used: uc, limit: cfg.calls, remaining: Math.max(0, cfg.calls - uc) };
+    const tokens = { used: ut, limit: cfg.tokens, remaining: Math.max(0, cfg.tokens - ut) };
+    /* ลำดับเดียวกับ ai_usage_take: calls ก่อน tokens */
+    const reason = uc >= cfg.calls ? 'calls' : ut >= cfg.tokens ? 'tokens' : undefined;
+    return { day, resetAt, blocked: !!reason, ...(reason ? { reason } : {}), calls, tokens };
+  } catch (e: any) {
+    console.warn('quota_read_failed', String(e?.message || e));
+    return { unknown: true, blocked: false };
+  } finally { clearTimeout(timer); }
+}
