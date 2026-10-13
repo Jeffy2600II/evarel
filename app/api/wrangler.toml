@@ -1,0 +1,21 @@
+# Evarel API (Cloudflare Worker)
+# สองสภาพแวดล้อมจากโค้ดชุดเดียว:
+#   forge      = ชุดพัฒนา (สาขา develop) ไม่ใช่สาธารณะ  -> evarel-api-forge
+#   production = ชุดทางการ (สาขา main)                    -> evarel-api
+# account_id ไม่ฝังในไฟล์ ให้ตั้งตัวแปรสภาพแวดล้อม CLOUDFLARE_ACCOUNT_ID
+# secret ไม่อยู่ในไฟล์ ดู app/api/README.md หัวข้อ Secrets
+
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[env.forge]
+name = "evarel-api-forge"
+[env.forge.vars]
+ALLOWED_ORIGIN = "https://evarel-app-forge.nontakorn2600.workers.dev,http://localhost:8779"
+REQUIRE_EMAIL_VERIFICATION = "true"
+
+[env.production]
+name = "evarel-api"
+[env.production.vars]
+ALLOWED_ORIGIN = "https://evarel-app.nontakorn2600.workers.dev"
+REQUIRE_EMAIL_VERIFICATION = "true"

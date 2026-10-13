@@ -1,0 +1,17 @@
+{
+  "name": "evarel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Evarel: PWA ส่วนตัวสำหรับจัดการชีวิต (Cloudflare Pages/Workers + Supabase)",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node scripts/test-api.mjs",
+    "build:web:forge": "node scripts/build-web.mjs forge",
+    "build:web:production": "node scripts/build-web.mjs production",
+    "plan:check": "python3 tools/plan_check.py"
+  },
+  "devDependencies": {
+    "wrangler": "^4.86.0"
+  }
+}
