@@ -4,14 +4,20 @@
   "private": true,
   "type": "module",
   "description": "Evarel: PWA ส่วนตัวสำหรับจัดการชีวิต (Cloudflare Pages/Workers + Supabase)",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node scripts/test-api.mjs",
     "build:web:forge": "node scripts/build-web.mjs forge",
     "build:web:production": "node scripts/build-web.mjs production",
-    "plan:check": "python3 tools/plan_check.py"
+    "plan:check": "python3 tools/plan_check.py",
+    "test:notify": "node app/api/src/systems/notify/due.test.mjs && node app/api/src/systems/notify/reminders.test.mjs && node app/api/src/systems/notify/push-routes.test.mjs && node app/api/src/systems/notify/scheduler.test.mjs && node app/api/src/systems/notify/sender.test.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.86.0"
+  },
+  "dependencies": {
+    "webpush-webcrypto": "1.0.5"
   }
 }
