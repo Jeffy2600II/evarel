@@ -36,11 +36,12 @@ function world() {
       const me = subOf(auth), svc = auth === 'Bearer svc' || !!globalThis.__noRls;
       const q = u.searchParams; const epQ = q.get('endpoint'); const ep = epQ?.startsWith('eq.') ? decodeURIComponent(epQ.slice(3)) : null;
       const visible = () => st.rows.filter((r) => svc || r.user_id === me);
-      if (method === 'GET') { let rs = visible(); if (ep) rs = rs.filter((r) => r.endpoint === ep); return json(rs.map((r) => ({ ...r }))); }
-      if (method === 'POST') {
+      if (method === 'GET') { await new Promise((r) => setTimeout(r, 3)); let rs = visible(); if (ep) rs = rs.filter((r) => r.endpoint === ep); return json(rs.map((r) => ({ ...r }))); }
+      if (method === 'POST') { await new Promise((r) => setTimeout(r, 3));
         const b = JSON.parse(o.body || '{}'); const rows = Array.isArray(b) ? b : [b];
         for (const r of rows) {
           if (!svc && r.user_id !== me) return json({ code: '42501', message: 'new row violates row-level security policy' }, 403); // RLS with check
+          if (globalThis.__trigger && st.rows.filter((x) => x.user_id === r.user_id).length >= 5) return json({ code: 'P0001', message: 'push_subscriptions_limit' }, 400); /* trigger migration 005: นับ+ตรวจ+เขียนในก้อนเดียวไม่มี await คั่น */
           if (st.rows.some((x) => x.endpoint === r.endpoint)) return json({ code: '23505', message: 'duplicate key value violates unique constraint' }, 409);
           st.rows.push({ id: ++st.id, user_id: r.user_id ?? null, endpoint: r.endpoint, p256dh: r.p256dh, auth: r.auth });
         } return new Response(null, { status: 201 });
@@ -154,5 +155,24 @@ await t('P17 unsubscribe: เงื่อนไข user_id ในโค้ดก
   try { const r = await call(await post({}, { endpoint: FCM(2) }, 'A', '/api/push/unsubscribe'), env); assert.equal(r.status, 200); }
   finally { globalThis.__noRls = false; }
   assert.deepEqual(w.st.rows.map((x) => x.user_id).sort(), ['A', 'B'], 'A ลบของ B ได้เมื่อ RLS ล้ม');
+});
+await t('P18 race: ยิงขนาน 12 เครื่องของผู้ใช้เดียว -> ไม่เกินเพดาน 5 เมื่อฐานข้อมูลบังคับเพดาน (trigger 005)', async () => {
+  globalThis.__trigger = true;
+  try {
+    const w = world(); const env = mkEnv(w);
+    const rs = await Promise.all(Array.from({ length: 12 }, async (_, i) => call(await post(w, sub(FCM(100 + i)), 'racer'), env)));
+    assert.ok(w.st.rows.filter((x) => x.user_id === 'racer').length <= 5, 'เกินเพดาน: ' + w.st.rows.length);
+    assert.ok(rs.every((r) => [200, 403].includes(r.status)), 'ต้องได้ 200 หรือ 403 เท่านั้น ได้ ' + rs.map((r) => r.status).join(','));
+  } finally { globalThis.__trigger = false; }
+});
+await t('P19 trigger ปฏิเสธ (P0001) -> Worker ตอบ 403 ไม่ใช่ 502 และไม่รั่วข้อความภายใน', async () => {
+  globalThis.__trigger = true;
+  try {
+    const w = world(); const env = mkEnv(w);
+    for (let i = 1; i <= 5; i++) w.st.rows.push({ id: i, user_id: 'A', endpoint: FCM(i), p256dh: 'a', auth: 'b' });
+    // ทำให้ด่านแรกของ Worker มองไม่เห็น (จำลองคำขอขนานที่อ่านก่อนอีกคนเขียน) แล้วให้ trigger เป็นคนกัน
+    const orig = w.f; env.CUSTOM_FETCH = async (u, o = {}) => { if (String(u).includes('select=endpoint') && !o.method) return json([]); return orig(u, o); };
+    const r = await call(await post(w, sub(FCM(9)), 'A'), env); assert.equal(r.status, 403); const txt = await r.text(); assert.ok(!/P0001|push_subscriptions_limit|trigger/.test(txt), txt);
+  } finally { globalThis.__trigger = false; }
 });
 console.log(`\nผ่าน ${pass} | ตก ${fail}`); process.exit(fail ? 1 : 0);

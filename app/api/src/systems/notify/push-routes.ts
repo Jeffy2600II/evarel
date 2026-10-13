@@ -64,7 +64,13 @@ export async function handlePushSubscribe(request: Request, env: Env): Promise<R
     body: JSON.stringify({ user_id: auth.sub, endpoint: b.endpoint, p256dh, auth: authKey }),
   });
   if (ins.status === 409) return errorResponse('endpoint already registered', 409, env); // เป็นของผู้ใช้อื่น: ไม่ทับ ไม่บอกว่าของใคร
-  if (!ins.ok) return errorResponse('Failed to save subscription', 502, env);
+  if (!ins.ok) {
+    /* เพดานจริงบังคับที่ฐานข้อมูล (trigger migration 005) เพราะด่านด้านบนไม่ atomic: คำขอขนานผ่านด่านแรกพร้อมกันได้
+       trigger ปฏิเสธด้วย P0001 + push_subscriptions_limit -> แปลงเป็น 403 เหมือนด่านแรก ไม่รั่วข้อความภายใน */
+    const txt = await ins.text().catch(() => '');
+    if (ins.status === 400 && txt.includes('push_subscriptions_limit')) return errorResponse(`Device limit reached (${MAX_SUBS_PER_USER})`, 403, env);
+    return errorResponse('Failed to save subscription', 502, env);
+  }
   return jsonResponse({ ok: true }, 200, env);
 }
 
