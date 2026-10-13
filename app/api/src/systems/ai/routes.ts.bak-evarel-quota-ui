@@ -1,0 +1,89 @@
+import { Env, errorResponse, jsonResponse } from '../items/routes';
+import { extractBearer, verifyJWT } from '../../shared/auth';
+import { runAgent } from './agent';
+import { recall, saveFacts, forgetFact, isSensitive, Fact } from './memory';
+import { reserve, settle, limitMessage } from './quota';
+import { readJsonLimited } from '../items/validate';
+
+const MAX_TEXT = 1000;
+const AI_BODY_BYTES = 16 * 1024; /* text 1000 + history 8x600 ~ 6KB; เผื่อ 2 เท่า */
+
+/* POST /api/ai/chat  body: { text, history:[{who,text}] }  -> { text, proposals, usage }
+   ไม่เขียนฐานข้อมูลเลย: การเขียนจริงทำโดยแอปหลังผู้ใช้กดยืนยัน ผ่าน PUT /api/items เดิม (RLS ตรวจซ้ำอีกชั้น) */
+export async function handleAiChat(request: Request, env: Env): Promise<Response> {
+  const token = extractBearer(request);
+  if (!token) return errorResponse('Missing authorization token', 401, env);
+  let userId = '';
+  try { userId = (await verifyJWT(token, env, (env as any).CUSTOM_FETCH)).sub; }
+  catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
+
+  let body: any;
+  { const p = await readJsonLimited(request, AI_BODY_BYTES); if (!p.ok) return errorResponse(p.msg, p.status, env); body = p.body; }
+  const text = String(body?.text ?? '').trim();
+  if (!text) return errorResponse('text required', 400, env);
+  if (text.length > MAX_TEXT) return errorResponse('text too long', 413, env);
+  const history = Array.isArray(body?.history)
+    ? body.history.filter((h: any) => h && (h.who === 'u' || h.who === 'a') && typeof h.text === 'string').slice(-8)
+    : [];
+
+  // โควตา (ADR 0002): จองก่อนทำงานหนักใดๆ เต็ม = 429 ทันทีโดยไม่เรียก LLM/MemoryLake/ฐานข้อมูลเลย
+  const q = await reserve(env as any, userId);
+  if (!q.allowed) {
+    const res = jsonResponse({ error: 'quota_exceeded', reason: q.reason, text: limitMessage(q), proposals: [], quota: { reason: q.reason, resetAt: q.resetAt, used: q.calls, limit: q.limits.calls } }, 429, env);
+    res.headers.set('Retry-After', String(Math.max(1, Math.ceil((+new Date(q.resetAt) - Date.now()) / 1000))));
+    return res;
+  }
+
+  try {
+    const f: typeof fetch = (env as any).CUSTOM_FETCH || globalThis.fetch;
+    const base = env.SUPABASE_URL.replace(/\/+$/, '');
+    // อ่านรายการด้วย JWT ของผู้ใช้เอง -> RLS กันข้อมูลคนอื่นให้อีกชั้น
+    const h = { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${token}`, Accept: 'application/json' };
+    const [ir, memFacts] = await Promise.all([
+      f(`${base}/rest/v1/items?select=*&limit=300`, { headers: h }),
+      recall(env as any, userId, text), // ล้ม/ช้า = คืน [] ไม่ขวางแชท (timeout 2.5 วินาทีในตัว)
+    ]);
+    if (!ir.ok) throw new Error('items_unavailable');
+    const rows: any[] = await ir.json();
+    const items = rows.map((r) => ({ id: Number(r.id), type: r.type, title: r.title, subject: r.subject, time: r.time, timeEnd: r.timeEnd, track: r.track, target: r.target, repeat: r.repeat, start: r.start, end: r.end, log: {} as Record<string, number> }));
+
+    const out = await runAgent(env, text, history, items, new Date(), memFacts);
+    // memory_save ที่โดนตัวกรองอ่อนไหว: ติดป้ายให้แอปเตือนก่อนกดยืนยัน (ข้อมูลจะออกไปบริการภายนอก)
+    const proposals = out.proposals.map((p) => (p.tool === 'memory_save' && isSensitive(String(p.args.fact)) ? { ...p, sensitive: true } : p));
+    if (q.metered) await settle(env as any, userId, q.day, out.tokens, false);
+    return jsonResponse({ text: out.text, proposals, usage: { rounds: out.rounds, tokens: out.tokens, provider: out.provider, memory: memFacts.length }, quota: q.metered ? { used: q.calls, limit: q.limits.calls } : undefined }, 200, env);
+  } catch (e: any) {
+    const m = String(e?.message || '');
+    // ระบบล่ม (ไม่ใช่ความผิดผู้ใช้) = คืนโควตา 1 ครั้ง
+    if (q.metered) await settle(env as any, userId, q.day, 0, true);
+    if (m === 'items_unavailable') return errorResponse('Failed to load items', 502, env);
+    if (m.startsWith('llm_unavailable')) return jsonResponse({ error: 'ai_unavailable', text: 'ตอนนี้ AI ใช้งานไม่ได้ชั่วคราว (โควตาเต็มหรือระบบขัดข้อง) ลองใหม่ภายหลังนะ', proposals: [] }, 503, env);
+    return errorResponse('ai_error', 500, env);
+  }
+}
+
+/* POST /api/ai/memory  body: { op:'save', fact, confirmSensitive? } | { op:'forget', id }
+   เรียกหลังผู้ใช้กดยืนยันการ์ดเท่านั้น | ตรวจ JWT ทุกครั้ง | user id มาจากโทเคนที่ตรวจแล้ว ไม่รับจาก body */
+export async function handleAiMemory(request: Request, env: Env): Promise<Response> {
+  const token = extractBearer(request);
+  if (!token) return errorResponse('Missing authorization token', 401, env);
+  let userId = '';
+  try { userId = (await verifyJWT(token, env, (env as any).CUSTOM_FETCH)).sub; }
+  catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
+  let body: any;
+  { const p = await readJsonLimited(request, AI_BODY_BYTES); if (!p.ok) return errorResponse(p.msg, p.status, env); body = p.body; }
+
+  if (body?.op === 'save') {
+    const fact = String(body.fact ?? '').trim();
+    if (!fact) return errorResponse('fact required', 400, env);
+    // ข้อมูลอ่อนไหวออกนอกระบบได้เมื่อผู้ใช้ยืนยันซ้ำอย่างชัดเจนเท่านั้น
+    if (isSensitive(fact) && body.confirmSensitive !== true) return jsonResponse({ ok: false, error: 'sensitive_needs_confirm' }, 409, env);
+    const r = await saveFacts(env as any, userId, [fact]);
+    return jsonResponse(r, r.ok ? 200 : 502, env);
+  }
+  if (body?.op === 'forget') {
+    const r = await forgetFact(env as any, userId, String(body.id ?? ''));
+    return jsonResponse(r, r.ok ? 200 : r.error === 'not_found' || r.error === 'bad_fact_id' ? 404 : 502, env);
+  }
+  return errorResponse('unknown op', 400, env);
+}
