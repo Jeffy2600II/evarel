@@ -47,12 +47,38 @@ async function findUserByEmail(env: Env, email: string): Promise<any | null> {
   return list.find(u => (u.email || '').toLowerCase() === email) || null;
 }
 
+/* เพดานส่งอีเมลรวมต่อ 24 ชั่วโมง (ปกป้องบัญชีส่งเมลไม่ให้ถูกใช้จนเต็มหรือถูกระงับ) | ล้มแบบปิด: นับไม่ได้ = ไม่ส่ง
+   ต่างจากตัวจำกัดคำขอทั่วไปที่ล้มแบบเปิด เพราะส่งเกินเพดานแล้วเสียหายกว่าส่งช้า ผู้ใช้ขอใหม่ได้ ค่าตั้งด้วย MAIL_DAILY_CAP */
+const MAIL_CAP_DEFAULT = 400;
+function mailCap(env: Env): number {
+  const v = String((env as any).MAIL_DAILY_CAP ?? '').trim();
+  if (!/^\d{1,6}$/.test(v)) return MAIL_CAP_DEFAULT;
+  const n = Number(v);
+  return n >= 1 && n <= 100000 ? n : MAIL_CAP_DEFAULT;
+}
+async function underMailCap(env: Env): Promise<boolean> {
+  try {
+    const key = env.SUPABASE_SERVICE_KEY;
+    const headers: Record<string, string> = { apikey: key, 'Content-Type': 'application/json' };
+    if (!key.startsWith('sb_')) headers.Authorization = 'Bearer ' + key;
+    const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 2500);
+    try {
+      const r = await f(env)(`${base(env)}/rest/v1/rpc/rl_hit`, { method: 'POST', headers, signal: ctl.signal,
+        body: JSON.stringify({ p_bucket: 'mail_daily', p_key: 'global', p_limit: mailCap(env), p_window_sec: 86400 }) });
+      if (!r.ok) return false;
+      const j: any = await r.json().catch(() => null);
+      const row = Array.isArray(j) ? j[0] : j;
+      return !!row && row.ok === true;
+    } finally { clearTimeout(timer); }
+  } catch { return false; }
+}
 /* ส่งรหัสของเราเอง: ออกรหัส -> เก็บแฮช -> ส่ง SMTP | ไม่ throw เด็ดขาด (ผลลัพธ์ต้องไม่ต่างกันตามว่าอีเมลมีบัญชีหรือไม่)
    ถ้า SMTP_* ไม่ครบหรือส่งไม่สำเร็จ แค่ไม่ส่ง (ผู้ใช้ขอใหม่ได้) ไม่เปิดเผยสาเหตุให้ client */
 const hasSmtp = (env: Env) => !!((env as any).SMTP_USER && (env as any).SMTP_PASS);
 async function sendOwnCode(env: Env, email: string, purpose: Purpose): Promise<void> {
   try {
     if (!hasSmtp(env)) return;
+    if (!(await underMailCap(env))) return;
     const { code } = await issueCode(env, email, purpose);
     const m = composeMail(purpose, code);
     const send = (env as any).CUSTOM_SEND_MAIL

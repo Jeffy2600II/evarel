@@ -47,6 +47,8 @@ function world(opts = {}) {
     if (p === '/auth/v1/user' && o.method === 'PUT') { const id = JSON.parse(Buffer.from((o.headers.Authorization || '').replace('Bearer ', '').split('.')[1] || 'e30', 'base64url').toString()).sub; const u = [...w.users.values()].find((x) => x.id === id); if (!u) return json({}, 401); u.password = body.password; if (!u.email_confirmed_at) u.email_confirmed_at = 'now'; return json(u); }
     if (p.startsWith('/rest/v1/rpc/')) {
       if (w.dbDown) throw new Error('db down'); const name = p.split('/rpc/')[1];
+      if (name === 'rl_hit' && w.rlThrows) throw new Error('network reset');
+      if (name === 'rl_hit') { w.rl ||= {}; const k = body.p_bucket + '|' + body.p_key; if (w.rlBroken) return json({ message: 'boom' }, 500); w.rl[k] = (w.rl[k] || 0) + 1; return json([{ ok: w.rl[k] <= body.p_limit, hits: w.rl[k], retry_after: 3600 }]); }
       if (name === 'ac_issue') { for (const r of w.rows) if (r.eh === body.p_email_hash && r.pu === body.p_purpose && !r.used) r.used = true; w.rows.push({ eh: body.p_email_hash, pu: body.p_purpose, ch: body.p_code_hash, salt: body.p_salt, att: 0, exp: w.now + body.p_ttl_sec * 1000, used: false }); return json(w.rows.length); }
       if (name === 'ac_salt') { const r = [...w.rows].reverse().find((x) => x.eh === body.p_email_hash && x.pu === body.p_purpose && !x.used && x.exp > w.now); return json(r ? r.salt : null); }
       if (name === 'ac_check') { const r = [...w.rows].reverse().find((x) => x.eh === body.p_email_hash && x.pu === body.p_purpose && !x.used); if (!r) return json('none'); if (r.exp <= w.now) { r.used = true; return json('expired'); } if (r.att >= body.p_max_attempts) { r.used = true; return json('locked'); } r.att++; if (r.ch === body.p_code_hash_try) { r.used = true; return json('ok'); } if (r.att >= body.p_max_attempts) { r.used = true; return json('locked'); } return json('invalid'); }
@@ -170,5 +172,34 @@ await t('E3 เมลถูกส่งถึงผู้รับที่ถ�
 });
 await t('E4 ขาด secret SMTP -> forgot/signup ยังตอบตามสัญญา (ไม่ crash ไม่เปิดเผย) และไม่ให้ session', async () => {
   needOwn(); const w = world(); const e = { SMTP_USER: '', SMTP_PASS: '', SMTP_FROM: '' }; const a = await call(A.handleForgot, w, { email: 'x@x.test' }, e); await w.drain(); assert.deepEqual([a.s, a.j], [200, { status: 'sent' }]);
+});
+await t('F1 เพดานส่งรวมต่อวัน: เกินเพดานแล้วไม่ส่งเมลเพิ่ม แต่ยังตอบ sent เหมือนเดิม', async () => {
+  needOwn(); const w = world(); for (let i = 0; i < 5; i++) w.mkUser('u' + i + '@x.test', { confirmed: true });
+  const out = []; for (let i = 0; i < 5; i++) out.push(await call(A.handleForgot, w, { email: 'u' + i + '@x.test' }, { MAIL_DAILY_CAP: '3' })); await w.drain();
+  assert.equal(w.mails.length, 3, 'ต้องส่งได้แค่ 3 ฉบับ ได้ ' + w.mails.length); assert.ok(out.every((x) => x.s === 200 && x.j.status === 'sent'), JSON.stringify(out.map((x) => x.j)));
+});
+await t('F2 เพดานนับเฉพาะเมลที่จะส่งจริง: อีเมลไม่มีบัญชีไม่กินโควตา', async () => {
+  needOwn(); const w = world(); w.mkUser('real@x.test', { confirmed: true });
+  for (let i = 0; i < 6; i++) await call(A.handleForgot, w, { email: 'ghost' + i + '@x.test' }, { MAIL_DAILY_CAP: '2' }); await call(A.handleForgot, w, { email: 'real@x.test' }, { MAIL_DAILY_CAP: '2' }); await w.drain();
+  assert.equal(w.mails.length, 1, 'อีเมลจริงต้องยังส่งได้ ได้ ' + w.mails.length);
+});
+await t('F3 ตัวนับเพดานล่ม -> ไม่ส่งเมล (ล้มแบบปิด) แต่ยังตอบ sent', async () => {
+  needOwn(); const w = world(); w.rlBroken = true; w.mkUser('u@x.test', { confirmed: true }); const r = await call(A.handleForgot, w, { email: 'u@x.test' }); await w.drain();
+  assert.deepEqual([r.s, r.j], [200, { status: 'sent' }]); assert.equal(w.mails.length, 0);
+});
+await t('F4 ไม่ตั้ง MAIL_DAILY_CAP ใช้ค่าเริ่มต้น 400 (ส่งได้ต่ำกว่าเพดาน)', async () => {
+  needOwn(); const w = world(); w.mkUser('u@x.test', { confirmed: true }); await call(A.handleForgot, w, { email: 'u@x.test' }); await w.drain();
+  assert.equal(w.mails.length, 1); const h = w.log.find((x) => x.p?.endsWith('/rpc/rl_hit') && x.body.p_bucket === 'mail_daily'); assert.ok(h, 'ต้องเรียกตัวนับ'); assert.equal(h.body.p_limit, 400); assert.equal(h.body.p_window_sec, 86400);
+});
+await t('F5 ค่า MAIL_DAILY_CAP ผิดปกติ (ติดลบ/ตัวอักษร/เกิน) -> ใช้ค่าเริ่มต้น ไม่ปิดการส่งทั้งระบบ', async () => {
+  needOwn(); for (const bad of ['-1', 'abc', '0', '1e9', '', ' ']) { const w = world(); w.mkUser('u@x.test', { confirmed: true }); await call(A.handleForgot, w, { email: 'u@x.test' }, { MAIL_DAILY_CAP: bad }); await w.drain(); assert.equal(w.mails.length, 1, 'cap=' + JSON.stringify(bad)); }
+});
+await t('F6 ตัวนับเพดานไม่ได้เก็บอีเมลหรือรหัสใดๆ (คีย์เป็นค่าคงที่)', async () => {
+  needOwn(); const w = world(); w.mkUser('u@x.test', { confirmed: true }); await call(A.handleForgot, w, { email: 'u@x.test' }); await w.drain();
+  const h = w.log.filter((x) => x.p?.endsWith('/rpc/rl_hit') && x.body.p_bucket === 'mail_daily'); assert.ok(h.length >= 1); assert.ok(h.every((x) => x.body.p_key === 'global' && !JSON.stringify(x.body).includes('u@x.test')));
+});
+await t('F7 ตัวนับเพดานโยน exception (เครือข่ายขาด) -> ไม่ส่งเมล (ล้มแบบปิด) แต่ยังตอบ sent', async () => {
+  needOwn(); const w = world(); w.rlThrows = true; w.mkUser('u@x.test', { confirmed: true }); const r = await call(A.handleForgot, w, { email: 'u@x.test' }); await w.drain();
+  assert.deepEqual([r.s, r.j], [200, { status: 'sent' }]); assert.equal(w.mails.length, 0);
 });
 console.log(`\nสรุป(${MODE}): ผ่านจริง ${pass} | ตก ${fail} | ข้าม ${skip} (ไม่นับเป็นผ่าน) | รวม ${pass + fail + skip}`); process.exit(fail ? 1 : 0);
