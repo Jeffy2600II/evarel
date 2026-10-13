@@ -342,9 +342,9 @@ Toast: "ไม่รองรับ" Show "อนุญาต" Button   Show Sta
 3. `AIClient` (`views/ai.js`): เรียกโมเดล ตอนนี้เป็น mock แบบกฎ รอสลับเป็น Worker `/api/ai/chat`
 
 ### 5.3 Backend ที่มีอยู่แล้วแต่ยังไม่ต่อกับแอปหลัก
-- **Worker PoC** (`poc/worker.js`, deploy จริงที่ `/tmp/evarel-deploy/worker.js` ที่ `evarel-poc.nontakorn2600.workers.dev`) มี 4 endpoint: `GET /api/push/key`, `POST /api/push/subscribe`, `POST /api/push/send`, `POST /api/ai/chat` (Groq)
-- **Schema PoC** (`poc/schema.sql`) มี 8 ตาราง: `tasks`, `routine_defs`, `schedules`, `class_periods`, `sleep_logs`, `routine_events`, `push_subscriptions`, `settings` **เป็นโมเดลเดิมก่อนเปลี่ยนมาใช้ "ตาราง items ตารางเดียว 4 ชนิด"** ตามเดโมของ Master จึงไม่ตรงกับ data model ในหัวข้อ 2 ต้องออกแบบ schema ใหม่ก่อนทำ sync
-- **ไม่มี Cron Trigger** ใน PoC (ทดสอบ push ครั้งเดียวด้วยปุ่ม); cron 6 แบบอยู่ในแผนเฟส 5 (`poc/SPEC-POC.md`)
+- **Worker PoC** (`app/api/prototype/push-poc/worker.js`, deploy จริงที่ `evarel-poc.nontakorn2600.workers.dev`) มี 4 endpoint: `GET /api/push/key`, `POST /api/push/subscribe`, `POST /api/push/send`, `POST /api/ai/chat` (Groq)
+- **Schema PoC** (ถูกลบแล้ว กู้ได้จาก tag pre-restructure-develop) มี 8 ตาราง: `tasks`, `routine_defs`, `schedules`, `class_periods`, `sleep_logs`, `routine_events`, `push_subscriptions`, `settings` **เป็นโมเดลเดิมก่อนเปลี่ยนมาใช้ "ตาราง items ตารางเดียว 4 ชนิด"** ตามเดโมของ Master จึงไม่ตรงกับ data model ในหัวข้อ 2 ต้องออกแบบ schema ใหม่ก่อนทำ sync
+- **ไม่มี Cron Trigger** ใน PoC (ทดสอบ push ครั้งเดียวด้วยปุ่ม); cron 6 แบบอยู่ในแผนขั้น S2 (docs/plan/steps/S2-notify-ai.md)
 
 ### 5.4 สิ่งที่ยังไม่ได้ต่อ (รายงานตามจริง)
 - **Local-first 100%**: ข้อมูลอยู่ใน `localStorage` ไม่มีล็อกอินและไม่ sync ข้ามเครื่อง

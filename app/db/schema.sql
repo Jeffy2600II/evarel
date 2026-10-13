@@ -85,7 +85,7 @@ begin
     execute format('create policy "own %1$s" on public.%1$s for all using (auth.uid() = user_id) with check (auth.uid() = user_id)', t);
   end loop;
 end $$;
--- settings / push_subscriptions มีนโยบาย "own ..." จาก PoC อยู่แล้ว (ตรวจแล้วใน poc/schema.sql)
+-- settings / push_subscriptions มีนโยบาย "own ..." จาก PoC อยู่แล้ว (ตรวจแล้วจากสคีมา PoC เดิม ซึ่งถูกลบแล้ว ดูประวัติ git ที่ tag pre-restructure-develop)
 
 -- ============ 7) index ที่ใช้จริง ============
 create index if not exists item_logs_user_date on public.item_logs (user_id, date);

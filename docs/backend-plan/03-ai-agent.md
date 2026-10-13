@@ -40,7 +40,7 @@ Evarel Agent ไม่ใช่เพียง wrapper ของ LLM แต่�
 ---
 
 ## 3. Tool Registry & Manifest Schema
-Tool ทั้งหมดถูกลงทะเบียนผ่าน `manifest.json` ตามมาตรฐาน OpenAI Function Calling Schema เช่นเดียวกับ PoC (`evarel/poc/worker.js`):
+Tool ทั้งหมดถูกลงทะเบียนผ่าน `manifest.json` ตามมาตรฐาน OpenAI Function Calling Schema เช่นเดียวกับ PoC (`app/api/prototype/push-poc/worker.js`):
 - เครื่องมือต้องตรงกับโมเดล `items` จริง (4 ชนิด `habit|task|event|class`, `track` = `check|count|timer`) ไม่ใช่ `add_task` สามตัวของ PoC
 - ชุดเริ่มต้น (สร้างจาก manifest เฉพาะ action ที่ตั้ง `tool:true` และไม่ใช่ปุ่ม UI ล้วน): `item_create`, `item_update`, `item_delete`, `item_query` (กรองวัน/ชนิด/สถานะ), `log_set` (บันทึกค่ารายวัน), `skip_set`, `reminder_set`
 - ทุกเครื่องมือเขียนข้อมูลต้องผ่านการ์ด **ยืนยันก่อนทำ** (เหมือน mock AI ใน v11) และตรวจพารามิเตอร์ด้วยโค้ดก่อน ไม่ให้ LLM เขียนฐานข้อมูลตรง
