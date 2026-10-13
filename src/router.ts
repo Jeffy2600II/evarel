@@ -16,7 +16,7 @@ import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPasswo
 
 const AUTH_BODY_MAX = 2048;
 
-export async function handleRequest(request: Request, baseEnv: Env): Promise<Response> {
+export async function handleRequest(request: Request, baseEnv: Env, ctx?: any): Promise<Response> {
   /* สำเนา env ต่อคำขอ: เก็บ origin ของคำขอนี้ไว้ใช้ตอบ CORS (ไม่แชร์สถานะข้ามคำขอ) */
   const env: Env = { ...baseEnv, __origin: request.headers.get('Origin') };
   const url = new URL(request.url);
@@ -61,10 +61,10 @@ export async function handleRequest(request: Request, baseEnv: Env): Promise<Res
 
   if (path === '/api/auth/login' && method === 'POST') return handleLogin(request, aenv);
   if (path === '/api/auth/refresh' && method === 'POST') return handleRefresh(request, aenv);
-  if (path === '/api/auth/signup' && method === 'POST') return handleSignup(request, aenv);
-  if (path === '/api/auth/forgot' && method === 'POST') return handleForgot(request, aenv);
-  if (path === '/api/auth/verify' && method === 'POST') return handleVerify(request, aenv);
-  if (path === '/api/auth/resend' && method === 'POST') return handleResend(request, aenv);
+  if (path === '/api/auth/signup' && method === 'POST') return handleSignup(request, aenv, ctx);
+  if (path === '/api/auth/forgot' && method === 'POST') return handleForgot(request, aenv, ctx);
+  if (path === '/api/auth/verify' && method === 'POST') return handleVerify(request, aenv, ctx);
+  if (path === '/api/auth/resend' && method === 'POST') return handleResend(request, aenv, ctx);
   if (path === '/api/auth/password' && method === 'POST') return handleSetPassword(request, aenv);
   if (path === '/api/auth/session' && method === 'POST') return handleOAuthSession(request, aenv);
   if (path === '/api/auth/account' && method === 'DELETE') return handleDeleteAccount(request, aenv);

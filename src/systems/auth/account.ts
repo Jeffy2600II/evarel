@@ -6,6 +6,9 @@
    error code ที่คืน ตรงสัญญา Auth ของเดโม: invalid_credentials | email_taken | network | unknown + code_invalid | code_expired | too_many_requests | needs_link | unverified */
 import { Env, jsonResponse } from '../items/routes';
 import { verifyJWT, extractBearer } from '../../shared/auth';
+import { issueCode, verifyCode, composeMail, type Purpose } from './codes';
+import { sendMail as smtpSend } from '../../shared/smtp-mail.js';
+
 
 const MAX_BODY = 2048;
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
@@ -44,7 +47,79 @@ async function findUserByEmail(env: Env, email: string): Promise<any | null> {
   return list.find(u => (u.email || '').toLowerCase() === email) || null;
 }
 
-export async function handleSignup(request: Request, env: Env): Promise<Response> {
+/* เพดานส่งอีเมลรวมต่อ 24 ชั่วโมง (ปกป้องบัญชีส่งเมลไม่ให้ถูกใช้จนเต็มหรือถูกระงับ) | ล้มแบบปิด: นับไม่ได้ = ไม่ส่ง
+   ต่างจากตัวจำกัดคำขอทั่วไปที่ล้มแบบเปิด เพราะส่งเกินเพดานแล้วเสียหายกว่าส่งช้า ผู้ใช้ขอใหม่ได้ ค่าตั้งด้วย MAIL_DAILY_CAP */
+const MAIL_CAP_DEFAULT = 400;
+function mailCap(env: Env): number {
+  const v = String((env as any).MAIL_DAILY_CAP ?? '').trim();
+  if (!/^\d{1,6}$/.test(v)) return MAIL_CAP_DEFAULT;
+  const n = Number(v);
+  return n >= 1 && n <= 100000 ? n : MAIL_CAP_DEFAULT;
+}
+async function underMailCap(env: Env): Promise<boolean> {
+  try {
+    const key = env.SUPABASE_SERVICE_KEY;
+    const headers: Record<string, string> = { apikey: key, 'Content-Type': 'application/json' };
+    if (!key.startsWith('sb_')) headers.Authorization = 'Bearer ' + key;
+    const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 2500);
+    try {
+      const r = await f(env)(`${base(env)}/rest/v1/rpc/rl_hit`, { method: 'POST', headers, signal: ctl.signal,
+        body: JSON.stringify({ p_bucket: 'mail_daily', p_key: 'global', p_limit: mailCap(env), p_window_sec: 86400 }) });
+      if (!r.ok) return false;
+      const j: any = await r.json().catch(() => null);
+      const row = Array.isArray(j) ? j[0] : j;
+      return !!row && row.ok === true;
+    } finally { clearTimeout(timer); }
+  } catch { return false; }
+}
+/* ส่งรหัสของเราเอง: ออกรหัส -> เก็บแฮช -> ส่ง SMTP | ไม่ throw เด็ดขาด (ผลลัพธ์ต้องไม่ต่างกันตามว่าอีเมลมีบัญชีหรือไม่)
+   ถ้า SMTP_* ไม่ครบหรือส่งไม่สำเร็จ แค่ไม่ส่ง (ผู้ใช้ขอใหม่ได้) ไม่เปิดเผยสาเหตุให้ client */
+const hasSmtp = (env: Env) => !!((env as any).SMTP_USER && (env as any).SMTP_PASS);
+async function sendOwnCode(env: Env, email: string, purpose: Purpose): Promise<void> {
+  try {
+    if (!hasSmtp(env)) return;
+    if (!(await underMailCap(env))) return;
+    const { code } = await issueCode(env, email, purpose);
+    const m = composeMail(purpose, code);
+    const send = (env as any).CUSTOM_SEND_MAIL
+      ? (env as any).CUSTOM_SEND_MAIL
+      : async (cfg: any, mail: any) => {
+          /* โหลดโมดูลซ็อกเก็ตของ Cloudflare เมื่อส่งเมลจริงเท่านั้น (ไม่ผูกตอนคอมไพล์ จึง bundle/ทดสอบนอก Cloudflare ได้) */
+          const spec = 'cloudflare:' + 'sockets';
+          const { connect } = await import(/* @vite-ignore */ spec);
+          return smtpSend(cfg, mail, { connect });
+        };
+    const from = String((env as any).SMTP_FROM || '').trim();
+    await send({ user: (env as any).SMTP_USER, pass: String((env as any).SMTP_PASS).replace(/\s+/g, ''), from }, { to: email, ...m });
+  } catch { /* กลืนเงียบ: ห้ามต่างกันตามผล เพื่อกันเดาอีเมล */ }
+}
+/* รันหลังตอบ (ctx.waitUntil) เพื่อให้เวลาตอบเท่ากันทุกกรณี ถ้าไม่มี ctx (เช่นเทสต์เดิม) รอให้เสร็จ */
+function later(ctx: any, p: Promise<unknown>): Promise<unknown> | void {
+  if (ctx && typeof ctx.waitUntil === 'function') { ctx.waitUntil(p); return; }
+  return p;
+}
+/* แปลงผลตรวจรหัส -> error code เดิมของสัญญากับแอป */
+function codeFail(r: string, env: Env): Response {
+  if (r === 'expired') return fail('code_expired', 400, env);
+  if (r === 'locked') return fail('too_many_requests', 429, env);
+  if (r === 'unavailable') return fail('unknown', 502, env);
+  return fail('code_invalid', 400, env);   // invalid | none: ไม่แยกสาเหตุ
+}
+/* ออก session หลังรหัสของเราผ่านแล้วเท่านั้น: generate_link (admin, ไม่ส่งเมลของ Supabase) -> verify ด้วย token_hash
+   หมายเหตุ: พิสูจน์บน Supabase จริงแล้ว 12 ต.ค. 2026 (ใช้ซ้ำไม่ได้ ได้ access+refresh) ห้ามคืน hashed_token ให้ client */
+async function sessionFor(env: Env, email: string): Promise<any | null> {
+  const g = await f(env)(`${base(env)}/auth/v1/admin/generate_link`, { method: 'POST', headers: admin(env), body: JSON.stringify({ type: 'magiclink', email }) });
+  if (!g.ok) return null;
+  const gj: any = await g.json().catch(() => ({}));
+  const th = gj.hashed_token || gj.properties?.hashed_token;
+  if (typeof th !== 'string' || !th) return null;
+  const v = await f(env)(`${base(env)}/auth/v1/verify`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'magiclink', token_hash: th }) });
+  if (!v.ok) return null;
+  const vj = await v.json().catch(() => null);
+  return vj && vj.access_token ? vj : null;
+}
+
+export async function handleSignup(request: Request, env: Env, ctx?: any): Promise<Response> {
   const b = await body(request);
   if (!b || typeof b.email !== 'string' || typeof b.password !== 'string') return fail('unknown', 400, env);
   const email = b.email.trim().toLowerCase(), name = String(b.name || '').trim().slice(0, 60);
@@ -69,9 +144,9 @@ export async function handleSignup(request: Request, env: Env): Promise<Response
     return fail(create.status === 422 ? 'email_taken' : mapSupabaseError(create.status, j), create.status === 422 ? 409 : 400, env);
   }
   if (wantVerify) {
-    /* ส่งอีเมลที่มีทั้งลิงก์และรหัส 6 หลักในฉบับเดียว (เทมเพลตฝั่ง Supabase) */
-    const r = await f(env)(`${base(env)}/auth/v1/resend`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'signup', email }) });
-    if (!r.ok) return fail(mapSupabaseError(r.status, await r.json().catch(() => ({}))), r.status === 429 ? 429 : 502, env);
+    /* ส่งรหัส 6 หลักของเราเอง (ไม่พึ่งเมลของ Supabase) ทำหลังตอบ เวลาตอบจึงไม่ขึ้นกับ SMTP */
+    const job = later(ctx, sendOwnCode(env, email, 'signup'));
+    if (job) await job;
     return jsonResponse({ status: 'verify', email }, 200, env);
   }
   /* สวิตช์ปิด: เข้าได้ทันที */
@@ -81,34 +156,51 @@ export async function handleSignup(request: Request, env: Env): Promise<Response
 }
 
 /* ลืมรหัสผ่าน: ตอบเหมือนกันเสมอไม่ว่าอีเมลมีอยู่หรือไม่ (กันเดาอีเมล) */
-export async function handleForgot(request: Request, env: Env): Promise<Response> {
+export async function handleForgot(request: Request, env: Env, ctx?: any): Promise<Response> {
   const b = await body(request);
   if (!b || typeof b.email !== 'string' || !EMAIL_RE.test(b.email.trim())) return fail('unknown', 400, env);
-  const r = await f(env)(`${base(env)}/auth/v1/recover`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: b.email.trim().toLowerCase() }) });
-  /* ตอบ 200 เหมือนกันเสมอ แม้ถูกจำกัดอัตรา: ถ้าตอบ 429 เฉพาะอีเมลที่มีบัญชี จะเปิดช่องให้เดาว่าอีเมลไหนมีบัญชีอยู่ */
-  void r;
+  const email = b.email.trim().toLowerCase();
+  /* ส่งเฉพาะอีเมลที่มีบัญชีจริง (S4) แต่การค้นและการส่งทำหลังตอบ ทำให้ตอบเหมือนกันทั้งเวลาและเนื้อหา (S1) */
+  const job = later(ctx, (async () => { try { if (await findUserByEmail(env, email)) await sendOwnCode(env, email, 'recovery'); } catch { /* กลืน */ } })());
+  if (job) await job;
   return jsonResponse({ status: 'sent' }, 200, env);
 }
 
 /* ยืนยันรหัส 6 หลัก: type = signup (ยืนยันอีเมล) | recovery (ลืมรหัส) */
-export async function handleVerify(request: Request, env: Env): Promise<Response> {
+export async function handleVerify(request: Request, env: Env, _ctx?: any): Promise<Response> {
   const b = await body(request);
   if (!b || typeof b.email !== 'string' || typeof b.code !== 'string' || !/^\d{6}$/.test(b.code)) return fail('code_invalid', 400, env);
-  const type = b.type === 'recovery' ? 'recovery' : 'signup';
-  const r = await f(env)(`${base(env)}/auth/v1/verify`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ type, email: b.email.trim().toLowerCase(), token: b.code }) });
-  if (!r.ok) return fail(mapSupabaseError(r.status, await r.json().catch(() => ({}))), r.status === 429 ? 429 : 400, env);
-  return jsonResponse({ status: 'ok', ...sessionOf(await r.json()) }, 200, env);
+  const type: Purpose = b.type === 'recovery' ? 'recovery' : 'signup';
+  const email = b.email.trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return fail('code_invalid', 400, env);
+  /* ตรวจรหัสของเรา (อะตอมิกใน Postgres) ผ่านแล้วเท่านั้นจึงออก session; สถานะอื่นไม่เคยได้ session */
+  const r = await verifyCode(env, email, type, b.code);
+  if (r !== 'ok') return codeFail(r, env);
+  const user = await findUserByEmail(env, email);
+  if (!user) return fail('code_invalid', 400, env);
+  if (type === 'signup' && !user.email_confirmed_at) {
+    /* ยืนยันอีเมลแล้ว: ตั้งสถานะบัญชี (ไม่แตะรหัสผ่าน) */
+    const up = await f(env)(`${base(env)}/auth/v1/admin/users/${user.id}`, { method: 'PUT', headers: admin(env), body: JSON.stringify({ email_confirm: true }) });
+    if (!up.ok) return fail('unknown', 502, env);
+  }
+  const s = await sessionFor(env, email);
+  if (!s) return fail('unknown', 502, env);
+  return jsonResponse({ status: 'ok', ...sessionOf(s) }, 200, env);
 }
 
-export async function handleResend(request: Request, env: Env): Promise<Response> {
+export async function handleResend(request: Request, env: Env, ctx?: any): Promise<Response> {
   const b = await body(request);
   if (!b || typeof b.email !== 'string' || !EMAIL_RE.test(b.email.trim())) return fail('unknown', 400, env);
-  const type = b.type === 'recovery' ? 'recovery' : 'signup';
+  const type: Purpose = b.type === 'recovery' ? 'recovery' : 'signup';
   const email = b.email.trim().toLowerCase();
-  const r = type === 'recovery'
-    ? await f(env)(`${base(env)}/auth/v1/recover`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
-    : await f(env)(`${base(env)}/auth/v1/resend`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'signup', email }) });
-  void r; /* ตอบ 200 เสมอ เหตุผลเดียวกับ forgot (กันเดาอีเมล) */
+  /* signup: ส่งเฉพาะบัญชีที่ยังไม่ยืนยัน | recovery: ส่งเฉพาะบัญชีที่มีอยู่ | ตอบ 200 sent เสมอ (กันเดาอีเมล) */
+  const job = later(ctx, (async () => {
+    try {
+      const u = await findUserByEmail(env, email);
+      if (u && (type === 'recovery' || !u.email_confirmed_at)) await sendOwnCode(env, email, type);
+    } catch { /* กลืน */ }
+  })());
+  if (job) await job;
   return jsonResponse({ status: 'sent' }, 200, env);
 }
 
