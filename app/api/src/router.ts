@@ -12,6 +12,7 @@ import { handleAiChat, handleAiMemory, handleAiQuota } from './systems/ai/routes
 import { RULES, clientIp, emailKey, check, tooMany, status as rlStatus, maybeCleanup, withForwardedIp } from './shared/ratelimit';
 import { jsonResponse } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
+import { handlePushKey, handlePushSubscribe, handlePushUnsubscribe } from './systems/notify/push-routes';
 import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession } from './systems/auth/account';
 
 const AUTH_BODY_MAX = 2048;
@@ -68,6 +69,10 @@ export async function handleRequest(request: Request, baseEnv: Env, ctx?: any): 
   if (path === '/api/auth/password' && method === 'POST') return handleSetPassword(request, aenv);
   if (path === '/api/auth/session' && method === 'POST') return handleOAuthSession(request, aenv);
   if (path === '/api/auth/account' && method === 'DELETE') return handleDeleteAccount(request, aenv);
+
+  if (path === '/api/push/key' && method === 'GET') return handlePushKey(env);
+  if (path === '/api/push/subscribe' && method === 'POST') return handlePushSubscribe(request, env);
+  if (path === '/api/push/unsubscribe' && method === 'POST') return handlePushUnsubscribe(request, env);
 
   if (path === '/api/ai/quota' && method === 'GET') return handleAiQuota(request, env);
   if (path === '/api/ai/chat' && method === 'POST') return handleAiChat(request, env);

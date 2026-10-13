@@ -36,7 +36,7 @@ export function errorResponse(message: string, status = 400, env?: Env): Respons
   return jsonResponse({ error: message }, status, env);
 }
 
-async function authenticate(request: Request, env: Env): Promise<{ sub: string; email?: string } | Response> {
+export async function authenticate(request: Request, env: Env): Promise<{ sub: string; email?: string } | Response> {
   const token = extractBearer(request);
   if (!token) {
     return errorResponse('Missing authorization token', 401, env);
