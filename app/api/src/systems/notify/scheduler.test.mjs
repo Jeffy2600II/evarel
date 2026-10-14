@@ -110,13 +110,19 @@ await t('S12 แถว subscription ที่ user_id เป็น null (เค�
   const w = world({ items: [item({ user_id: 'u1' })], subs: [sub({ id: 9, user_id: null, endpoint: 'https://fcm.googleapis.com/fcm/send/poc' })] }); const sent = [];
   await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) }); assert.equal(sent.length, 0); assert.equal(w.st.subs.length, 1);
 });
-await t('S13 เพดาน 5 ต่อรอบ: ถึงเวลา 8 รายการ ส่งรอบนี้ 5 ที่เหลือรอบถัดไปภายในหน้าต่าง รวมครบ 8 ไม่ซ้ำ', async () => {
-  const items = Array.from({ length: 8 }, (_, i) => item({ id: 100 + i, title: 'งาน' + i }));
+await t('S13 เพดาน 2 ต่อรอบ (วัดจริงบน Cloudflare: ส่ง 5 ครั้ง = CPU 16.4 ms เกินเพดาน 10 ms; ~3 ms ต่อการส่ง): 5 รายการถึงเวลา รอบนี้ส่ง 2 ที่เหลือรอบถัดไป รวมครบ 5 ไม่ซ้ำ', async () => {
+  const items = Array.from({ length: 5 }, (_, i) => item({ id: 100 + i, title: 'งาน' + i }));
   const w = world({ items, subs: [sub()] }); const sent = [];
   const r1 = await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) });
-  assert.equal(r1.sent, 5); assert.equal(sent.length, 5);
-  await S.runScheduler(env(w), th('2026-10-14 09:01'), { send: okSend(sent) });
-  assert.equal(sent.length, 8); assert.equal(new Set(sent.map((x) => x.payload)).size, 8, 'ส่งซ้ำ');
+  assert.equal(r1.sent, 2); assert.equal(sent.length, 2);
+  await S.runScheduler(env(w), th('2026-10-14 09:01'), { send: okSend(sent) }); assert.equal(sent.length, 4);
+  await S.runScheduler(env(w), th('2026-10-14 09:02'), { send: okSend(sent) });
+  assert.equal(sent.length, 5); assert.equal(new Set(sent.map((x) => x.payload.tag)).size, 5, 'ส่งซ้ำ');
+});
+await t('S13b ค่าคงที่เพดานต้องไม่เกิน 2 (งบ CPU ของแผนฟรี) และรอบที่ 5 ยังอยู่ในหน้าต่างเตือน', async () => {
+  assert.ok(S.MAX_SENDS_PER_RUN <= 2, 'เพดาน ' + S.MAX_SENDS_PER_RUN);
+  const R = await import(pathToFileURL('/tmp/notify-rem-bundle.mjs').href).catch(() => null);
+  if (R) assert.ok(Math.ceil(5 / S.MAX_SENDS_PER_RUN) <= R.WINDOW_MIN, 'รอบสุดท้ายหลุดหน้าต่าง');
 });
 await t('S14 รายการที่ลบแล้ว/แก้เวลาแล้วไม่ส่งด้วยเวลาเก่า (อ่านรายการสดทุกรอบ)', async () => {
   const w = world({ items: [item({ time: '09:00' })], subs: [sub()] }); const sent = [];
@@ -133,9 +139,15 @@ await t('S16 ผู้ใช้เปิดสิทธิ์ซ่อนชื�
   const w = world({ items: [item({ title: 'ความลับ' })], subs: [sub({ hide_title: true })] }); const sent = [];
   await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) }); assert.ok(!JSON.stringify(sent[0].payload).includes('ความลับ'));
 });
-await t('S17 ผู้ใช้เดียวมีหลายรายการและหลายเครื่อง: ส่งครบ รายการละ 1 ครั้งต่อเครื่อง', async () => {
+await t('S17 ผู้ใช้เดียวมีหลายรายการและหลายเครื่อง: ครบทุกคู่ (รายการ x เครื่อง) คู่ละ 1 ครั้ง ไม่ตกหล่นไม่ซ้ำ (ข้ามหลายรอบเพราะเพดาน 2 ต่อรอบ)', async () => {
   const w = world({ items: [item({ id: 1 }), item({ id: 2, title: 'อีกงาน' })], subs: [sub({ id: 1, endpoint: 'https://fcm.googleapis.com/fcm/send/d1' }), sub({ id: 2, endpoint: 'https://fcm.googleapis.com/fcm/send/d2' })] }); const sent = [];
-  await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) }); assert.equal(sent.length, 4);
+  const perRun = [];
+  for (const mm of ['09:00', '09:01', '09:02']) { const before = sent.length; await S.runScheduler(env(w), th('2026-10-14 ' + mm), { send: okSend(sent) }); perRun.push(sent.length - before); }
+  assert.ok(perRun.every((n) => n <= S.MAX_SENDS_PER_RUN), 'เกินเพดานต่อรอบ: ' + perRun);
+  const pairs = sent.map((x) => x.payload.tag + '>' + x.to);
+  assert.equal(pairs.length, 4, 'ส่ง ' + pairs.length + ' รอบละ ' + perRun);
+  assert.equal(new Set(pairs).size, 4, 'ส่งซ้ำคู่เดิม: ' + pairs.join(' , '));
+  assert.deepEqual([...new Set(sent.map((x) => x.to))].sort(), ['https://fcm.googleapis.com/fcm/send/d1', 'https://fcm.googleapis.com/fcm/send/d2']);
 });
 await t('S18 ข้อมูลพัง: รายการ rem=null / ผู้ใช้หนึ่งอ่านล้ม ไม่ทำให้ผู้ใช้อื่นไม่ได้รับ', async () => {
   const w = world({ items: [item({ id: 1, user_id: 'bad', rem: null }), item({ id: 2, user_id: 'u1' })], subs: [sub({ user_id: 'bad', endpoint: 'https://fcm.googleapis.com/fcm/send/bad' }), sub({ id: 2, user_id: 'u1' })] }); const sent = [];

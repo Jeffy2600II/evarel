@@ -3,7 +3,9 @@
 // ส่งล้มชั่วคราวเท่านั้นที่คืนการจอง | ส่งสำเร็จหรือไม่แน่ใจ ห้ามคืน (ส่งซ้ำแย่กว่าไม่ส่ง) | ผู้ใช้เสียหนึ่งคนห้ามกระทบคนอื่น
 import { dueReminders, type Item } from './reminders';
 
-export const MAX_SENDS_PER_RUN = 5;
+/* เพดานการส่งต่อรอบ: วัดจริงบน Cloudflare แผนฟรี (14 ต.ค. 2026) รอบว่าง ~1.4 ms, ส่ง 1 ครั้ง 5.1 ms, ส่ง 5 ครั้ง 16.4 ms
+   => ~3 ms ต่อการส่ง; เพดาน CPU แผนฟรี 10 ms จึงปลอดภัยที่ <= 2 ครั้ง (~7 ms) | ส่วนเกินรอรอบถัดไปภายในหน้าต่าง WINDOW_MIN นาที */
+export const MAX_SENDS_PER_RUN = 2;
 export type SubRow = { id?: number; user_id: string | null; endpoint: string; p256dh: string; auth: string; hide_title?: boolean };
 export type SendFn = (sub: SubRow, payload: { title: string; body: string; tag: string }) => Promise<{ status: number }>;
 export type SchedResult = { sent: number; deferred: number; removed: number; errors: number; skipped?: string };

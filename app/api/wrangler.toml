@@ -6,7 +6,7 @@
 # secret ไม่อยู่ในไฟล์ ดู app/api/README.md หัวข้อ Secrets
 
 main = "src/index.ts"
-compatibility_date = "2026-10-01"
+compatibility_date = "2026-05-03"
 
 [env.forge]
 name = "evarel-api-forge"
