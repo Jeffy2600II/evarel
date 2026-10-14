@@ -1,6 +1,6 @@
 // ตัวคำนวณ "ถึงเวลาเตือนหรือยัง" (โมดูลบริสุทธิ์ ไม่แตะฐานข้อมูล/เครือข่าย/Date ของเครื่อง)
 // เวลาทั้งหมดเป็นข้อความเขตเวลา Asia/Bangkok: วัน 'YYYY-MM-DD' เวลา 'HH:MM' และ now = 'YYYY-MM-DD HH:MM'
-import { dayNumber, occursOnStr, type Repeat } from './due';
+import { dayNumber, occursOnStr, type Repeat } from './due.ts';
 
 export type Rem = { k: 'before'; m: number } | { k: 'at'; t: string };
 export type Item = {

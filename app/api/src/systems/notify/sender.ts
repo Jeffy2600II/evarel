@@ -1,7 +1,7 @@
 // ตัวส่ง Push จริง (webpush-webcrypto) ใช้วิธีเรียกเดียวกับต้นแบบที่ส่งถึง Android ได้เมื่อ 9 ต.ค. 2026
 // เพิ่ม timeout ที่ต้นแบบไม่มี: บริการ Push ค้างต้องไม่ทำให้ทั้งรอบค้าง (เพดาน CPU/เวลาของแผนฟรี)
 import { ApplicationServerKeys, generatePushHTTPRequest, setWebCrypto } from 'webpush-webcrypto';
-import type { SendFn } from './scheduler';
+import type { SendFn } from './scheduler.ts';
 
 export const SEND_TIMEOUT_MS = 8000;
 export const PUSH_TTL_SECONDS = 600;   // เตือนที่ค้างเกิน 10 นาทีไม่มีประโยชน์แล้ว ให้บริการ Push ทิ้งเอง

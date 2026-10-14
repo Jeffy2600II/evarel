@@ -1,0 +1,25 @@
+// เทสต์ตัวห่อ Edge Function (Deno) | รัน: deno test --allow-all app/edge/notify-tick/handler.test.ts
+// seam = handle(req, env, deps): ฉีด runScheduler/makeSender ไม่ยิงบริการจริง | ความปลอดภัยคือหัวใจ: ไม่มี secret = ห้ามรัน (ใช้ service key ข้าม RLS)
+import { assertEquals } from "jsr:@std/assert@1";
+import { handle, safeEqual } from "./handler.ts";
+
+const env = { CRON_SECRET: "s3cret-value-123", SUPABASE_URL: "https://x.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "svc", VAPID_KEYS_JSON: '{"publicKey":"p","privateKey":"k"}' };
+const mk = (h: Record<string, string> = {}, method = "POST") => new Request("https://f.supabase.co/functions/v1/notify-tick", { method, headers: h });
+let ran: unknown[] = [];
+const deps = { run: (e: any, now: Date) => { ran.push({ e, now }); return Promise.resolve({ sent: 1, deferred: 0, removed: 0, errors: 0 }); }, sender: () => (async () => ({ status: 201 })) as any, now: () => new Date("2026-10-14T02:00:00Z") };
+
+Deno.test("H1 ไม่มี header secret -> 401 และไม่รันตัวจัดเวลา", async () => { ran = []; const r = await handle(mk(), env, deps); assertEquals(r.status, 401); assertEquals(ran.length, 0); });
+Deno.test("H2 secret ผิด -> 401 ไม่รัน", async () => { ran = []; const r = await handle(mk({ "x-cron-secret": "wrong" }), env, deps); assertEquals(r.status, 401); assertEquals(ran.length, 0); });
+Deno.test("H3 secret ถูก -> 200 รัน 1 ครั้ง คืนผลสรุป", async () => { ran = []; const r = await handle(mk({ "x-cron-secret": env.CRON_SECRET }), env, deps); assertEquals(r.status, 200); assertEquals(ran.length, 1); assertEquals((await r.json()).sent, 1); });
+Deno.test("H4 ไม่ตั้ง CRON_SECRET บนเซิร์ฟเวอร์ -> 503 ไม่รัน (ห้ามเปิดโล่งเมื่อลืมตั้งค่า)", async () => { ran = []; const e = { ...env, CRON_SECRET: "" }; const r = await handle(mk({ "x-cron-secret": "" }), e, deps); assertEquals(r.status, 503); assertEquals(ran.length, 0); });
+Deno.test("H5 secret ว่างทั้งสองฝั่งต้องไม่ถือว่าตรงกัน", async () => { ran = []; const e = { ...env, CRON_SECRET: "" }; const r = await handle(mk({ "x-cron-secret": "" }), e, deps); assertEquals(ran.length, 0); assertEquals(r.status !== 200, true); });
+Deno.test("H6 เมธอด GET -> 405 ไม่รัน (กันเรียกจากเบราว์เซอร์/บอตสแกน)", async () => { ran = []; const r = await handle(mk({ "x-cron-secret": env.CRON_SECRET }, "GET"), env, deps); assertEquals(r.status, 405); assertEquals(ran.length, 0); });
+Deno.test("H7 ตัวจัดเวลา throw -> 500 ข้อความกลาง ไม่รั่วรายละเอียด/ค่าลับ", async () => { const d = { ...deps, run: () => Promise.reject(new Error("db password=hunter2 svc")) }; const r = await handle(mk({ "x-cron-secret": env.CRON_SECRET }), env, d); const t = await r.text(); assertEquals(r.status, 500); assertEquals(/hunter2|svc|password/.test(t), false); });
+Deno.test("H8 ส่ง env เข้าตัวจัดเวลาด้วยชื่อที่มันอ่าน (SUPABASE_SERVICE_KEY) แปลงจากชื่อของ Supabase (SUPABASE_SERVICE_ROLE_KEY)", async () => { ran = []; await handle(mk({ "x-cron-secret": env.CRON_SECRET }), env, deps); assertEquals((ran[0] as any).e.SUPABASE_SERVICE_KEY, "svc"); assertEquals((ran[0] as any).e.SUPABASE_URL, env.SUPABASE_URL); });
+Deno.test("H9 ไม่มี VAPID -> ไม่รัน คืน 200 พร้อม skipped (cron ต้องไม่ล้มซ้ำ)", async () => { ran = []; const e = { ...env, VAPID_KEYS_JSON: "" }; const r = await handle(mk({ "x-cron-secret": env.CRON_SECRET }), e, deps); assertEquals(r.status, 200); assertEquals(ran.length, 0); assertEquals((await r.json()).skipped !== undefined, true); });
+Deno.test("H10 เทียบ secret แบบเวลาคงที่: ความยาวต่างกันยังได้ 401 ไม่ throw", async () => { const r = await handle(mk({ "x-cron-secret": "x" }), env, deps); assertEquals(r.status, 401); });
+Deno.test("H11 secret เป็นคำนำหน้าของค่าจริง (สั้นกว่า) ต้องถูกปฏิเสธ ไม่ใช่ยอมรับ", async () => { ran = []; const r = await handle(mk({ "x-cron-secret": env.CRON_SECRET.slice(0, 6) }), env, deps); assertEquals(r.status, 401); assertEquals(ran.length, 0); });
+Deno.test("H12 ค่าจริงเป็นคำนำหน้าของ secret ที่ส่งมา (ยาวกว่า) ต้องถูกปฏิเสธ", async () => { ran = []; const r = await handle(mk({ "x-cron-secret": env.CRON_SECRET + "EXTRA" }), env, deps); assertEquals(r.status, 401); assertEquals(ran.length, 0); });
+Deno.test("H13 safeEqual: เท่ากันจริง = true, ต่างกันที่ไบต์สุดท้าย = false, สตริงว่างสองฝั่ง = true (ผู้เรียกต้องกันเอง), ภาษาไทยเทียบตามไบต์", () => { assertEquals(safeEqual("abc", "abc"), true); assertEquals(safeEqual("abc", "abd"), false); assertEquals(safeEqual("", ""), true); assertEquals(safeEqual("ไทย", "ไทย"), true); assertEquals(safeEqual("ไทย", "ไทม"), false); });
+Deno.test("H14 ไบต์ศูนย์ต่อท้าย: \"abc\" กับ \"abc\\0\" ต้องไม่เท่ากัน (ชั้นเทียบความยาวมีความหมายจริงเฉพาะกรณีนี้ เพราะตัวสั้นถูกเติม 0)", () => { assertEquals(safeEqual("abc", "abc\0"), false); assertEquals(safeEqual("abc\0", "abc"), false); assertEquals(safeEqual("abc\0\0", "abc\0"), false); });
+Deno.test("H15 แพลตฟอร์มปฏิเสธ header ที่มีไบต์ศูนย์ตั้งแต่ชั้น HTTP (ก่อนถึงตัวห่อ): ชั้นเทียบความยาวใน safeEqual เป็นการป้องกันซ้ำ พิสูจน์โดย H14", () => { let threw = false; try { new Request("https://x.test/", { headers: { "x-cron-secret": "abc\u0000" } }); } catch { threw = true; } assertEquals(threw, true); });
