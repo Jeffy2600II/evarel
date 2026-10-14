@@ -13,6 +13,11 @@ name = "evarel-api-forge"
 # ตัวจัดเวลาแจ้งเตือนทุกนาที เปิดเฉพาะ forge ก่อน (บัญชีฟรีมี Cron 5 ตัวทั้งบัญชี) ชุดทางการเปิดหลังพิสูจน์ที่ forge
 [env.forge.triggers]
 crons = ["* * * * *"]
+# เปิดเก็บล็อกเพื่อดูว่า cron ยิงจริง (Workers Logs ฟรีบนแผนฟรี 200,000 เหตุการณ์/วัน เก็บ 3 วัน; ตัวจัดเวลาเขียน ~2,900/วัน)
+# หมายเหตุ: เริ่ม 1 ธ.ค. 2026 Cloudflare เปลี่ยนราคา Observability ต้องตรวจก่อนวันนั้นว่ายังฟรีหรือไม่
+[env.forge.observability]
+enabled = true
+head_sampling_rate = 1
 [env.forge.vars]
 ALLOWED_ORIGIN = "https://evarel-app-forge.nontakorn2600.workers.dev,http://localhost:8779"
 REQUIRE_EMAIL_VERIFICATION = "true"
