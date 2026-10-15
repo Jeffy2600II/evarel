@@ -1,5 +1,5 @@
 /* เทสต์ตรรกะแจ้งเตือนฝั่งแอป (evarel-notify-default) | seam = notifyState / checkNotify / defaultRem / toggleOnTime / toggleAhead
-   โมดูลจริง: app/web/js/m/25-services__notify.js (ไม่มี DOM ดึงมารันใน sandbox ได้)
+   โมดูลจริง: app/web/js/m/*-services__notify.js (หาจาก _order.json) (ไม่มี DOM ดึงมารันใน sandbox ได้)
    ความหมายตามสเปก D1: rem มี {k:'before',m:0} = แจ้งเตือนตรงเวลา "เปิด" | ไม่มี = ผู้ใช้ปิด | ล่วงหน้า = before m>0
    ค่าคาดหวังทุกค่ามาจากสเปกและข้อมูลจริง 21 รายการของผู้ใช้ ไม่คำนวณซ้ำด้วยตรรกะเดียวกับโค้ด */
 import { readFileSync } from 'node:fs';
@@ -11,7 +11,10 @@ import assert from 'node:assert/strict';
 const J = (x) => JSON.parse(JSON.stringify(x));
 const deq = (a, b, m) => assert.deepEqual(J(a), J(b), m);
 const here = dirname(fileURLToPath(import.meta.url));
-const file = join(here, '../app/web/js/m/25-services__notify.js');
+const mdir = join(here, '../app/web/js/m');
+/* ไม่ผูกเลขลำดับ: หาชื่อจริงจาก _order.json (เลขเปลี่ยนเมื่อย้ายลำดับโมดูล) */
+const notifyFile = JSON.parse(readFileSync(join(mdir, '_order.json'), 'utf8')).order.map((o) => o.file).find((f) => f.endsWith('services__notify.js'));
+const file = join(mdir, notifyFile);
 let pass = 0, fail = 0;
 const t = (name, fn) => { try { fn(); pass++; console.log('PASS ' + name); } catch (e) { fail++; console.log('FAIL ' + name + ' :: ' + String(e.message || e).slice(0, 230)); } };
 let N = null;
@@ -19,7 +22,7 @@ try {
   const src = readFileSync(file, 'utf8').replace(/Object\.assign\(window,[^;]*\);?/g, '');
   const sb = { out: null }; vm.createContext(sb);
   vm.runInContext(src + '\nout={notifyState,checkNotify,defaultRem,toggleOnTime,toggleAhead,AHEAD_PRESETS,countNotifiable};', sb); N = sb.out;
-} catch (e) { t('N0 โหลดโมดูล 25-services__notify.js', () => { throw new Error('ยังไม่มีโมดูล (red ตามที่คาด): ' + String(e.message).slice(0, 80)); }); }
+} catch (e) { t('N0 โหลดโมดูล services__notify.js', () => { throw new Error('ยังไม่มีโมดูล (red ตามที่คาด): ' + String(e.message).slice(0, 80)); }); }
 
 if (N) {
   const ON = { k: 'before', m: 0 };

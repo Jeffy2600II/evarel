@@ -1,17 +1,18 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
-const U=process.argv[2]||'http://localhost:8776/index.html';
+import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
+import { SEED_ITEMS } from './seed_items.mjs';
+/* ประตู Route 22: ยิง API forge จริงด้วยผู้ใช้ทดสอบที่สร้างและลบเอง (ไม่พึ่ง MockAuth/LocalAdapter) */
+const U=process.argv[2]||(APP_ORIGIN+'/index.html');
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
 const b=await chromium.launch({executablePath:exe});
-const _np=b.newPage.bind(b);b.newPage=async(o)=>{const p=await _np(o);await p.addInitScript((SEED_ITEMS)=>{if(!localStorage.getItem('evarel-demo-session')){localStorage.setItem('evarel-demo-users',JSON.stringify([{id:'u_test',name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}]));localStorage.setItem('evarel-demo-session','u_test');if(!localStorage.getItem('evarel-demo-v3:u_test'))localStorage.setItem('evarel-demo-v3:u_test',JSON.stringify({items:SEED_ITEMS}))}},[
- {id:1760100000001,type:'habit',title:'วิ่งเช้า',subject:'',time:'05:30',timeEnd:'06:00',track:'timer',target:30,unitName:'นาที',repeat:{unit:'day',every:1,days:[]},start:'2026-10-01',end:'',skip:{},rem:[{min:10}],log:{'2026-10-09':20}},
- {id:1760100000002,type:'task',title:'การบ้านฟิสิกส์',subject:'ฟิสิกส์',time:'18:00',timeEnd:'',track:'check',target:1,unitName:'',repeat:{unit:'none',every:1,days:[]},start:'2026-10-12',end:'',skip:{},rem:[],log:{}},
- {id:1760100000003,type:'event',title:'ประชุมชมรม',subject:'',time:'15:00',timeEnd:'16:30',track:'check',target:1,unitName:'',repeat:{unit:'week',every:2,days:[1,3]},start:'2026-10-14',end:'2026-12-01',skip:{},rem:[{min:5}],log:{}},
- {id:1760100000004,type:'class',title:'เคมี',subject:'เคมี',time:'10:30',timeEnd:'11:20',track:'count',target:3,unitName:'ข้อ',repeat:{unit:'week',every:1,days:[1]},start:'2026-05-15',end:'',skip:{},rem:[],log:{'2026-10-06':2}},
- {id:1760100000005,type:'habit',title:'อ่านหนังสือ',subject:'',time:'21:00',timeEnd:'',track:'count',target:10,unitName:'หน้า',repeat:{unit:'day',every:1,days:[]},start:'2026-10-01',end:'',skip:{},rem:[],log:{'2026-10-10':4}}]);return p};
+const user=await makeTestUser('route'); await seedItems(user.session,SEED_ITEMS);
+const ctx=await openAsUser(b,user);
 const res=[];const ok=(n,c,v='')=>{res.push(c);console.log((c?'PASS ':'FAIL ')+n,v)};
-async function fresh(hash=''){const p=await b.newPage({viewport:{width:412,height:915}});p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());await p.goto(U+hash);await p.waitForTimeout(1300);return p}
+async function fresh(hash=''){const p=await ctx.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());await p.goto(U+hash);await p.waitForTimeout(3500);return p}
+let exitCode=0;
+try{
 const H=p=>p.evaluate(()=>location.hash), T=p=>p.evaluate(()=>document.querySelector('nav [aria-current="page"]')?.textContent.trim());
 let p=await fresh();
 ok('1 initial hash normalised to #/today',await H(p)==='#/today',await H(p));
@@ -48,4 +49,5 @@ p=await fresh('#/ai');ok('11 deep link #/ai opens AI',await p.evaluate(()=>!docu
 ok('11b no errors',p.errs.length===0,p.errs.join('|'));await p.close();
 p=await fresh('#/settings');ok('12 deep link #/settings opens settings',await p.evaluate(()=>!document.getElementById('page').hidden&&/ตั้งค่า/.test(document.getElementById('page').textContent)));await p.close();
 console.log(res.filter(Boolean).length+'/'+res.length+' passed');
-await b.close();
+}catch(e){console.log("FAIL exception",e.message);exitCode=1}
+finally{await b.close();console.log("ลบผู้ใช้ทดสอบ ->",await user.cleanup());process.exitCode=exitCode}

@@ -42,68 +42,68 @@
    "bytes": 5033
   },
   {
-   "file": "10-ui__popover.js",
+   "file": "10-services__notify.js",
+   "bytes": 2330
+  },
+  {
+   "file": "11-ui__popover.js",
    "bytes": 1228
   },
   {
-   "file": "11-ui__primitives.js",
+   "file": "12-ui__primitives.js",
    "bytes": 3100
   },
   {
-   "file": "12-views.js",
+   "file": "13-views.js",
    "bytes": 9280
   },
   {
-   "file": "13-ui__form.js",
+   "file": "14-ui__form.js",
    "bytes": 9449
   },
   {
-   "file": "14-core__timer.js",
+   "file": "15-core__timer.js",
    "bytes": 3881
   },
   {
-   "file": "15-services__ai-quota.js",
+   "file": "16-services__ai-quota.js",
    "bytes": 6819
   },
   {
-   "file": "16-views__ai.js",
+   "file": "17-views__ai.js",
    "bytes": 9776
   },
   {
-   "file": "17-services__ai-live.js",
+   "file": "18-services__ai-live.js",
    "bytes": 4024
   },
   {
-   "file": "18-views__settings.js",
+   "file": "19-views__settings.js",
    "bytes": 5851
   },
   {
-   "file": "19-services__calendar.js",
+   "file": "20-services__calendar.js",
    "bytes": 8668
   },
   {
-   "file": "20-views__detail.js",
+   "file": "21-views__detail.js",
    "bytes": 1604
   },
   {
-   "file": "21-views__auth.js",
+   "file": "22-views__auth.js",
    "bytes": 21491
   },
   {
-   "file": "22-render.js",
+   "file": "23-render.js",
    "bytes": 3050
   },
   {
-   "file": "23-services__legacy-import.js",
+   "file": "24-services__legacy-import.js",
    "bytes": 6034
   },
   {
-   "file": "24-actions.js",
+   "file": "25-actions.js",
    "bytes": 17588
-  },
-  {
-   "file": "25-services__notify.js",
-   "bytes": 2330
   }
  ]
 }
