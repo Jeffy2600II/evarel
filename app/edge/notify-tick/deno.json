@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "webpush-webcrypto": "npm:webpush-webcrypto@1.0.5"
+  }
+}
