@@ -12,7 +12,8 @@ compatibility_date = "2026-05-03"
 name = "evarel-api-forge"
 # ตัวจัดเวลาแจ้งเตือนทุกนาที เปิดเฉพาะ forge ก่อน (บัญชีฟรีมี Cron 5 ตัวทั้งบัญชี) ชุดทางการเปิดหลังพิสูจน์ที่ forge
 [env.forge.triggers]
-crons = ["* * * * *"]
+# ปิดแล้ว: ตัวส่งแจ้งเตือนย้ายไป Supabase (pg_cron -> Edge Function notify-tick) | ถอยกลับ: คืนเป็น crons = ["* * * * *"] แล้ว deploy
+crons = []
 # เปิดเก็บล็อกเพื่อดูว่า cron ยิงจริง (Workers Logs ฟรีบนแผนฟรี 200,000 เหตุการณ์/วัน เก็บ 3 วัน; ตัวจัดเวลาเขียน ~2,900/วัน)
 # หมายเหตุ: เริ่ม 1 ธ.ค. 2026 Cloudflare เปลี่ยนราคา Observability ต้องตรวจก่อนวันนั้นว่ายังฟรีหรือไม่
 [env.forge.observability]
