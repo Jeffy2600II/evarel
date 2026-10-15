@@ -30,7 +30,7 @@ async function loadApp(){claimLegacyData();UI.auth.status='in';ST.CH=loadChats()
  UI.loading=false;UI.animate=true;render();
  if(!UI.error){const r=await maybeImportLegacy(S.items);if(r!==S.items){S.items=r;UI.animate=false;render()}}}
 async function boot(){UI.auth.status='loading';render();try{ST.USER=(Auth.takeOAuthReturn&&await Auth.takeOAuthReturn())||await Auth.session()}catch(err){console.warn('session failed',err);ST.USER=null}
- if(!ST.USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp();startLiveSync()}
+ if(!ST.USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp();startLiveSync();pushAutoSync()}
 boot();
 /* moved by move_defs (evarel-ts-1f) */
 async function authSubmit(kind,form){clearErrs(form);const v=Object.fromEntries(new FormData(form)),errs=authValidate(kind,v),keys=Object.keys(errs);
@@ -42,6 +42,6 @@ async function authSubmit(kind,form){clearErrs(form);const v=Object.fromEntries(
   const user=kind==='login'?await Auth.signInEmail(v.email.trim(),v.password):await Auth.signUp({name:v.name.trim(),email:v.email.trim(),password:v.password});await enterApp(user)}
  catch(err){setBusy(form,false);if(err.code==='verify_needed'){UI.auth.email=v.email.trim();UI.auth.codeType='signup';UI.auth.screen='code';renderAuthRoot();return}if(err.code==='email_taken'||err.code==='needs_link')fieldErr(form,'email',AU_MSG[err.code]);else if(err.code==='code_invalid'||err.code==='code_expired')fieldErr(form,'code',AU_MSG[err.code]);else{const fe=form.querySelector('#form-err');fe.textContent=AU_MSG[err.code]||AU_MSG.unknown;fe.hidden=false;fe.style.animation='none';void fe.offsetWidth;fe.style.animation=''}haptic()}}
 async function authGoogle(btn){const old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="ev-spin"></span>';try{await enterApp(await Auth.signInGoogle())}catch(err){btn.disabled=false;btn.innerHTML=old;toast(AU_MSG[err.code]||AU_MSG.unknown)}}
-async function enterApp(user){ST.USER=user;await loadApp();startLiveSync()}
+async function enterApp(user){ST.USER=user;await loadApp();startLiveSync();pushAutoSync()}
 
 Object.assign(window, { IMPORT_FLAG, readLegacyItems, importLegacy, maybeImportLegacy, IMPORT_PENDING, runImport, loadApp, boot, authSubmit, authGoogle, enterApp });

@@ -76,7 +76,7 @@ const ACTIONS={
  tfinish:()=>{tmFinish();return NR},
  tcancel:()=>{const drop=()=>{ST.TM=null;saveTM();refreshFocus()};if(tmMs()<60000)drop();else confirmDialog({title:'ทิ้งเวลาที่จับไว้?',msg:`เวลา ${fmtClock(tmMs())} จะไม่ถูกบันทึก`,keep:'จับเวลาต่อ',ok:'ทิ้งเวลา',fn:drop});return NR},
  theme:id=>{applyTheme(id);page.innerHTML=settingsHTML();return NR},
- notify:()=>{Notification.requestPermission().then(()=>{page.innerHTML=settingsHTML()});return NR},
+ notify:()=>{pushSubscribe(true).then(r=>{page.innerHTML=settingsHTML();toast(r.ok?'เครื่องนี้พร้อมรับการแจ้งเตือนแล้ว':pushWhyText(r.why))});return NR},
  export:()=>{exportData();return NR},import:()=>{$('importFile').click();return NR},
  'reset-ask':()=>{confirmDialog({title:'ลบรายการทั้งหมด?',msg:'รายการ กิจวัตร และประวัติทั้งหมดของบัญชีนี้จะถูกลบถาวร กู้คืนไม่ได้ (บัญชีและการตั้งค่ายังอยู่)',ok:'ลบทั้งหมด',fn:()=>commit('ลบรายการทั้งหมดแล้ว',()=>{S.items=[]},true)});return NR},
  dopen:id=>{ST.D.open=ST.D.open===id?'':id;sheet.querySelectorAll('.ev-panel').forEach(p=>{p.dataset.open=String(p.dataset.key===ST.D.open)});sheet.querySelectorAll('[data-act="dopen"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===ST.D.open)));
