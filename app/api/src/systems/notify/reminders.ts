@@ -7,7 +7,8 @@ export type Item = {
   id: number | string; title?: string; time: string; start: string; end: string;
   repeat: Repeat; skip?: Record<string, unknown>; rem: unknown;
 };
-export type Due = { itemId: number | string; title: string; occDate: string; key: string };
+/* atAbs = นาทีสัมบูรณ์ (เวลาไทย) ที่ควรเด้งจริง | ตัวจัดเวลาใช้ตัดสินว่าเครื่องที่เพิ่งสมัครไม่ควรได้ของที่ครบกำหนดก่อนสมัคร */
+export type Due = { itemId: number | string; title: string; occDate: string; key: string; atAbs: number };
 
 // เตือนที่เลยเวลาไปเกินนี้ถือว่าเก่า ไม่ส่ง (รองรับ cron มาช้า)
 export const WINDOW_MIN = 5;
@@ -31,7 +32,7 @@ export function dueReminders(items: Item[], now: string, maxBeforeDays = 3): Due
   const nowMin = hm(nowTime);
   if (!DATE.test(nowDay ?? '') || nowMin === null) return [];
   const nowAbs = abs(nowDay, nowMin);
-  const out: Due[] = [];
+  const out: Due[] = []; const seen = new Set<string>();
   for (const it of items) {
     try {
       if (!Array.isArray(it.rem) || !DATE.test(it.start)) continue;
@@ -41,18 +42,20 @@ export function dueReminders(items: Item[], now: string, maxBeforeDays = 3): Due
         const occDate = dayStr(dayNumber(nowDay) + off);
         if (!occursOnStr(it, occDate) || it.skip?.[occDate]) continue;
         for (const r of it.rem as Rem[]) {
-          let at: number | null = null; let tag = '';
+          let at: number | null = null;
           if (r && r.k === 'before' && Number.isInteger(r.m) && r.m >= 0) {
             if (timeMin === null) continue; // ไม่มีเวลาให้นับถอยหลัง: ไม่ส่ง ปลอดภัยกว่าส่งผิดเวลา
-            at = abs(occDate, timeMin) - r.m; tag = `before:${r.m}`;
+            at = abs(occDate, timeMin) - r.m;
           } else if (r && r.k === 'at') {
             const tm = hm(r.t);
             if (tm === null) continue;
-            at = abs(occDate, tm); tag = `at:${r.t}`;
+            at = abs(occDate, tm);
           }
           if (at === null) continue;
           if (nowAbs >= at && nowAbs - at < WINDOW_MIN) {
-            out.push({ itemId: it.id, title: String(it.title ?? ''), occDate, key: `${it.id}|${occDate}|${tag}` });
+            /* คีย์ผูกกับ "เวลาที่เด้งจริง" ไม่ใช่ชนิดเตือน: แก้เวลารายการหลังเด้งแล้ว = เวลาใหม่ = คีย์ใหม่ = เด้งอีก | เตือนหลายแบบที่ลงเวลาเดียวกัน = คีย์เดียว = เด้งครั้งเดียว */
+            const key = `${it.id}|${occDate}|@${at}`;
+            if (!seen.has(key)) { seen.add(key); out.push({ itemId: it.id, title: String(it.title ?? ''), occDate, key, atAbs: at }); }
           }
         }
       }

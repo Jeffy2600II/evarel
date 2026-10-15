@@ -6,7 +6,7 @@ import { dueReminders, type Item } from './reminders.ts';
 /* เพดานการส่งต่อรอบ: วัดจริงบน Cloudflare แผนฟรี (14 ต.ค. 2026) รอบว่าง ~1.4 ms, ส่ง 1 ครั้ง 5.1 ms, ส่ง 5 ครั้ง 16.4 ms
    => ~3 ms ต่อการส่ง; เพดาน CPU แผนฟรี 10 ms จึงปลอดภัยที่ <= 2 ครั้ง (~7 ms) | ส่วนเกินรอรอบถัดไปภายในหน้าต่าง WINDOW_MIN นาที */
 export const MAX_SENDS_PER_RUN = 2;
-export type SubRow = { id?: number; user_id: string | null; endpoint: string; p256dh: string; auth: string; hide_title?: boolean };
+export type SubRow = { id?: number | string; user_id: string | null; endpoint: string; p256dh: string; auth: string; hide_title?: boolean; created_at?: string };
 export type SendFn = (sub: SubRow, payload: { title: string; body: string; tag: string }) => Promise<{ status: number }>;
 export type SchedResult = { sent: number; deferred: number; removed: number; errors: number; skipped?: string };
 
@@ -22,6 +22,14 @@ export function bangkokNow(utc: Date): string {
 const hdr = (env: Env) => ({ apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json', Accept: 'application/json' });
 const base = (env: Env) => env.SUPABASE_URL.replace(/\/+$/, '');
 const fx = (env: Env): typeof fetch => env.CUSTOM_FETCH?.fetch ?? env.CUSTOM_FETCH ?? fetch;
+
+/* นาทีสัมบูรณ์เวลาไทย (หน่วยเดียวกับ Due.atAbs = dayNumber*1440 + นาทีของวัน) จาก timestamp ISO | อ่านไม่ได้ = null */
+export function absBangkok(iso: unknown): number | null {
+  if (typeof iso !== 'string') return null;
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  return Math.floor((ms + BKK_MS) / 60000);
+}
 
 async function sha8(s: string): Promise<string> {
   const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
@@ -53,6 +61,10 @@ export async function runScheduler(env: Env, nowUtc: Date, deps: { send: SendFn 
       for (const due of dueReminders(mine, now)) {
         for (const dev of devices) {
           if (budget <= 0) { res.deferred++; continue; }
+          /* ห้ามเด้งย้อนหลังให้เครื่องที่เพิ่งสมัคร: เตือนที่ครบกำหนดก่อนเครื่องนี้สมัครไม่ใช่ของเครื่องนี้ (ข้ามโดยไม่จองคีย์)
+             อ่านเวลาสมัครไม่ได้ = ไม่กั้น (เอนไปทางส่ง ไม่ใช่เงียบ) | เวลาสมัครที่อยู่ในนาทีเดียวกับเวลาเด้งยังส่ง (>) */
+          const joined = absBangkok(dev.created_at);
+          if (joined !== null && joined > due.atAbs) continue;
           const key = `${due.key}|${await sha8(dev.endpoint)}`;
           const claim = await f(`${base(env)}/rest/v1/notification_log`, { method: 'POST', headers: { ...hdr(env), Prefer: 'return=minimal' }, body: JSON.stringify({ user_id: uid, key }) });
           if (claim.status === 409) continue;   // มีคนจอง/ส่งไปแล้ว

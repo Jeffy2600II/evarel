@@ -198,4 +198,65 @@ await t('S26 แถว subscription ที่ user_id เป็น null: ไม�
   await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) });
   assert.ok(!w.st.calls.some((c) => /user_id=eq\.(null|undefined)?(&|$)/.test(c) || c.includes('user_id=eq.null')), 'อ่านข้อมูลของ null: ' + w.st.calls.filter((c) => c.includes('items')).join(' | '));
 });
+
+/* ===== N: แก้เวลารายการ + เครื่องใหม่ (15 ต.ค. 2026 บั๊กจริงของ Master: เด้ง 19:05 แล้วแก้เป็น 19:10 ไม่เด้งอีก) =====
+   หลักการ: "ส่งตามเวลาจริงล่าสุดของรายการ" คีย์จองต้องแยกเวลาที่ต่างกัน และเวลาเดียวกันต้องไม่เด้งซ้ำ
+   ห้ามเด้งย้อนหลัง: เครื่องที่เพิ่งสมัคร/เวลาที่แก้ไปแล้วผ่านไป ไม่ปลุกของเก่า */
+const run = async (w, when) => { const sent = []; const r = await S.runScheduler(env(w), th(when), { send: okSend(sent) }); return { sent, r }; };
+await t('N1 บั๊กจริง: เด้ง 19:05 แล้วแก้เป็น 19:10 -> ต้องเด้งอีกที่ 19:10', async () => {
+  const w = world({ items: [item({ time: '19:05' })], subs: [sub()] });
+  assert.equal((await run(w, '2026-10-14 19:05')).sent.length, 1, 'รอบแรก 19:05');
+  w.st.items = [item({ time: '19:10' })]; // ผู้ใช้แก้เวลา
+  assert.equal((await run(w, '2026-10-14 19:10')).sent.length, 1, 'หลังแก้ต้องเด้งที่เวลาใหม่');
+});
+await t('N2 แก้แล้วเวลาเดิมไม่เด้งซ้ำ: 19:05 เด้งแล้ว แก้เป็น 19:10 แล้วรอบ 19:06 ต้องไม่ส่งอะไร', async () => {
+  const w = world({ items: [item({ time: '19:05' })], subs: [sub()] }); await run(w, '2026-10-14 19:05');
+  w.st.items = [item({ time: '19:10' })]; assert.equal((await run(w, '2026-10-14 19:06')).sent.length, 0);
+});
+await t('N3 รอบ cron ซ้ำในหน้าต่างเดียวกัน (09:00 แล้ว 09:01 09:02) ส่งครั้งเดียว ไม่เด้งซ้ำ', async () => {
+  const w = world({ items: [item()], subs: [sub()] }); let n = 0;
+  for (const m of ['09:00', '09:01', '09:02', '09:03']) n += (await run(w, '2026-10-14 ' + m)).sent.length; assert.equal(n, 1);
+});
+await t('N4 เครื่องที่เพิ่งสมัครไม่ได้ของเก่าย้อนหลัง: เด้ง 19:05 เครื่องเดียว 19:07 สมัครเครื่องที่สอง -> เครื่องใหม่ไม่ได้รับ', async () => {
+  const w = world({ items: [item({ time: '19:05' })], subs: [sub({ endpoint: 'https://fcm.googleapis.com/fcm/send/a' })] }); await run(w, '2026-10-14 19:05');
+  w.st.subs.push(sub({ id: 2, endpoint: 'https://fcm.googleapis.com/fcm/send/b', created_at: '2026-10-14T12:07:00+00:00' }));
+  assert.equal((await run(w, '2026-10-14 19:07')).sent.length, 0, 'เครื่องใหม่ได้ของเก่า');
+});
+await t('N5 สองเครื่องที่มีมาก่อน: เด้งครบทั้งสองเครื่องในเวลาเดียวกัน (ไม่ใช่เครื่องเดียว)', async () => {
+  const w = world({ items: [item()], subs: [sub({ endpoint: 'https://x/a' }), sub({ id: 2, endpoint: 'https://x/b' })] });
+  const a = await run(w, '2026-10-14 09:00'), b = await run(w, '2026-10-14 09:01'); assert.equal(a.sent.length + b.sent.length, 2);
+});
+await t('N6 เตือนสองแบบให้เวลาเดียวกัน (ตรงเวลา + ล่วงหน้า 0 ผ่าน at) ส่งครั้งเดียว ไม่เด้งซ้ำสองที', async () => {
+  const w = world({ items: [item({ rem: [{ k: 'before', m: 0 }, { k: 'at', t: '09:00' }] })], subs: [sub()] });
+  let n = 0; for (const m of ['09:00', '09:01']) n += (await run(w, '2026-10-14 ' + m)).sent.length; assert.equal(n, 1);
+});
+await t('N7 แก้เวลาไปเป็นเวลาที่ผ่านไปแล้วเกินหน้าต่าง (ตอนนี้ 19:20 แก้เป็น 19:05) ไม่เด้งย้อน', async () => {
+  const w = world({ items: [item({ time: '19:05' })], subs: [sub()] }); assert.equal((await run(w, '2026-10-14 19:20')).sent.length, 0);
+});
+await t('N8 วันถัดไปของรายการซ้ำทุกวัน เด้งใหม่ตามปกติ (คีย์แยกตามวัน ไม่ถูกจองข้ามวัน)', async () => {
+  const w = world({ items: [item({ repeat: { unit: 'day', every: 1, days: [] } })], subs: [sub()] });
+  assert.equal((await run(w, '2026-10-14 09:00')).sent.length, 1); assert.equal((await run(w, '2026-10-15 09:00')).sent.length, 1);
+});
+await t('N9 เครื่องที่สมัครก่อนเวลาเด้ง ได้รับตามปกติ (เครื่องใหม่ที่สมัคร 18:00 รอเตือน 19:05)', async () => {
+  const w = world({ items: [item({ time: '19:05' })], subs: [sub({ created_at: '2026-10-14T11:00:00+00:00' })] }); // 18:00 ไทย
+  assert.equal((await run(w, '2026-10-14 19:05')).sent.length, 1);
+});
+await t('N10 สมัครในนาทีเดียวกับเวลาเด้ง (19:05:30 เด้ง 19:05) ยังได้รับ (ไม่ตัดขอบนาที)', async () => {
+  const w = world({ items: [item({ time: '19:05' })], subs: [sub({ created_at: '2026-10-14T12:05:30+00:00' })] });
+  assert.equal((await run(w, '2026-10-14 19:05')).sent.length, 1);
+});
+await t('N11 อ่านเวลาสมัครไม่ได้ (ไม่มีฟิลด์/ผิดรูป) ไม่กั้น: เอนไปทางส่ง ไม่ใช่เงียบ', async () => {
+  for (const bad of [undefined, null, '', 'ไม่ใช่วันที่', 12345]) {
+    const w = world({ items: [item()], subs: [sub({ created_at: bad })] });
+    assert.equal((await run(w, '2026-10-14 09:00')).sent.length, 1, 'created_at=' + String(bad));
+  }
+});
+await t('N12 เครื่องที่ถูกข้ามเพราะสมัครทีหลัง ไม่จองคีย์ (ไม่รก log และไม่กระทบเครื่องอื่น)', async () => {
+  const w = world({ items: [item({ time: '19:05' })], subs: [sub({ endpoint: 'https://x/old', created_at: '2026-10-14T11:00:00+00:00' }), sub({ id: 2, endpoint: 'https://x/new', created_at: '2026-10-14T12:07:00+00:00' })] });
+  const r = await run(w, '2026-10-14 19:05'); assert.equal(r.sent.length, 1); assert.equal(w.st.logs.length, 1, 'จองเฉพาะเครื่องที่ส่งจริง');
+});
+await t('N13 หลายรายการเวลาเดียวกัน คนละ id เด้งแยกกันครบ (dedupe ต้องไม่กลืนรายการต่างกัน)', async () => {
+  const w = world({ items: [item({ id: 1, title: 'ก' }), item({ id: 2, title: 'ข' })], subs: [sub()] });
+  const a = await run(w, '2026-10-14 09:00'), b = await run(w, '2026-10-14 09:01'); assert.equal(a.sent.length + b.sent.length, 2);
+});
 console.log(`\nผ่าน ${pass} | ตก ${fail}`); process.exit(fail ? 1 : 0);
