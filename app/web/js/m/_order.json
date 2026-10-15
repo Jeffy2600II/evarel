@@ -100,6 +100,10 @@
   {
    "file": "24-actions.js",
    "bytes": 17588
+  },
+  {
+   "file": "25-services__notify.js",
+   "bytes": 2330
   }
  ]
 }

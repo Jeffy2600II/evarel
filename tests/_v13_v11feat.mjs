@@ -23,6 +23,8 @@ ok('form has type chooser (dtype)',types.length>=3,types.join(','));
 await p.click('#sheet [data-act="dtype"][data-id="task"]').catch(()=>{});await p.waitForTimeout(400);
 const inp=await p.$('#sheet input[name="title"], #sheet input[type="text"], #sheet input');
 await inp.fill('ทดสอบ v11');
+// สเปกใหม่ (แจ้งเตือนตรงเวลาเป็นค่าเริ่มต้น): บังคับใส่เวลา จึงกรอกเวลาด้วย (ไม่ผ่อนกฎ)
+await p.fill('#sheet input[name="time"]','09:30');
 const saveSel='#sheet [data-act="dv-save"], #sheet [data-act="save"], #sheet .ev-btn-primary';
 const sb=await p.$(saveSel);await sb.click();await p.waitForTimeout(1000);
 ok('add item via v11 form',(await n())===n0+1,`${n0}->${await n()}`);

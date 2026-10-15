@@ -4,7 +4,7 @@ const U=process.argv[2]||'http://localhost:8776/index.html';
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
 const b=await chromium.launch({executablePath:exe});
-const _nc=b.newContext.bind(b);b.newContext=async(o)=>{const c=await _nc(o);await c.addInitScript(()=>{if(!localStorage.getItem('evarel-demo-session')){localStorage.setItem('evarel-demo-users',JSON.stringify([{id:'u_test',name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}]));localStorage.setItem('evarel-demo-session','u_test')}});return c};
+const _np=b.newPage.bind(b);b.newPage=async(o)=>{const p=await _np(o);await p.addInitScript(()=>{if(!localStorage.getItem('evarel-demo-session')){localStorage.setItem('evarel-demo-users',JSON.stringify([{id:'u_test',name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}]));localStorage.setItem('evarel-demo-session','u_test')}});return p};
 const ctx=await b.newContext({viewport:{width:412,height:915},serviceWorkers:'allow'});
 const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());

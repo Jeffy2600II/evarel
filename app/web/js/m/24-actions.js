@@ -87,11 +87,12 @@ const ACTIONS={
  dtrack:id=>{ST.D.track=id;ST.D.target=id==='timer'?30:id==='count'?8:1;ST.D.unitName=id==='timer'?'นาที':id==='count'?'แก้ว':'';renderForm();return NR},
  dtarget:id=>{ST.D.target=Math.max(1,(+ST.D.target||1)+(+id)*(ST.D.track==='timer'?5:1));renderForm();return NR},
  dday:id=>{const n=+id,i=ST.D.days.indexOf(n);i<0?ST.D.days.push(n):ST.D.days.splice(i,1);renderForm();return NR},
- drem:id=>{const m=+id,i=ST.D.rem.findIndex(r=>r.k==='before'&&r.m===m);i<0?ST.D.rem.length<MAX_REM&&ST.D.rem.push({k:'before',m}):ST.D.rem.splice(i,1);renderForm();return NR},
+ drem:id=>{const m=+id,had=ST.D.rem.some(r=>r.k==='before'&&r.m===m);if(!had&&ST.D.rem.length>=MAX_REM)return NR;ST.D.rem=toggleAhead(ST.D.rem,m);renderForm();return NR},
+ dontime:()=>{ST.D.rem=toggleOnTime(ST.D.rem,!notifyState(ST.D.rem,true).onTime);renderForm();return NR},
  remadd:()=>{const v=$('remTime').value;if(!HHMM.test(v)||ST.D.rem.some(r=>r.k==='at'&&r.t===v)||ST.D.rem.length>=MAX_REM)return NR;ST.D.rem.push({k:'at',t:v});renderForm();return NR},
  remdel:id=>{ST.D.rem=ST.D.rem.filter(r=>!(r.k==='at'&&r.t===id));renderForm();return NR},
  live:()=>{ST.TM&&openFocus(ST.TM.id);return NR}};
-['dunit','devery','dend','dtrack','dtarget','dday','drem','remadd','remdel'].forEach(k=>{const f=ACTIONS[k];ACTIONS[k]=(...a)=>{ST.D.dirty=true;return f(...a)}});
+['dunit','devery','dend','dtrack','dtarget','dday','drem','dontime','remadd','remdel'].forEach(k=>{const f=ACTIONS[k];ACTIONS[k]=(...a)=>{ST.D.dirty=true;return f(...a)}});
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const inPop=!!el.closest('#pop');if(inPop)closePop();const r=ACTIONS[el.dataset.act]?.(el.dataset.id,el);if(r!==NR)ST._render()});
 $('live').addEventListener('click',()=>ACTIONS.live());
 document.addEventListener('input',e=>{if(e.target.id==='dSearch'){aiRenderDrawer(e.target.value);return}if(e.target.id==='aiText'){aiAutosize();return}

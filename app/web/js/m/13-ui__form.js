@@ -13,20 +13,20 @@ const ri=(n,t)=>`<input class="ev-row-input" name="${n}" type="${t}" value="${es
 const stepper=(l,act,v,u)=>`<div class="ev-stepper"><span>${l}</span><div class="ev-step"><button type="button" data-act="${act}" data-id="-1" aria-label="ลด" ${v<=1?'disabled':''}>−</button><b>${v}</b><button type="button" data-act="${act}" data-id="1" aria-label="เพิ่ม">+</button></div>${u}</div>`;
 const everyTxt=()=>ST.D.every>1?`ทุก ${ST.D.every} `:'ทุก';
 const repSum=()=>ST.D.unit==='none'?'ไม่ซ้ำ':ST.D.unit==='week'?`${everyTxt()}สัปดาห์${ST.D.days.length?` · ${[...ST.D.days].sort().map(d=>WD[d]).join(' ')}`:''}`:`${everyTxt()}${UNIT_TH[ST.D.unit]}`;
-const remSum=()=>ST.D.rem.length?ST.D.rem.slice(0,2).map(remText).join(', ')+(ST.D.rem.length>2?` +${ST.D.rem.length-2}`:''):'ไม่เตือน';
+const remSum=()=>{const s=notifyState(ST.D.rem,true),p=[...(s.onTime?['ตรงเวลา']:[]),...s.ahead.map(m=>remText({k:'before',m})),...s.at.map(x=>remText({k:'at',t:x}))];return p.length?p.slice(0,2).join(', ')+(p.length>2?` +${p.length-2}`:''):'ปิด'};
 const rangeSum=()=>`${ST.D.start===TODAY?'เริ่มวันนี้':`เริ่ม ${ST.D.start}`} · ${ST.D.endMode==='date'&&ST.D.end?`ถึง ${ST.D.end}`:'ไม่สิ้นสุด'}`;
 const repPanel=()=>seg('dunit',[['none','ไม่ซ้ำ'],['day','วัน'],['week','สัปดาห์'],['month','เดือน']],ST.D.unit)+(ST.D.unit==='none'?'':stepper('ทุก ๆ','devery',ST.D.every,`<span>${UNIT_TH[ST.D.unit]}</span>`))+(ST.D.unit==='week'?chips('dday',WEEK_OPTS,ST.D.days):'');
 const rangePanel=lab=>`<div class="ev-stepper"><span>${lab}</span>${ri('start','date')}</div><div class="ev-stepper"><span>มีวันสิ้นสุด</span><button type="button" class="ev-switch" role="switch" aria-checked="${ST.D.endMode==='date'}" data-act="dend" aria-label="มีวันสิ้นสุด"></button></div>${ST.D.endMode==='date'?`<div class="ev-stepper"><span>สิ้นสุดวันที่</span>${ri('end','date')}</div>`:''}`;
-const remPanel=()=>{const at=ST.D.rem.filter(r=>r.k==='at');return chips('drem',REM_PRESETS.map(m=>[m,remText({k:'before',m})]),ST.D.rem.filter(r=>r.k==='before').map(r=>r.m))
- +(at.length?`<div class="ev-rem">${at.map(r=>`<span class="ev-rem-tag">${r.t} น.<button type="button" data-act="remdel" data-id="${r.t}" aria-label="ลบการเตือน ${r.t}">${icon('x')}</button></span>`).join('')}</div>`:'')
- +`<div class="ev-stepper"><span>เตือนตามเวลา</span><div class="ev-row" style="gap:8px"><input class="ev-row-input" type="time" id="remTime" aria-label="เวลาเตือน"><button type="button" class="ev-btn-ghost ev-btn-sm" data-act="remadd">เพิ่ม</button></div></div>`};
+const remPanel=()=>{const s=notifyState(ST.D.rem,true),at=ST.D.rem.filter(r=>r.k==='at');return `<div class="ev-stepper"><span>แจ้งเตือนตรงเวลา</span><button type="button" class="ev-switch" role="switch" aria-checked="${s.onTime}" data-act="dontime" aria-label="แจ้งเตือนตรงเวลา"></button></div><span class="ev-cap">เตือนล่วงหน้า</span>`+chips('drem',AHEAD_PRESETS.map(m=>[m,remText({k:'before',m})]),s.ahead)
++(at.length?`<div class="ev-rem">${at.map(r=>`<span class="ev-rem-tag">${r.t} น.<button type="button" data-act="remdel" data-id="${r.t}" aria-label="ลบการแจ้งเตือน ${r.t}">${icon('x')}</button></span>`).join('')}</div>`:'')
++`<div class="ev-stepper"><span>แจ้งเตือนตามเวลา</span><div class="ev-row" style="gap:8px"><input class="ev-row-input" type="time" id="remTime" aria-label="เวลาแจ้งเตือน"><button type="button" class="ev-btn-ghost ev-btn-sm" data-act="remadd">เพิ่ม</button></div></div>`};
 const SET=h=>`<div class="ev-set">${h}</div>`;
-const remRow=()=>SR('เตือน',remSum(),'rem')+PN('rem',remPanel());
+const remRow=()=>SR('แจ้งเตือน',remSum(),'rem')+PN('rem',remPanel());
 function formBody(){const T=ST.D.type,multi=ST.D.track!=='check',ph={habit:'เช่น ดื่มน้ำ',task:'เช่น การบ้านคณิต',event:'เช่น ประชุมชมรม',class:'ชื่อวิชา'}[T];
  let h=`<input class="ev-title-input" name="title" value="${esc(ST.D.title)}" placeholder="${ph}" maxlength="80" aria-label="ชื่อ">${ST.D.err?`<div class="ev-form-err" role="alert">${esc(ST.D.err)}</div>`:''}`;
  if(T==='habit')h+=`<div class="ev-block"><span class="ev-cap">ติดตามผลแบบ</span>${seg('dtrack',TRACK_OPTS,ST.D.track)}${multi?stepper('เป้าหมายต่อวัน','dtarget',ST.D.target,`<input class="ev-unit" name="unitName" value="${esc(ST.D.unitName)}" placeholder="${ST.D.track==='timer'?'นาที':'หน่วย'}" maxlength="12" aria-label="หน่วย">`):''}</div>`
-  +SET(IR('เวลา (ไม่บังคับ)',ri('time','time'))+SR('ทำซ้ำ',repSum(),'rep')+PN('rep',repPanel())+SR('ช่วงเวลา',rangeSum(),'range')+PN('range',rangePanel('เริ่มวันที่')))+SET(remRow());
- if(T==='task')h+=SET(IR('กำหนดส่ง',ri('start','date'))+IR('เวลา (ไม่บังคับ)',ri('time','time'))+IR('วิชา/หมวด',`<input class="ev-row-input" name="subject" value="${esc(ST.D.subject)}" placeholder="ไม่บังคับ" maxlength="30" aria-label="วิชา">`))+SET(remRow());
+  +SET(IR('เวลา',ri('time','time'))+SR('ทำซ้ำ',repSum(),'rep')+PN('rep',repPanel())+SR('ช่วงเวลา',rangeSum(),'range')+PN('range',rangePanel('เริ่มวันที่')))+SET(remRow());
+ if(T==='task')h+=SET(IR('กำหนดส่ง',ri('start','date'))+IR('เวลา',ri('time','time'))+IR('วิชา/หมวด',`<input class="ev-row-input" name="subject" value="${esc(ST.D.subject)}" placeholder="ไม่บังคับ" maxlength="30" aria-label="วิชา">`))+SET(remRow());
  if(T==='event')h+=SET(IR('วันที่',ri('start','date'))+IR('เริ่ม',ri('time','time'))+IR('จบ',ri('timeEnd','time'))+SR('ทำซ้ำ',repSum(),'rep')+PN('rep',repPanel())+(ST.D.unit!=='none'?SR('ช่วงเวลา',rangeSum(),'range')+PN('range',rangePanel('เริ่มวันที่')):''))+SET(remRow());
  if(T==='class')h+=`<div class="ev-block"><span class="ev-cap">วันที่เรียน</span>${chips('dday',WEEK_OPTS,ST.D.days)}</div>`+SET(IR('เริ่ม',ri('time','time'))+IR('จบ',ri('timeEnd','time'))+SR('ภาคเรียน',rangeSum(),'range')+PN('range',rangePanel('เปิดเทอม')))+SET(remRow());
  return h}
@@ -38,6 +38,7 @@ function renderForm(){ST.sheetMode='form';const y=$('sheetBody')?.scrollTop||0,i
 const openForm=(type,it)=>{ST.D=it?draftFrom(it):type?newDraft(type):{...newDraft('habit'),step:'type'};renderForm()};
 function validate(){const T=ST.D.type;if(!ST.D.title.trim())return 'กรุณาใส่ชื่อรายการ';if(!ST.D.start)return 'กรุณาเลือกวันที่';
  if(ST.D.time&&ST.D.timeEnd&&ST.D.timeEnd<=ST.D.time)return 'เวลาจบต้องหลังเวลาเริ่ม';if(ST.D.endMode==='date'&&(!ST.D.end||ST.D.end<ST.D.start))return 'วันสิ้นสุดต้องไม่ก่อนวันเริ่ม';
+ {const ne=checkNotify(ST.D.rem,ST.D.time);if(ne)return ne}
  if(T==='class'&&!ST.D.days.length)return 'เลือกวันที่เรียนอย่างน้อย 1 วัน';return ''}
 function buildItem(){const T=ST.D.type,old=ST.D.id?find(ST.D.id):null,week=T==='class'||ST.D.unit==='week',days=week?(ST.D.days.length?[...ST.D.days]:[parse(ST.D.start).getDay()]):[];
  const unit=T==='task'?'none':T==='class'?'week':ST.D.unit,multi=T==='habit'&&ST.D.track!=='check';

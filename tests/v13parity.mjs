@@ -29,8 +29,9 @@ const steps={
  'auth-forgot':[false,async p=>{await p.click('[data-act="au-go"][data-id="login"]');await p.waitForTimeout(300);await p.click('[data-act="au-go"][data-id="forgot"]')}],
 };
 /* ความต่างที่ "ตั้งใจ" จากเดโม v12 (Master สั่งเอาส่วนเดโมออก เมื่อ 10 ต.ค. 2026): ต้องอยู่ในกรอบนี้และไม่เกินเพดานพิกเซล ไม่งั้น FAIL
+   settings (15 ต.ค. 2026): ศัพท์ "เตือน" -> "แจ้งเตือน" ตามที่ Master เลือก (กรอบเริ่ม y=360 ครอบบรรทัดข้อความนั้น ความสูงย่อหน้าเท่าเดิม 81px ไม่ดันเนื้อหาอื่น)
    today/add: ปุ่ม "ลองด้วยข้อมูลตัวอย่าง" ถูกลบ | settings: ข้อความหมวดข้อมูล/ปุ่มลบทั้งหมด/ข้อกำหนดเขียนตามความจริง */
-const EXPECTED={'app-today':{box:[0,360,412,915],max:30000},'app-add':{box:[0,100,412,470],max:20000},'app-settings':{box:[0,370,412,915],max:100000}};
+const EXPECTED={'app-today':{box:[0,360,412,915],max:30000},'app-add':{box:[0,100,412,470],max:20000},'app-settings':{box:[0,360,412,915],max:100000}};
 let bad=0,total=0;
 for(const cs of ['light','dark']) for(const [n,[lg,st]] of Object.entries(steps)){
   const e1=await run(DEMO,cs,'o.png',st,lg), e2=await run(APP,cs,'n.png',st,lg);

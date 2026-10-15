@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "files": 25,
+ "files": 26,
  "summary": {
   "pairEdges": 145,
   "backEdges": 0,
@@ -638,6 +638,19 @@
     "21-views__auth.js",
     "23-services__legacy-import.js"
    ]
+  },
+  "25-services__notify.js": {
+   "declares": [
+    "AHEAD_PRESETS",
+    "isRemObj",
+    "remList",
+    "defaultRem",
+    "notifyState",
+    "checkNotify",
+    "toggleOnTime",
+    "toggleAhead"
+   ],
+   "dependsOn": []
   }
  }
 }
