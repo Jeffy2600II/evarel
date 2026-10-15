@@ -77,8 +77,6 @@ const ACTIONS={
  tcancel:()=>{const drop=()=>{ST.TM=null;saveTM();refreshFocus()};if(tmMs()<60000)drop();else confirmDialog({title:'ทิ้งเวลาที่จับไว้?',msg:`เวลา ${fmtClock(tmMs())} จะไม่ถูกบันทึก`,keep:'จับเวลาต่อ',ok:'ทิ้งเวลา',fn:drop});return NR},
  theme:id=>{applyTheme(id);page.innerHTML=settingsHTML();return NR},
  notify:()=>{pushSubscribe(true).then(r=>{page.innerHTML=settingsHTML();toast(r.ok?'เครื่องนี้พร้อมรับการแจ้งเตือนแล้ว':pushWhyText(r.why))});return NR},
- export:()=>{exportData();return NR},import:()=>{$('importFile').click();return NR},
- 'reset-ask':()=>{confirmDialog({title:'ลบรายการทั้งหมด?',msg:'รายการ กิจวัตร และประวัติทั้งหมดของบัญชีนี้จะถูกลบถาวร กู้คืนไม่ได้ (บัญชีและการตั้งค่ายังอยู่)',ok:'ลบทั้งหมด',fn:()=>commit('ลบรายการทั้งหมดแล้ว',()=>{S.items=[]},true)});return NR},
  dopen:id=>{ST.D.open=ST.D.open===id?'':id;sheet.querySelectorAll('.ev-panel').forEach(p=>{p.dataset.open=String(p.dataset.key===ST.D.open)});sheet.querySelectorAll('[data-act="dopen"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===ST.D.open)));
   setTimeout(()=>sheet.querySelector('.ev-panel[data-open="true"]')?.scrollIntoView({block:'nearest',behavior:'smooth'}),320);return NR},
  dunit:id=>{ST.D.unit=id;if(id==='week'&&!ST.D.days.length)ST.D.days=[parse(ST.D.start).getDay()];renderForm();return NR},
@@ -105,7 +103,6 @@ document.addEventListener('submit',e=>{e.preventDefault();
  if(e.target.id==='renameForm'){const f=e.target,c=ST.CH.list.find(x=>x.id==f.dataset.id),v=(f.querySelector('[name=rname]')?.value||'').trim();if(!v){if(!f.querySelector('.ev-form-err'))f.insertAdjacentHTML('afterbegin','<div class="ev-form-err" role="alert">ชื่อแชทต้องไม่ว่าง</div>');return}if(c){c.title=v;saveCH();aiSync()}closeTop();return}
  if(e.target.id!=='addForm')return;ST.D.err=validate();if(ST.D.err){renderForm();return}
  const it=buildItem(),isEdit=!!ST.D.id;ST.D.dirty=false;closeTop();setTimeout(()=>commit('',()=>{isEdit?S.items.splice(S.items.findIndex(x=>x.id===it.id),1,it):S.items.push(it)},true),200)});
-document.addEventListener('change',e=>{if(e.target.id==='importFile'&&e.target.files[0]){importData(e.target.files[0]);e.target.value=''}});
 $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b||b.dataset.tab===UI.tab)return;UI.tab=b.dataset.tab;UI.animate=true;haptic();ST._render();scrollTo(0,0)});
 
 

@@ -3,7 +3,8 @@ import { chromium } from 'playwright'; import fs from 'fs'; import { execSync } 
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
 const b=await chromium.launch({executablePath:exe});
-const DEMO='file:///tmp/evarel-repo/design/master-demo-v12.html', APP=process.argv[2]||'http://localhost:8779/index.html';
+/* ต้นฉบับ = master-demo-v12.html ปรับเฉพาะ 3 จุดที่ตั้งใจให้แอปต่าง (พิสูจน์แล้ว 15 ต.ค. 2026): (1) ไม่มีปุ่มข้อมูลตัวอย่าง (คอมมิต 4d989eb), (2) รีเซ็ตข้อมูลทั้งหมด -> ลบรายการทั้งหมด, (3) ข้อความแจ้งเตือนตรงความจริง | ที่เหลือทุกพิกเซลต้อง 0 */
+const DEMO='file:///tmp/evarel-repo/design/master-demo-v12-intended.html', APP=process.argv[2]||'http://localhost:8779/index.html';
 async function run(url,cs,file,step,logged){
   const p=await b.newPage({viewport:{width:412,height:915},colorScheme:cs,timezoneId:'Asia/Bangkok'});
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
