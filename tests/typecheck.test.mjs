@@ -32,10 +32,10 @@ t('T3 error ชนิดใหม่ที่ไม่ใช่ชื่อฟ�
   writeFileSync(p, k + '\n/** @param {number} n */ function _tcProbe(n){return n}\n_tcProbe("x");\n');
   const r = run(d); writeFileSync(p, k); eq(r.status, 1, 'ควรจับได้');
 });
-t('T4 ขอบเขตที่ยังกันไม่ได้ (บันทึกตามจริง): พิมพ์ชื่อฟิลด์ ST ผิดยังไม่ถูกจับ เพราะ ST ยังไม่ผูกชนิด', () => {
+t('T4 พิมพ์ชื่อฟิลด์ ST ผิด (ST.TMM) ถูกจับ เพราะ ST ผูกชนิดแล้ว', () => {
   const p = join(d, 'app/web/js/m/15-core__timer.js'); const k = readFileSync(p, 'utf8');
   writeFileSync(p, k.replace('ST.TM', 'ST.TMM')); const r = run(d); writeFileSync(p, k);
-  eq(r.status, 0, 'ถ้า test นี้ตก แปลว่าผูกชนิดแล้ว ให้เปลี่ยนความคาดหวังเป็น 1 และลบหมายเหตุนี้');
+  eq(r.status, 1, 'ควรจับได้');
 });
 rmSync(d, { recursive: true, force: true });
 console.log(`\nรวม ผ่าน ${pass} ตก ${fail}`); process.exit(fail ? 1 : 0);
