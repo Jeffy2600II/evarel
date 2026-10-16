@@ -15,7 +15,7 @@ const API = {
   production: 'https://evarel-api.nontakorn2600.workers.dev',
 };
 const env = process.argv[2];
-if (!API[env]) { console.error('ระบุสภาพแวดล้อม: forge หรือ production'); process.exit(2); }
+if (!Object.hasOwn(API, env)) { console.error('ระบุสภาพแวดล้อม: forge หรือ production'); process.exit(2); }  // hasOwn กันชื่อพิเศษของ object (constructor, __proto__)
 
 const SRC = join(root, 'app/web');
 const SHELL = join(root, 'web-shell');   // โครง Next แยกจากราก (Next เลือก ./app ที่รากก่อน ./src/app และรากมี app/ ของโปรเจกต์อยู่แล้ว)

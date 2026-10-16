@@ -44,4 +44,10 @@ t('S7 ไฟล์ของ Next อยู่ใต้ _next เท่านั�
   const extra = walk(OUT).filter((rel) => !fs.existsSync(path.join(SRC, rel)) && !IGN.test(rel)); const out = extra.filter((e) => !/^_next[\\/]/.test(e) && !/^(404\.html|__next\.|_not-found|index\.txt)/.test(e));
   if (out.length) throw new Error('ไฟล์นอก _next: ' + out.slice(0, 4).join(', '));
 });
+t('S8 สคริปต์ build ปฏิเสธชื่อสภาพแวดล้อมที่ไม่ใช่ forge/production (รวมชื่อพิเศษของ object)', () => {
+  for (const bad of ['constructor', '__proto__', 'toString', 'hasOwnProperty', 'FORGE', '', '../x']) {
+    let code = 0; try { execFileSync(process.execPath, [path.join(root, 'scripts/build-web.mjs'), bad], { stdio: 'ignore' }); } catch (e) { code = e.status; }
+    if (code !== 2) throw new Error(`"${bad}" ไม่ถูกปฏิเสธ (exit=${code})`);
+  }
+});
 console.log(`\nผ่าน ${pass} | ตก ${fail}`); process.exit(fail ? 1 : 0);
