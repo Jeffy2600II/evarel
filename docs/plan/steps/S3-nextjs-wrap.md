@@ -39,7 +39,7 @@ seam คือโฟลเดอร์ public (ฝั่งแอปเดิม
 3. แก้ scripts/build-web.mjs: next build แล้วค่อยฉีดบรรทัด EVAREL_API เข้า index.html ใน out ส่งต่อไป build/web ไม่ต้องแก้ wrangler.toml
 4. ประตูทดสอบที่ใช้ EVAREL_WEB_DIR ชี้ไป out ผ่านครบ 4 ชุดบวกประตูโครงสร้าง
 5. deploy forge แล้วทดสอบ header ของ sw.js กับ manifest และทดสอบอัปเดต service worker จากรุ่นเก่า
-6. ขยับ sw VERSION ปิดสัญญา แล้วจึงไป S5
+6. ขยับ sw VERSION ปิดสัญญา แล้วจึงไป S4
 
 ข้อตัดสินใจที่ตรวจแล้ว (ไม่ต้องรอ Master): Next.js ไม่มีตัวเลือกตั้งพาธ public (ซอร์สกำหนดตายตัวที่ public ใต้โฟลเดอร์โปรเจกต์) ทางเลี่ยงด้วยลิงก์สัญลักษณ์ใช้ได้บนเครื่องนี้ แต่ไม่แน่ใจกับ Windows และ CI ของ Cloudflare จึงเลือกทางที่ไม่พึ่งลิงก์: ให้สคริปต์ build คัดลอก app/web เข้า public ชั่วคราว แล้ว next build แล้วลบ public ทิ้ง ไม่เก็บ public ใน git ไฟล์แอปคงอยู่ที่ app/web ที่เดียว ไม่ย้ายพาธ ประตูทดสอบและเครื่องมือเดิมไม่ต้องแก้พาธ
 
