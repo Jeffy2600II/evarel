@@ -42,12 +42,13 @@ await t('E2 header ครบ: Authorization(WebPush jwt), Content-Encoding aesgc
   let h; const f = async (u, o) => { h = o.headers; return new Response(null, { status: 201 }); };
   await M.makeSender({ VAPID_KEYS_JSON: VAPID }, f)(subRow, { title: 'a', body: 'b', tag: 'c' });
   const L = Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
-  assert.ok(/^WebPush [\w-]+\.[\w-]+\.[\w-]+$/.test(L.authorization), 'รูปแบบ Authorization'); assert.equal(L['content-encoding'], 'aesgcm'); assert.equal(String(L.ttl), '14400');
+  assert.ok(/^WebPush [\w-]+\.[\w-]+\.[\w-]+$/.test(L.authorization), 'รูปแบบ Authorization'); assert.equal(L['content-encoding'], 'aesgcm'); assert.equal(String(L.ttl), String(M.PUSH_TTL_SECONDS));
 });
-await t('E2b นโยบาย TTL: 4 ชั่วโมง ครอบคลุมออฟไลน์ช่วงเรียน/เดินทาง แต่ไม่ปล่อยเตือนเก่าเกินครึ่งวัน', async () => {
-  assert.equal(M.PUSH_TTL_SECONDS, 4 * 3600);
+await t('E2b นโยบาย TTL: 15 ชั่วโมง (Master เลือก 16 ต.ค. 2026) ครอบคลุมออฟไลน์ข้ามคืน และต้องอยู่ใต้เพดาน FCM 28 วัน', async () => {
+  assert.equal(M.PUSH_TTL_SECONDS, 15 * 3600);
   assert.ok(M.PUSH_TTL_SECONDS > 600, 'ต้องยาวกว่าค่าเดิม 10 นาที ไม่งั้นออฟไลน์เกิน 10 นาทีพลาดเตือน');
-  assert.ok(M.PUSH_TTL_SECONDS < 12 * 3600, 'ต้องสั้นกว่าครึ่งวัน ไม่งั้นเด้งเตือนเก่าที่หมดประโยชน์แล้ว');
+  assert.ok(M.PUSH_TTL_SECONDS <= 24 * 3600, 'ต้องไม่เกิน 1 วัน ไม่งั้นเด้งเตือนเก่าที่หมดประโยชน์แล้ว (ถ้าจะเกิน ต้องให้ Master ตัดสินใหม่)');
+  assert.ok(M.PUSH_TTL_SECONDS < 28 * 86400, 'ต้องอยู่ใต้เพดาน FCM 4 สัปดาห์ ไม่งั้นบริการ Push อาจปฏิเสธหรือตัดค่า');
 });
 await t('E3 ไม่รั่ว private key ของ VAPID ลงในคำขอที่ส่งออก', async () => {
   let all = ''; const f = async (u, o) => { all = JSON.stringify(o.headers) + Buffer.from(o.body).toString('latin1'); return new Response(null, { status: 201 }); };
