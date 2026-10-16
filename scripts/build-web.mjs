@@ -34,6 +34,9 @@ for (const f of ['app/page.js', 'app/page.jsx', 'app/page.tsx', 'src/app/page.js
 }
 if (!existsSync(join(SHELL, 'node_modules/next/dist/bin/next'))) { console.error('ยังไม่ได้ติดตั้งแพ็กเกจของ web-shell: รัน  npm install --prefix web-shell'); process.exit(2); }
 
+// ขั้น S4 ชั้น 3: คอมไพล์ .ts เป็น .js ก่อนคัดลอก (ไม่ผ่านก็หยุดก่อนแตะ build)
+execFileSync(process.execPath, [join(root, 'scripts/compile-ts.mjs')], { cwd: root, stdio: 'inherit' });
+
 try {
   rmSync(PUB, { recursive: true, force: true }); rmSync(NEXT_OUT, { recursive: true, force: true });
   cpSync(SRC, PUB, { recursive: true, filter: (p) => !IGNORE.test(p) });

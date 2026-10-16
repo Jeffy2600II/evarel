@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "rootDir": "app/src/m",
+    "outDir": "app/web/js/m",
+    "target": "ES2022",
+    "module": "esnext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "noEmitOnError": false,
+    "removeComments": false,
+    "types": []
+  },
+  "include": ["app/src/m/*.ts"]
+}
