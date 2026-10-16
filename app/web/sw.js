@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v47-order';
+const VERSION = 'evarel-v48-late';
 const CORE = [
   './',
   './index.html',
@@ -91,12 +91,26 @@ self.addEventListener('fetch', e => {
   })().catch(err => { bg(); throw err; }));
 });
 
+/* LATE_NOTE_BEGIN */
+/* บอกผู้ใช้ว่าแจ้งเตือนมาช้ากว่าเวลาที่ตั้งไว้ (เช่น มือถือไม่มีเน็ตแล้วกลับมา) เพื่อไม่ให้เข้าใจว่าเป็นเวลาปัจจุบัน
+   atAbs = นาทีสัมบูรณ์เวลาไทยที่เซิร์ฟเวอร์ส่งมา (floor((epoch_ms + 7 ชม.)/60000)) | ไม่รู้เขตเวลาเครื่องก็คำนวณได้
+   ช้าไม่เกิน 5 นาที = ปกติ ไม่ต่อท้าย | ไม่มี atAbs (push จากรุ่นเก่า) หรือค่าผิดรูป = ไม่ต่อท้าย ไม่พัง */
+function lateNote(atAbs, nowMs) {
+  if (typeof atAbs !== 'number' || !Number.isFinite(atAbs)) return '';
+  const late = Math.floor((nowMs + 7 * 3600 * 1000) / 60000) - atAbs;
+  if (!(late > 5)) return '';
+  if (late >= 1440) return ' (เลยเวลามาหลายวัน)';
+  const h = Math.floor(late / 60), mi = late % 60;
+  return ' (เลยเวลามา ' + (h ? h + ' ชม.' + (mi ? ' ' + mi + ' นาที' : '') : mi + ' นาที') + ')';
+}
+/* LATE_NOTE_END */
+
 /* ---------- Web Push (ขั้น F จะมี Cron ยิงมา) ---------- */
 self.addEventListener('push', e => {
   let data = {};
   try { data = e.data ? e.data.json() : {}; } catch { data = { body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(data.title || 'Evarel', {
-    body: data.body || '',
+    body: (data.body || '') + lateNote(data.atAbs, Date.now()),
     icon: './icons/icon-192.png',
     badge: './icons/icon-192.png',
     tag: data.tag || 'evarel',

@@ -130,10 +130,39 @@ await t('S14 รายการที่ลบแล้ว/แก้เวลา
   await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) }); assert.equal(sent.length, 0, 'เวลาเก่า');
   w.st.items = []; await S.runScheduler(env(w), th('2026-10-14 10:30'), { send: okSend(sent) }); assert.equal(sent.length, 0, 'ลบแล้ว');
 });
+await t('S15b payload มี atAbs = นาทีสัมบูรณ์เวลาไทยของเวลาที่ควรเตือน (ให้เครื่องบอกได้ว่ามาช้า) และเป็นตัวเลขล้วน', async () => {
+  const w = world({ items: [item({ title: 'ประชุมทีม' })], subs: [sub()] }); const sent = [];
+  await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) });
+  assert.equal(sent.length, 1);
+  const expected = Math.floor(Date.UTC(2026, 9, 14, 9 - 7 + 7, 0) / 60000);    // 09:00 ไทย = 02:00 UTC แล้วบวก 7 ชม. ตามนิยามนาทีสัมบูรณ์เวลาไทย
+  assert.equal(sent[0].payload.atAbs, expected);
+  assert.equal(typeof sent[0].payload.atAbs, 'number');
+});
 await t('S15 payload: มีเฉพาะชื่อรายการ ไม่รั่ว id ผู้ใช้/อีเมล/endpoint/กุญแจ', async () => {
   const w = world({ items: [item({ title: 'ประชุมทีม' })], subs: [sub()] }); const sent = [];
   await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) });
   const p = JSON.stringify(sent[0].payload); assert.ok(p.includes('ประชุมทีม')); assert.ok(!/u1|fcm\.googleapis|"P"|"A"|privateKey|svc/.test(p), p);
+});
+await t('S15c สัญญาข้ามฝั่ง: atAbs จาก scheduler จริง + lateNote จริงใน sw.js ตีความเวลาตรงกัน (หน่วย/เขตเวลาไม่คลาด)', async () => {
+  const fs = await import('node:fs'); const vm = await import('node:vm');
+  const swSrc = fs.readFileSync(path.join(here, '../../../../web/sw.js'), 'utf8');
+  const m = swSrc.match(/\/\* LATE_NOTE_BEGIN \*\/([\s\S]*?)\/\* LATE_NOTE_END \*\//); assert.ok(m, 'ไม่พบ lateNote ใน sw.js');
+  const ctx = {}; vm.createContext(ctx); vm.runInContext(m[1] + ';this.lateNote=lateNote;', ctx);
+  const w = world({ items: [item({ title: 'ประชุมทีม' })], subs: [sub()] }); const sent = [];
+  await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) });
+  const at = sent[0].payload.atAbs;
+  assert.equal(ctx.lateNote(at, th('2026-10-14 09:00').getTime()), '', 'เด้งตรงเวลาต้องไม่ต่อท้าย');
+  assert.equal(ctx.lateNote(at, th('2026-10-14 09:45').getTime()), ' (เลยเวลามา 45 นาที)', 'มือถือกลับมาออนไลน์ช้า 45 นาที ต้องบอก 45 ไม่ใช่ 45+420 หรือติดลบ');
+  assert.equal(ctx.lateNote(at, th('2026-10-14 11:00').getTime()), ' (เลยเวลามา 2 ชม.)');
+});
+await t('S16b [ความปลอดภัย] เปิดซ่อนชื่อ: payload ทั้งก้อนต้องไม่มีชื่อรายการ และ atAbs ที่เพิ่มไม่ทำให้รั่วมากกว่า tag เดิมที่มีเวลาอยู่แล้ว', async () => {
+  const w = world({ items: [item({ title: 'พบหมอจิตแพทย์' })], subs: [sub({ hide_title: true })] }); const sent = [];
+  await S.runScheduler(env(w), th('2026-10-14 09:00'), { send: okSend(sent) });
+  assert.equal(sent.length, 1); const p = sent[0].payload, all = JSON.stringify(p);
+  assert.ok(!all.includes('หมอ') && !all.includes('จิตแพทย์'), 'ชื่อรายการรั่วใน payload ทั้งที่เปิดซ่อน: ' + all);
+  assert.ok(/@\d+$/.test(p.tag), 'ท้าย tag เดิมคือนาทีสัมบูรณ์ของเวลานัดอยู่แล้ว (ข้อเท็จจริงที่ตรวจ): ' + p.tag);
+  const tagMin = Number(p.tag.match(/@(\d+)$/)[1]);
+  assert.equal(p.atAbs, tagMin, 'atAbs ต้องเป็นตัวเลขเดียวกับท้าย tag เป๊ะ จึงไม่เปิดเผยข้อมูลเวลาเพิ่มจากที่ส่งอยู่แล้ว');
 });
 await t('S16 ผู้ใช้เปิดสิทธิ์ซ่อนชื่อ: ส่งข้อความกลาง ไม่ใส่ชื่อรายการ (settings.hideTitle)', async () => {
   const w = world({ items: [item({ title: 'ความลับ' })], subs: [sub({ hide_title: true })] }); const sent = [];

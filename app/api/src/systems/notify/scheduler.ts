@@ -70,7 +70,7 @@ export async function runScheduler(env: Env, nowUtc: Date, deps: { send: SendFn 
           if (claim.status === 409) continue;   // มีคนจอง/ส่งไปแล้ว
           if (!claim.ok) continue;              // จองไม่ได้ = ไม่ส่ง (ดีกว่าส่งซ้ำ)
           budget--;
-          const payload = { title: 'Evarel', body: dev.hide_title ? 'มีรายการถึงเวลาแล้ว' : due.title || 'มีรายการถึงเวลาแล้ว', tag: due.key };
+          const payload = { title: 'Evarel', body: dev.hide_title ? 'มีรายการถึงเวลาแล้ว' : due.title || 'มีรายการถึงเวลาแล้ว', tag: due.key, atAbs: due.atAbs }; // atAbs ให้เครื่องบอกได้ว่าเตือนมาช้า (เวลาของรายการ ไม่ใช่ข้อมูลส่วนตัว)
           let status = 0;
           try { status = (await deps.send(dev, payload)).status; } catch { status = 0; }
           if (status >= 200 && status < 300) { res.sent++; continue; }
