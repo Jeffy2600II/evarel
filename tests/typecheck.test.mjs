@@ -37,5 +37,19 @@ t('T4 พิมพ์ชื่อฟิลด์ ST ผิด (ST.TMM) ถูก
   writeFileSync(p, k.replace('ST.TM', 'ST.TMM')); const r = run(d); writeFileSync(p, k);
   eq(r.status, 1, 'ควรจับได้');
 });
+t('T5 สะกดเมธอด DOM ผิด (e.target.cloest) ยังถูกจับ ไฟล์ types/dom.d.ts ไม่ได้ทำให้ตัวตรวจตาบอด', () => {
+  const p = join(d, 'app/web/js/m/25-actions.js'); const k = readFileSync(p, 'utf8');
+  const a = "document.addEventListener('click',e=>{const el=e.target.closest('[data-act]')";
+  eq(k.split(a).length, 2, 'ไม่พบจุดอ้างอิงใน 25-actions.js (โค้ดเปลี่ยน ให้แก้เทสต์ไม่ใช่ผ่อนเกณฑ์)');
+  writeFileSync(p, k.replace(a, a.replace('e.target.closest', 'e.target.cloest'))); const r = run(d); writeFileSync(p, k);
+  eq(r.status, 1, 'ควรจับได้');
+});
+t('T6 เรียกเมธอดที่ไม่มีจริงบน element (el.nonexistentMethod()) ยังถูกจับ', () => {
+  const p = join(d, 'app/web/js/m/25-actions.js'); const k = readFileSync(p, 'utf8');
+  const a = "const el=e.target.closest('[data-act]');if(!el)return;";
+  eq(k.split(a).length, 2, 'ไม่พบจุดอ้างอิงใน 25-actions.js');
+  writeFileSync(p, k.replace(a, a + 'el.nonexistentMethod();')); const r = run(d); writeFileSync(p, k);
+  eq(r.status, 1, 'ควรจับได้');
+});
 rmSync(d, { recursive: true, force: true });
 console.log(`\nรวม ผ่าน ${pass} ตก ${fail}`); process.exit(fail ? 1 : 0);
