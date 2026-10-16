@@ -12,7 +12,8 @@
     "build:web:forge": "node scripts/build-web.mjs forge",
     "build:web:production": "node scripts/build-web.mjs production",
     "plan:check": "python3 tools/plan_check.py",
-    "test:notify": "node app/api/src/systems/notify/due.test.mjs && node app/api/src/systems/notify/reminders.test.mjs && node app/api/src/systems/notify/push-routes.test.mjs && node app/api/src/systems/notify/scheduler.test.mjs && node app/api/src/systems/notify/sender.test.mjs"
+    "test:notify": "node app/api/src/systems/notify/due.test.mjs && node app/api/src/systems/notify/reminders.test.mjs && node app/api/src/systems/notify/push-routes.test.mjs && node app/api/src/systems/notify/scheduler.test.mjs && node app/api/src/systems/notify/sender.test.mjs",
+    "setup:web-shell": "npm install --prefix web-shell --no-audit --no-fund"
   },
   "devDependencies": {
     "wrangler": "^4.86.0"
