@@ -19,8 +19,11 @@ function settingsHTML(){
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name){return new Promise((ok,no)=>{const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);
  const el=document.createElement('script');el.src=`js/react/${name}.js`;el.async=false;el.dataset.evReact=name;el.onload=()=>ok(0);el.onerror=()=>no(new Error(name));document.head.appendChild(el)})}
-function loadReactSettings(){if((window as any).EvarelPages?.settings)return Promise.resolve(0);
- return loadReactFile('runtime').then(()=>loadReactFile('settings')).catch(e=>console.warn('react settings ไม่พร้อม ใช้หน้าเดิม',e&&e.message))}
+/* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
+const REACT_PAGES=['settings','stats'];
+function loadReactSettings(){const W=window as any;if(REACT_PAGES.every(n=>W.EvarelPages?.[n]))return Promise.resolve(0);
+ /* เรียก render ผ่าน window ตอนรันเท่านั้น (ไม่อ้างชื่อตรง) ไม่ให้เกิดเส้นพึ่งพาย้อนทิศไป 23-render ซึ่งโหลดหลังไฟล์นี้ */
+ return loadReactFile('runtime').then(()=>REACT_PAGES.reduce((p,n)=>p.then(()=>loadReactFile(n)),Promise.resolve(0))).then(()=>{try{if(W.UI?.tab==='stats'&&typeof W.render==='function')W.render()}catch(e){}}).catch(e=>console.warn('react ไม่พร้อม ใช้หน้าเดิม',e&&e.message))}
 window.addEventListener('load',()=>setTimeout(loadReactSettings,0));
 function applyTheme(t){t==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=t;try{localStorage.setItem(THEME_KEY,t)}catch(e){console.warn('theme',e)}}
 try{const t=localStorage.getItem(THEME_KEY);if(t&&t!=='auto')applyTheme(t)}catch(e){console.warn('theme load',e)}

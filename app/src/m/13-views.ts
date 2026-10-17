@@ -1,4 +1,16 @@
 /* ===== MODULE: views ===== */
+function statsClassic(){const hs=habits(),isM=UI.period==='month',days=isM?28:7;
+  if(!hs.length)return `${header('ความต่อเนื่องของคุณ','สถิติ')}<main class="ev-main">${empty('chart','ยังไม่มีกิจวัตร','สร้างกิจวัตรเพื่อดูสถิติและ streak')}</main>`;
+  const per=hs.map(h=>[h,periodStats(h,days)]),T=per.reduce((n,[,s])=>n+s.t,0),K=per.reduce((n,[,s])=>n+s.ok,0),rate=T?Math.round(100*K/T):0,best=Math.max(0,...hs.map(streak));
+  const td=hs.filter(h=>occursOn(h,TODAY)&&!skipped(h,TODAY)),tdDone=td.filter(h=>isDone(h,TODAY)).length,cols=chartData();
+  const lv=r=>r>=80?'hi':r>=50?'mid':'lo';
+  const row=([h,s])=>{const r=s.t?Math.round(100*s.ok/s.t):0,st=streak(h);return `<li class="ev-list-item"><div class="grow" role="button" tabindex="0" data-act="detail" data-id="${h.id}"><b>${esc(h.title)}</b><span class="ev-sub">${s.t?`ทำ ${s.ok} จาก ${s.t} ครั้ง`:'ไม่มีกำหนดในช่วงนี้'}${st?` · ต่อเนื่อง ${st} วัน`:''}</span><div class="ev-bar"><i data-full="${r>=100}" data-k="sb-${h.id}-${UI.period}" data-to="${r}"></i></div></div><span class="ev-pct" data-lv="${s.t?lv(r):''}">${s.t?r+'%':'–'}</span>${icon('chev')}</li>`};
+  return `${header('ความต่อเนื่องของคุณ','สถิติ')}<div class="ev-main" style="padding-bottom:12px">${seg('period',[['week','7 วันล่าสุด'],['month','4 สัปดาห์ล่าสุด']],UI.period)}</div>
+  <main class="ev-main"><section class="ev-card ev-sum ev-sum-row" data-tone="ink"><div class="ev-ringbox"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="ev-arc-bg" cx="50" cy="50" r="42"/><circle class="ev-arc" data-kind="arc" data-k="ring-${UI.period}" data-to="${rate}" cx="50" cy="50" r="42" stroke-dasharray="${ARC_C}" stroke-dashoffset="${ARC_C}"/></svg><div class="ev-ringnum"><span><span data-count="${rate}">0</span><small>%</small></span></div></div>
+   <div><div style="font-size:18px;font-weight:600;line-height:1.35">ทำแล้ว ${K} จาก ${T} ครั้ง</div><div class="ev-sum-lab" style="margin-top:4px">ที่ตั้งไว้ใน${isM?' 4 สัปดาห์':' 7 วัน'}ที่ผ่านมา</div></div></section>
+  <div class="ev-row2"><section class="ev-card"><div class="ev-sub">ต่อเนื่องสูงสุด</div><div class="ev-big"><span data-count="${best}">0</span><small> วัน</small></div></section><section class="ev-card"><div class="ev-sub">วันนี้ทำแล้ว</div><div class="ev-big"><span data-count="${tdDone}">0</span><small> / ${td.length}</small></div></section></div>
+  <section class="ev-card"><h3 class="ev-group" style="padding-top:0">${isM?'รายสัปดาห์':'รายวัน'}</h3><p class="ev-sub">ความสูง = % ที่ทำสำเร็จ${isM?'ในสัปดาห์นั้น (เริ่มวันที่ใต้แท่ง)':'ในวันนั้น'}</p><div class="ev-chart">${cols.map((c,i)=>`<div class="ev-col" data-today="${c.today}" data-empty="${!c.t}"><span class="ev-col-v">${c.t?c.pct+'%':'–'}</span><div class="ev-col-track"><i data-kind="col" data-k="col-${UI.period}-${i}" data-to="${c.pct}"></i></div><span class="ev-col-l">${c.label}</span></div>`).join('')}</div></section>
+  <section class="ev-card"><h3 class="ev-group" style="padding-top:0">รายกิจวัตร · แตะเพื่อดูปฏิทิน</h3><ul>${per.map(row).join('')}</ul></section></main>`}
 const VIEWS={
  today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
   const start=addDays(new Date(),-new Date().getDay()+7*UI.weekOff),week=Array.from({length:7},(_,i)=>ymd(addDays(start,i)));
@@ -19,18 +31,15 @@ const VIEWS={
  calendar(){const isM=UI.calView==='dayGridMonth';
   return `${header('ทุกอย่างในที่เดียว','ปฏิทิน')}<div class="ev-main" style="padding-bottom:12px"><div class="ev-cal-top"><div class="ev-row" style="gap:2px"><button class="ev-icon-btn" data-flat data-act="cal-nav" data-id="prev" aria-label="ก่อนหน้า">${icon('back')}</button><b id="calTitle" class="ev-cal-title">&nbsp;</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-nav" data-id="next" aria-label="ถัดไป">${icon('back')}</button></div><button class="ev-chip-btn" data-act="cal-nav" data-id="today">วันนี้</button></div>${seg('cal-view',[['dayGridMonth','เดือน'],['timeGridWeek','สัปดาห์']],UI.calView)}</div>
   <main class="ev-main"><section class="ev-card ev-fc-wrap"><div id="fcMain"></div></section><div id="agenda">${isM?agendaHTML(UI.calSel):''}</div></main>`},
- stats(){const hs=habits(),isM=UI.period==='month',days=isM?28:7;
-  if(!hs.length)return `${header('ความต่อเนื่องของคุณ','สถิติ')}<main class="ev-main">${empty('chart','ยังไม่มีกิจวัตร','สร้างกิจวัตรเพื่อดูสถิติและ streak')}</main>`;
-  const per=hs.map(h=>[h,periodStats(h,days)]),T=per.reduce((n,[,s])=>n+s.t,0),K=per.reduce((n,[,s])=>n+s.ok,0),rate=T?Math.round(100*K/T):0,best=Math.max(0,...hs.map(streak));
-  const td=hs.filter(h=>occursOn(h,TODAY)&&!skipped(h,TODAY)),tdDone=td.filter(h=>isDone(h,TODAY)).length,cols=chartData();
-  const lv=r=>r>=80?'hi':r>=50?'mid':'lo';
-  const row=([h,s])=>{const r=s.t?Math.round(100*s.ok/s.t):0,st=streak(h);return `<li class="ev-list-item"><div class="grow" role="button" tabindex="0" data-act="detail" data-id="${h.id}"><b>${esc(h.title)}</b><span class="ev-sub">${s.t?`ทำ ${s.ok} จาก ${s.t} ครั้ง`:'ไม่มีกำหนดในช่วงนี้'}${st?` · ต่อเนื่อง ${st} วัน`:''}</span><div class="ev-bar"><i data-full="${r>=100}" data-k="sb-${h.id}-${UI.period}" data-to="${r}"></i></div></div><span class="ev-pct" data-lv="${s.t?lv(r):''}">${s.t?r+'%':'–'}</span>${icon('chev')}</li>`};
-  return `${header('ความต่อเนื่องของคุณ','สถิติ')}<div class="ev-main" style="padding-bottom:12px">${seg('period',[['week','7 วันล่าสุด'],['month','4 สัปดาห์ล่าสุด']],UI.period)}</div>
-  <main class="ev-main"><section class="ev-card ev-sum ev-sum-row" data-tone="ink"><div class="ev-ringbox"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="ev-arc-bg" cx="50" cy="50" r="42"/><circle class="ev-arc" data-kind="arc" data-k="ring-${UI.period}" data-to="${rate}" cx="50" cy="50" r="42" stroke-dasharray="${ARC_C}" stroke-dashoffset="${ARC_C}"/></svg><div class="ev-ringnum"><span><span data-count="${rate}">0</span><small>%</small></span></div></div>
-   <div><div style="font-size:18px;font-weight:600;line-height:1.35">ทำแล้ว ${K} จาก ${T} ครั้ง</div><div class="ev-sum-lab" style="margin-top:4px">ที่ตั้งไว้ใน${isM?' 4 สัปดาห์':' 7 วัน'}ที่ผ่านมา</div></div></section>
-  <div class="ev-row2"><section class="ev-card"><div class="ev-sub">ต่อเนื่องสูงสุด</div><div class="ev-big"><span data-count="${best}">0</span><small> วัน</small></div></section><section class="ev-card"><div class="ev-sub">วันนี้ทำแล้ว</div><div class="ev-big"><span data-count="${tdDone}">0</span><small> / ${td.length}</small></div></section></div>
-  <section class="ev-card"><h3 class="ev-group" style="padding-top:0">${isM?'รายสัปดาห์':'รายวัน'}</h3><p class="ev-sub">ความสูง = % ที่ทำสำเร็จ${isM?'ในสัปดาห์นั้น (เริ่มวันที่ใต้แท่ง)':'ในวันนั้น'}</p><div class="ev-chart">${cols.map((c,i)=>`<div class="ev-col" data-today="${c.today}" data-empty="${!c.t}"><span class="ev-col-v">${c.t?c.pct+'%':'–'}</span><div class="ev-col-track"><i data-kind="col" data-k="col-${UI.period}-${i}" data-to="${c.pct}"></i></div><span class="ev-col-l">${c.label}</span></div>`).join('')}</div></section>
-  <section class="ev-card"><h3 class="ev-group" style="padding-top:0">รายกิจวัตร · แตะเพื่อดูปฏิทิน</h3><ul>${per.map(row).join('')}</ul></section></main>`}};
+ stats(){
+  const R=(window as any).EvarelPages?.stats;if(typeof R!=='function')return statsClassic();
+  const hs=habits();if(!hs.length)return statsClassic();
+  try{const isM=UI.period==='month',days=isM?28:7,per=hs.map(h=>[h,periodStats(h,days)]),T=per.reduce((n,[,s])=>n+s.t,0),K=per.reduce((n,[,s])=>n+s.ok,0),rate=T?Math.round(100*K/T):0,best=Math.max(0,...hs.map(streak));
+   const td=hs.filter(h=>occursOn(h,TODAY)&&!skipped(h,TODAY)),tdDone=td.filter(h=>isDone(h,TODAY)).length,cols=chartData(),lv=r=>r>=80?'hi':r>=50?'mid':'lo';
+   const rows=per.map(([h,s])=>{const r=s.t?Math.round(100*s.ok/s.t):0,st=streak(h);return {id:h.id,title:h.title,sub:`${s.t?`ทำ ${s.ok} จาก ${s.t} ครั้ง`:'ไม่มีกำหนดในช่วงนี้'}${st?` · ต่อเนื่อง ${st} วัน`:''}`,full:r>=100,pct:r,pctText:s.t?r+'%':'–',lv:s.t?lv(r):''}});
+   const main=R({isM,period:UI.period,rate,arcC:ARC_C,K,T,best,tdDone,tdTotal:td.length,cols,rows}).replace(/<\/li>/g,icon('chev')+'</li>');
+   return header('ความต่อเนื่องของคุณ','สถิติ')+`<div class="ev-main" style="padding-bottom:12px">${seg('period',[['week','7 วันล่าสุด'],['month','4 สัปดาห์ล่าสุด']],UI.period)}</div>\n  `+main}
+  catch(e){console.warn('stats react',e);return statsClassic()}}};
 
 
-Object.assign(window, { VIEWS });
+Object.assign(window, { VIEWS, statsClassic });
