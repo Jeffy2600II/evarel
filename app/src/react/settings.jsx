@@ -1,12 +1,11 @@
 // หน้าตั้งค่าของ Evarel เขียนเป็น React (ชั้น 4 หน่วยแรก)
 // ผลิต markup ให้โค้ดเดิมใส่ลง #page เอง: React ไม่ถือ DOM ของหน้านี้ จึงไม่ชนกับ page.innerHTML ของโมดูลอื่น
 // ข้อมูลทั้งหมดรับเป็น props เพื่อทดสอบได้ ไม่อ่านตัวแปร global เอง
-import { createElement as h, Fragment } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+const { h, Fragment, renderToStaticMarkup } = window.EvarelReact;
 
 const html = (s) => ({ dangerouslySetInnerHTML: { __html: s } });
 
-export function SettingsPage(p) {
+function SettingsPage(p) {
   const { user, notif, total, themeSegHTML, backIconHTML, avatarText, showNotifyBtn, notifyBtnLabel } = p;
   return h(Fragment, null, [
     h('div', { key: 'bar', className: 'ev-page-bar' },
@@ -31,6 +30,4 @@ export function SettingsPage(p) {
 }
 
 // จุดเข้าเดียวที่โค้ดเดิมเรียก: ส่ง props เข้ามา ได้ string HTML ของเนื้อหาในหน้า
-export function renderSettings(props) {
-  return renderToStaticMarkup(h(SettingsPage, props));
-}
+window.EvarelPages.settings = (props) => renderToStaticMarkup(h(SettingsPage, props));

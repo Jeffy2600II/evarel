@@ -14,11 +14,14 @@
     "plan:check": "python3 tools/plan_check.py",
     "test:notify": "node app/api/src/systems/notify/due.test.mjs && node app/api/src/systems/notify/reminders.test.mjs && node app/api/src/systems/notify/push-routes.test.mjs && node app/api/src/systems/notify/scheduler.test.mjs && node app/api/src/systems/notify/sender.test.mjs",
     "setup:web-shell": "npm install --prefix web-shell --no-audit --no-fund",
-    "build:ts": "node scripts/compile-ts.mjs"
+    "build:ts": "node scripts/compile-ts.mjs",
+    "build:react": "node scripts/build-react.mjs",
+    "check:react": "node scripts/build-react.mjs --check"
   },
   "devDependencies": {
-    "wrangler": "^4.86.0",
-    "typescript": "7.0.2"
+    "esbuild": "0.27.3",
+    "typescript": "7.0.2",
+    "wrangler": "^4.86.0"
   },
   "dependencies": {
     "webpush-webcrypto": "1.0.5"

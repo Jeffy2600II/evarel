@@ -15,30 +15,39 @@ function settingsHTMLClassic() {
  
  <section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div></section></div>`;
 }
-/* ชั้น 4: หน้าตั้งค่าผลิตโดย React (bundle แบบ lazy) ถ้ายังโหลดไม่เสร็จหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
+/* ชั้น 4: หน้าตั้งค่าผลิตโดย React (runtime ร่วม + ไฟล์หน้า โหลดแบบ lazy หลัง load) ถ้ายังโหลดไม่ครบหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
 function settingsHTML() {
-    const R = window.EvarelReactSettings;
-    if (!R || typeof R.renderSettings !== 'function')
+    const R = window.EvarelPages?.settings;
+    if (typeof R !== 'function')
         return settingsHTMLClassic();
     try {
         const [st, note] = notifInfo(), granted = 'Notification' in window && Notification.permission === 'granted', canBtn = 'Notification' in window && (Notification.permission === 'default' || (granted && !pushSavedState()));
-        return R.renderSettings({ user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' });
+        return R({ user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' });
     }
     catch (e) {
         console.warn('settings react', e);
         return settingsHTMLClassic();
     }
 }
-/* โหลด bundle เบื้องหลังหลังแอปเริ่มทำงาน (ไม่แตะ index.html) พลาดก็ไม่เป็นไร ใช้ของเดิมต่อ */
+/* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
+function loadReactFile(name) {
+    return new Promise((ok, no) => {
+        const k = `script[data-ev-react="${name}"]`;
+        if (document.querySelector(k))
+            return ok(0);
+        const el = document.createElement('script');
+        el.src = `js/react/${name}.js`;
+        el.async = false;
+        el.dataset.evReact = name;
+        el.onload = () => ok(0);
+        el.onerror = () => no(new Error(name));
+        document.head.appendChild(el);
+    });
+}
 function loadReactSettings() {
-    if (window.EvarelReactSettings || document.querySelector('script[data-ev-react="settings"]'))
-        return;
-    const el = document.createElement('script');
-    el.src = 'js/react/settings.js';
-    el.async = true;
-    el.dataset.evReact = 'settings';
-    el.onerror = () => console.warn('react settings bundle ไม่พร้อม ใช้หน้าเดิม');
-    document.head.appendChild(el);
+    if (window.EvarelPages?.settings)
+        return Promise.resolve(0);
+    return loadReactFile('runtime').then(() => loadReactFile('settings')).catch(e => console.warn('react settings ไม่พร้อม ใช้หน้าเดิม', e && e.message));
 }
 window.addEventListener('load', () => setTimeout(loadReactSettings, 0));
 function applyTheme(t) { t === 'auto' ? document.documentElement.removeAttribute('data-theme') : document.documentElement.dataset.theme = t; try {
@@ -55,4 +64,4 @@ try {
 catch (e) {
     console.warn('theme load', e);
 }
-Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, applyTheme });
+Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, loadReactFile, applyTheme });
