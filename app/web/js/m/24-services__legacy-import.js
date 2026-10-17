@@ -137,7 +137,7 @@ boot();
 /* moved by move_defs (evarel-ts-1f) */
 async function authSubmit(kind, form) {
     clearErrs(form);
-    const v = Object.fromEntries(new FormData(form)), errs = authValidate(kind, v), keys = Object.keys(errs);
+    const v = /** @type {Record<string,string>} */ (Object.fromEntries(new FormData(form))), errs = authValidate(kind, v), keys = Object.keys(errs);
     if (keys.length) {
         keys.forEach(k => fieldErr(form, k, errs[k]));
         form.querySelector(`[name="${keys[0]}"]`)?.focus();
