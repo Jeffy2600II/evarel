@@ -1,8 +1,11 @@
-"use strict";
+import { TH_MON, WD } from './01-core__constants.js';
+import { addDays, ymd } from './02-core__dates.js';
+import { S, UI } from './05-data__auth.js';
+import { isDone, occursOn, skipped } from './06-services__schedule.js';
 /* ===== MODULE: services/stats (นับจากรายการที่ "ตั้งไว้" จริง ไม่รวมวันที่ข้าม) ===== */
-const habits = () => S.items.filter(it => it.type === 'habit');
-const typeIcon = it => it.track === 'timer' ? 'clock' : it.track === 'count' ? 'chart' : ({ habit: 'check', task: 'tasks', event: 'bell', class: 'cal' })[it.type];
-function periodStats(it, days) { let t = 0, ok = 0; for (let i = 0; i < days; i++) {
+export const habits = () => S.items.filter(it => it.type === 'habit');
+export const typeIcon = it => it.track === 'timer' ? 'clock' : it.track === 'count' ? 'chart' : ({ habit: 'check', task: 'tasks', event: 'bell', class: 'cal' })[it.type];
+export function periodStats(it, days) { let t = 0, ok = 0; for (let i = 0; i < days; i++) {
     const ds = ymd(addDays(new Date(), -i));
     if (ds < it.start || !occursOn(it, ds) || skipped(it, ds))
         continue;
@@ -10,8 +13,8 @@ function periodStats(it, days) { let t = 0, ok = 0; for (let i = 0; i < days; i+
     if (isDone(it, ds))
         ok++;
 } return { t, ok }; }
-const ARC_C = 2 * Math.PI * 42;
-function chartData() {
+export const ARC_C = 2 * Math.PI * 42;
+export function chartData() {
     const hs = habits(), isM = UI.period === 'month', n = isM ? 4 : 7, size = isM ? 7 : 1, out = [];
     for (let k = 0; k < n; k++) {
         let t = 0, ok = 0, start = null;
@@ -27,5 +30,5 @@ function chartData() {
     }
     return out;
 }
-const totalDone = it => Object.keys(it.log).filter(ds => occursOn(it, ds) && isDone(it, ds)).length;
+export const totalDone = it => Object.keys(it.log).filter(ds => occursOn(it, ds) && isDone(it, ds)).length;
 Object.assign(window, { habits, typeIcon, periodStats, ARC_C, chartData, totalDone });

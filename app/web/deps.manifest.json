@@ -2,9 +2,9 @@
  "schema": 1,
  "files": 26,
  "summary": {
-  "pairEdges": 146,
+  "pairEdges": 69,
   "backEdges": 0,
-  "loadTimeRefs": 10,
+  "loadTimeRefs": 6,
   "loadTimeForwardRefs": 0,
   "duplicateTopLevelNames": 0,
   "cyclicGroups": [],
@@ -13,12 +13,8 @@
  "backEdges": [],
  "loadTimeRefs": [
   "05-data__auth.js -> 00-head.js (ST)",
-  "05-data__auth.js -> 02-core__dates.js (TODAY)",
-  "05-data__auth.js -> 02-core__dates.js (TODAY)",
-  "05-data__auth.js -> 02-core__dates.js (TODAY)",
   "11-ui__popover.js -> 09-ui__layers.js (closePop)",
   "11-ui__popover.js -> 09-ui__layers.js (closePop)",
-  "19-views__settings.js -> 01-core__constants.js (THEME_KEY)",
   "23-render.js -> 00-head.js (ST)",
   "25-actions.js -> 09-ui__layers.js ($)",
   "25-actions.js -> 09-ui__layers.js ($)"
@@ -31,153 +27,36 @@
    "dependsOn": []
   },
   "01-core__constants.js": {
-   "declares": [
-    "STORE_KEY",
-    "TIMER_KEY",
-    "THEME_KEY",
-    "DAY_MS",
-    "TOAST_MS",
-    "SKELETON_MS",
-    "STREAK_LOOKBACK",
-    "STAT_DAYS",
-    "DRAG_CLOSE_PX",
-    "DRAG_CLOSE_V",
-    "HAPTIC_MS",
-    "LONG_PRESS_MS",
-    "LAYER_ANIM_MS",
-    "MAX_REM",
-    "TYPES",
-    "TABS",
-    "WD",
-    "WEEK_OPTS",
-    "TH_MON",
-    "TH_DAY",
-    "UNIT_TH",
-    "REM_PRESETS",
-    "TRACK_OPTS",
-    "HHMM",
-    "ICONS",
-    "seg",
-    "CHATS_KEY",
-    "AI_TOOL_LABEL",
-    "isMemTool",
-    "AI_PLACEHOLDER",
-    "TH_MONTH",
-    "NR",
-    "icon"
-   ],
+   "declares": [],
    "dependsOn": []
   },
   "02-core__dates.js": {
-   "declares": [
-    "pad",
-    "ymd",
-    "parse",
-    "addDays",
-    "TODAY",
-    "fmtDate",
-    "nowHM",
-    "esc",
-    "fmtClock",
-    "haptic",
-    "dayLab"
-   ],
-   "dependsOn": [
-    "01-core__constants.js"
-   ]
+   "declares": [],
+   "dependsOn": []
   },
   "03-core__store.js": {
-   "declares": [
-    "mk",
-    "fill",
-    "daily",
-    "weekly",
-    "cls",
-    "seed"
-   ],
-   "dependsOn": [
-    "02-core__dates.js"
-   ]
+   "declares": [],
+   "dependsOn": []
   },
   "04-data__repo.js": {
-   "declares": [
-    "uk",
-    "wait",
-    "diffItems",
-    "syncChanges"
-   ],
+   "declares": [],
    "dependsOn": [
     "00-head.js"
    ]
   },
   "05-data__auth.js": {
-   "declares": [
-    "authErr",
-    "SUPA_SESS",
-    "nowS",
-    "supaLoad",
-    "supaSave",
-    "supaClear",
-    "SupaCore",
-    "SUPA_HOST",
-    "SupaAuth",
-    "SupaAdapter",
-    "SUPA_API",
-    "Auth",
-    "initial",
-    "S",
-    "UI",
-    "find",
-    "AI_LIVE"
-   ],
+   "declares": [],
    "dependsOn": [
-    "00-head.js",
-    "02-core__dates.js"
+    "00-head.js"
    ]
   },
   "06-services__schedule.js": {
-   "declares": [
-    "occursOn",
-    "val",
-    "target",
-    "tracked",
-    "isDone",
-    "skipped",
-    "isFuture",
-    "onDate",
-    "overdue",
-    "streak",
-    "rate",
-    "remText",
-    "repeatText",
-    "timeText",
-    "periodOf",
-    "PERIODS",
-    "scheduled",
-    "dayState",
-    "dayMenu"
-   ],
-   "dependsOn": [
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js"
-   ]
+   "declares": [],
+   "dependsOn": []
   },
   "07-services__stats.js": {
-   "declares": [
-    "habits",
-    "typeIcon",
-    "periodStats",
-    "ARC_C",
-    "chartData",
-    "totalDone"
-   ],
-   "dependsOn": [
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
-    "06-services__schedule.js"
-   ]
+   "declares": [],
+   "dependsOn": []
   },
   "08-core__undo.js": {
    "declares": [
@@ -191,11 +70,7 @@
     "LP"
    ],
    "dependsOn": [
-    "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "04-data__repo.js",
-    "05-data__auth.js"
+    "00-head.js"
    ]
   },
   "09-ui__layers.js": {
@@ -224,9 +99,7 @@
     "closePop"
    ],
    "dependsOn": [
-    "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js"
+    "00-head.js"
    ]
   },
   "10-services__notify.js": {
@@ -252,7 +125,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "05-data__auth.js",
     "09-ui__layers.js"
    ]
   },
@@ -262,8 +134,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
     "09-ui__layers.js"
    ]
   },
@@ -276,12 +146,7 @@
     "itemRow",
     "agendaHTML"
    ],
-   "dependsOn": [
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
-    "06-services__schedule.js"
-   ]
+   "dependsOn": []
   },
   "13-views.js": {
    "declares": [
@@ -290,11 +155,6 @@
     "VIEWS"
    ],
    "dependsOn": [
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
-    "06-services__schedule.js",
-    "07-services__stats.js",
     "12-ui__primitives.js"
    ]
   },
@@ -328,11 +188,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "03-core__store.js",
-    "05-data__auth.js",
-    "06-services__schedule.js",
     "09-ui__layers.js",
     "10-services__notify.js"
    ]
@@ -351,11 +206,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "04-data__repo.js",
-    "05-data__auth.js",
-    "06-services__schedule.js",
     "08-core__undo.js",
     "09-ui__layers.js"
    ]
@@ -379,9 +229,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
     "09-ui__layers.js"
    ]
   },
@@ -409,12 +256,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "03-core__store.js",
-    "04-data__repo.js",
-    "05-data__auth.js",
-    "06-services__schedule.js",
     "09-ui__layers.js",
     "16-services__ai-quota.js"
    ]
@@ -428,9 +269,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "02-core__dates.js",
-    "03-core__store.js",
-    "05-data__auth.js",
     "16-services__ai-quota.js"
    ]
   },
@@ -447,9 +285,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
     "10-services__notify.js"
    ]
   },
@@ -475,11 +310,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
-    "06-services__schedule.js",
-    "07-services__stats.js",
     "08-core__undo.js",
     "09-ui__layers.js",
     "11-ui__popover.js",
@@ -497,9 +327,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
     "08-core__undo.js",
     "09-ui__layers.js",
     "20-services__calendar.js"
@@ -559,9 +386,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "05-data__auth.js",
     "08-core__undo.js",
     "09-ui__layers.js",
     "12-ui__primitives.js",
@@ -578,10 +402,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "04-data__repo.js",
-    "05-data__auth.js",
-    "07-services__stats.js",
     "09-ui__layers.js",
     "12-ui__primitives.js",
     "13-views.js",
@@ -607,10 +427,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "04-data__repo.js",
-    "05-data__auth.js",
     "08-core__undo.js",
     "09-ui__layers.js",
     "10-services__notify.js",
@@ -633,11 +449,6 @@
    ],
    "dependsOn": [
     "00-head.js",
-    "01-core__constants.js",
-    "02-core__dates.js",
-    "03-core__store.js",
-    "05-data__auth.js",
-    "06-services__schedule.js",
     "08-core__undo.js",
     "09-ui__layers.js",
     "10-services__notify.js",
