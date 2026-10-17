@@ -7,8 +7,8 @@ const pi = args.indexOf('--parser'); const which = pi >= 0 ? args[pi + 1] : 'aco
 const wi = args.indexOf('--write'); const out = wi >= 0 ? args[wi + 1] : null;
 const rq = createRequire('/app/conversations/6ab305110a4ed95a28bc31b7/repo/package.json');
 let parse;
-if (which === 'babel') { const b = createRequire('/app/fanhoard-page/package.json')('@babel/parser'); parse = (c) => b.parse(c, { sourceType: 'script', ranges: false }).program; }
-else { const a = rq('acorn'); parse = (c) => a.parse(c, { ecmaVersion: 'latest', sourceType: 'script' }); }
+if (which === 'babel') { const b = createRequire('/app/fanhoard-page/package.json')('@babel/parser'); parse = (c) => b.parse(c, { sourceType: 'module', ranges: false }).program; }
+else { const a = rq('acorn'); parse = (c) => a.parse(c, { ecmaVersion: 'latest', sourceType: 'module' }); }
 const order = JSON.parse(fs.readFileSync(path.join(mdir, '_order.json'), 'utf8')).order.map(o => o.file);
 const idx = Object.fromEntries(order.map((f, i) => [f, i]));
 const kids = (n) => { const r = []; for (const k of Object.keys(n)) { if (k === 'loc' || k === 'start' || k === 'end' || k === 'extra' || k === 'leadingComments' || k === 'trailingComments' || k === 'innerComments') continue; const c = n[k]; if (Array.isArray(c)) c.forEach(x => x && typeof x.type === 'string' && r.push([k, x])); else if (c && typeof c.type === 'string') r.push([k, c]); } return r; };

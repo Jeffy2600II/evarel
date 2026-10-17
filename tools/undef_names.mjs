@@ -15,7 +15,7 @@ export function undefinedNames(dir) {
   const M = dir + '/js/m/'; const files = JSON.parse(fs.readFileSync(M + '_order.json', 'utf8')).order.map(o => o.file);
   const declared = new Set(); const used = new Map();
   for (const f of files) {
-    const ast = acorn.parse(fs.readFileSync(M + f, 'utf8'), { ecmaVersion: 'latest', sourceType: 'script' });
+    const ast = acorn.parse(fs.readFileSync(M + f, 'utf8'), { ecmaVersion: 'latest', sourceType: 'module' });
     (function walk(x, p, k) {
       if (x.type === 'VariableDeclarator') pat(x.id, n => declared.add(n));
       if ((x.type === 'FunctionDeclaration' || x.type === 'ClassDeclaration') && x.id) declared.add(x.id.name);
