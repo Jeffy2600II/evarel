@@ -31,6 +31,10 @@ const steps={
  'app-calendar':[true,async p=>{await p.click('[data-tab="calendar"]');await p.waitForTimeout(1200)}],
  'app-stats':[true,click('[data-tab="stats"]')], 'app-add':[true,click('[data-act="add"]')],
  'app-settings':[true,async p=>{await p.evaluate(()=>ACTIONS.settings());await p.waitForTimeout(600)}],
+ /* ฉากหน้ารายละเอียด 3 ชนิด (เพิ่มชั้น 4: ก่อนหน้านี้ประตูไม่เห็นหน้านี้เลย) เปิดด้วย openDetail ที่มีทั้งเดโมและแอป ใช้ id จาก seed_items ชุดเดียวกัน */
+ 'app-detail-habit':[true,async p=>{await p.evaluate(()=>openDetail(1760100000001));await p.waitForTimeout(1200)}],
+ 'app-detail-task':[true,async p=>{await p.evaluate(()=>openDetail(1760100000002));await p.waitForTimeout(600)}],
+ 'app-detail-event':[true,async p=>{await p.evaluate(()=>openDetail(1760100000003));await p.waitForTimeout(600)}],
  'auth-welcome':[false,async p=>{}],
  'auth-login':[false,async p=>{await p.click('[data-act="au-go"][data-id="login"]')}],
  'auth-signup':[false,async p=>{await p.click('[data-act="au-go"][data-id="signup"]')}],
