@@ -63,6 +63,7 @@ K('target',O.target,S.target); K('tracked',O.tracked,S.tracked); K('periodOf',O.
 K('repeatText',O.repeatText,S.repeatText); K('timeText',O.timeText,S.timeText);
 eq('remText', ITEMS.flatMap(i=>i.rem).map(O.remText), ITEMS.flatMap(i=>i.rem).map(S.remText));
 eq('PERIODS', O.PERIODS, S.PERIODS);
+eq('TYPES', O.TYPES, S.TYPES);
 // stats: ต้นฉบับอ่าน S.items กับ UI.period ส่วนชุดใหม่รับ items/period เป็นอาร์กิวเมนต์
 eq('ARC_C', O.ARC_C, T.ARC_C);
 eq('habits', O.habits().map(i=>i.id), T.habits(ITEMS).map(i=>i.id));
@@ -86,6 +87,29 @@ for (const per of ['week','month']) { O.UI.period = per; eq('chartData_'+per, O.
       if (!got) { n++; fail++; console.log('FAIL buildStatsProps_' + per + ': VIEWS.stats ไม่ส่ง props (อาจตกไป statsClassic)'); }
       else eq('buildStatsProps_' + per, got, T.buildStatsProps(ITEMS, per, TODAY));
     }
+  }
+}
+// buildAllProps: เทียบกับ props ที่ VIEWS.all ต้นฉบับส่งเข้า React จริง (ดึงเนื้อ all() ด้วยการนับวงเล็บ ดัก EvarelPages.all)
+{
+  const v = orig('13-views'); const st = v.indexOf('all() {'); let depth = 0, i = v.indexOf('{', st), end = -1;
+  for (let k = i; k < v.length; k++) { const ch = v[k]; if (ch === '{') depth++; else if (ch === '}') { depth--; if (depth === 0) { end = k; break; } } }
+  if (st < 0 || end < 0) { n++; fail++; console.log('FAIL buildAllProps: ดึง VIEWS.all จาก 13-views ไม่ได้'); }
+  else {
+    const fnSrc = 'return function ' + v.slice(st, end + 1);
+    /* O.icon ถูกสต็อบเป็น () => '' ในหมวด buildStatsProps ที่อยู่ก่อนหน้า ต้องสร้างใหม่จากตาราง ICONS จริง ไม่งั้นไอคอนว่างหมดแล้วตัวเทียบมองไม่เห็นความผิดเรื่องไอคอน */
+    O.icon = (nm) => `<svg class="ev-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${O.ICONS[nm]}"/></svg>`;
+    O.header = () => ''; O.pills = () => ''; O.allClassic = () => { throw new Error('ตกไป allClassic: เส้นทาง React ไม่ถูกเข้า'); };
+    for (const type of ['all', 'habit', 'task', 'event', 'class']) {
+      O.UI.type = type; O.S.items = ITEMS; let got = null;
+      O.EvarelPages = { all: (p) => { got = p; return '<ul><li></li></ul>'; } };
+      const run = new Function('O', 'with(O){ ' + fnSrc + ' }');
+      let threw = null; try { run(O).call({}); } catch (e) { threw = e; }
+      const want = T.buildAllProps(ITEMS, type, O.icon);
+      if (!want.sections.length) { n++; if (got !== null || !threw) { fail++; console.log('FAIL buildAllProps_' + type + ': ชนิดว่างต้องตกไป allClassic'); } continue; }
+      if (threw || !got) { n++; fail++; console.log('FAIL buildAllProps_' + type + ': ' + (threw ? threw.message : 'ไม่ส่ง props')); }
+      else eq('buildAllProps_' + type, got, want);
+    }
+    O.S.items = [];
   }
 }
 console.log(`เทียบ ${n} หมวด | ตกเพราะต่างกัน: ${fail}`); process.exit(fail ? 1 : 0);

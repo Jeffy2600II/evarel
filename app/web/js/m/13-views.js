@@ -44,12 +44,11 @@ const VIEWS = {
         const R = window.EvarelPages?.all;
         if (typeof R !== 'function' || !S.items.length)
             return allClassic();
-        try {
-            const types = UI.type === 'all' ? Object.keys(TYPES) : [UI.type], plus = icon('plus');
-            const sections = types.map(k => { const g = S.items.filter(it => it.type === k); return g.length ? { key: k, label: TYPES[k], count: g.length, plus, rows: g.map(it => ({ id: it.id, icon: icon(typeIcon(it)), title: it.title, sub: `${repeatText(it)}${it.time ? ` · ${timeText(it)}` : ''}` })) } : null; }).filter(Boolean);
-            if (!sections.length)
+        try { /* คำนวณทั้งหมดอยู่ใน React (core/stats.buildAllProps) ฝั่งนี้ส่งข้อมูลดิบกับตัวสร้างไอคอน (ตาราง ICONS ยังอยู่ฝั่งนี้) */
+            const types = UI.type === 'all' ? Object.keys(TYPES) : [UI.type];
+            if (!types.some(k => S.items.some(it => it.type === k)))
                 return allClassic();
-            const main = R({ sections }).replace(/<\/li>/g, icon('chev') + '</li>');
+            const main = R({ items: S.items, type: UI.type, iconOf: icon }).replace(/<\/li>/g, icon('chev') + '</li>');
             return `${header(`${S.items.length} รายการที่ตั้งไว้`, 'รายการ')}${pills('type', [['all', 'ทั้งหมด'], ...Object.entries(TYPES)], UI.type)}` + main;
         }
         catch (e) {

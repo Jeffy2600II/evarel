@@ -1,8 +1,8 @@
 /* เทียบ HTML ที่หน้าสถิติผลิต: ฉบับก่อนหน้า (React รับ props ที่โค้ดเดิมคำนวณ, จาก git BASE) กับฉบับปัจจุบัน (React คำนวณเองจากข้อมูลดิบ) ต้องตรงทุกไบต์
-   ใช้: node tests/stats_html_equiv.test.mjs   (BASE = STATS_HTML_BASE หรือ 49236dd)  ผล: exit 1 ถ้าต่างแม้ไบต์เดียว */
+   ใช้: node tests/stats_html_equiv.test.mjs   (BASE = STATS_HTML_BASE หรือ 49236dd, BASE_ALL = ALL_HTML_BASE หรือ d3b113b)  ผล: exit 1 ถ้าต่างแม้ไบต์เดียว */
 import { execFileSync } from 'node:child_process'; import fs from 'node:fs';
 import { fileURLToPath } from 'node:url'; import { dirname, join } from 'node:path';
-const root = join(dirname(fileURLToPath(import.meta.url)), '..'); const BASE = process.env.STATS_HTML_BASE || '49236dd';
+const root = join(dirname(fileURLToPath(import.meta.url)), '..'); const BASE = process.env.STATS_HTML_BASE || '49236dd', BASE_ALL = process.env.ALL_HTML_BASE || 'd3b113b'; /* สองหน้ามีฐานต่างกัน: แต่ละหน้าเทียบกับ commit ก่อนที่หน้านั้นจะคำนวณเอง */
 const FIXED = new Date('2026-10-17T05:30:00Z'); const RD = Date;
 globalThis.Date = class extends RD { constructor(...a){ if(a.length===0) super(FIXED.getTime()); else super(...a); } static now(){ return FIXED.getTime(); } };
 globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator = {};
@@ -29,4 +29,22 @@ for (const per of ['week', 'month']) {
   n++; if (a !== b) { fail++; let i = 0; while (a[i] === b[i]) i++; console.log('FAIL', per, 'ต่างที่ตำแหน่ง', i, '\n old:', a.slice(Math.max(0,i-60), i+80), '\n new:', b.slice(Math.max(0,i-60), i+80)); }
   else console.log('ตรงทุกไบต์', per, a.length, 'อักษร');
 }
-console.log(`เทียบ HTML ${n} โหมด | ต่างกัน ${fail}`); process.exit(fail ? 1 : 0);
+// หน้ารายการ: ฉบับก่อนหน้า (รับ sections สำเร็จรูป) กับฉบับปัจจุบัน (คำนวณเองจาก items/type/iconOf) ใช้ icon จากตาราง ICONS จริงของ 01-constants
+{
+  const consts = fs.readFileSync(root + '/app/web/js/m/01-core__constants.js', 'utf8'); const im = consts.match(/const ICONS\s*=\s*(\{[\s\S]*?\n\})/) || consts.match(/const ICONS\s*=\s*(\{[\s\S]*?\});/);
+  if (!im) { n++; fail++; console.log('FAIL: ดึงตาราง ICONS ไม่ได้'); }
+  else {
+    const ICONS = new Function('return ' + im[1])(); const icon = (nm) => `<svg class="ev-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[nm]}"/></svg>`;
+    const OLDALL = execFileSync('git', ['show', BASE_ALL + ':app/web/js/react/all.js'], { cwd: root, encoding: 'utf8' });
+    const NEWALL = fs.readFileSync(root + '/app/web/js/react/all.js', 'utf8');
+    const loadAll = (src) => { window.EvarelPages = {}; (0, eval)(src); return window.EvarelPages.all; };
+    const oldA = loadAll(OLDALL), newA = loadAll(NEWALL);
+    for (const type of ['all', 'habit', 'task', 'class']) {
+      const sections = T.buildAllProps(ITEMS, type, icon).sections;
+      const a = oldA({ sections }), b = newA({ items: ITEMS, type, iconOf: icon });
+      n++; if (a !== b) { fail++; let i = 0; while (a[i] === b[i]) i++; console.log('FAIL all', type, 'ต่างที่', i, '\n old:', a.slice(Math.max(0,i-60), i+80), '\n new:', b.slice(Math.max(0,i-60), i+80)); }
+      else console.log('ตรงทุกไบต์ all', type, a.length, 'อักษร');
+    }
+  }
+}
+console.log(`เทียบ HTML ${n} กรณี | ต่างกัน ${fail}`); process.exit(fail ? 1 : 0);

@@ -56,3 +56,17 @@ export function buildStatsProps(items: Item[], period: Period, today: string): S
   });
   return { isM, period, rate, arcC: ARC_C, K, T, best, tdDone, tdTotal: td.length, cols: chartData(items, period), rows };
 }
+
+/* ค่าทั้งหมดที่หน้ารายการต้องใช้ (เดิมคำนวณใน VIEWS.all แล้วส่งเป็น props) iconOf ส่งจากภายนอก: ตาราง ICONS ยังไม่ย้าย จึงไม่ผูก global */
+import { TYPES, repeatText, timeText } from './schedule';
+export interface AllRow { id: number | string; icon: string; title: string; sub: string }
+export interface AllSection { key: string; label: string; count: number; plus: string; rows: AllRow[] }
+export type TypeFilter = 'all' | keyof typeof TYPES;
+export function buildAllProps(items: Item[], type: TypeFilter, iconOf: (name: string) => string): { sections: AllSection[] } {
+  const types = (type === 'all' ? Object.keys(TYPES) : [type]) as Array<keyof typeof TYPES>, plus = iconOf('plus'), sections: AllSection[] = [];
+  for (const k of types) {
+    const g = items.filter((it) => it.type === k);
+    if (g.length) sections.push({ key: k, label: TYPES[k], count: g.length, plus, rows: g.map((it) => ({ id: it.id, icon: iconOf(typeIcon(it)), title: it.title, sub: `${repeatText(it)}${it.time ? ` · ${timeText(it)}` : ''}` })) });
+  }
+  return { sections };
+}

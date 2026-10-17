@@ -2,6 +2,7 @@
 // ผลิตเฉพาะ <main> ให้ VIEWS.all ส่งกลับเป็น string: header กับแถบ pills เป็น HTML สำเร็จรูปที่โค้ดเดิมต่อ string เอง
 // ไอคอนเป็น svg สำเร็จรูปจากฝั่งเดิม ส่งมาเป็น props แล้วใส่ด้วย dangerouslySetInnerHTML ใน span ที่มีอยู่แล้ว (ไม่เพิ่ม element)
 // ลูกศร chev ท้ายแต่ละแถวโค้ดเดิมต่อหลัง </li> เอง เหมือนหน้า stats เพื่อไม่ให้ DOM ต่างจากเดิม
+import { buildAllProps } from '../core/stats';
 const { h, Fragment } = window.EvarelReact;
 
 function AllPage(p) {
@@ -20,4 +21,4 @@ function AllPage(p) {
 }
 
 window.EvarelPages = window.EvarelPages || {};
-window.EvarelPages.all = (props) => window.EvarelReact.renderToStaticMarkup(h(AllPage, props));
+window.EvarelPages.all = (raw) => window.EvarelReact.renderToStaticMarkup(h(AllPage, buildAllProps(raw.items, raw.type, raw.iconOf)));

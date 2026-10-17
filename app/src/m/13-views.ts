@@ -30,10 +30,10 @@ const VIEWS={
   <section class="ev-card">${list.length?groups.map(([n,l])=>`<h3 class="ev-group">${n}</h3><ul>${l.map(it=>itemRow(it,ds,idx++,{next:it.id===nextId})).join('')}</ul>`).join(''):empty('inbox','วันนี้ยังว่างอยู่','กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')}</section></main>`},
  all(){
   const R=(window as any).EvarelPages?.all;if(typeof R!=='function'||!S.items.length)return allClassic();
-  try{const types=UI.type==='all'?Object.keys(TYPES):[UI.type],plus=icon('plus');
-   const sections=types.map(k=>{const g=S.items.filter(it=>it.type===k);return g.length?{key:k,label:TYPES[k],count:g.length,plus,rows:g.map(it=>({id:it.id,icon:icon(typeIcon(it)),title:it.title,sub:`${repeatText(it)}${it.time?` · ${timeText(it)}`:''}`}))}:null}).filter(Boolean);
-   if(!sections.length)return allClassic();
-   const main=R({sections}).replace(/<\/li>/g,icon('chev')+'</li>');
+  try{/* คำนวณทั้งหมดอยู่ใน React (core/stats.buildAllProps) ฝั่งนี้ส่งข้อมูลดิบกับตัวสร้างไอคอน (ตาราง ICONS ยังอยู่ฝั่งนี้) */
+   const types=UI.type==='all'?Object.keys(TYPES):[UI.type];
+   if(!types.some(k=>S.items.some(it=>it.type===k)))return allClassic();
+   const main=R({items:S.items,type:UI.type,iconOf:icon}).replace(/<\/li>/g,icon('chev')+'</li>');
    return `${header(`${S.items.length} รายการที่ตั้งไว้`,'รายการ')}${pills('type',[['all','ทั้งหมด'],...Object.entries(TYPES)],UI.type)}`+main}
   catch(e){console.warn('all react',e);return allClassic()}},
  calendar(){const isM=UI.calView==='dayGridMonth';

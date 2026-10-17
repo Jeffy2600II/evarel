@@ -13,6 +13,7 @@ export interface Item {
 const UNIT_TH: Record<string, string> = { day: 'วัน', week: 'สัปดาห์', month: 'เดือน' };
 const STREAK_LOOKBACK = 365, STAT_DAYS = 30;
 export const PERIODS = ['ทั้งวัน', 'ช่วงเช้า', 'ช่วงบ่าย', 'ช่วงเย็น–ค่ำ'];
+export const TYPES = { habit: 'กิจวัตร', task: 'งาน', event: 'กิจกรรม', class: 'คาบเรียน' } as const;
 
 export function occursOn(it: Item, ds: string): boolean {
   const d0 = parse(it.start), d = parse(ds), r = it.repeat;
