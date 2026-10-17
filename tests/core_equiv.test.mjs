@@ -35,6 +35,8 @@ const ITEMS = [
  mk(21,{rem:[{k:'before',m:0},{k:'before',m:30},{k:'before',m:120},{k:'before',m:1440},{k:'before',m:2880},{k:'at',t:'07:15'}]}),
  mk(22,{repeat:{unit:'week',every:1,days:[0,6]},log:logs(60,1,1)}), mk(24,{type:'class',track:'count',target:3,log:{'2026-10-06':2,'2026-10-13':3},repeat:{unit:'week',every:1,days:[1]},start:'2026-05-15'}),
  mk(25,{type:'task',start:'2026-10-05'}), mk(26,{type:'task',start:'2026-10-12',log:{'2026-10-12':1}}),
+ /* ขอบเกณฑ์สี lv (>=80 hi, >=50 mid): ช่วงนับ t วันย้อนจากวันล็อก ok วัน -> pct 79 / 80 / 50 พอดี (month 28 วัน, week 7 วัน ใช้ 4/5 ไม่ได้ จึงเล็งที่ month) */
+ mk(27,{title:'edge79',start:'2026-09-20',log:logs(22,1,1)}), mk(28,{title:'edge80',start:'2026-09-23',log:logs(20,1,1)}), mk(29,{title:'edge50',start:'2026-09-20',log:logs(14,1,1)}),
 ];
 const DATES = ['2026-10-17','2026-10-16','2026-10-18','2026-10-01','2026-09-30','2026-12-01','2026-12-02','2026-02-28','2028-02-29','2026-01-01','2026-12-31','2026-10-11','2026-10-12'];
 const TODAY = D.ymd(new Date());
@@ -67,4 +69,23 @@ eq('habits', O.habits().map(i=>i.id), T.habits(ITEMS).map(i=>i.id));
 K('typeIcon',O.typeIcon,T.typeIcon); K('totalDone',O.totalDone,T.totalDone);
 eq('periodStats', ITEMS.map(it=>[7,28,90].map(n=>O.periodStats(it,n))), ITEMS.map(it=>[7,28,90].map(n=>T.periodStats(it,n))));
 for (const per of ['week','month']) { O.UI.period = per; eq('chartData_'+per, O.chartData(), T.chartData(ITEMS, per)); }
+// buildStatsProps: เทียบกับ props ที่ VIEWS.stats ต้นฉบับ (13-views ใน git) ส่งเข้า React จริง
+// ดึงเนื้อ stats() ด้วยการนับวงเล็บให้สมดุล (ไม่ใช้ regex เดา) แล้วรันโดยดัก EvarelPages.stats เก็บ props
+{
+  const v = orig('13-views'); const st = v.indexOf('stats() {'); let depth = 0, i = v.indexOf('{', st), end = -1;
+  for (let k = i; k < v.length; k++) { const ch = v[k]; if (ch === '{') depth++; else if (ch === '}') { depth--; if (depth === 0) { end = k; break; } } }
+  if (st < 0 || end < 0) { n++; fail++; console.log('FAIL buildStatsProps: ดึง VIEWS.stats จาก 13-views ไม่ได้'); }
+  else {
+    const fnSrc = 'return function ' + v.slice(st, end + 1);
+    for (const per of ['week','month']) {
+      O.UI.period = per; let got = null;
+      O.EvarelPages = { stats: (p) => { got = p; return '<ul><li></li></ul>'; } }; /* O.window === O จึงตรงกับ window.EvarelPages ที่ต้นฉบับอ่าน */
+      O.header = () => ''; O.seg = () => ''; O.icon = () => ''; O.statsClassic = () => { throw new Error('ตกไป statsClassic: เส้นทาง React ไม่ถูกเข้า'); };
+      const run = new Function('O', 'with(O){ ' + fnSrc + ' }');
+      run(O).call({});
+      if (!got) { n++; fail++; console.log('FAIL buildStatsProps_' + per + ': VIEWS.stats ไม่ส่ง props (อาจตกไป statsClassic)'); }
+      else eq('buildStatsProps_' + per, got, T.buildStatsProps(ITEMS, per, TODAY));
+    }
+  }
+}
 console.log(`เทียบ ${n} หมวด | ตกเพราะต่างกัน: ${fail}`); process.exit(fail ? 1 : 0);

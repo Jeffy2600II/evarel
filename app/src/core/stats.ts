@@ -35,3 +35,24 @@ export function chartData(items: Item[], period: Period): Col[] {
   return out;
 }
 export const totalDone = (it: Item): number => Object.keys(it.log).filter((ds) => occursOn(it, ds) && isDone(it, ds)).length;
+
+/* ค่าทั้งหมดที่หน้าสถิติต้องใช้ คำนวณที่เดียวจาก items/period/today (เดิมคำนวณใน VIEWS.stats แล้วส่งเป็น props) */
+import { streak } from './schedule';
+export interface StatsRow { id: number | string; title: string; sub: string; full: boolean; pct: number; pctText: string; lv: string }
+export interface StatsProps {
+  isM: boolean; period: Period; rate: number; arcC: number; K: number; T: number; best: number;
+  tdDone: number; tdTotal: number; cols: Col[]; rows: StatsRow[];
+}
+export function buildStatsProps(items: Item[], period: Period, today: string): StatsProps {
+  const hs = habits(items), isM = period === 'month', days = isM ? 28 : 7;
+  const per = hs.map((h) => [h, periodStats(h, days)] as const);
+  const T = per.reduce((n, [, s]) => n + s.t, 0), K = per.reduce((n, [, s]) => n + s.ok, 0);
+  const rate = T ? Math.round(100 * K / T) : 0, best = Math.max(0, ...hs.map(streak));
+  const td = hs.filter((h) => occursOn(h, today) && !skipped(h, today)), tdDone = td.filter((h) => isDone(h, today)).length;
+  const lv = (r: number): string => (r >= 80 ? 'hi' : r >= 50 ? 'mid' : 'lo');
+  const rows = per.map(([h, s]): StatsRow => {
+    const r = s.t ? Math.round(100 * s.ok / s.t) : 0, st = streak(h);
+    return { id: h.id, title: h.title, sub: `${s.t ? `ทำ ${s.ok} จาก ${s.t} ครั้ง` : 'ไม่มีกำหนดในช่วงนี้'}${st ? ` · ต่อเนื่อง ${st} วัน` : ''}`, full: r >= 100, pct: r, pctText: s.t ? r + '%' : '–', lv: s.t ? lv(r) : '' };
+  });
+  return { isM, period, rate, arcC: ARC_C, K, T, best, tdDone, tdTotal: td.length, cols: chartData(items, period), rows };
+}
