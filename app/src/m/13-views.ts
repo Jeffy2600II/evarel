@@ -43,8 +43,13 @@ const VIEWS={
    return `${header(`${S.items.length} รายการที่ตั้งไว้`,'รายการ')}${pills('type',[['all','ทั้งหมด'],...Object.entries(TYPES)],UI.type)}`+main}
   catch(e){console.warn('all react',e);return allClassic()}},
  calendar(){const isM=UI.calView==='dayGridMonth';
-  return `${header('ทุกอย่างในที่เดียว','ปฏิทิน')}<div class="ev-main" style="padding-bottom:12px"><div class="ev-cal-top"><div class="ev-row" style="gap:2px"><button class="ev-icon-btn" data-flat data-act="cal-nav" data-id="prev" aria-label="ก่อนหน้า">${icon('back')}</button><b id="calTitle" class="ev-cal-title">&nbsp;</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-nav" data-id="next" aria-label="ถัดไป">${icon('back')}</button></div><button class="ev-chip-btn" data-act="cal-nav" data-id="today">วันนี้</button></div>${seg('cal-view',[['dayGridMonth','เดือน'],['timeGridWeek','สัปดาห์']],UI.calView)}</div>
-  <main class="ev-main"><section class="ev-card ev-fc-wrap"><div id="fcMain"></div></section><div id="agenda">${isM?agendaHTML(UI.calSel):''}</div></main>`},
+  /* S4 route ปฏิทิน: React ผลิตเนื้อ <main> (div#fcMain เปล่าให้ FullCalendar mount แบบเดิม + agenda ฝังผล agendaHTML) header กับ ev-cal-top/seg เป็น HTML เดิม */
+  const R=(window as any).EvarelPages?.calendar;
+  const head=`${header('ทุกอย่างในที่เดียว','ปฏิทิน')}<div class="ev-main" style="padding-bottom:12px"><div class="ev-cal-top"><div class="ev-row" style="gap:2px"><button class="ev-icon-btn" data-flat data-act="cal-nav" data-id="prev" aria-label="ก่อนหน้า">${icon('back')}</button><b id="calTitle" class="ev-cal-title">&nbsp;</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-nav" data-id="next" aria-label="ถัดไป">${icon('back')}</button></div><button class="ev-chip-btn" data-act="cal-nav" data-id="today">วันนี้</button></div>${seg('cal-view',[['dayGridMonth','เดือน'],['timeGridWeek','สัปดาห์']],UI.calView)}</div>
+  `;
+  const main=()=>`<main class="ev-main"><section class="ev-card ev-fc-wrap"><div id="fcMain"></div></section><div id="agenda">${isM?agendaHTML(UI.calSel):''}</div></main>`;
+  if(typeof R==='function'){try{const m=R({calView:UI.calView,calSel:UI.calSel});if(typeof m==='string')return head+m}catch(err){console.warn('calendar react',err)}}
+  return head+main()},
  stats(){
   const R=(window as any).EvarelPages?.stats;if(typeof R!=='function')return statsClassic();
   const hs=habits();if(!hs.length)return statsClassic();
