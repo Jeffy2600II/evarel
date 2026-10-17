@@ -1,7 +1,7 @@
 /* ===== MODULE: views/settings ===== */
 function notifInfo(){if(!('Notification' in window))return ['ไม่รองรับ','เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'];const p=Notification.permission;if(p==='denied')return ['ถูกปิดไว้','ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์'];if(p==='granted')return pushSavedState()?['อนุญาตแล้ว','เครื่องนี้พร้อมรับการแจ้งเตือน']:['อนุญาตแล้ว แต่ยังไม่ได้ลงทะเบียน','กดปุ่มเพื่อลงทะเบียนเครื่องนี้กับระบบ'];return ['ยังไม่ได้ขอ','กดปุ่มเพื่อให้เครื่องนี้รับการแจ้งเตือนได้']}
 const themeNow=()=>document.documentElement.dataset.theme||'auto';
-function settingsHTML(){const [st,note]=notifInfo(),total=countNotifiable(S.items);
+function settingsHTMLClassic(){const [st,note]=notifInfo(),total=countNotifiable(S.items);
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
  <section class="ev-card ev-row" style="gap:14px"><span class="ev-avatar" style="width:52px;height:52px;font-size:20px;display:grid">${initial()}</span><div class="grow"><b>${esc(ST.USER?.name||'ผู้ใช้')}</b><p class="ev-sub" style="overflow:hidden;text-overflow:ellipsis">${esc(ST.USER?.email||'')}</p></div><span class="ev-chip">${ST.USER?.provider==='google'?'Google':'อีเมล'}</span></section>
  <section class="ev-card"><b>ธีม</b><div style="margin-top:12px">${seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow())}</div></section>
@@ -9,8 +9,19 @@ function settingsHTML(){const [st,note]=notifInfo(),total=countNotifiable(S.item
   <p class="ev-sub" style="margin-top:12px">ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ แจ้งเฉพาะเวลาที่คุณตั้งเท่านั้น เวลาที่ตั้งไว้บันทึกกับบัญชีของคุณและส่งถึงเครื่องนี้ตามเวลา</p></section>
  
  <section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div></section></div>`}
+/* ชั้น 4: หน้าตั้งค่าผลิตโดย React (bundle แบบ lazy) ถ้ายังโหลดไม่เสร็จหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
+function settingsHTML(){
+ const R=(window as any).EvarelReactSettings;
+ if(!R||typeof R.renderSettings!=='function')return settingsHTMLClassic();
+ try{const [st,note]=notifInfo(),granted='Notification' in window&&Notification.permission==='granted',canBtn='Notification' in window&&(Notification.permission==='default'||(granted&&!pushSavedState()));
+  return R.renderSettings({user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'})}
+ catch(e){console.warn('settings react',e);return settingsHTMLClassic()}}
+/* โหลด bundle เบื้องหลังหลังแอปเริ่มทำงาน (ไม่แตะ index.html) พลาดก็ไม่เป็นไร ใช้ของเดิมต่อ */
+function loadReactSettings(){if((window as any).EvarelReactSettings||document.querySelector('script[data-ev-react="settings"]'))return;
+ const el=document.createElement('script');el.src='js/react/settings.js';el.async=true;el.dataset.evReact='settings';el.onerror=()=>console.warn('react settings bundle ไม่พร้อม ใช้หน้าเดิม');document.head.appendChild(el)}
+window.addEventListener('load',()=>setTimeout(loadReactSettings,0));
 function applyTheme(t){t==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=t;try{localStorage.setItem(THEME_KEY,t)}catch(e){console.warn('theme',e)}}
 try{const t=localStorage.getItem(THEME_KEY);if(t&&t!=='auto')applyTheme(t)}catch(e){console.warn('theme load',e)}
 
 
-Object.assign(window, { notifInfo, themeNow, settingsHTML, applyTheme });
+Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, applyTheme });

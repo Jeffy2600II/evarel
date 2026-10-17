@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v49-types';
+const VERSION = 'evarel-v50-react-settings';
 const CORE = [
   './',
   './index.html',
@@ -35,6 +35,7 @@ const CORE = [
   './js/m/23-render.js',
   './js/m/24-services__legacy-import.js',
   './js/m/25-actions.js',
+  './js/react/settings.js',
   './js/route.js',
   './js/boot.js',
   './vendor/fullcalendar.min.js',
