@@ -6,11 +6,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = process.env.CORE_EQUIV_BASE || '6a5833b';
 const tmp = mkdtempSync(join(tmpdir(), 'core-eq-'));
 const tsc = join(ROOT, 'node_modules/typescript/bin/tsc');
-execFileSync(process.execPath, [tsc, '--ignoreConfig', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler', '--lib', 'dom,esnext', '--outDir', tmp, join(ROOT, 'app/src/core/dates.ts'), join(ROOT, 'app/src/core/schedule.ts')], { stdio: 'inherit' });
+execFileSync(process.execPath, [tsc, '--ignoreConfig', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler', '--lib', 'dom,esnext', '--outDir', tmp, join(ROOT, 'app/src/core/dates.ts'), join(ROOT, 'app/src/core/schedule.ts'), join(ROOT, 'app/src/core/stats.ts')], { stdio: 'inherit' });
 writeFileSync(join(tmp, 'package.json'), '{"type":"module"}');
-for (const f of ['dates', 'schedule']) { const p = join(tmp, f + '.js'); const t = (await import('node:fs')).readFileSync(p, 'utf8').replace(/from '\.\/(\w+)'/g, "from './$1.js'"); writeFileSync(p, t); }
+for (const f of ['dates', 'schedule', 'stats']) { const p = join(tmp, f + '.js'); const t = (await import('node:fs')).readFileSync(p, 'utf8').replace(/from '\.\/(\w+)'/g, "from './$1.js'"); writeFileSync(p, t); }
 const orig = (f) => execFileSync('git', ['show', `${BASE}:app/web/js/m/${f}.js`], { cwd: ROOT, encoding: 'utf8' }).replace(/^"use strict";?/, '');
-const D = await import(pathToFileURL(join(tmp, 'dates.js'))), S = await import(pathToFileURL(join(tmp, 'schedule.js')));
+const D = await import(pathToFileURL(join(tmp, 'dates.js'))), S = await import(pathToFileURL(join(tmp, 'schedule.js'))), T = await import(pathToFileURL(join(tmp, 'stats.js')));
 const fs = { readFileSync: (p) => orig(p.split('/').pop().replace(/\.js$/, '')) };
 const FIXED = new Date('2026-10-17T05:30:00Z');
 const RealDate = Date;
@@ -61,4 +61,10 @@ K('target',O.target,S.target); K('tracked',O.tracked,S.tracked); K('periodOf',O.
 K('repeatText',O.repeatText,S.repeatText); K('timeText',O.timeText,S.timeText);
 eq('remText', ITEMS.flatMap(i=>i.rem).map(O.remText), ITEMS.flatMap(i=>i.rem).map(S.remText));
 eq('PERIODS', O.PERIODS, S.PERIODS);
+// stats: ต้นฉบับอ่าน S.items กับ UI.period ส่วนชุดใหม่รับ items/period เป็นอาร์กิวเมนต์
+eq('ARC_C', O.ARC_C, T.ARC_C);
+eq('habits', O.habits().map(i=>i.id), T.habits(ITEMS).map(i=>i.id));
+K('typeIcon',O.typeIcon,T.typeIcon); K('totalDone',O.totalDone,T.totalDone);
+eq('periodStats', ITEMS.map(it=>[7,28,90].map(n=>O.periodStats(it,n))), ITEMS.map(it=>[7,28,90].map(n=>T.periodStats(it,n))));
+for (const per of ['week','month']) { O.UI.period = per; eq('chartData_'+per, O.chartData(), T.chartData(ITEMS, per)); }
 console.log(`เทียบ ${n} หมวด | ตกเพราะต่างกัน: ${fail}`); process.exit(fail ? 1 : 0);
