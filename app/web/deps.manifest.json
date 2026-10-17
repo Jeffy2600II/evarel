@@ -286,6 +286,7 @@
   "13-views.js": {
    "declares": [
     "statsClassic",
+    "allClassic",
     "VIEWS"
    ],
    "dependsOn": [

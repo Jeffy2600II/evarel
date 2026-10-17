@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v52-react-stats';
+const VERSION = 'evarel-v53-react-all';
 const CORE = [
   './',
   './index.html',
@@ -38,6 +38,7 @@ const CORE = [
   './js/react/runtime.js',
   './js/react/settings.js',
   './js/react/stats.js',
+  './js/react/all.js',
   './js/route.js',
   './js/boot.js',
   './vendor/fullcalendar.min.js',

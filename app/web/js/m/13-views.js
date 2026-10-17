@@ -15,6 +15,13 @@ function statsClassic() {
   <section class="ev-card"><h3 class="ev-group" style="padding-top:0">${isM ? 'รายสัปดาห์' : 'รายวัน'}</h3><p class="ev-sub">ความสูง = % ที่ทำสำเร็จ${isM ? 'ในสัปดาห์นั้น (เริ่มวันที่ใต้แท่ง)' : 'ในวันนั้น'}</p><div class="ev-chart">${cols.map((c, i) => `<div class="ev-col" data-today="${c.today}" data-empty="${!c.t}"><span class="ev-col-v">${c.t ? c.pct + '%' : '–'}</span><div class="ev-col-track"><i data-kind="col" data-k="col-${UI.period}-${i}" data-to="${c.pct}"></i></div><span class="ev-col-l">${c.label}</span></div>`).join('')}</div></section>
   <section class="ev-card"><h3 class="ev-group" style="padding-top:0">รายกิจวัตร · แตะเพื่อดูปฏิทิน</h3><ul>${per.map(row).join('')}</ul></section></main>`;
 }
+function allClassic() {
+    const types = UI.type === 'all' ? Object.keys(TYPES) : [UI.type];
+    const row = it => `<li class="ev-list-item"><span class="ev-badge">${icon(typeIcon(it))}</span><div class="grow" role="button" tabindex="0" data-act="detail" data-id="${it.id}"><b>${esc(it.title)}</b><span class="ev-sub">${repeatText(it)}${it.time ? ` · ${timeText(it)}` : ''}</span></div>${icon('chev')}</li>`;
+    const sec = k => { const g = S.items.filter(it => it.type === k); return g.length ? `<section class="ev-card"><div class="ev-sec-head"><h3 class="ev-group">${TYPES[k]}<span>${g.length}</span></h3><button class="ev-link-btn" data-act="add-type" data-id="${k}" aria-label="เพิ่ม${TYPES[k]}">${icon('plus')}</button></div><ul>${g.map(row).join('')}</ul></section>` : ''; };
+    const body = types.map(sec).join('');
+    return `${header(`${S.items.length} รายการที่ตั้งไว้`, 'รายการ')}${pills('type', [['all', 'ทั้งหมด'], ...Object.entries(TYPES)], UI.type)}<main class="ev-main">${body || `<section class="ev-card">${empty('inbox', 'ยังไม่มีรายการ', 'กดปุ่ม + เพื่อสร้างรายการแรก')}</section>`}</main>`;
+}
 const VIEWS = {
     today() {
         if (!S.items.length)
@@ -34,11 +41,21 @@ const VIEWS = {
   <section class="ev-card">${list.length ? groups.map(([n, l]) => `<h3 class="ev-group">${n}</h3><ul>${l.map(it => itemRow(it, ds, idx++, { next: it.id === nextId })).join('')}</ul>`).join('') : empty('inbox', 'วันนี้ยังว่างอยู่', 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')}</section></main>`;
     },
     all() {
-        const types = UI.type === 'all' ? Object.keys(TYPES) : [UI.type];
-        const row = it => `<li class="ev-list-item"><span class="ev-badge">${icon(typeIcon(it))}</span><div class="grow" role="button" tabindex="0" data-act="detail" data-id="${it.id}"><b>${esc(it.title)}</b><span class="ev-sub">${repeatText(it)}${it.time ? ` · ${timeText(it)}` : ''}</span></div>${icon('chev')}</li>`;
-        const sec = k => { const g = S.items.filter(it => it.type === k); return g.length ? `<section class="ev-card"><div class="ev-sec-head"><h3 class="ev-group">${TYPES[k]}<span>${g.length}</span></h3><button class="ev-link-btn" data-act="add-type" data-id="${k}" aria-label="เพิ่ม${TYPES[k]}">${icon('plus')}</button></div><ul>${g.map(row).join('')}</ul></section>` : ''; };
-        const body = types.map(sec).join('');
-        return `${header(`${S.items.length} รายการที่ตั้งไว้`, 'รายการ')}${pills('type', [['all', 'ทั้งหมด'], ...Object.entries(TYPES)], UI.type)}<main class="ev-main">${body || `<section class="ev-card">${empty('inbox', 'ยังไม่มีรายการ', 'กดปุ่ม + เพื่อสร้างรายการแรก')}</section>`}</main>`;
+        const R = window.EvarelPages?.all;
+        if (typeof R !== 'function' || !S.items.length)
+            return allClassic();
+        try {
+            const types = UI.type === 'all' ? Object.keys(TYPES) : [UI.type], plus = icon('plus');
+            const sections = types.map(k => { const g = S.items.filter(it => it.type === k); return g.length ? { key: k, label: TYPES[k], count: g.length, plus, rows: g.map(it => ({ id: it.id, icon: icon(typeIcon(it)), title: it.title, sub: `${repeatText(it)}${it.time ? ` · ${timeText(it)}` : ''}` })) } : null; }).filter(Boolean);
+            if (!sections.length)
+                return allClassic();
+            const main = R({ sections }).replace(/<\/li>/g, icon('chev') + '</li>');
+            return `${header(`${S.items.length} รายการที่ตั้งไว้`, 'รายการ')}${pills('type', [['all', 'ทั้งหมด'], ...Object.entries(TYPES)], UI.type)}` + main;
+        }
+        catch (e) {
+            console.warn('all react', e);
+            return allClassic();
+        }
     },
     calendar() {
         const isM = UI.calView === 'dayGridMonth';
@@ -65,4 +82,4 @@ const VIEWS = {
         }
     }
 };
-Object.assign(window, { VIEWS, statsClassic });
+Object.assign(window, { VIEWS, statsClassic, allClassic });

@@ -45,14 +45,14 @@ function loadReactFile(name) {
     });
 }
 /* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
-const REACT_PAGES = ['settings', 'stats'];
+const REACT_PAGES = ['settings', 'stats', 'all'];
 function loadReactSettings() {
     const W = window;
     if (REACT_PAGES.every(n => W.EvarelPages?.[n]))
         return Promise.resolve(0);
     /* เรียก render ผ่าน window ตอนรันเท่านั้น (ไม่อ้างชื่อตรง) ไม่ให้เกิดเส้นพึ่งพาย้อนทิศไป 23-render ซึ่งโหลดหลังไฟล์นี้ */
     return loadReactFile('runtime').then(() => REACT_PAGES.reduce((p, n) => p.then(() => loadReactFile(n)), Promise.resolve(0))).then(() => { try {
-        if (W.UI?.tab === 'stats' && typeof W.render === 'function')
+        if ((W.UI?.tab === 'stats' || W.UI?.tab === 'all') && typeof W.render === 'function')
             W.render();
     }
     catch (e) { } }).catch(e => console.warn('react ไม่พร้อม ใช้หน้าเดิม', e && e.message));
