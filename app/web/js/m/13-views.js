@@ -33,12 +33,26 @@ const VIEWS = {
         let idx = 0;
         const groups = PERIODS.map((n, g) => [n, list.filter(it => periodOf(it) === g)]).filter(([, l]) => l.length);
         const hello = ds === TODAY ? (() => { const h = new Date().getHours(); return h < 12 ? 'สวัสดีตอนเช้า' : h < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น'; })() : fmtDate(ds);
-        return `${header(fmtDate(ds), ds === TODAY ? hello : 'ย้อนดู/วางแผน')}
+        /* S4 route วันนี้: React ผลิตเนื้อ <main> จากของดิบล้วน (core/today.buildTodayProps) ส่วน header กับ weekbar/week เป็น HTML เดิมต่อ string เอง */
+        const R = window.EvarelPages?.today;
+        const head = `${header(fmtDate(ds), ds === TODAY ? hello : 'ย้อนดู/วางแผน')}
   <div class="ev-weekbar"><b>${TH_MONTH[parse(week[3]).getMonth()]} ${parse(week[3]).getFullYear() + 543}</b><div class="ev-row" style="gap:4px">${UI.date !== TODAY || UI.weekOff ? '<button class="ev-chip-btn" data-act="today">วันนี้</button>' : ''}<button class="ev-icon-btn" data-flat data-act="wk" data-id="-1" aria-label="สัปดาห์ก่อน">${icon('back')}</button><button class="ev-icon-btn ev-flip" data-flat data-act="wk" data-id="1" aria-label="สัปดาห์ถัดไป">${icon('back')}</button></div></div>
   <div class="ev-week" role="group" aria-label="เลือกวัน" data-dir="${UI.weekDir}">${week.map(d => `<button aria-pressed="${UI.date === d}" data-today="${d === TODAY}" data-act="date" data-id="${d}">${WD[parse(d).getDay()]}<b>${parse(d).getDate()}</b></button>`).join('')}</div>
-  <main class="ev-main" id="main"><section class="ev-card ev-sum" data-tone="ink"><div class="ev-sum-top"><div><div class="ev-sum-num"><span data-count="${done}">0</span><small>/${tr.length}</small></div><div class="ev-sum-lab">${tr.length ? (done === tr.length ? 'ครบทุกอย่างแล้ว' : 'ทำแล้ววันนี้') : 'วันนี้ไม่มีสิ่งต้องติ๊ก'}</div></div><div class="ev-sum-lab">${p}%</div></div><div class="ev-prog"><i data-k="p-today" data-to="${p}"></i></div>${nextIt ? `<div class="ev-next"><span class="ev-chip">ถัดไป</span>${nextIt.time} · ${esc(nextIt.title)}</div>` : ''}</section>
+  `;
+        const main = () => `<main class="ev-main" id="main"><section class="ev-card ev-sum" data-tone="ink"><div class="ev-sum-top"><div><div class="ev-sum-num"><span data-count="${done}">0</span><small>/${tr.length}</small></div><div class="ev-sum-lab">${tr.length ? (done === tr.length ? 'ครบทุกอย่างแล้ว' : 'ทำแล้ววันนี้') : 'วันนี้ไม่มีสิ่งต้องติ๊ก'}</div></div><div class="ev-sum-lab">${p}%</div></div><div class="ev-prog"><i data-k="p-today" data-to="${p}"></i></div>${nextIt ? `<div class="ev-next"><span class="ev-chip">ถัดไป</span>${nextIt.time} · ${esc(nextIt.title)}</div>` : ''}</section>
   ${od.length ? `<section class="ev-card" data-tone="warn"><b>ค้างอยู่ ${od.length} งาน</b><ul>${od.map((it, i) => itemRow(it, it.start, i, { late: true })).join('')}</ul></section>` : ''}
   <section class="ev-card">${list.length ? groups.map(([n, l]) => `<h3 class="ev-group">${n}</h3><ul>${l.map(it => itemRow(it, ds, idx++, { next: it.id === nextId })).join('')}</ul>`).join('') : empty('inbox', 'วันนี้ยังว่างอยู่', 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')}</section></main>`;
+        if (typeof R === 'function') {
+            try {
+                const m = R({ items: S.items, ui: { date: UI.date, weekOff: UI.weekOff, weekDir: UI.weekDir }, today: TODAY, now: new Date() });
+                if (typeof m === 'string')
+                    return head + m;
+            }
+            catch (err) {
+                console.warn('today react', err);
+            }
+        }
+        return head + main();
     },
     all() {
         const R = window.EvarelPages?.all;

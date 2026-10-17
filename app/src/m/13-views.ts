@@ -17,17 +17,23 @@ function allClassic(){const types=UI.type==='all'?Object.keys(TYPES):[UI.type];
   const body=types.map(sec).join('');
   return `${header(`${S.items.length} รายการที่ตั้งไว้`,'รายการ')}${pills('type',[['all','ทั้งหมด'],...Object.entries(TYPES)],UI.type)}<main class="ev-main">${body||`<section class="ev-card">${empty('inbox','ยังไม่มีรายการ','กดปุ่ม + เพื่อสร้างรายการแรก')}</section>`}</main>`}
 const VIEWS={
- today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
+ today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button></div></section></main>`;
+  const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
   const start=addDays(new Date(),-new Date().getDay()+7*UI.weekOff),week=Array.from({length:7},(_,i)=>ymd(addDays(start,i)));
   const nextId=ds===TODAY?(list.find(it=>it.time&&it.time>=nowHM()&&!(tracked(it)&&isDone(it,ds))))?.id:null;const nextIt=list.find(it=>it.id===nextId);let idx=0;
   const groups=PERIODS.map((n,g)=>[n,list.filter(it=>periodOf(it)===g)]).filter(([,l])=>l.length);
   const hello=ds===TODAY?(()=>{const h=new Date().getHours();return h<12?'สวัสดีตอนเช้า':h<17?'สวัสดีตอนบ่าย':'สวัสดีตอนเย็น'})():fmtDate(ds);
-  return `${header(fmtDate(ds),ds===TODAY?hello:'ย้อนดู/วางแผน')}
+  /* S4 route วันนี้: React ผลิตเนื้อ <main> จากของดิบล้วน (core/today.buildTodayProps) ส่วน header กับ weekbar/week เป็น HTML เดิมต่อ string เอง */
+  const R=(window as any).EvarelPages?.today;
+  const head=`${header(fmtDate(ds),ds===TODAY?hello:'ย้อนดู/วางแผน')}
   <div class="ev-weekbar"><b>${TH_MONTH[parse(week[3]).getMonth()]} ${parse(week[3]).getFullYear()+543}</b><div class="ev-row" style="gap:4px">${UI.date!==TODAY||UI.weekOff?'<button class="ev-chip-btn" data-act="today">วันนี้</button>':''}<button class="ev-icon-btn" data-flat data-act="wk" data-id="-1" aria-label="สัปดาห์ก่อน">${icon('back')}</button><button class="ev-icon-btn ev-flip" data-flat data-act="wk" data-id="1" aria-label="สัปดาห์ถัดไป">${icon('back')}</button></div></div>
   <div class="ev-week" role="group" aria-label="เลือกวัน" data-dir="${UI.weekDir}">${week.map(d=>`<button aria-pressed="${UI.date===d}" data-today="${d===TODAY}" data-act="date" data-id="${d}">${WD[parse(d).getDay()]}<b>${parse(d).getDate()}</b></button>`).join('')}</div>
-  <main class="ev-main" id="main"><section class="ev-card ev-sum" data-tone="ink"><div class="ev-sum-top"><div><div class="ev-sum-num"><span data-count="${done}">0</span><small>/${tr.length}</small></div><div class="ev-sum-lab">${tr.length?(done===tr.length?'ครบทุกอย่างแล้ว':'ทำแล้ววันนี้'):'วันนี้ไม่มีสิ่งต้องติ๊ก'}</div></div><div class="ev-sum-lab">${p}%</div></div><div class="ev-prog"><i data-k="p-today" data-to="${p}"></i></div>${nextIt?`<div class="ev-next"><span class="ev-chip">ถัดไป</span>${nextIt.time} · ${esc(nextIt.title)}</div>`:''}</section>
+  `;
+  const main=()=>`<main class="ev-main" id="main"><section class="ev-card ev-sum" data-tone="ink"><div class="ev-sum-top"><div><div class="ev-sum-num"><span data-count="${done}">0</span><small>/${tr.length}</small></div><div class="ev-sum-lab">${tr.length?(done===tr.length?'ครบทุกอย่างแล้ว':'ทำแล้ววันนี้'):'วันนี้ไม่มีสิ่งต้องติ๊ก'}</div></div><div class="ev-sum-lab">${p}%</div></div><div class="ev-prog"><i data-k="p-today" data-to="${p}"></i></div>${nextIt?`<div class="ev-next"><span class="ev-chip">ถัดไป</span>${nextIt.time} · ${esc(nextIt.title)}</div>`:''}</section>
   ${od.length?`<section class="ev-card" data-tone="warn"><b>ค้างอยู่ ${od.length} งาน</b><ul>${od.map((it,i)=>itemRow(it,it.start,i,{late:true})).join('')}</ul></section>`:''}
-  <section class="ev-card">${list.length?groups.map(([n,l])=>`<h3 class="ev-group">${n}</h3><ul>${l.map(it=>itemRow(it,ds,idx++,{next:it.id===nextId})).join('')}</ul>`).join(''):empty('inbox','วันนี้ยังว่างอยู่','กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')}</section></main>`},
+  <section class="ev-card">${list.length?groups.map(([n,l])=>`<h3 class="ev-group">${n}</h3><ul>${l.map(it=>itemRow(it,ds,idx++,{next:it.id===nextId})).join('')}</ul>`).join(''):empty('inbox','วันนี้ยังว่างอยู่','กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')}</section></main>`;
+  if(typeof R==='function'){try{const m=R({items:S.items,ui:{date:UI.date,weekOff:UI.weekOff,weekDir:UI.weekDir},today:TODAY,now:new Date()});if(typeof m==='string')return head+m}catch(err){console.warn('today react',err)}}
+  return head+main()},
  all(){
   const R=(window as any).EvarelPages?.all;if(typeof R!=='function'||!S.items.length)return allClassic();
   try{/* คำนวณทั้งหมดอยู่ใน React (core/stats.buildAllProps) ฝั่งนี้ส่งข้อมูลดิบกับตัวสร้างไอคอน (ตาราง ICONS ยังอยู่ฝั่งนี้) */
