@@ -1,7 +1,8 @@
 // หน้าสถิติของ Evarel เขียนเป็น React (ชั้น 4 หน่วยที่สอง)
 // ผลิตเฉพาะ <main> ให้ VIEWS.stats ส่งกลับเป็น string: React ไม่ถือ DOM ของหน้านี้ จึงไม่ชนกับ root.innerHTML ใน 23-render
 // header กับแถบเลือกช่วงเวลา (HTML สำเร็จรูป) และลูกศร chev โค้ดเดิมต่อ string เอง เพื่อไม่ให้ React ต้องห่อ element เพิ่มที่ทำให้ DOM ต่างจากเดิม
-// สถิติทุกตัวคำนวณฝั่งโค้ดเดิมแล้วส่งเป็น props (ไม่อ่าน global เอง) data-count data-to data-k ต้องตรงเป๊ะเพราะ growBars/countUp อ่านจาก DOM
+// สถิติทุกตัวคำนวณที่นี่จาก core/stats.buildStatsProps (รับ items/period/today ดิบ ไม่อ่าน global เอง) data-count data-to data-k ต้องตรงเป๊ะเพราะ growBars/countUp อ่านจาก DOM
+import { buildStatsProps } from '../core/stats';
 const { h, Fragment } = window.EvarelReact;
 
 function StatsPage(p) {
@@ -43,4 +44,4 @@ function StatsPage(p) {
 }
 
 window.EvarelPages = window.EvarelPages || {};
-window.EvarelPages.stats = (props) => window.EvarelReact.renderToStaticMarkup(h(StatsPage, props));
+window.EvarelPages.stats = (raw) => window.EvarelReact.renderToStaticMarkup(h(StatsPage, buildStatsProps(raw.items, raw.period, raw.today)));

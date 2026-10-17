@@ -69,11 +69,8 @@ const VIEWS = {
         const hs = habits();
         if (!hs.length)
             return statsClassic();
-        try {
-            const isM = UI.period === 'month', days = isM ? 28 : 7, per = hs.map(h => [h, periodStats(h, days)]), T = per.reduce((n, [, s]) => n + s.t, 0), K = per.reduce((n, [, s]) => n + s.ok, 0), rate = T ? Math.round(100 * K / T) : 0, best = Math.max(0, ...hs.map(streak));
-            const td = hs.filter(h => occursOn(h, TODAY) && !skipped(h, TODAY)), tdDone = td.filter(h => isDone(h, TODAY)).length, cols = chartData(), lv = r => r >= 80 ? 'hi' : r >= 50 ? 'mid' : 'lo';
-            const rows = per.map(([h, s]) => { const r = s.t ? Math.round(100 * s.ok / s.t) : 0, st = streak(h); return { id: h.id, title: h.title, sub: `${s.t ? `ทำ ${s.ok} จาก ${s.t} ครั้ง` : 'ไม่มีกำหนดในช่วงนี้'}${st ? ` · ต่อเนื่อง ${st} วัน` : ''}`, full: r >= 100, pct: r, pctText: s.t ? r + '%' : '–', lv: s.t ? lv(r) : '' }; });
-            const main = R({ isM, period: UI.period, rate, arcC: ARC_C, K, T, best, tdDone, tdTotal: td.length, cols, rows }).replace(/<\/li>/g, icon('chev') + '</li>');
+        try { /* คำนวณทั้งหมดอยู่ใน React (core/stats.buildStatsProps) ฝั่งนี้ส่งแค่ข้อมูลดิบ */
+            const main = R({ items: S.items, period: UI.period, today: TODAY }).replace(/<\/li>/g, icon('chev') + '</li>');
             return header('ความต่อเนื่องของคุณ', 'สถิติ') + `<div class="ev-main" style="padding-bottom:12px">${seg('period', [['week', '7 วันล่าสุด'], ['month', '4 สัปดาห์ล่าสุด']], UI.period)}</div>\n  ` + main;
         }
         catch (e) {
