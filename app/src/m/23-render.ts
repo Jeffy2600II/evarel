@@ -10,7 +10,9 @@ function render(){document.body.dataset.auth=UI.auth.status==='in'?'in':'out';if
  UI.animate=false;
  const tabs=TABS.map(([id,l,ic])=>`<li><button data-tab="${id}" ${UI.tab===id?'aria-current="page"':''}><span class="pill">${icon(ic)}</span>${l}</button></li>`);
  tabs.splice(2,0,`<li><button class="add" data-act="add" aria-label="เพิ่มรายการ">${icon('plus')}</button></li>`);
- $('nav').innerHTML=tabs.join('');updateLive();refreshDetail()}
+ $('nav').innerHTML=tabs.join('');updateLive();refreshDetail();
+ /* แจ้ง store กลางที่ React subscribe ได้ (s4f-store-react): งานสุดท้ายของรอบ ห่อ try เพื่อให้ผู้ฟังพังแล้วไม่ล้ม render | ไม่มีผู้ฟัง/ไม่มี store = ไม่ทำอะไร */
+ try{(window as any).EvarelStore?.notify()}catch(e){console.warn('store notify',e)}}
 /* ย้ายข้อมูลเดิมครั้งเดียว (v11/v12 เก็บที่คีย์ไม่มี :userId) -> คีย์ของผู้ใช้ที่ล็อกอิน | คัดลอกเท่านั้น ไม่ลบต้นฉบับ (เป็นสำรอง)
    ทำเมื่อ: ผู้ใช้ยังไม่มีข้อมูลของตัวเอง และมีข้อมูลเดิมที่อ่านได้ ; ทำครั้งเดียวต่อเครื่อง (ธง evarel-legacy-claimed) */
 function claimLegacyData(){try{if(!ST.USER||localStorage.getItem('evarel-legacy-claimed'))return;

@@ -6,7 +6,8 @@ type EvarelPageRenderer = (props: any) => string;
 interface Window {
   EVAREL_API?: string;
   EvarelPages?: Record<string, EvarelPageRenderer | undefined>;
-  EvarelReact?: { h: (...a: any[]) => any; Fragment: any; renderToStaticMarkup: (el: any) => string };
+  EvarelReact?: { h: (...a: any[]) => any; Fragment: any; renderToStaticMarkup: (el: any) => string; useSyncExternalStore: (sub: (cb: () => void) => () => void, snap: () => number) => number };
+  EvarelStore?: { subscribe: (fn: () => void) => () => void; getSnapshot: () => number; notify: () => void };
   UI?: { tab?: string; [k: string]: any };
   render?: () => void;
 }
