@@ -186,7 +186,7 @@
     "toast",
     "clone",
     "syncFail",
-    "PENDING",
+    "SYNC",
     "commit",
     "LP"
    ],

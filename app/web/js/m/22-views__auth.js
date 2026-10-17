@@ -142,12 +142,12 @@ const sigOf = items => { const t = JSON.stringify([...items].sort((a, b) => a.id
     h = ((h << 5) + h + t.charCodeAt(i)) | 0; return h + ':' + items.length; };
 const typingNow = () => { const a = document.activeElement; return !!a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !!a.closest('#sheet,#dialog,#page'); };
 async function liveRefresh() {
-    if (!SUPA_API || liveBusy || PENDING > 0 || UI.auth.status !== 'in' || UI.loading || document.hidden || typingNow())
+    if (!SUPA_API || liveBusy || SYNC.pending > 0 || UI.auth.status !== 'in' || UI.loading || document.hidden || typingNow())
         return;
     liveBusy = true;
     try {
-        const r = await ST.Repo.load();
-        if (PENDING > 0)
+        const w0 = SYNC.writes, r = await ST.Repo.load();
+        if (SYNC.pending > 0 || SYNC.writes !== w0)
             return;
         if (sigOf(r.items) !== sigOf(S.items)) {
             S.items = r.items;

@@ -64,8 +64,8 @@ document.addEventListener('focusout',e=>{const t=e.target;if(t.name!=='email'||!
 let liveBusy=false;
 const sigOf=items=>{const t=JSON.stringify([...items].sort((a,b)=>a.id-b.id).map(i=>[i.id,i.type,i.title,i.subject,i.time,i.timeEnd,i.track,i.target,i.unitName,i.repeat,i.start,i.end,i.log,i.skip,i.rem]));let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return h+':'+items.length};
 const typingNow=()=>{const a=document.activeElement;return !!a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!!a.closest('#sheet,#dialog,#page')};
-async function liveRefresh(){if(!SUPA_API||liveBusy||PENDING>0||UI.auth.status!=='in'||UI.loading||document.hidden||typingNow())return;liveBusy=true;
- try{const r=await ST.Repo.load();if(PENDING>0)return;if(sigOf(r.items)!==sigOf(S.items)){S.items=r.items;ST._render()}}
+async function liveRefresh(){if(!SUPA_API||liveBusy||SYNC.pending>0||UI.auth.status!=='in'||UI.loading||document.hidden||typingNow())return;liveBusy=true;
+ try{const w0=SYNC.writes,r=await ST.Repo.load();if(SYNC.pending>0||SYNC.writes!==w0)return;if(sigOf(r.items)!==sigOf(S.items)){S.items=r.items;ST._render()}}
  catch(err){console.warn('live refresh',err)}finally{liveBusy=false}}
 /* Realtime: ฟังการเปลี่ยนแปลงตาราง items ผ่าน WebSocket ของ Supabase (กุญแจสาธารณะ + JWT ของผู้ใช้ → RLS กรองให้เห็นเฉพาะของตัวเอง)
    เหตุการณ์ที่มาแค่ "กระตุ้น" liveRefresh (ดึงแล้วเทียบลายนิ้วมือ) → ตรรกะตัดสินความถูกต้องอยู่จุดเดียว ไม่มีข้อมูลซ้ำ/ตีกันกับการแก้ในเครื่อง */
