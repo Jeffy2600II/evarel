@@ -7,6 +7,7 @@ const authErr=code=>Object.assign(new Error(code),{code});
 const SUPA_SESS='evarel-session-v2',nowS=()=>Math.floor(Date.now()/1000);
 const supaLoad=()=>{try{return JSON.parse(localStorage.getItem(SUPA_SESS))}catch(err){return null}},supaSave=t=>localStorage.setItem(SUPA_SESS,JSON.stringify(t)),supaClear=()=>localStorage.removeItem(SUPA_SESS);
 const SupaCore=api=>{
+ /** @param {string} path @param {{method?:string, body?:any, token?:string}} [opt] */
  const raw=async(path,{method='GET',body,token}={})=>{let r;try{r=await fetch(`${api}${path}`,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined})}catch(err){throw authErr('network')}
   const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(authErr(j.code||(r.status===401?'invalid_credentials':'unknown')),{status:r.status});return j};
  let refreshing=null;

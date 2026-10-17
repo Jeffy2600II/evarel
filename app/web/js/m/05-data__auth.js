@@ -12,6 +12,7 @@ catch (err) {
     return null;
 } }, supaSave = t => localStorage.setItem(SUPA_SESS, JSON.stringify(t)), supaClear = () => localStorage.removeItem(SUPA_SESS);
 const SupaCore = api => {
+    /** @param {string} path @param {{method?:string, body?:any, token?:string}} [opt] */
     const raw = async (path, { method = 'GET', body, token } = {}) => {
         let r;
         try {

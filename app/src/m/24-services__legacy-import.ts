@@ -33,7 +33,7 @@ async function boot(){UI.auth.status='loading';render();try{ST.USER=(Auth.takeOA
  if(!ST.USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp();startLiveSync();pushAutoSync()}
 boot();
 /* moved by move_defs (evarel-ts-1f) */
-async function authSubmit(kind,form){clearErrs(form);const v=Object.fromEntries(new FormData(form)),errs=authValidate(kind,v),keys=Object.keys(errs);
+async function authSubmit(kind,form){clearErrs(form);const v=Object.fromEntries(new FormData(form)) as Record<string,string>,errs=authValidate(kind,v),keys=Object.keys(errs);
  if(keys.length){keys.forEach(k=>fieldErr(form,k,errs[k]));form.querySelector(`[name="${keys[0]}"]`)?.focus();haptic();return}
  setBusy(form,true);
  try{if(kind==='forgot'){await Auth.sendReset(v.email.trim());UI.auth.email=v.email.trim();UI.auth.codeType='recovery';UI.auth.screen=Auth.verifyCode?'code':'sent';renderAuthRoot();return}
