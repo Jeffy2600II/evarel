@@ -3,7 +3,7 @@
    ใช้: node tests/row_interact.test.mjs  (ต้องมี http.server พอร์ต 8779 เสิร์ฟ app/web ตอบ 200)
    ผล: JSON ต่อสถานการณ์ { name, ok, detail } และสรุปผ่าน/ตก exit 1 ถ้ามีข้อใดตก */
 import { chromium } from 'playwright'; import fs from 'fs';
-import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
+import { makeTestUser, openAsUser, seedItems, APP_ORIGIN, todayBangkok } from './live_user.mjs';
 import { SEED_ITEMS } from './seed_items.mjs';
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
@@ -11,7 +11,7 @@ const b = await chromium.launch({ executablePath: exe });
 const user = await makeTestUser('rowint');
 const res = [], t = (name, ok, detail = '') => res.push({ name, ok: !!ok, detail });
 try {
-  const today = new Date(); const pad = n => String(n).padStart(2, '0'); const TD = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  const TD = todayBangkok();
   // รายการที่เกิดทุกวัน 3 ชนิดเพื่อให้ปรากฏหน้า "วันนี้" แน่นอน
   const mk = (id, title, track, extra) => ({ id, type: 'habit', title, subject: '', time: '', timeEnd: '', track, target: 1, unitName: '', repeat: { unit: 'day', every: 1, days: [] }, start: '2026-10-01', end: '', skip: {}, rem: [], log: {}, ...extra });
   await seedItems(user.session, [mk(9001, 'ติ๊กทดสอบ', 'check'), mk(9002, 'นับทดสอบ', 'count', { target: 3, unitName: 'ข้อ' }), mk(9003, 'จับเวลาทดสอบ', 'timer', { target: 30, unitName: 'นาที' })]);

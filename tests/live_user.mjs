@@ -51,3 +51,7 @@ export async function openAsUser(browser, user, opts = {}) {
   await serveLocalAs(ctx);
   return ctx;
 }
+
+/* "วันนี้" ตามเวลาไทย (YYYY-MM-DD) ต้องตรงกับเบราว์เซอร์ที่ openAsUser ตั้ง timezoneId เป็น Asia/Bangkok
+   ห้ามคำนวณจาก new Date() ของ Node: เครื่องรันเป็น UTC ช่วง 17:00-24:00 UTC (ไทยข้ามวันแล้ว) สองฝั่งจะเห็นคนละวันและตัวทดสอบอ่านข้อมูลผิดวัน (พบ 18 ต.ค. 2026 ทำ row_interact ตกคงที่ 3 ข้อ) */
+export const todayBangkok = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
