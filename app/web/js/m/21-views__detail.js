@@ -12,6 +12,16 @@ function refreshDetail() {
         return;
     }
     const y = page.querySelector('.ev-page-scroll')?.scrollTop || 0;
+    const MT = window.EvarelMount;
+    /* S4: เป็น React อยู่ (root detail ที่ page) = remount ใหม่ คงตำแหน่งเลื่อนเหมือนเดิม */
+    if (MT?.ready('detail') && MT.els?.detail === page) {
+        MT.mountAt(page, 'detail', { id: it.id });
+        const sc = page.querySelector('.ev-page-scroll');
+        if (sc)
+            sc.scrollTop = y;
+        mountHabit();
+        return;
+    }
     page.innerHTML = detailHTML(it);
     const sc = page.querySelector('.ev-page-scroll');
     if (sc)

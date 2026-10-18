@@ -40,6 +40,14 @@ function mountCal(key, el, opts) {
         dayHeaderContent: a => a.view.type === 'dayGridMonth' ? WD[a.date.getDay()] : { html: `<div class="ev-fc-wk"><span>${WD[a.date.getDay()]}</span><b>${a.date.getDate()}</b></div>` }, ...opts });
     cal.render();
     FCS[key] = cal;
+    /* S4: หน้า detail เปิดด้วย transition scale(.98) FullCalendar วัดกว้างตอน mount ได้ค่า scaled แล้วไม่ยอมวัดใหม่
+       เรียก updateSize หลัง transition จบให้วัดที่ความกว้างจริง ใช้กับทุก calendar ไม่เปลี่ยนพฤติกรรมเดิม */
+    setTimeout(() => { if (FCS[key] === cal) {
+        try {
+            cal.updateSize();
+        }
+        catch (e) { }
+    } }, 450);
     return cal;
 }
 function mountMain() {
@@ -95,14 +103,12 @@ function detailHabit(it) {
                 ok++;
         }
     }
-    return `<section class="ev-card"><div class="ev-stats3"><div><b>${streak(it)}</b><span>วันต่อเนื่อง</span></div><div><b>${totalDone(it)}</b><span>ทำแล้วทั้งหมด (ครั้ง)</span></div><div><b>${t ? Math.round(100 * ok / t) : 0}%</b><span>เดือนนี้ (${ok}/${t})</span></div></div></section>
- <section class="ev-card"><div class="ev-cal-head"><button class="ev-icon-btn" data-flat data-act="cal-prev" aria-label="เดือนก่อน">${icon('back')}</button><b>${TH_MONTH[m]} ${y + 543}</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-next" aria-label="เดือนถัดไป" ${isNow ? 'disabled' : ''}>${icon('back')}</button></div><div id="fcHabit"></div>
-  <div class="ev-legend"><span><i data-state="done"></i>ทำแล้ว</span><span><i data-state="part"></i>ทำบางส่วน</span><span><i></i>ยังไม่ทำ</span><span><i data-state="off"></i>ไม่มีกำหนด</span></div><p class="ev-sub" style="margin-top:12px">${it.track === 'check' ? 'แตะวันที่เพื่อติ๊ก/เลิกติ๊ก' : 'แตะวันที่เพื่อปรับจำนวน'} · กดค้างเพื่อตัวเลือกอื่น (ข้ามวัน)</p></section>`;
+    /* S4: ยุบวรรค/จัด style ให้ตรงผลลัพธ์ DOM ของ React (react/detail.jsx) ทุกไบต์ */
+    return `<section class="ev-card"><div class="ev-stats3"><div><b>${streak(it)}</b><span>วันต่อเนื่อง</span></div><div><b>${totalDone(it)}</b><span>ทำแล้วทั้งหมด (ครั้ง)</span></div><div><b>${t ? Math.round(100 * ok / t) : 0}%</b><span>เดือนนี้ (${ok}/${t})</span></div></div></section><section class="ev-card"><div class="ev-cal-head"><button class="ev-icon-btn" data-flat data-act="cal-prev" aria-label="เดือนก่อน">${icon('back')}</button><b>${TH_MONTH[m]} ${y + 543}</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-next" aria-label="เดือนถัดไป" ${isNow ? 'disabled' : ''}>${icon('back')}</button></div><div id="fcHabit"></div><div class="ev-legend"><span><i data-state="done"></i>ทำแล้ว</span><span><i data-state="part"></i>ทำบางส่วน</span><span><i></i>ยังไม่ทำ</span><span><i data-state="off"></i>ไม่มีกำหนด</span></div><p class="ev-sub" style="margin-top: 12px;">${it.track === 'check' ? 'แตะวันที่เพื่อติ๊ก/เลิกติ๊ก' : 'แตะวันที่เพื่อปรับจำนวน'} · กดค้างเพื่อตัวเลือกอื่น (ข้ามวัน)</p></section>`;
 }
 function detailTask(it) {
     const done = isDone(it, it.start), late = !done && it.start < TODAY;
-    return `<section class="ev-card"><span class="ev-cap">สถานะ</span><div style="margin:10px 0 14px">${seg('h-task', [['0', 'ยังไม่เสร็จ'], ['1', 'เสร็จแล้ว']], done ? '1' : '0')}</div>
-  <div class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>กำหนดส่ง ${fmtDate(it.start)}</b><span class="ev-sub">${it.time || 'ไม่ระบุเวลา'}${it.subject ? ` · ${esc(it.subject)}` : ''}</span></div>${late ? '<span class="ev-chip" data-state="late">เลยกำหนด</span>' : done ? '<span class="ev-chip" data-state="done">เสร็จแล้ว</span>' : ''}</div></section>`;
+    return `<section class="ev-card"><span class="ev-cap">สถานะ</span><div style="margin: 10px 0px 14px;">${seg('h-task', [['0', 'ยังไม่เสร็จ'], ['1', 'เสร็จแล้ว']], done ? '1' : '0')}</div><div class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>กำหนดส่ง ${fmtDate(it.start)}</b><span class="ev-sub">${it.time || 'ไม่ระบุเวลา'}${it.subject ? ` · ${esc(it.subject)}` : ''}</span></div>${late ? '<span class="ev-chip" data-state="late">เลยกำหนด</span>' : done ? '<span class="ev-chip" data-state="done">เสร็จแล้ว</span>' : ''}</div></section>`;
 }
 function detailSchedule(it) {
     const next = [];
@@ -111,10 +117,10 @@ function detailSchedule(it) {
         if (occursOn(it, ds))
             next.push(ds);
     }
-    return `<section class="ev-card"><h3 class="ev-group" style="padding-top:0">ครั้งถัดไป</h3>${next.length ? `<ul>${next.map(ds => `<li class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>${dayLab(ds)}</b><span class="ev-sub">${fmtDate(ds)}${it.time ? ` · ${timeText(it)}` : ''}</span></div></li>`).join('')}</ul>` : empty('cal', 'ไม่มีครั้งถัดไป', 'รายการนี้สิ้นสุดแล้ว')}</section>`;
+    return `<section class="ev-card"><h3 class="ev-group" style="padding-top: 0px;">ครั้งถัดไป</h3>${next.length ? `<ul>${next.map(ds => `<li class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>${dayLab(ds)}</b><span class="ev-sub">${fmtDate(ds)}${it.time ? ` · ${timeText(it)}` : ''}</span></div></li>`).join('')}</ul>` : empty('cal', 'ไม่มีครั้งถัดไป', 'รายการนี้สิ้นสุดแล้ว')}</section>`;
 }
 const DETAIL_BY_TYPE = { habit: detailHabit, task: detailTask, event: detailSchedule, class: detailSchedule };
-const metaCard = it => `<section class="ev-card"><h3 class="ev-group" style="padding-top:0">การตั้งค่า</h3><div class="ev-meta"><span class="ev-chip">${TYPES[it.type]}</span><span class="ev-chip">${repeatText(it)}</span>${it.time ? `<span class="ev-chip">${timeText(it)}</span>` : ''}${it.rem.map(r => `<span class="ev-chip">เตือน ${remText(r)}</span>`).join('')}</div><button class="ev-btn-ghost ev-btn-block" style="margin-top:14px" data-act="m-edit" data-id="${it.id}">แก้ไขการตั้งค่า</button></section>`;
+const metaCard = it => `<section class="ev-card"><h3 class="ev-group" style="padding-top: 0px;">การตั้งค่า</h3><div class="ev-meta"><span class="ev-chip">${TYPES[it.type]}</span><span class="ev-chip">${repeatText(it)}</span>${it.time ? `<span class="ev-chip">${timeText(it)}</span>` : ''}${it.rem.map(r => `<span class="ev-chip">เตือน ${remText(r)}</span>`).join('')}</div><button class="ev-btn-ghost ev-btn-block" data-act="m-edit" data-id="${it.id}" style="margin-top: 14px;">แก้ไขการตั้งค่า</button></section>`;
 const detailHTML = it => `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>${esc(it.title)}</h2><button class="ev-icon-btn" data-flat data-act="d-more" data-id="${it.id}" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวเลือก">${icon('more')}</button></div><div class="ev-page-scroll">${DETAIL_BY_TYPE[it.type](it)}${metaCard(it)}</div>`;
 function openDetail(id) {
     const it = find(id);
@@ -123,6 +129,15 @@ function openDetail(id) {
     const n = new Date();
     UI.cal = { y: n.getFullYear(), m: n.getMonth() };
     ST.DETAIL = id;
+    const MT = window.EvarelMount;
+    /* S4: หน้ารายละเอียดเป็น React จริงเมื่อพร้อม (FullCalendar ของ habit mount ใน effect ของ component) ไม่พร้อมใช้ string เดิม */
+    if (MT?.ready('detail')) {
+        page.innerHTML = '';
+        MT.mountAt(page, 'detail', { id: it.id });
+        pushLayer({ kind: 'page', el: page, onClose: () => { ST.DETAIL = null; MT.unmountOne('detail'); destroyCal('habit'); } });
+        mountHabit(); /* mount ใน turn เดียวกับการเปิดหน้าเหมือน classic: effect ของ React ยิงกลาง transition (scale .98) ทำให้ FullCalendar วัดกว้างเพี้ยน */
+        return;
+    }
     openPage(detailHTML(it), () => { ST.DETAIL = null; destroyCal('habit'); });
     mountHabit();
 }

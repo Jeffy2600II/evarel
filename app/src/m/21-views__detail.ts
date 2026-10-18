@@ -12,7 +12,10 @@ const HIST_STEP_TIMER=5;
 
 
 function refreshDetail(){if(ST.DETAIL==null)return;const it=find(ST.DETAIL);if(!it){ST.DETAIL=null;if(LAYERS.some(l=>l.el===page))closeTop();return}
- const y=page.querySelector('.ev-page-scroll')?.scrollTop||0;page.innerHTML=detailHTML(it);const sc=page.querySelector('.ev-page-scroll');if(sc)sc.scrollTop=y;mountHabit()}
+ const y=page.querySelector('.ev-page-scroll')?.scrollTop||0;const MT=(window as any).EvarelMount;
+ /* S4: เป็น React อยู่ (root detail ที่ page) = remount ใหม่ คงตำแหน่งเลื่อนเหมือนเดิม */
+ if(MT?.ready('detail')&&MT.els?.detail===page){MT.mountAt(page,'detail',{id:it.id});const sc=page.querySelector('.ev-page-scroll');if(sc)sc.scrollTop=y;mountHabit();return}
+ page.innerHTML=detailHTML(it);const sc=page.querySelector('.ev-page-scroll');if(sc)sc.scrollTop=y;mountHabit()}
 
 
 const dvStep=it=>it.track==='timer'?HIST_STEP_TIMER:1;
