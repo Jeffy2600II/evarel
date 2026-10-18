@@ -35,7 +35,10 @@ const AUTH_VIEWS={
   <form class="ev-form ev-authform" data-kind="newpw" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('รหัสผ่านใหม่','password','password',`autocomplete="new-password" placeholder="อย่างน้อย ${PW_MIN} ตัวอักษร"`,eyeBtn('f-password'))}${submitBtn('บันทึกรหัสผ่าน')}</form>`};
 const AUTH_SPLASH=`<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Evarel</b></div>`;
 function renderAuthRoot(){const au=$('auth');au.hidden=false;const sc=UI.auth.status==='loading'?'loading':UI.auth.screen;if(au.dataset.screen===sc)return;au.dataset.screen=sc;
- au.innerHTML=`<div class="ev-auth-in">${sc==='loading'?AUTH_SPLASH:AUTH_VIEWS[sc]()}</div>`;au.scrollTop=0;[...au.firstElementChild.children].forEach((el,i)=>el.style.setProperty('--i',i));
+ const MT=(window as any).EvarelMount;
+ if(MT?.ready('auth')){MT.mountAt(au,'auth',{screen:sc})}
+ else{au.innerHTML=`<div class="ev-auth-in">${sc==='loading'?AUTH_SPLASH:AUTH_VIEWS[sc]()}</div>`}
+ au.scrollTop=0;[...au.firstElementChild.children].forEach((el,i)=>el.style.setProperty('--i',i));
  if(sc==='sent'||sc==='code')startCool();if(['login','signup','forgot','code','newpw'].includes(sc))setTimeout(()=>au.querySelector('input')?.focus({preventScroll:true}),400)}
 let coolT=null;
 function paintCool(){const b=$('resendBtn');if(!b)return;const n=UI.auth.cool;b.disabled=n>0;b.innerHTML=n>0?`<span>ส่งอีกครั้งได้ใน ${n} วินาที</span>`:`<span>${UI.auth.screen==='code'?'ส่งรหัสอีกครั้ง':'ส่งลิงก์อีกครั้ง'}</span>`}

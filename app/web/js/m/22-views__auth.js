@@ -43,7 +43,13 @@ function renderAuthRoot() {
     if (au.dataset.screen === sc)
         return;
     au.dataset.screen = sc;
-    au.innerHTML = `<div class="ev-auth-in">${sc === 'loading' ? AUTH_SPLASH : AUTH_VIEWS[sc]()}</div>`;
+    const MT = window.EvarelMount;
+    if (MT?.ready('auth')) {
+        MT.mountAt(au, 'auth', { screen: sc });
+    }
+    else {
+        au.innerHTML = `<div class="ev-auth-in">${sc === 'loading' ? AUTH_SPLASH : AUTH_VIEWS[sc]()}</div>`;
+    }
     au.scrollTop = 0;
     [...au.firstElementChild.children].forEach((el, i) => el.style.setProperty('--i', i));
     if (sc === 'sent' || sc === 'code')
