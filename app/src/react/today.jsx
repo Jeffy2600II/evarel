@@ -7,6 +7,11 @@ const { h, Fragment } = window.EvarelReact;
 const W = () => window;
 
 function TodayMain(p) {
+  /* string path: ห่อ <main> ตาม template เดิม (mount path ไม่ใช้ตัวนี้) */
+  return h('main', { key: 'main', className: 'ev-main', id: 'main' }, h(TodayContent, { key: 'content', ...p }));
+}
+/* เนื้อข้างใน main ล้วน — EvarelComponents.today ใช้ตัวนี้เพราะ mount target คือ <main> ที่ VIEWS สร้างแล้ว (กัน main ซ้อนสองชั้น) */
+function TodayContent(p) {
   const { items, ui, today, now } = p;
   const w = W();
   const P = buildTodayProps(items, ui, today, now, {
@@ -15,7 +20,7 @@ function TodayMain(p) {
   const raw = (html) => ({ __html: html });
   const rowsHTML = (rows) => rows.map((r) => w.itemRow(r.it, r.late ? r.it.start : ui.date, r.idx ?? 0, { late: r.late, next: r.next })).join('');
   /* children ต้องตรง template เดิมทุกไบต์ รวม '\n  ' ระหว่าง section (ต้นฉบับจัด indent ใน template) React พิมพ์ text child ตรงๆ และข้าม null */
-  return h('main', { key: 'main', className: 'ev-main', id: 'main' }, [
+  return h(Fragment, null, [
     h('section', { key: 'sum', className: 'ev-card ev-sum', 'data-tone': 'ink' }, [
       h('div', { key: 'top', className: 'ev-sum-top' }, [
         h('div', { key: 'l' }, [
@@ -42,3 +47,5 @@ function TodayMain(p) {
 }
 window.EvarelPages = window.EvarelPages || {};
 window.EvarelPages.today = (p) => window.EvarelReact.renderToStaticMarkup(h(TodayMain, p));
+window.EvarelComponents = window.EvarelComponents || {};
+window.EvarelComponents.today = TodayContent;

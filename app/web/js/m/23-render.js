@@ -22,16 +22,20 @@ function render() {
     $('auth').hidden = true;
     $('auth').dataset.screen = '';
     const root = $('app'), anim = UI.animate && !UI.loading;
+    window.EvarelMount?.unmountAll(); /* ปลด React root เดิมก่อนเขียนทับ */
     root.innerHTML = UI.loading ? skeleton() : UI.error ? errorView() : VIEWS[UI.tab]();
+    const rm = window.EvarelMount?.commit(root) || false; /* mount จริงต้องเสร็จก่อน countUp/growBars */
     root.classList.toggle('ev-enter', anim);
     [...root.children].forEach((c, i) => c.style.setProperty('--i', i));
     root.querySelectorAll('[data-count]').forEach(el => anim ? countUp(el) : (el.textContent = el.dataset.count));
     growBars(root, anim);
     UI.weekDir = 0;
-    if (UI.tab === 'calendar' && !UI.loading && !UI.error)
-        mountMain();
-    else
-        destroyCal('main');
+    if (!rm) {
+        if (UI.tab === 'calendar' && !UI.loading && !UI.error)
+            mountMain();
+        else
+            destroyCal('main');
+    } /* rm=true: React effect จัดการ FullCalendar เอง */
     UI.animate = false;
     const tabs = TABS.map(([id, l, ic]) => `<li><button data-tab="${id}" ${UI.tab === id ? 'aria-current="page"' : ''}><span class="pill">${icon(ic)}</span>${l}</button></li>`);
     tabs.splice(2, 0, `<li><button class="add" data-act="add" aria-label="เพิ่มรายการ">${icon('plus')}</button></li>`);

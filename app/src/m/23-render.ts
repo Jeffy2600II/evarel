@@ -3,10 +3,12 @@ function countUp(el){const to=+el.dataset.count,t0=performance.now(),dur=700;con
 function setBar(el,v){const k=el.dataset.kind;if(k==='arc')el.style.strokeDashoffset=ARC_C*(1-v/100);else if(k==='col')el.style.transform=`scaleY(${v/100})`;else if(el.closest('.ev-prog'))el.style.setProperty('--w',v);else el.style.width=v+'%'}
 function growBars(root,anim){root.querySelectorAll('[data-to]').forEach(el=>{const to=Math.max(0,Math.min(100,+el.dataset.to||0)),k=el.dataset.k||'';setBar(el,anim?0:(UI.lastW[k]??0));UI.lastW[k]=to;requestAnimationFrame(()=>requestAnimationFrame(()=>setBar(el,to)))})}
 function render(){document.body.dataset.auth=UI.auth.status==='in'?'in':'out';if(UI.auth.status!=='in'){$('app').innerHTML='';$('sheet')&&($('sheet').innerHTML='');renderAuthRoot();return}$('auth').hidden=true;$('auth').dataset.screen='';
- const root=$('app'),anim=UI.animate&&!UI.loading;root.innerHTML=UI.loading?skeleton():UI.error?errorView():VIEWS[UI.tab]();
+ const root=$('app'),anim=UI.animate&&!UI.loading;(window as any).EvarelMount?.unmountAll(); /* ปลด React root เดิมก่อนเขียนทับ */
+ root.innerHTML=UI.loading?skeleton():UI.error?errorView():VIEWS[UI.tab]();
+ const rm=(window as any).EvarelMount?.commit(root)||false; /* mount จริงต้องเสร็จก่อน countUp/growBars */
  root.classList.toggle('ev-enter',anim);[...root.children].forEach((c,i)=>c.style.setProperty('--i',i));
  root.querySelectorAll('[data-count]').forEach(el=>anim?countUp(el):(el.textContent=el.dataset.count));
- growBars(root,anim);UI.weekDir=0;if(UI.tab==='calendar'&&!UI.loading&&!UI.error)mountMain();else destroyCal('main');
+ growBars(root,anim);UI.weekDir=0;if(!rm){if(UI.tab==='calendar'&&!UI.loading&&!UI.error)mountMain();else destroyCal('main')} /* rm=true: React effect จัดการ FullCalendar เอง */
  UI.animate=false;
  const tabs=TABS.map(([id,l,ic])=>`<li><button data-tab="${id}" ${UI.tab===id?'aria-current="page"':''}><span class="pill">${icon(ic)}</span>${l}</button></li>`);
  tabs.splice(2,0,`<li><button class="add" data-act="add" aria-label="เพิ่มรายการ">${icon('plus')}</button></li>`);

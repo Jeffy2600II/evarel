@@ -17,13 +17,15 @@ function settingsHTML(){
   return R({user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'})}
  catch(e){console.warn('settings react',e);return settingsHTMLClassic()}}
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
-function loadReactFile(name){return new Promise((ok,no)=>{const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);
- const el=document.createElement('script');el.src=`js/react/${name}.js`;el.async=false;el.dataset.evReact=name;el.onload=()=>ok(0);el.onerror=()=>no(new Error(name));document.head.appendChild(el)})}
+function loadReactFile(name){return new Promise((ok,no)=>{const W=window as any;if(name==='runtime'&&W.EvarelReact)return ok(0);/* index โหลด runtime ก่อนบูตแล้ว ห้าม execute ซ้ำเพราะจะเกิด React สองชุด */
+ const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);
+ const el=document.createElement('script');el.type='module';el.src=`js/react/${name}.js`;el.async=false;el.dataset.evReact=name;el.onload=()=>ok(0);el.onerror=()=>no(new Error(name));document.head.appendChild(el)})}
 /* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
-const REACT_PAGES=['settings','stats','all','today','calendar'];
+/* today+calendar โหลดจาก index.html ก่อนบูต (render แรกเป็น mount ทันที) ที่เหลือยัง lazy */
+const REACT_LAZY=['settings','stats','all'];const REACT_PAGES=['settings','stats','all','today','calendar'];
 function loadReactSettings(){const W=window as any;if(REACT_PAGES.every(n=>W.EvarelPages?.[n]))return Promise.resolve(0);
  /* เรียก render ผ่าน window ตอนรันเท่านั้น (ไม่อ้างชื่อตรง) ไม่ให้เกิดเส้นพึ่งพาย้อนทิศไป 23-render ซึ่งโหลดหลังไฟล์นี้ */
- return loadReactFile('runtime').then(()=>REACT_PAGES.reduce((p,n)=>p.then(()=>loadReactFile(n)),Promise.resolve(0))).then(()=>{try{if((W.UI?.tab==='stats'||W.UI?.tab==='all'||W.UI?.tab==='today'||W.UI?.tab==='calendar')&&typeof W.render==='function')W.render()}catch(e){}}).catch(e=>console.warn('react ไม่พร้อม ใช้หน้าเดิม',e&&e.message))}
+ return loadReactFile('runtime').then(()=>REACT_PAGES.reduce((p,n)=>p.then(()=>loadReactFile(n)),Promise.resolve(0))).then(()=>{try{if((W.UI?.tab==='stats'||W.UI?.tab==='all')&&typeof W.render==='function')W.render()}catch(e){}}).catch(e=>console.warn('react ไม่พร้อม ใช้หน้าเดิม',e&&e.message))}
 window.addEventListener('load',()=>setTimeout(loadReactSettings,0));
 function applyTheme(t){t==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=t;try{localStorage.setItem(THEME_KEY,t)}catch(e){console.warn('theme',e)}}
 try{const t=localStorage.getItem(THEME_KEY);if(t&&t!=='auto')applyTheme(t)}catch(e){console.warn('theme load',e)}
