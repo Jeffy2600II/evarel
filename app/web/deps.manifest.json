@@ -279,6 +279,7 @@
     "settingsHTMLClassic",
     "settingsHTML",
     "loadReactFile",
+    "REACT_LAZY",
     "REACT_PAGES",
     "loadReactSettings",
     "applyTheme"

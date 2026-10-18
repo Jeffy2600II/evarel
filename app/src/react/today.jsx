@@ -4,6 +4,7 @@
 // แถวรายการยังฝังผล itemRow เดิมตรงๆ (dangerouslySetInnerHTML) เพราะหน่วยนี้ยังไม่ย้าย itemRow เป็น React — ผลตรงเดิมทุกไบต์ ย้ายในหน่วยถัดไป
 import { buildTodayProps } from '../core/today';
 const { h, Fragment } = window.EvarelReact;
+const ItemRow = () => window.EvarelComponents.itemRow;
 const W = () => window;
 
 function TodayMain(p) {
@@ -18,7 +19,6 @@ function TodayContent(p) {
     fmtDate: w.fmtDate, dayLab: w.dayLab, WD: w.WD, TH_MONTH: w.TH_MONTH, pad: w.pad, hello: () => '',
   });
   const raw = (html) => ({ __html: html });
-  const rowsHTML = (rows) => rows.map((r) => w.itemRow(r.it, r.late ? r.it.start : ui.date, r.idx ?? 0, { late: r.late, next: r.next })).join('');
   /* children ต้องตรง template เดิมทุกไบต์ รวม '\n  ' ระหว่าง section (ต้นฉบับจัด indent ใน template) React พิมพ์ text child ตรงๆ และข้าม null */
   return h(Fragment, null, [
     h('section', { key: 'sum', className: 'ev-card ev-sum', 'data-tone': 'ink' }, [
@@ -35,12 +35,12 @@ function TodayContent(p) {
     '\n  ',
     P.overdue.length ? h('section', { key: 'od', className: 'ev-card', 'data-tone': 'warn' },
       h('b', null, `ค้างอยู่ ${P.overdue.length} งาน`),
-      h('ul', { dangerouslySetInnerHTML: raw(rowsHTML(P.overdue)) })) : null,
+      h('ul', null, P.overdue.map((r, k) => h(ItemRow(), { key: 'od' + k, it: r.it, ds: r.late ? r.it.start : ui.date, i: r.idx ?? k, late: r.late })))) : null,
     '\n  ',
     P.groups.length
       ? h('section', { key: 'g', className: 'ev-card' }, P.groups.map((g) => [
           h('h3', { key: g.name, className: 'ev-group' }, g.name),
-          h('ul', { key: g.name + 'u', dangerouslySetInnerHTML: raw(rowsHTML(g.rows)) }),
+          h('ul', { key: g.name + 'u' }, g.rows.map((r, k) => h(ItemRow(), { key: 'g' + k, it: r.it, ds: ui.date, i: r.idx ?? k, next: r.next }))),
         ]))
       : h('section', { key: 'ge', className: 'ev-card', dangerouslySetInnerHTML: raw(w.empty('inbox', 'วันนี้ยังว่างอยู่', 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')) }),
   ]);

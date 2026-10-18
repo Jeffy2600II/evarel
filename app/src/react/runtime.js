@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { createStore } from './store.js';
-if (!window.EvarelReact) window.EvarelReact = { h: createElement, Fragment, renderToStaticMarkup, useSyncExternalStore, useEffect }; /* guard: execute ซ้ำจะสร้าง React ชุดสอง ทำ dispatcher ของชุดเดิมเป็น null */
+if (!window.EvarelReact) window.EvarelReact = { h: createElement, Fragment, renderToStaticMarkup, useSyncExternalStore, useEffect, createRoot, flushSync }; /* guard: execute ซ้ำจะสร้าง React ชุดสอง ทำ dispatcher ของชุดเดิมเป็น null */
 // store หนึ่งอินสแตนซ์ต่อแอป อยู่ใน runtime ที่โหลดครั้งเดียว ทุกหน้า React ใช้ร่วมกัน (ถ้าวางใน bundle ต่อหน้า จะได้ store คนละตัว)
 window.EvarelStore = window.EvarelStore || createStore();
 window.EvarelPages = window.EvarelPages || {};

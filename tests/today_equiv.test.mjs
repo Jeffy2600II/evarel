@@ -17,6 +17,7 @@ if (!O.S) O.S = { items: [] };
 O.S.items = []; O.UI = O.UI || {}; Object.assign(O.UI, { period: 'week', date: '', weekOff: 0, weekDir: 0, pop: null, tab: 'today', type: 'all', animate: false, loading: false, error: null });
 await M('13-views');
 const rt = fs.readFileSync(root + '/app/web/js/react/runtime.js', 'utf8'); (0, eval)(rt);
+const ir = fs.readFileSync(root + '/app/web/js/react/item-row.js', 'utf8'); O.EvarelComponents = {}; (0, eval)(ir); /* ลำดับตาม REACT_PAGES จริง: item-row ก่อน today */
 const tj = fs.readFileSync(root + '/app/web/js/react/today.js', 'utf8'); O.EvarelPages = {}; (0, eval)(tj);
 const R = O.EvarelPages.today;
 const TODAY = O.ymd(new Date());
