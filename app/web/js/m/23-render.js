@@ -14,6 +14,7 @@ function growBars(root, anim) { root.querySelectorAll('[data-to]').forEach(el =>
 function render() {
     document.body.dataset.auth = UI.auth.status === 'in' ? 'in' : 'out';
     if (UI.auth.status !== 'in') {
+        window.EvarelMount?.unmountAll();
         $('app').innerHTML = '';
         $('sheet') && ($('sheet').innerHTML = '');
         renderAuthRoot();
@@ -22,7 +23,7 @@ function render() {
     $('auth').hidden = true;
     $('auth').dataset.screen = '';
     const root = $('app'), anim = UI.animate && !UI.loading;
-    window.EvarelMount?.unmountAll(); /* ปลด React root เดิมก่อนเขียนทับ */
+    window.EvarelMount?.unmountApp(); /* ปลด React root เดิมก่อนเขียนทับ — เฉพาะของที่อยู่ใน #app/#nav ไม่แตะชั้นลอยที่เปิดค้าง */
     root.innerHTML = UI.loading ? skeleton() : UI.error ? errorView() : VIEWS[UI.tab]();
     const rm = window.EvarelMount?.commit(root) || false; /* mount จริงต้องเสร็จก่อน countUp/growBars */
     root.classList.toggle('ev-enter', anim);

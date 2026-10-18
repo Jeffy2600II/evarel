@@ -2,8 +2,8 @@
 function countUp(el){const to=+el.dataset.count,t0=performance.now(),dur=700;const f=t=>{const k=Math.min(1,(t-t0)/dur);el.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
 function setBar(el,v){const k=el.dataset.kind;if(k==='arc')el.style.strokeDashoffset=ARC_C*(1-v/100);else if(k==='col')el.style.transform=`scaleY(${v/100})`;else if(el.closest('.ev-prog'))el.style.setProperty('--w',v);else el.style.width=v+'%'}
 function growBars(root,anim){root.querySelectorAll('[data-to]').forEach(el=>{const to=Math.max(0,Math.min(100,+el.dataset.to||0)),k=el.dataset.k||'';setBar(el,anim?0:(UI.lastW[k]??0));UI.lastW[k]=to;requestAnimationFrame(()=>requestAnimationFrame(()=>setBar(el,to)))})}
-function render(){document.body.dataset.auth=UI.auth.status==='in'?'in':'out';if(UI.auth.status!=='in'){$('app').innerHTML='';$('sheet')&&($('sheet').innerHTML='');renderAuthRoot();return}$('auth').hidden=true;$('auth').dataset.screen='';
- const root=$('app'),anim=UI.animate&&!UI.loading;(window as any).EvarelMount?.unmountAll(); /* ปลด React root เดิมก่อนเขียนทับ */
+function render(){document.body.dataset.auth=UI.auth.status==='in'?'in':'out';if(UI.auth.status!=='in'){(window as any).EvarelMount?.unmountAll();$('app').innerHTML='';$('sheet')&&($('sheet').innerHTML='');renderAuthRoot();return}$('auth').hidden=true;$('auth').dataset.screen='';
+ const root=$('app'),anim=UI.animate&&!UI.loading;(window as any).EvarelMount?.unmountApp(); /* ปลด React root เดิมก่อนเขียนทับ — เฉพาะของที่อยู่ใน #app/#nav ไม่แตะชั้นลอยที่เปิดค้าง */
  root.innerHTML=UI.loading?skeleton():UI.error?errorView():VIEWS[UI.tab]();
  const rm=(window as any).EvarelMount?.commit(root)||false; /* mount จริงต้องเสร็จก่อน countUp/growBars */
  root.classList.toggle('ev-enter',anim);[...root.children].forEach((c,i)=>c.style.setProperty('--i',i));

@@ -21,8 +21,8 @@ addEventListener('keydown',e=>{if(e.key==='Escape'){if(!pop.hidden)closePop();el
  if(e.key==='Tab'&&LAYERS.length){const el=LAYERS[LAYERS.length-1].el,f=[...el.querySelectorAll('button:not([disabled]),input,select,[tabindex="0"]')].filter(x=>x.offsetParent);
   if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
 function setSheet(title,body,o={}){const MT=(window as any).EvarelMount;
- /* S4: โครง sheet เป็น React จริงเมื่อพร้อม (เนื้อ body/foot ยังเป็น html จาก caller) ไม่พร้อมใช้ string เดิม */
- if(MT?.ready('sheet')){MT.unmountOne('sheet');sheet.innerHTML='';MT.mountAt(sheet,'sheet',{title,back:!!o.back,foot:o.foot||'',html:body});return}
+ /* S4: โครง sheet เป็น React จริงเมื่อพร้อม; caller ส่ง o.page = เนื้อเป็น React จริง (ฟอร์ม 14) ไม่ส่ง = html เดิม */
+ if(MT?.ready('sheet')){MT.unmountOne('sheet');sheet.innerHTML='';MT.mountAt(sheet,'sheet',{title,back:!!o.back,foot:o.foot||'',html:body,page:(o as any).page||'',props:(o as any).props||{}});return}
  sheet.innerHTML=`<div class="ev-grab" data-drag></div><h2 data-drag>${o.back?`<button class="ev-icon-btn" data-flat data-act="dback" aria-label="ย้อนกลับ">${icon('back')}</button>`:''}<span id="sheetTitle" class="grow">${esc(title)}</span><button class="ev-icon-btn" data-flat data-act="close" aria-label="ปิด">${icon('x')}</button></h2><div class="ev-sheet-body" id="sheetBody">${body}</div>${o.foot?`<div class="ev-sheet-foot">${o.foot}</div>`:''}`}
 function openSheet(title,body,o={}){setSheet(title,body,o);pushLayer({kind:'sheet',el:sheet,onClose:()=>{ST.sheetMode='';o.onClose?.()},guard:sheetGuard})}
 function openDialog(html){const MT=(window as any).EvarelMount;

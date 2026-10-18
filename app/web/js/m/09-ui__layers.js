@@ -99,11 +99,11 @@ addEventListener('keydown', e => {
 });
 function setSheet(title, body, o = {}) {
     const MT = window.EvarelMount;
-    /* S4: โครง sheet เป็น React จริงเมื่อพร้อม (เนื้อ body/foot ยังเป็น html จาก caller) ไม่พร้อมใช้ string เดิม */
+    /* S4: โครง sheet เป็น React จริงเมื่อพร้อม; caller ส่ง o.page = เนื้อเป็น React จริง (ฟอร์ม 14) ไม่ส่ง = html เดิม */
     if (MT?.ready('sheet')) {
         MT.unmountOne('sheet');
         sheet.innerHTML = '';
-        MT.mountAt(sheet, 'sheet', { title, back: !!o.back, foot: o.foot || '', html: body });
+        MT.mountAt(sheet, 'sheet', { title, back: !!o.back, foot: o.foot || '', html: body, page: o.page || '', props: o.props || {} });
         return;
     }
     sheet.innerHTML = `<div class="ev-grab" data-drag></div><h2 data-drag>${o.back ? `<button class="ev-icon-btn" data-flat data-act="dback" aria-label="ย้อนกลับ">${icon('back')}</button>` : ''}<span id="sheetTitle" class="grow">${esc(title)}</span><button class="ev-icon-btn" data-flat data-act="close" aria-label="ปิด">${icon('x')}</button></h2><div class="ev-sheet-body" id="sheetBody">${body}</div>${o.foot ? `<div class="ev-sheet-foot">${o.foot}</div>` : ''}`;
