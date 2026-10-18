@@ -1,13 +1,11 @@
-// สร้าง build/web จาก app/web สำหรับ deploy (ผลลัพธ์อยู่นอกซอร์ส ไม่ปนกัน)
-// ขั้น S3: ครอบด้วย Next.js แบบปล่อยไฟล์ผ่านตรงๆ (output export) ไฟล์แอปคงอยู่ที่ app/web ที่เดียว
-//   1) คัดลอก app/web เข้า public ชั่วคราว (Next ไม่มีตัวเลือกตั้งพาธ public) 2) next build 3) ตรวจว่า out/ มีไฟล์แอปตรงทุกไบต์
-//   4) ฉีดที่อยู่ API ของชุดนั้นลงใน index.html (บรรทัดเดียว) 5) ส่งต่อไป build/web  public ถูกลบเสมอแม้ล้มกลางทาง
+// สร้าง build/web จาก Next จริง (S4 next-pages ไบต์ N4 — สลับจากโหมดปล่อยผ่านของ S3)
+// หน้าสร้างโดย Next (web-next/src/app: layout.tsx+page.tsx) เครื่องยนต์ 26 โมดูลอยู่ในบันเดิลของ Next
+// ผลลัพธ์ไม่มี js/m ในเส้นทางเสิร์ฟอีกต่อไป (ตัวตรวจในสคริปต์นี้) และ EVAREL_API อบตอน build ผ่าน NEXT_PUBLIC_EVAREL_API
 // ใช้: node scripts/build-web.mjs <forge|production>
-import { cpSync, rmSync, readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { cpSync, rmSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, relative } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API = {
@@ -15,50 +13,23 @@ const API = {
   production: 'https://evarel-api.nontakorn2600.workers.dev',
 };
 const env = process.argv[2];
-if (!Object.hasOwn(API, env)) { console.error('ระบุสภาพแวดล้อม: forge หรือ production'); process.exit(2); }  // hasOwn กันชื่อพิเศษของ object (constructor, __proto__)
+if (!Object.hasOwn(API, env)) { console.error('ระบุสภาพแวดล้อม: forge หรือ production'); process.exit(2); }
 
-const SRC = join(root, 'app/web');
-const SHELL = join(root, 'web-shell');   // โครง Next แยกจากราก (Next เลือก ./app ที่รากก่อน ./src/app และรากมี app/ ของโปรเจกต์อยู่แล้ว)
-const PUB = join(SHELL, 'public');       // ชั่วคราว: อยู่ใน .gitignore ลบทิ้งท้ายงานเสมอ
-const NEXT_OUT = join(SHELL, 'out');
 const OUT = join(root, 'build/web');
-const IGNORE = /(^|[\\/])(node_modules|wrangler\.toml|\.wrangler)([\\/]|$)|\.bak/;
-if (!existsSync(join(SRC, 'index.html'))) { console.error('ไม่พบ app/web/index.html'); process.exit(2); }
+const NEXT_OUT = join(root, 'web-next/out');
 
-const walk = (d, base = d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name), base) : [relative(base, join(d, e.name))]);
-const sha = (p) => createHash('sha256').update(readFileSync(p)).digest('hex');
+execFileSync(process.execPath, [join(root, 'scripts/build-next.mjs'), env], { cwd: root, stdio: 'inherit' });
+if (!existsSync(join(NEXT_OUT, 'index.html'))) { console.error('next build ไม่สร้าง out/index.html'); process.exit(1); }
 
-// กันพลาดเงียบ: ถ้ามีหน้าของ Next (page) ปรากฏ index.html ของแอปจะถูกเขียนทับ
-for (const f of ['app/page.js', 'app/page.jsx', 'app/page.tsx', 'src/app/page.js', 'src/app/page.jsx', 'src/app/page.tsx', 'pages/index.js', 'pages/index.jsx']) {
-  if (existsSync(join(SHELL, f))) { console.error(`พบ web-shell/${f}: ห้ามมีหน้าของ Next เพราะจะเขียนทับ index.html ของแอป`); process.exit(1); }
-}
-if (!existsSync(join(SHELL, 'node_modules/next/dist/bin/next'))) { console.error('ยังไม่ได้ติดตั้งแพ็กเกจของ web-shell: รัน  npm install --prefix web-shell'); process.exit(2); }
+rmSync(OUT, { recursive: true, force: true });
+cpSync(NEXT_OUT, OUT, { recursive: true });
 
-// ขั้น S4 ชั้น 3: คอมไพล์ .ts เป็น .js ก่อนคัดลอก (ไม่ผ่านก็หยุดก่อนแตะ build)
-execFileSync(process.execPath, [join(root, 'scripts/compile-ts.mjs')], { cwd: root, stdio: 'inherit' });
-
-try {
-  rmSync(PUB, { recursive: true, force: true }); rmSync(NEXT_OUT, { recursive: true, force: true });
-  cpSync(SRC, PUB, { recursive: true, filter: (p) => !IGNORE.test(p) });
-  execFileSync(process.execPath, [join(SHELL, 'node_modules/next/dist/bin/next'), 'build'], { cwd: SHELL, stdio: ['ignore', 'pipe', 'inherit'], env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' } });
-  if (!existsSync(join(NEXT_OUT, 'index.html'))) { console.error('next build ไม่สร้าง out/index.html'); process.exit(1); }
-  // ทุกไฟล์ของแอปต้องออกมาตรงทุกไบต์ ไม่งั้นหยุด ไม่ deploy ของที่ Next แก้ไป
-  const bad = [];
-  for (const rel of walk(PUB)) { const q = join(NEXT_OUT, rel); if (!existsSync(q)) bad.push(`หาย ${rel}`); else if (sha(join(PUB, rel)) !== sha(q)) bad.push(`ต่าง ${rel}`); }
-  if (bad.length) { console.error(`ผลของ Next ไม่ตรงไฟล์แอป ${bad.length} ไฟล์: ${bad.slice(0, 5).join(', ')}`); process.exit(1); }
-
-  rmSync(OUT, { recursive: true, force: true });
-  cpSync(NEXT_OUT, OUT, { recursive: true });
-} finally {
-  rmSync(PUB, { recursive: true, force: true });
-}
-
-
-const marker = "<script>window.EVAREL_API = window.EVAREL_API || '';</script>";
+/* ตัวตรวจข้อ 6 ของเป้าหมาย: ห้ามมีโมดูลแอปแบบ window หรือ index.html เดิมในเส้นทางเสิร์ฟ */
+if (existsSync(join(OUT, 'js/m'))) { console.error('build/web มี js/m — ห้ามเสิร์ฟโมดูล window เดิม'); process.exit(1); }
 const idx = join(OUT, 'index.html');
-const html = readFileSync(idx, 'utf8');
-if (html.split(marker).length !== 2) { console.error('ไม่พบบรรทัดฉีด EVAREL_API ที่คาดไว้ใน index.html (ต้องมี 1 จุดพอดี)'); process.exit(1); }
-writeFileSync(idx, html.replace(marker, `<script>window.EVAREL_API=${JSON.stringify(API[env])};</script>` + marker));
+if (!readFileSync(idx, 'utf8').includes(API[env])) { console.error('EVAREL_API ไม่ถูกอบลง index.html ตามสภาพแวดล้อม'); process.exit(1); }
+
+const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 const total = walk(OUT).length;
 if (total < 10) { console.error(`build ผิดปกติ: มีเพียง ${total} ไฟล์`); process.exit(1); }
-console.log(`สร้าง ${OUT} (${total} ไฟล์) สำหรับ ${env} แล้ว (API = ${API[env]})`);
+console.log(`สร้าง ${OUT} (${total} ไฟล์) จาก Next สำหรับ ${env} แล้ว (API = ${API[env]})`);
