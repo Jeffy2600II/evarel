@@ -41,15 +41,22 @@ try {
   let done = null; for (let i = 0; i < 40; i++) { await p.waitForTimeout(500); done = await p.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); return { k: await caches.keys(), a: r.active && r.active.state, w: !!r.waiting, i: !!r.installing }; }); if (done.k.length === 1 && done.k[0] === NEWV && done.a === 'activated' && !done.w && !done.i) break; }
   ok('หลังอัปเดต: SW ใหม่ activate และแคชเก่าถูกล้าง เหลือเฉพาะรุ่นใหม่', done.k.length === 1 && done.k[0] === NEWV && done.a === 'activated', JSON.stringify(done));
   await p.reload(); await p.waitForTimeout(4000);
-  const want = orderOf(NEW);
-  const s2 = await p.evaluate(async () => { const k = await caches.keys(); const c = await caches.open(k[0]); const have = new Set((await c.keys()).map((r) => new URL(r.url).pathname)); const need = [...document.scripts].filter((s) => s.src).map((s) => new URL(s.src).pathname).filter((x) => x.includes('/js/m/')); return { missing: need.filter((x) => !have.has(x)), loaded: need.map((x) => x.split('/').pop()), auth: document.body.dataset.auth, items: S.items.length }; });
+  /* N3: รองรับสองสถาปัตยกรรม — เส้นทางเดิมมี js/m/_order.json ตรวจลำดับตรงๆ | build ของ Next ไม่มี js/m (บันเดิล) ตรวจ seam เดียวกันผ่านสิ่งที่ผู้ใช้เห็น */
+  const nextMode = !fs.existsSync(NEW + '/js/m/_order.json');
+  const want = nextMode ? null : orderOf(NEW);
+  const s2 = await p.evaluate(async (nextMode) => { const k = await caches.keys(); const c = await caches.open(k[0]); const have = new Set((await c.keys()).map((r) => new URL(r.url).pathname)); const need = [...document.scripts].filter((s) => s.src).map((s) => new URL(s.src).pathname).filter((x) => x.includes(nextMode ? '/_next/' : '/js/m/')); return { missing: need.filter((x) => !have.has(x)), loaded: need.map((x) => x.split('/').pop()), auth: document.body.dataset.auth, items: S.items.length }; }, nextMode);
   ok('แอปบูตหลังอัปเดต: ล็อกอินและได้รายการจาก API ครบตามที่ใส่ไว้', s2.auth === 'in' && s2.items === SEED_ITEMS.length, `auth=${s2.auth} items=${s2.items}/${SEED_ITEMS.length}`);
-  const diffAt = s2.loaded.map((x, i) => (x === want[i] ? null : `#${i} โหลด ${x} คาด ${want[i]}`)).filter(Boolean);
-  ok('โหลดโมดูลครบตามลำดับของ _order.json (ไม่ค้างชื่อไฟล์เก่า)', JSON.stringify(s2.loaded) === JSON.stringify(want), diffAt.length ? `ต่างที่ ${diffAt.slice(0, 3).join(' | ')}` : `โหลด ${s2.loaded.length} ครบ`);
-  ok('โมดูลทุกไฟล์อยู่ในแคชรุ่นใหม่', s2.missing.length === 0, JSON.stringify(s2.missing.slice(0, 3)));
+  if (nextMode) {
+    /* build Next: chunk ทุกอันที่หน้าอ้างต้องอยู่ในแคชรุ่นใหม่ (สเกลของ js/m คือ _next chunk) */
+    ok('chunk ทุกอันของ Next อยู่ในแคชรุ่นใหม่', s2.missing.length === 0, JSON.stringify(s2.missing.slice(0, 3)));
+  } else {
+    const diffAt = s2.loaded.map((x, i) => (x === want[i] ? null : `#${i} โหลด ${x} คาด ${want[i]}`)).filter(Boolean);
+    ok('โหลดโมดูลครบตามลำดับของ _order.json (ไม่ค้างชื่อไฟล์เก่า)', JSON.stringify(s2.loaded) === JSON.stringify(want), diffAt.length ? `ต่างที่ ${diffAt.slice(0, 3).join(' | ')}` : `โหลด ${s2.loaded.length} ครบ`);
+    ok('โมดูลทุกไฟล์อยู่ในแคชรุ่นใหม่', s2.missing.length === 0, JSON.stringify(s2.missing.slice(0, 3)));
+  }
   await ctx.setOffline(true); let navErr = null; try { await p.reload({ waitUntil: 'domcontentloaded', timeout: 15000 }); } catch (e) { navErr = String(e.message).slice(0, 100); } await p.waitForTimeout(3500);
-  const off = await p.evaluate(() => ({ app: !!document.getElementById('app'), scripts: [...document.scripts].filter((s) => s.src && s.src.includes('/js/m/')).length })).catch((e) => ({ err: String(e.message).slice(0, 80) }));
-  ok('ออฟไลน์หลังอัปเดต: หน้าโหลดจากแคชและโมดูลครบ', !navErr && off.app && off.scripts === want.length, JSON.stringify({ navErr, ...off }));
+  const off = await p.evaluate((nextMode) => ({ app: !!document.getElementById('app'), eng: typeof window.ST === 'object' && typeof window.UI === 'object', scripts: [...document.scripts].filter((s) => s.src && s.src.includes(nextMode ? '/_next/' : '/js/m/')).length })).catch((e) => ({ err: String(e.message).slice(0, 80) }));
+  ok('ออฟไลน์หลังอัปเดต: หน้าโหลดจากแคชและเครื่องยนต์ครบ', !navErr && off.app && (nextMode ? off.eng : off.scripts === want.length), JSON.stringify({ navErr, ...off }));
   ok('ไม่มี pageerror ตลอดกระบวนการ', errs.length === 0, errs.slice(0, 2).join(' | '));
 } catch (e) { fail++; console.log('FAIL exception :: ' + String(e.message).slice(0, 220)); }
 finally { try { await b.close(); } catch {} srv.close(); if (user) console.log('ลบผู้ใช้ทดสอบ ->', await user.cleanup()); fs.rmSync(tmp, { recursive: true, force: true }); }

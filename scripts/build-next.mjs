@@ -1,7 +1,8 @@
 // S4 next-pages ไบต์ N1: build ขนาน — Next สร้างหน้าจริง (src/app มี layout.tsx/page.tsx) บันเดิลเครื่องยนต์ทั้งหมด
 // ผลลัพธ์ที่ web-next/out แยกจาก build/web เดิม (S3 passthrough) — ทั้งสองอยู่ร่วมกันจนกว่า parity ของของใหม่ผ่านครบจึงสลับ
 // ใช้: node scripts/build-next.mjs <forge|production|local>
-import { cpSync, rmSync, existsSync } from 'node:fs';
+import { cpSync, rmSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,7 +40,23 @@ try {
   if (!existsSync(join(OUT, 'index.html'))) { console.error('next build ไม่สร้าง out/index.html'); process.exit(1); }
   // ตัวตรวจข้อ 6: ห้ามมีโมดูลแอปแบบ window ในเส้นทางเสิร์ฟ
   if (existsSync(join(OUT, 'js/m'))) { console.error('out/js/m หลุดเข้าเส้นทางเสิร์ฟ — ตรวจ build'); process.exit(1); }
-  console.log(`NEXT-BUILD OK (${env}) -> ${OUT}`);
+
+  // N3: เจน sw.js ของ build นี้จากตรรกะเดิมของ app/web/sw.js — เปลี่ยนเฉพาะ VERSION (แฮชของ build) กับ CORE (ไฟล์จริงใน out/)
+  // รายการแคชสแกนจากดิสก์จริงทุกครั้ง กัน drift รายการแคชกับไฟล์ที่เสิร์ฟ (ชื่อ chunk ของ Next เปลี่ยนทุก build)
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
+  const rel = (f) => './' + f.slice(OUT.length + 1).split('\\').join('/');
+  const files = walk(OUT)
+    .filter(f => !/\.(txt|html)$|(^|\/)sw\.js$|(^|\/)404\.html$/.test(f) || f.endsWith('index.html'))
+    .map(rel);
+  const CORE = ['./', './index.html', ...files.filter(f => f !== './index.html')];
+  const digest = createHash('sha256').update(CORE.join('\n')).digest('hex').slice(0, 12);
+  const swSrc = readFileSync(join(root, 'app/web/sw.js'), 'utf8');
+  const sw = swSrc
+    .replace(/const VERSION = '[^']*';/, `const VERSION = 'evarel-next-${digest}';`)
+    .replace(/const CORE = \[[\s\S]*?\];/, 'const CORE = ' + JSON.stringify(CORE, null, 2).replace(/\n/g, '\n  ') + ';');
+  if (!sw.includes('evarel-next-')) { console.error('เจน sw.js ไม่สำเร็จ (VERSION ไม่ถูกแทน)'); process.exit(1); }
+  writeFileSync(join(OUT, 'sw.js'), sw);
+  console.log(`NEXT-BUILD OK (${env}) -> ${OUT} | sw evarel-next-${digest} | แคช ${CORE.length} ไฟล์`);
 } finally {
   rmSync(PUB, { recursive: true, force: true });
 }

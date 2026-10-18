@@ -15,9 +15,25 @@ export default function AppBoot() {
     const seq: Array<() => Promise<unknown>> = [
       () => import('../../../app/web/vendor/fullcalendar.min.js'),
       () => import('../../../app/web/js/react/runtime.js'),
+      /* โหลดครบทุกหน้าตั้งแต่บูต (รวมที่เดิมเป็น lazy) — แก้ที่ต้นตอ React #130:
+         today.jsx เรียก EvarelComponents.itemRow ตอน render ถ้าข้อมูล API มาถึงก่อนหน้า lazy โหลดเสร็จ = h(undefined)
+         โหลดครบตั้งแต่บูตทำให้ loadReactSettings ของ 19-views__settings เป็น no-op (ทุก EvarelPages ลงทะเบียนแล้ว) ไม่เกิด React สองชุด */
       () => import('../../../app/web/js/react/today.js'),
       () => import('../../../app/web/js/react/calendar.js'),
       () => import('../../../app/web/js/react/nav.js'),
+      () => import('../../../app/web/js/react/item-row.js'),
+      () => import('../../../app/web/js/react/settings.js'),
+      () => import('../../../app/web/js/react/stats.js'),
+      () => import('../../../app/web/js/react/all.js'),
+      () => import('../../../app/web/js/react/ai.js'),
+      () => import('../../../app/web/js/react/dialog.js'),
+      () => import('../../../app/web/js/react/sheet.js'),
+      () => import('../../../app/web/js/react/form.js'),
+      () => import('../../../app/web/js/react/detail.js'),
+      () => import('../../../app/web/js/react/auth.js'),
+      () => import('../../../app/web/js/react/quota.js'),
+      () => import('../../../app/web/js/react/aiShell.js'),
+      () => import('../../../app/web/js/react/focus.js'),
       () => import('../../../app/web/js/m/00-head.js'),
       () => import('../../../app/web/js/m/01-core__constants.js'),
       () => import('../../../app/web/js/m/02-core__dates.js'),
