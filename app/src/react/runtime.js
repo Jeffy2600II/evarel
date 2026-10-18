@@ -25,6 +25,14 @@ window.EvarelMount = window.EvarelMount || {
   /* ปลด root รายชื่อเดียว (หน้า AI ใช้ตอนปิดหน้า/เขียน innerHTML ใหม่ โดยไม่แตะ root ของหน้าอื่น) */
   unmountOne(name) { const r = this.roots[name]; if (r) { try { r.unmount(); } catch (e) { console.warn('unmount ' + name, e); } delete this.roots[name]; delete this.els[name]; } },
   /* mount นอก <main>: หน้าที่ container ไม่ใช่ main (เช่น #aiBody) render ลง el โดยตรง กัน wrapper เพิ่มให้ DOM ต่างจากเดิม */
+  /* ไบต์ 6: render ซ้ำบน root เดิมโดยไม่ unmount/recreate (หน้า focus อัปเดตทุก tick) — คืน false เมื่อไม่มี root ให้ caller เปิดใหม่ */
+  rerender(name, props) {
+    const r = this.roots[name];
+    if (!r || !this.ready(name)) return false;
+    if (window.__NO_FLUSH) r.render(createElement(window.EvarelComponents[name], props));
+    else flushSync(() => r.render(createElement(window.EvarelComponents[name], props)));
+    return true;
+  },
   mountAt(el, name, props) {
     if (!el || !this.ready(name)) return false;
     this.unmountOne(name);

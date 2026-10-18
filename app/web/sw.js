@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v69-quota-settings-react';
+const VERSION = 'evarel-v70-aishell-focus-react';
 const CORE = [
   './',
   './index.html',
@@ -45,6 +45,8 @@ const CORE = [
   './js/react/detail.js',
   './js/react/auth.js',
   './js/react/quota.js',
+  './js/react/aiShell.js',
+  './js/react/focus.js',
   './js/react/today.js',
   './js/react/calendar.js',
   './js/react/settings.js',

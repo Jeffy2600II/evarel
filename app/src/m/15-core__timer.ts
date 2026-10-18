@@ -7,12 +7,17 @@ function focusBody(it){const mine=ST.TM&&ST.TM.id==it.id,run=mine&&!!ST.TM.start
  const btn=(a,ic,l,big)=>`<div style="display:grid;gap:6px;justify-items:center"><button class="ev-round" ${big?'data-big="true"':''} data-act="${a}" data-id="${it.id}" aria-label="${l}">${icon(ic)}</button><span class="ev-sub">${l}</span></div>`;
  const acts=!mine?btn('tstart','play','เริ่ม',true):run?btn('tpause','pause','หยุดชั่วคราว',true)+btn('tfinish','stop','จบและบันทึก'):btn('tresume','play','ต่อ',true)+btn('tfinish','stop','จบและบันทึก');
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>จับเวลา</h2>${mine?`<button class="ev-btn-danger ev-btn-sm" data-act="tcancel">ยกเลิก</button>`:''}</div>
- <div class="ev-page-scroll" style="text-align:center"><div><h1 class="ev-title" style="padding:0">${esc(it.title)}</h1><p class="ev-sub">เป้าหมาย ${it.target} ${esc(it.unitName||'นาที')} · ${dayLab(UI.fdate)}ทำแล้ว ${val(it,UI.fdate)}</p></div>
+ <div class="ev-page-scroll" style="text-align:center"><div><h1 class="ev-title" style="padding:0px">${esc(it.title)}</h1><p class="ev-sub">เป้าหมาย ${it.target} ${esc(it.unitName||'นาที')} · ${dayLab(UI.fdate)}ทำแล้ว ${val(it,UI.fdate)}</p></div>
  <div class="ev-dial" id="dial" data-run="${run}" style="--p:${p}"><div class="ev-dial-face"><div class="ev-digits" id="digits">${fmtClock(ms)}</div><span class="ev-sub">${!mine?'พร้อมเริ่ม':run?'กำลังจับเวลา':'หยุดชั่วคราว'}</span></div></div><div class="ev-focus-actions">${acts}</div>
  <p class="ev-sub">ปิดแอปแล้วเวลายังเดินต่อ เพราะเก็บเวลาเริ่มไว้ ไม่ได้นับวินาทีในหน้านี้</p></div>`}
 function openFocus(id){const it=find(id);if(!it)return;if(ST.TM&&ST.TM.id!=id){toast('มีตัวจับเวลาอื่นทำงานอยู่ ต้องจบก่อน');return openFocus(ST.TM.id)}
- if(ST.focusId!==null){page.innerHTML=focusBody(it);return}ST.focusId=id;openPage(focusBody(it),()=>{ST.focusId=null;updateLive()})}
-const refreshFocus=()=>{const it=find(ST.focusId);if(it)page.innerHTML=focusBody(it)};
+ const MT=(window as any).EvarelMount,onClose=()=>{ST.focusId=null;updateLive();(window as any).EvarelMount?.unmountOne?.('focus')};
+ if(ST.focusId!==null){if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;page.innerHTML=focusBody(it);return}
+ ST.focusId=id;
+ if(MT?.ready('focus')){MT.unmountOne('focus');openPage('',onClose);page.innerHTML='';MT.mountAt(page,'focus',{id:it.id});return}
+ openPage(focusBody(it),onClose)}
+const refreshFocus=()=>{const it=find(ST.focusId);if(!it)return;const MT=(window as any).EvarelMount;
+ if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;page.innerHTML=focusBody(it)};
 function updateLive(){const l=$('live'),it=ST.TM&&find(ST.TM.id);if(!it||ST.focusId!==null){l.dataset.show='false';return}l.dataset.show='true';l.dataset.run=String(!!ST.TM.startedAt);l.dataset.id=it.id;
  l.innerHTML=`<i></i><span>${ST.TM.startedAt?'กำลังจับเวลา':'หยุดชั่วคราว'} · ${esc(it.title)}</span><b>${fmtClock(tmMs())}</b>`}
 function tick(){if(!ST.TM)return;const it=find(ST.TM.id);if(!it){ST.TM=null;saveTM();return updateLive()}

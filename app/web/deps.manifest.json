@@ -253,6 +253,7 @@
     "aiSync",
     "drawerOpen",
     "aiAutosize",
+    "aiShellHTML",
     "openAI"
    ],
    "dependsOn": [
