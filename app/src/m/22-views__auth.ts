@@ -53,7 +53,7 @@ function authValidate(kind,v){const e={},em=(v.email||'').trim();if(!em)e.email=
 
 
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t.closest('[data-kind="signup"]')){const p=t.value,s=[p.length>=PW_MIN,p.length>=12,/[a-z]/.test(p)&&/[A-Z]/.test(p),/\d/.test(p),/[^\w]/.test(p)].filter(Boolean).length,lv=p.length<PW_MIN?(p?1:0):Math.min(4,Math.max(1,s-1));
- $('pwMeter').dataset.lv=lv;$('pwLabel').textContent=p?(p.length<PW_MIN?`อีก ${PW_MIN-p.length} ตัวอักษรจึงจะใช้ได้`:['','อ่อน','พอใช้','ดี','แข็งแรง'][lv]):'ใช้ตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ผสมกันจะปลอดภัยขึ้น'}
+ $('pwMeter').dataset.lv=String(lv);$('pwLabel').textContent=p?(p.length<PW_MIN?`อีก ${PW_MIN-p.length} ตัวอักษรจึงจะใช้ได้`:['','อ่อน','พอใช้','ดี','แข็งแรง'][lv]):'ใช้ตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ผสมกันจะปลอดภัยขึ้น'}
  if(t.closest('.ev-authform')&&t.getAttribute('aria-invalid')==='true'){t.setAttribute('aria-invalid','false');const b=$('e-'+t.name);if(b){b.hidden=true;b.innerHTML=''}}});
 document.addEventListener('focusout',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const [u,dom]=t.value.trim().split('@'),fix=dom&&MAIL_TYPO[dom.toLowerCase()],b=$('e-email');
  if(fix&&b){b.hidden=false;b.dataset.tone='hint';b.innerHTML=`<span>หมายถึง ${esc(u)}@${fix} หรือเปล่า?</span><button type="button" data-act="au-fixmail" data-id="${esc(u)}@${fix}">ใช้อันนี้</button>`}});

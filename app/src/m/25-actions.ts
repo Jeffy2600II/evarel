@@ -3,7 +3,9 @@ const date=el=>el?.dataset.date||UI.date;
 const bump=(id,n,d=UI.date)=>{const it=find(id);if(!it)return;const v=Math.max(0,val(it,d)+n);commit('',()=>{it.log[d]=v},true);haptic();return NR};
 const aiMsg=id=>curChat()?.msgs[+id];
 const closeAnyDrawer=()=>{const d=$('drawer');if(d&&d.dataset.open==='true'&&LAYERS[LAYERS.length-1]?.el===page){drawerOpen(false);return true}return false};
-function itemMenu(it,ds){const id=it.id,can=tracked(it)&&occursOn(it,ds)&&!isFuture(ds),k=`${id}|${ds}`,out=[{act:'detail',id,icon:'chart',label:'ดูรายละเอียดและประวัติ'},{act:'m-edit',id,icon:'edit',label:'แก้ไข'},{act:'m-dup',id,icon:'copy',label:'ทำสำเนา'}];
+function itemMenu(it,ds){const id=it.id,can=tracked(it)&&occursOn(it,ds)&&!isFuture(ds),k=`${id}|${ds}`;
+/** @type {any[]} */
+const out=[{act:'detail',id,icon:'chart',label:'ดูรายละเอียดและประวัติ'},{act:'m-edit',id,icon:'edit',label:'แก้ไข'},{act:'m-dup',id,icon:'copy',label:'ทำสำเนา'}];
  if(it.track==='timer')out.push({act:'timeropen',id,icon:'clock',label:'เปิดหน้าจับเวลา'});
  if(can&&val(it,ds)>0)out.push({act:'m-reset',id:k,icon:'x',label:`ล้างบันทึก (${dayLab(ds)})`});
  if(can&&it.type==='habit'&&!isDone(it,ds)&&!skipped(it,ds))out.push({act:'m-skip',id:k,icon:'skip',label:`ข้าม (${dayLab(ds)})`});

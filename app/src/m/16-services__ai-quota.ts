@@ -14,7 +14,7 @@ function quotaShort(q){const st=quotaState(q);if(st==='out')return 'โควต
  if(tr<=QUOTA_LOW&&tr<cr)return 'ใกล้ถึงขีดจำกัดวันนี้';
  return `เหลือ ${q.calls.remaining} จาก ${q.calls.limit} ครั้ง`}
 const resetMs=iso=>{const v=+new Date(iso);return Number.isFinite(v)?v:NaN};
-function resetClock(iso){const d=new Date(iso);if(isNaN(d))return '';const b=new Date(+d+7*3600000);return `${pad(b.getUTCHours())}:${pad(b.getUTCMinutes())}`}
+function resetClock(iso){const d=new Date(iso);if(isNaN(d.getTime()))return '';const b=new Date(+d+7*3600000);return `${pad(b.getUTCHours())}:${pad(b.getUTCMinutes())}`}
 function resetIn(iso){const ms=resetMs(iso)-Date.now();if(!(ms>0))return 'ในอีกสักครู่';const m=Math.ceil(ms/60000),h=Math.floor(m/60);return h>=1?`อีก ${h} ชม. ${m%60} นาที`:`อีก ${m} นาที`}
 async function quotaFetch(){if(!quotaEnabled())return null;
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),6000);

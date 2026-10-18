@@ -4,8 +4,8 @@ import { S } from './05-data__auth.js';
 /* ===== MODULE: services/schedule ===== */
 export function occursOn(it,ds){const d0=parse(it.start),d=parse(ds),r=it.repeat;if(d<d0||(it.end&&d>parse(it.end)))return false;
  if(r.unit==='none')return ds===it.start;
- if(r.unit==='day')return Math.round((d-d0)/DAY_MS)%r.every===0;
- if(r.unit==='week')return r.days.includes(d.getDay())&&Math.floor(Math.round((d-addDays(d0,-d0.getDay()))/DAY_MS)/7)%r.every===0;
+ if(r.unit==='day')return Math.round((d.getTime()-d0.getTime())/DAY_MS)%r.every===0;
+ if(r.unit==='week')return r.days.includes(d.getDay())&&Math.floor(Math.round((d.getTime()-addDays(d0,-d0.getDay()).getTime())/DAY_MS)/7)%r.every===0;
  return d.getDate()===d0.getDate()&&((d.getFullYear()-d0.getFullYear())*12+d.getMonth()-d0.getMonth())%r.every===0}
 export const val=(it,ds)=>it.log[ds]||0,target=it=>it.track==='count'||it.track==='timer'?it.target:1,tracked=it=>it.track!=='none';
 export const isDone=(it,ds)=>val(it,ds)>=target(it),skipped=(it,ds)=>!!it.skip[ds],isFuture=ds=>ds>TODAY;
