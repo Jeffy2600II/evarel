@@ -97,10 +97,43 @@ addEventListener('keydown', e => {
         }
     }
 });
-function setSheet(title, body, o = {}) { sheet.innerHTML = `<div class="ev-grab" data-drag></div><h2 data-drag>${o.back ? `<button class="ev-icon-btn" data-flat data-act="dback" aria-label="ย้อนกลับ">${icon('back')}</button>` : ''}<span id="sheetTitle" class="grow">${esc(title)}</span><button class="ev-icon-btn" data-flat data-act="close" aria-label="ปิด">${icon('x')}</button></h2><div class="ev-sheet-body" id="sheetBody">${body}</div>${o.foot ? `<div class="ev-sheet-foot">${o.foot}</div>` : ''}`; }
+function setSheet(title, body, o = {}) {
+    const MT = window.EvarelMount;
+    /* S4: โครง sheet เป็น React จริงเมื่อพร้อม (เนื้อ body/foot ยังเป็น html จาก caller) ไม่พร้อมใช้ string เดิม */
+    if (MT?.ready('sheet')) {
+        MT.unmountOne('sheet');
+        sheet.innerHTML = '';
+        MT.mountAt(sheet, 'sheet', { title, back: !!o.back, foot: o.foot || '', html: body });
+        return;
+    }
+    sheet.innerHTML = `<div class="ev-grab" data-drag></div><h2 data-drag>${o.back ? `<button class="ev-icon-btn" data-flat data-act="dback" aria-label="ย้อนกลับ">${icon('back')}</button>` : ''}<span id="sheetTitle" class="grow">${esc(title)}</span><button class="ev-icon-btn" data-flat data-act="close" aria-label="ปิด">${icon('x')}</button></h2><div class="ev-sheet-body" id="sheetBody">${body}</div>${o.foot ? `<div class="ev-sheet-foot">${o.foot}</div>` : ''}`;
+}
 function openSheet(title, body, o = {}) { setSheet(title, body, o); pushLayer({ kind: 'sheet', el: sheet, onClose: () => { ST.sheetMode = ''; o.onClose?.(); }, guard: sheetGuard }); }
-function openDialog(html) { dialog.innerHTML = `<div class="ev-dialog-card">${html}</div>`; pushLayer({ kind: 'dialog', el: dialog }); }
-function confirmDialog(o) { CONFIRM.fn = o.fn; openDialog(`<h3>${o.title}</h3><p class="ev-sub">${o.msg}</p><div class="ev-dlg-actions"><button class="ev-btn-ghost" data-act="close">${o.keep || 'ยกเลิก'}</button><button class="${o.tone === 'primary' ? 'ev-btn-primary' : 'ev-btn-solid-danger'}" data-act="cf-ok">${o.ok}</button></div>`); }
+function openDialog(html) {
+    const MT = window.EvarelMount;
+    /* S4: การ์ด dialog เป็น React จริงเมื่อพร้อม เนื้อ html ยัง raw จาก caller */
+    if (MT?.ready('dialogCard')) {
+        MT.unmountOne('dialogCard');
+        dialog.innerHTML = '';
+        MT.mountAt(dialog, 'dialogCard', { html });
+    }
+    else
+        dialog.innerHTML = `<div class="ev-dialog-card">${html}</div>`;
+    pushLayer({ kind: 'dialog', el: dialog });
+}
+function confirmDialog(o) {
+    CONFIRM.fn = o.fn;
+    const MT = window.EvarelMount;
+    /* S4: confirm เป็น React จริงเต็มรูปเมื่อพร้อม (title/msg ผ่าน children แทน esc) */
+    if (MT?.ready('confirmCard')) {
+        MT.unmountOne('dialogCard');
+        dialog.innerHTML = '';
+        MT.mountAt(dialog, 'confirmCard', { title: o.title, msg: o.msg, keep: o.keep || 'ยกเลิก', ok: o.ok, tone: o.tone });
+        pushLayer({ kind: 'dialog', el: dialog });
+        return;
+    }
+    openDialog(`<h3>${o.title}</h3><p class="ev-sub">${o.msg}</p><div class="ev-dlg-actions"><button class="ev-btn-ghost" data-act="close">${o.keep || 'ยกเลิก'}</button><button class="${o.tone === 'primary' ? 'ev-btn-primary' : 'ev-btn-solid-danger'}" data-act="cf-ok">${o.ok}</button></div>`);
+}
 dialog.addEventListener('click', e => { if (e.target === dialog)
     closeTop(); });
 function openPage(html, onClose) { page.innerHTML = html; pushLayer({ kind: 'page', el: page, onClose }); }

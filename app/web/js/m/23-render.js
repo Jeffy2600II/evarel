@@ -39,7 +39,15 @@ function render() {
     UI.animate = false;
     const tabs = TABS.map(([id, l, ic]) => `<li><button data-tab="${id}" ${UI.tab === id ? 'aria-current="page"' : ''}><span class="pill">${icon(ic)}</span>${l}</button></li>`);
     tabs.splice(2, 0, `<li><button class="add" data-act="add" aria-label="เพิ่มรายการ">${icon('plus')}</button></li>`);
-    $('nav').innerHTML = tabs.join('');
+    const MT = window.EvarelMount;
+    /* S4: nav เป็น React จริงเมื่อพร้อม (mountAt ลง #nav ตรงๆ) ไม่พร้อมใช้ string เดิม */
+    if (MT?.ready('nav')) {
+        MT.unmountOne('nav');
+        $('nav').innerHTML = '';
+        MT.mountAt($('nav'), 'nav', { tab: UI.tab });
+    }
+    else
+        $('nav').innerHTML = tabs.join('');
     updateLive();
     refreshDetail();
     /* แจ้ง store กลางที่ React subscribe ได้ (s4f-store-react): งานสุดท้ายของรอบ ห่อ try เพื่อให้ผู้ฟังพังแล้วไม่ล้ม render | ไม่มีผู้ฟัง/ไม่มี store = ไม่ทำอะไร */

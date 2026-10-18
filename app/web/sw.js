@@ -3,7 +3,7 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v64-ai-react';
+const VERSION = 'evarel-v65-shell-layers';
 const CORE = [
   './',
   './index.html',
@@ -38,6 +38,9 @@ const CORE = [
   './js/react/runtime.js',
   './js/react/item-row.js',
   './js/react/ai.js',
+  './js/react/nav.js',
+  './js/react/dialog.js',
+  './js/react/sheet.js',
   './js/react/today.js',
   './js/react/calendar.js',
   './js/react/settings.js',
