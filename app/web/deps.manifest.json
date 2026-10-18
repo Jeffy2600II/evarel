@@ -51,9 +51,7 @@
    ]
   },
   "06-services__schedule.js": {
-   "declares": [
-    "__probe"
-   ],
+   "declares": [],
    "dependsOn": []
   },
   "07-services__stats.js": {

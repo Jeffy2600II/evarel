@@ -20,6 +20,17 @@ window.EvarelMount = window.EvarelMount || {
   // 13-views เรียกเมื่อจะขอโหมด mount จริง: คืนแอตทริบิวต์สำหรับ <main> และเก็บ props ไว้ให้ commit ใช้
   request(name, props) { this.pending = { name, props }; return ` data-react-mount="${name}"`; },
   unmountAll() { for (const k of Object.keys(this.roots)) { try { this.roots[k].unmount(); } catch (e) { console.warn('unmount ' + k, e); } delete this.roots[k]; } this.pending = null; },
+  /* ปลด root รายชื่อเดียว (หน้า AI ใช้ตอนปิดหน้า/เขียน innerHTML ใหม่ โดยไม่แตะ root ของหน้าอื่น) */
+  unmountOne(name) { const r = this.roots[name]; if (r) { try { r.unmount(); } catch (e) { console.warn('unmount ' + name, e); } delete this.roots[name]; } },
+  /* mount นอก <main>: หน้าที่ container ไม่ใช่ main (เช่น #aiBody) render ลง el โดยตรง กัน wrapper เพิ่มให้ DOM ต่างจากเดิม */
+  mountAt(el, name, props) {
+    if (!el || !this.ready(name)) return false;
+    this.unmountOne(name);
+    const r = createRoot(el); this.roots[name] = r;
+    if (window.__NO_FLUSH) r.render(createElement(window.EvarelComponents[name], props));
+    else flushSync(() => r.render(createElement(window.EvarelComponents[name], props)));
+    return true;
+  },
   commit(rootEl) {
     const el = rootEl.querySelector('main[data-react-mount]');
     if (!el || !this.pending) return false;

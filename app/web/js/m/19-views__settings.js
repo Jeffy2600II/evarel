@@ -51,7 +51,7 @@ function loadReactFile(name) {
 /* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
 /* today+calendar โหลดจาก index.html ก่อนบูต (render แรกเป็น mount ทันที) ที่เหลือยัง lazy */
 const REACT_LAZY = ['settings', 'stats', 'all'];
-const REACT_PAGES = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar'];
+const REACT_PAGES = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar', 'ai'];
 function loadReactSettings() {
     const W = window;
     if (REACT_PAGES.every(n => W.EvarelPages?.[n]))

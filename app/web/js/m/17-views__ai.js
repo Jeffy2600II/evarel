@@ -61,8 +61,22 @@ function aiBodyHTML() {
         return `<div class="ev-ai-hello">${AI_MARK}<h3>มีอะไรให้ช่วยวันนี้</h3><div class="ev-sugg">${SUGG.map(s => `<button data-act="sugg" data-id="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>`;
     return `<div class="ev-chat">${c.msgs.map((m, i) => m.who === 'u' ? `<div class="ev-bubble-user">${esc(m.text)}</div>` : `<div class="ev-bubble-ai">${esc(m.text)}</div>${cardHTML(m, i)}`).join('')}</div>`;
 }
-function aiRefresh(smooth) { const sc = $('aiScroll'); if (!sc)
-    return; $('aiBody').innerHTML = aiBodyHTML(); $('aiTitle').textContent = curChat()?.title || 'AI'; sc.scrollTo({ top: sc.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }); }
+function aiRefresh(smooth) {
+    const sc = $('aiScroll');
+    if (!sc)
+        return;
+    const MT = window.EvarelMount;
+    /* S4: พร้อมแล้ว mount React จริงลง #aiBody (ไม่มี wrapper เพิ่ม) ไม่พร้อมใช้ string เดิม */
+    if (MT?.ready('ai')) {
+        MT.unmountOne('ai');
+        $('aiBody').innerHTML = '';
+        MT.mountAt($('aiBody'), 'ai', { chat: curChat() });
+    }
+    else
+        $('aiBody').innerHTML = aiBodyHTML();
+    $('aiTitle').textContent = curChat()?.title || 'AI';
+    sc.scrollTo({ top: sc.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+}
 function aiRenderDrawer(q = '') {
     const box = $('drawerList');
     if (!box)
@@ -97,7 +111,7 @@ function openAI() {
  <button type="button" class="ev-qchip" id="aiQuota" data-act="ai-quota" data-state="ok" role="status" aria-live="polite" aria-atomic="true" hidden></button>
  <form class="ev-composer" id="aiForm"><textarea id="aiText" rows="1" placeholder="${AI_PLACEHOLDER}" aria-label="ข้อความถึง AI"></textarea><div class="ev-composer-bar"><button type="button" class="ev-plus" data-act="ai-plus" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวช่วยพิมพ์">${icon('plus')}</button><button class="ev-send" data-empty="true" aria-label="ส่ง">${icon('send')}</button></div></form>
  <div class="ev-drawer-scrim" id="dScrim" data-open="false" data-act="ai-hist"></div>
- <aside class="ev-drawer" id="drawer" data-open="false" aria-label="ประวัติแชท"><div class="ev-drawer-head"><h2>Evarel AI</h2><label class="ev-search">${icon('search')}<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท"></label></div><div class="ev-drawer-list" id="drawerList"></div><div class="ev-drawer-foot"><button class="ev-avatar" data-act="settings" aria-label="ตั้งค่า">${initial()}</button><button class="ev-btn-ink" data-act="ai-new">${icon('plus')}แชทใหม่</button></div></aside>`, () => { clearTimeout(ST.quotaTimer); ST.quotaTimer = 0; ST.quotaTick++; ST.QUOTA = null; });
+ <aside class="ev-drawer" id="drawer" data-open="false" aria-label="ประวัติแชท"><div class="ev-drawer-head"><h2>Evarel AI</h2><label class="ev-search">${icon('search')}<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท"></label></div><div class="ev-drawer-list" id="drawerList"></div><div class="ev-drawer-foot"><button class="ev-avatar" data-act="settings" aria-label="ตั้งค่า">${initial()}</button><button class="ev-btn-ink" data-act="ai-new">${icon('plus')}แชทใหม่</button></div></aside>`, () => { clearTimeout(ST.quotaTimer); ST.quotaTimer = 0; ST.quotaTick++; ST.QUOTA = null; window.EvarelMount?.unmountOne?.('ai'); });
     aiRefresh();
     quotaPaint();
     quotaRefresh();
