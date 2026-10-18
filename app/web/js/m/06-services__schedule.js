@@ -68,4 +68,3 @@ export function dayMenu(it, ds) {
     return out;
 }
 Object.assign(window, { occursOn, val, target, tracked, isDone, skipped, isFuture, onDate, overdue, streak, rate, remText, repeatText, timeText, periodOf, PERIODS, scheduled, dayState, dayMenu });
-const __probe = "ผิดชนิดจำลอง";
