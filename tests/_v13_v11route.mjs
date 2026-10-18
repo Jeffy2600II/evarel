@@ -9,9 +9,8 @@ const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-
 const b=await chromium.launch({executablePath:exe});
 const user=await makeTestUser('route'); await seedItems(user.session,SEED_ITEMS);
 const ctx=await openAsUser(b,user);
-const res=[];const ok=(n,c,v='')=>{res.push(c);console.log((c?'PASS ':'FAIL ')+n,v)};
-async function fresh(hash=''){const p=await ctx.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());await p.goto(U+hash);await p.waitForTimeout(3500);return p}
-let exitCode=0;
+const res=[];let exitCode=0;const ok=(n,c,v='')=>{res.push(c);if(!c)exitCode=1;console.log((c?'PASS ':'FAIL ')+n,v)};
+async function fresh(hash=''){const p=await ctx.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());await p.goto(U+hash);/* รอท้าย chain (25-actions) ไม่ใช่แค่ ST: บนบันเดิล Next เครื่องยนต์พร้อมก่อน route.js หลายขั้น deep link เลยยังไม่ทำงานถ้าวัดเร็วไป */for(let i=0;i<60;i++){const rdy=await p.evaluate(()=>typeof window.ST==='object'&&typeof window.UI==='object'&&typeof window.ACTIONS==='object').catch(()=>false);if(rdy)break;await p.waitForTimeout(250);}await p.waitForTimeout(900);return p}
 try{
 const H=p=>p.evaluate(()=>location.hash), T=p=>p.evaluate(()=>document.querySelector('nav [aria-current="page"]')?.textContent.trim());
 let p=await fresh();

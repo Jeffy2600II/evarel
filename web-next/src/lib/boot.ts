@@ -5,15 +5,21 @@
    turbopack บันเดิลแต่ละไฟล์เป็น chunk — โมดูลคุยกันผ่าน window ภายในบันเดิล js/m/*.js จึงไม่ถูกเสิร์ฟแยกอีก */
 import { useEffect } from 'react';
 
-const FILES = [
-  /* @vite-ignore */ '../../../app/web/vendor/fullcalendar.min.js',
-];
+/* FullCalendar เป็น UMD ที่ bundler กลืนค่า (import แล้ว window.FullCalendar ไม่ถูกตั้ง) —
+   โหลดเป็นไฟล์ script tag ตรงๆ ตาม index.html เดิม: ไฟล์อยู่ที่ public/vendor ในเส้นทางเสิร์ฟเสมอ */
+const loadScript = (src: string) => new Promise<void>((res, rej) => {
+  const el = document.createElement('script');
+  el.src = src; el.async = false;
+  el.onload = () => res();
+  el.onerror = () => rej(new Error('โหลด ' + src + ' ไม่ได้'));
+  document.head.appendChild(el);
+});
 
 export default function AppBoot() {
   useEffect(() => {
     /* ลำดับสำคัญ: react runtime ก่อน แล้วหน้า boot ต้น (index เดิมโหลดทันที) แล้วเครื่องยนต์ 00..25 แล้ว route แล้ว SW */
     const seq: Array<() => Promise<unknown>> = [
-      () => import('../../../app/web/vendor/fullcalendar.min.js'),
+      () => loadScript('vendor/fullcalendar.min.js'),
       () => import('../../../app/web/js/react/runtime.js'),
       /* โหลดครบทุกหน้าตั้งแต่บูต (รวมที่เดิมเป็น lazy) — แก้ที่ต้นตอ React #130:
          today.jsx เรียก EvarelComponents.itemRow ตอน render ถ้าข้อมูล API มาถึงก่อนหน้า lazy โหลดเสร็จ = h(undefined)

@@ -14,7 +14,13 @@ await ctx.route(/fonts\.(googleapis|gstatic)|cdn\.jsdelivr/, (r) => r.abort());
 const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message.slice(0, 120)));
 await p.goto(U); await p.waitForSelector('[data-tab="all"]', { timeout: 15000 }); await p.waitForTimeout(4500);
 await t('O1 Service Worker ลงทะเบียนและควบคุมหน้า', async () => eq(await p.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.active), true));
-await t('O2 แคชมีโมดูลแจ้งเตือนใหม่ (services__notify.js)', async () => { const has = await p.evaluate(async () => { for (const k of await caches.keys()) { const c = await caches.open(k); if ((await c.keys()).some((r) => r.url.includes('services__notify.js'))) return true; } return false; }); eq(has, true); });
+await t('O2 แคชมีเครื่องยนต์ (โมดูลแจ้งเตือน / บันเดิล Next)', async () => { const has = await p.evaluate(async () => {
+  /* เส้นทางเดิม: js/m/services__notify.js อยู่ในแคช | build Next: ไม่มี js/m — ตรวจ chunk ทุกอันที่หน้าอ้างถูกแคชแทน (seam เดียวกัน: เครื่องยนต์ใช้ออฟไลน์ได้) */
+  const scripts = [...document.scripts].filter((s) => s.src).map((s) => new URL(s.src).pathname);
+  for (const k of await caches.keys()) { const c = await caches.open(k); const keys = (await c.keys()).map((r) => new URL(r.url).pathname);
+    if (keys.some((u) => u.includes('services__notify.js'))) return true;
+    if (!scripts.some((x) => x.includes('/js/m/')) && scripts.length > 0 && scripts.every((x) => keys.includes(x))) return true; }
+  return false; }); eq(has, true); });
 await p.reload(); await p.waitForTimeout(1500);
 await ctx.setOffline(true);
 await p.reload(); await p.waitForTimeout(2500);

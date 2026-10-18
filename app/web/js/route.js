@@ -29,10 +29,14 @@
 
   addEventListener('hashchange', apply);
   addEventListener('popstate', () => { if (!LAYERS.length) apply(); });
-  addEventListener('load', () => {
+  /* ลิงก์ลึกต้องทำงานทั้งสองสถาปัตยกรรม: เส้นทางเดิม script ใน HTML eval ก่อน load event (ใช้ listener ได้)
+     แต่บนบันเดิลของ Next เครื่องยนต์โหลดหลัง load ยิงไปแล้ว (readyState=complete) listener จะไม่เห็น event เลย
+     จึงเช็คสถานะ: ถ้าโหลดเสร็จแล้วให้ทำทันที ไม่งั้นรอ event เหมือนเดิม */
+  const onLoad = () => {
     const r = routeOf();
     apply();
     /* ลิงก์ลึกไปหน้าเต็ม: เปิดผ่านกลไก v7 เอง แล้วคืน hash ให้ตรงแท็บ */
     if (r === 'ai' || r === 'settings') { history.replaceState(history.state, '', '#/' + UI.tab); setTimeout(() => ACTIONS[r]?.(), 0); }
-  });
+  };
+  if (document.readyState === 'complete') onLoad(); else addEventListener('load', onLoad);
 })();
