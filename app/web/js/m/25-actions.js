@@ -87,10 +87,7 @@ const ACTIONS = {
     close: () => { if (!closeAnyDrawer())
         closeTop(); return NR; }, undo: () => { toastEl._undo?.(); toastEl._undo = null; toastEl.dataset.open = 'false'; return NR; },
     'cf-ok': () => { const f = CONFIRM.fn; closeTop(); setTimeout(() => f?.(), 200); return NR; }, 'imp-add': () => { closeTop(); setTimeout(() => runImport('add'), 200); return NR; }, 'imp-skip': () => { closeTop(); setTimeout(() => runImport('skip'), 200); return NR; },
-    ai: () => { openAI(); return NR; }, settings: () => { if (LAYERS.some(l => l.el === page))
-        page.innerHTML = settingsHTML();
-    else
-        openPage(settingsHTML()); return NR; },
+    ai: () => { openAI(); return NR; }, settings: () => { settingsOpen(); return NR; },
     sugg: id => { aiSend(id); return NR; },
     'ai-hist': () => { drawerOpen($('drawer').dataset.open !== 'true'); return NR; },
     'ai-new': () => { ST.CH.cur = null; saveCH(); aiRefresh(); drawerOpen(false); $('aiText')?.focus(); return NR; },
@@ -162,8 +159,8 @@ const ACTIONS = {
         drop();
     else
         confirmDialog({ title: 'ทิ้งเวลาที่จับไว้?', msg: `เวลา ${fmtClock(tmMs())} จะไม่ถูกบันทึก`, keep: 'จับเวลาต่อ', ok: 'ทิ้งเวลา', fn: drop }); return NR; },
-    theme: id => { applyTheme(id); page.innerHTML = settingsHTML(); return NR; },
-    notify: () => { pushSubscribe(true).then(r => { page.innerHTML = settingsHTML(); toast(r.ok ? 'เครื่องนี้พร้อมรับการแจ้งเตือนแล้ว' : pushWhyText(r.why)); }); return NR; },
+    theme: id => { applyTheme(id); settingsRepaint(); return NR; },
+    notify: () => { pushSubscribe(true).then(r => { settingsRepaint(); toast(r.ok ? 'เครื่องนี้พร้อมรับการแจ้งเตือนแล้ว' : pushWhyText(r.why)); }); return NR; },
     dopen: id => {
         ST.D.open = ST.D.open === id ? '' : id;
         sheet.querySelectorAll('.ev-panel').forEach(p => { p.dataset.open = String(p.dataset.key === ST.D.open); });

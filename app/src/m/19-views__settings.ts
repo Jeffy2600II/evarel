@@ -10,19 +10,27 @@ function settingsHTMLClassic(){const [st,note]=notifInfo(),total=countNotifiable
  
  <section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div></section></div>`}
 /* ชั้น 4: หน้าตั้งค่าผลิตโดย React (runtime ร่วม + ไฟล์หน้า โหลดแบบ lazy หลัง load) ถ้ายังโหลดไม่ครบหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
+function settingsProps(){const [st,note]=notifInfo(),granted='Notification' in window&&Notification.permission==='granted',canBtn='Notification' in window&&(Notification.permission==='default'||(granted&&!pushSavedState()));
+ return {user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}}
 function settingsHTML(){
  const R=(window as any).EvarelPages?.settings;
  if(typeof R!=='function')return settingsHTMLClassic();
- try{const [st,note]=notifInfo(),granted='Notification' in window&&Notification.permission==='granted',canBtn='Notification' in window&&(Notification.permission==='default'||(granted&&!pushSavedState()));
-  return R({user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'})}
+ try{return R(settingsProps())}
  catch(e){console.warn('settings react',e);return settingsHTMLClassic()}}
+/* S4 ไบต์ 5: หน้าตั้งค่า mount React จริงที่ #page เมื่อพร้อม (แพทเทิร์นเดียวกับ detail ใน 20-services__calendar) */
+function settingsOpen(){const MT=(window as any).EvarelMount;
+ if(MT?.ready('settings')){MT.unmountOne('settings');if(!LAYERS.some(l=>l.el===page))openPage('');page.innerHTML='';MT.mountAt(page,'settings',settingsProps());return}
+ const html=settingsHTML();if(LAYERS.some(l=>l.el===page))page.innerHTML=html;else openPage(html)}
+function settingsRepaint(){const MT=(window as any).EvarelMount;
+ if(MT?.ready('settings')&&LAYERS.some(l=>l.el===page)){MT.mountAt(page,'settings',settingsProps());return}
+ page.innerHTML=settingsHTML()}
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name){return new Promise((ok,no)=>{const W=window as any;if(name==='runtime'&&W.EvarelReact)return ok(0);/* index โหลด runtime ก่อนบูตแล้ว ห้าม execute ซ้ำเพราะจะเกิด React สองชุด */
  const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);
  const el=document.createElement('script');el.type='module';el.src=`js/react/${name}.js`;el.async=false;el.dataset.evReact=name;el.onload=()=>ok(0);el.onerror=()=>no(new Error(name));document.head.appendChild(el)})}
 /* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
 /* today+calendar โหลดจาก index.html ก่อนบูต (render แรกเป็น mount ทันที) ที่เหลือยัง lazy */
-const REACT_LAZY=['settings','stats','all'];const REACT_PAGES=['settings','stats','all','item-row','today','calendar','ai','nav','dialog','sheet','form','detail','auth'];
+const REACT_LAZY=['settings','stats','all'];const REACT_PAGES=['settings','stats','all','item-row','today','calendar','ai','nav','dialog','sheet','form','detail','auth','quota'];
 function loadReactSettings(){const W=window as any;if(REACT_PAGES.every(n=>W.EvarelPages?.[n]))return Promise.resolve(0);
  /* เรียก render ผ่าน window ตอนรันเท่านั้น (ไม่อ้างชื่อตรง) ไม่ให้เกิดเส้นพึ่งพาย้อนทิศไป 23-render ซึ่งโหลดหลังไฟล์นี้ */
  return loadReactFile('runtime').then(()=>REACT_PAGES.reduce((p,n)=>p.then(()=>loadReactFile(n)),Promise.resolve(0))).then(()=>{try{if(W.UI?.auth?.status!=='in'&&typeof W.renderAuthRoot==='function'){(document.getElementById('auth')||{}).dataset.screen='';W.renderAuthRoot()}else if((W.UI?.tab==='stats'||W.UI?.tab==='all')&&typeof W.render==='function')W.render()}catch(e){}}).catch(e=>console.warn('react ไม่พร้อม ใช้หน้าเดิม',e&&e.message))}
@@ -31,4 +39,4 @@ function applyTheme(t){t==='auto'?document.documentElement.removeAttribute('data
 try{const t=localStorage.getItem(THEME_KEY);if(t&&t!=='auto')applyTheme(t)}catch(e){console.warn('theme load',e)}
 
 
-Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, loadReactFile, applyTheme });
+Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, loadReactFile, applyTheme, settingsProps, settingsOpen, settingsRepaint });

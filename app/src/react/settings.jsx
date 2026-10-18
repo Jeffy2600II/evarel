@@ -31,3 +31,5 @@ function SettingsPage(p) {
 
 // จุดเข้าเดียวที่โค้ดเดิมเรียก: ส่ง props เข้ามา ได้ string HTML ของเนื้อหาในหน้า
 window.EvarelPages.settings = (props) => renderToStaticMarkup(h(SettingsPage, props));
+window.EvarelComponents = window.EvarelComponents || {};
+window.EvarelComponents.settings = SettingsPage;

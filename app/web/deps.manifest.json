@@ -2,7 +2,7 @@
  "schema": 1,
  "files": 26,
  "summary": {
-  "pairEdges": 69,
+  "pairEdges": 70,
   "backEdges": 0,
   "loadTimeRefs": 6,
   "loadTimeForwardRefs": 0,
@@ -225,6 +225,7 @@
     "quotaPaint",
     "quotaRefresh",
     "quotaFromChat",
+    "quotaSheetHTML",
     "quotaSheet"
    ],
    "dependsOn": [
@@ -277,7 +278,10 @@
     "notifInfo",
     "themeNow",
     "settingsHTMLClassic",
+    "settingsProps",
     "settingsHTML",
+    "settingsOpen",
+    "settingsRepaint",
     "loadReactFile",
     "REACT_LAZY",
     "REACT_PAGES",
@@ -286,6 +290,7 @@
    ],
    "dependsOn": [
     "00-head.js",
+    "09-ui__layers.js",
     "10-services__notify.js"
    ]
   },

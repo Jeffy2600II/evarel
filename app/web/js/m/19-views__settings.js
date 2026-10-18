@@ -16,18 +16,46 @@ function settingsHTMLClassic() {
  <section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div></section></div>`;
 }
 /* ชั้น 4: หน้าตั้งค่าผลิตโดย React (runtime ร่วม + ไฟล์หน้า โหลดแบบ lazy หลัง load) ถ้ายังโหลดไม่ครบหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
+function settingsProps() {
+    const [st, note] = notifInfo(), granted = 'Notification' in window && Notification.permission === 'granted', canBtn = 'Notification' in window && (Notification.permission === 'default' || (granted && !pushSavedState()));
+    return { user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' };
+}
 function settingsHTML() {
     const R = window.EvarelPages?.settings;
     if (typeof R !== 'function')
         return settingsHTMLClassic();
     try {
-        const [st, note] = notifInfo(), granted = 'Notification' in window && Notification.permission === 'granted', canBtn = 'Notification' in window && (Notification.permission === 'default' || (granted && !pushSavedState()));
-        return R({ user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' });
+        return R(settingsProps());
     }
     catch (e) {
         console.warn('settings react', e);
         return settingsHTMLClassic();
     }
+}
+/* S4 ไบต์ 5: หน้าตั้งค่า mount React จริงที่ #page เมื่อพร้อม (แพทเทิร์นเดียวกับ detail ใน 20-services__calendar) */
+function settingsOpen() {
+    const MT = window.EvarelMount;
+    if (MT?.ready('settings')) {
+        MT.unmountOne('settings');
+        if (!LAYERS.some(l => l.el === page))
+            openPage('');
+        page.innerHTML = '';
+        MT.mountAt(page, 'settings', settingsProps());
+        return;
+    }
+    const html = settingsHTML();
+    if (LAYERS.some(l => l.el === page))
+        page.innerHTML = html;
+    else
+        openPage(html);
+}
+function settingsRepaint() {
+    const MT = window.EvarelMount;
+    if (MT?.ready('settings') && LAYERS.some(l => l.el === page)) {
+        MT.mountAt(page, 'settings', settingsProps());
+        return;
+    }
+    page.innerHTML = settingsHTML();
 }
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name) {
@@ -51,7 +79,7 @@ function loadReactFile(name) {
 /* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
 /* today+calendar โหลดจาก index.html ก่อนบูต (render แรกเป็น mount ทันที) ที่เหลือยัง lazy */
 const REACT_LAZY = ['settings', 'stats', 'all'];
-const REACT_PAGES = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar', 'ai', 'nav', 'dialog', 'sheet', 'form', 'detail', 'auth'];
+const REACT_PAGES = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar', 'ai', 'nav', 'dialog', 'sheet', 'form', 'detail', 'auth', 'quota'];
 function loadReactSettings() {
     const W = window;
     if (REACT_PAGES.every(n => W.EvarelPages?.[n]))
@@ -82,4 +110,4 @@ try {
 catch (e) {
     console.warn('theme load', e);
 }
-Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, loadReactFile, applyTheme });
+Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, loadReactFile, applyTheme, settingsProps, settingsOpen, settingsRepaint });

@@ -110,12 +110,17 @@ function quotaFromChat(qc, hit429) {
         calls: { used: qc.used, limit: qc.limit, remaining: Math.max(0, qc.limit - qc.used) }, tokens: { used: tl.used, limit: tl.limit, remaining: Math.max(0, tl.limit - tl.used) } };
     quotaPaint();
 }
+function quotaSheetHTML() {
+    if (!ST.QUOTA || ST.QUOTA.unknown)
+        return '';
+    const q = ST.QUOTA, bar = (u, l, lb) => `<div class="ev-qbar" role="progressbar" aria-label="${lb}" aria-valuemin="0" aria-valuemax="${l}" aria-valuenow="${Math.min(u, l || 0)}"><i style="--p:${l > 0 ? Math.min(1, u / l).toFixed(3) : '0'}"></i></div>`;
+    return `<div class="ev-qrow"><div class="ev-row"><b>จำนวนครั้ง</b><span class="ev-sub">${q.calls.used} / ${q.calls.limit}</span></div>${bar(q.calls.used, q.calls.limit, 'จำนวนครั้งที่ใช้วันนี้')}</div>
+ <div class="ev-qrow"><div class="ev-row"><b>ปริมาณการคิด</b><span class="ev-sub">${q.tokens.used.toLocaleString('en-US')} / ${q.tokens.limit.toLocaleString('en-US')}</span></div>${bar(q.tokens.used, q.tokens.limit, 'ปริมาณการคิดที่ใช้วันนี้')}</div>
+ <p class="ev-sub" style="margin-top:12px">${q.blocked ? 'ตอนนี้ใช้ครบแล้ว ' : ''}รีเซ็ตเวลา ${resetClock(q.resetAt)} น. (${resetIn(q.resetAt)})</p>`;
+}
 function quotaSheet() {
     if (!ST.QUOTA || ST.QUOTA.unknown)
         return;
-    const q = ST.QUOTA, bar = (u, l, lb) => `<div class="ev-qbar" role="progressbar" aria-label="${lb}" aria-valuemin="0" aria-valuemax="${l}" aria-valuenow="${Math.min(u, l || 0)}"><i style="--p:${l > 0 ? Math.min(1, u / l).toFixed(3) : '0'}"></i></div>`;
-    openSheet('โควตา AI วันนี้', `<div class="ev-qrow"><div class="ev-row"><b>จำนวนครั้ง</b><span class="ev-sub">${q.calls.used} / ${q.calls.limit}</span></div>${bar(q.calls.used, q.calls.limit, 'จำนวนครั้งที่ใช้วันนี้')}</div>
- <div class="ev-qrow"><div class="ev-row"><b>ปริมาณการคิด</b><span class="ev-sub">${q.tokens.used.toLocaleString('en-US')} / ${q.tokens.limit.toLocaleString('en-US')}</span></div>${bar(q.tokens.used, q.tokens.limit, 'ปริมาณการคิดที่ใช้วันนี้')}</div>
- <p class="ev-sub" style="margin-top:12px">${q.blocked ? 'ตอนนี้ใช้ครบแล้ว ' : ''}รีเซ็ตเวลา ${resetClock(q.resetAt)} น. (${resetIn(q.resetAt)})</p>`);
+    openSheet('โควตา AI วันนี้', quotaSheetHTML(), { page: 'quotaBody', props: { quota: ST.QUOTA } });
 }
-Object.assign(window, { QUOTA_LOW, QUOTA_POLL_MAX, QUOTA_UNKNOWN, quotaEnabled, quotaState, quotaShort, resetMs, resetClock, resetIn, quotaFetch, quotaPaint, quotaRefresh, quotaFromChat, quotaSheet });
+Object.assign(window, { QUOTA_LOW, QUOTA_POLL_MAX, QUOTA_UNKNOWN, quotaEnabled, quotaState, quotaShort, resetMs, resetClock, resetIn, quotaFetch, quotaPaint, quotaRefresh, quotaFromChat, quotaSheet, quotaSheetHTML });
