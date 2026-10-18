@@ -1,0 +1,7 @@
+{
+  "name": "evarel-web-shell",
+  "private": true,
+  "type": "module",
+  "description": "เปลือก Next.js (static export) ที่ปล่อยไฟล์ app/web ผ่านตรงทุกไบต์ ไม่ใช่ dependency ของ Worker",
+  "devDependencies": { "next": "16.4.2", "react": "19.3.1", "react-dom": "19.3.1" }
+}
