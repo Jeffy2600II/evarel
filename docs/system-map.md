@@ -35,6 +35,17 @@
 4. ฟังก์ชัน scheduled มีสามตัวชื่อซ้ำกัน (core/schedule.ts, m/06-services__schedule.ts, api/src/index.ts) ต้องระบุพาธเสมอตอนค้น กันแก้ผิดตัว
 5. edge/notify-tick/index.ts และ api/prototype/push-poc/sw.js กราฟอ่านสัญลักษณ์ไม่ออก (0 โหนด) ส่วนนี้ต้องอ่านโค้ดตรง
 
+## กราฟสำหรับ agent และคนอื่น
+
+ไฟล์กราฟอยู่ที่ docs/graph/ (graph.json, GRAPH_REPORT.md, graph.html) สร้างจากซอร์ส app/src, app/api, app/edge พาธในกราฟเป็นพาธสัมพัทธ์จาก app/ เช่น src/m/23-render.ts, api/src/router.ts
+
+วิธีใช้:
+1. อ่าน docs/graph/GRAPH_REPORT.md ก่อน (จุดศูนย์กลาง กลุ่ม ความเชื่อมแปลก)
+2. เปิด docs/graph/graph.html ในเบราว์เซอร์เพื่อดูเป็นภาพ
+3. ถามเชิงลึกด้วย CLI: pip install graphifyy แล้ว cd app && graphify update . จะได้ graphify-out/ ใหม่ จากนั้น graphify explain "ชื่อฟังก์ชัน" หรือ graphify path "A" "B" (ถ้ามีชื่อซ้ำให้ระบุ path::symbol)
+
+กราฟเป็นภาพ ณ commit ที่ระบุในรายงาน หลังแก้โค้ดให้สร้างใหม่แล้วแทนที่ไฟล์ใน docs/graph/ (แก้ไฟล์เดิม ไม่สร้างสำเนาซ้อน)
+
 ## ข้อจำกัดของแผนผังนี้
 
 - เป็นการวิเคราะห์ static: การโหลดไฟล์แบบ dynamic, การ route ด้วยสตริง, ค่าตั้งตอนรัน ไม่อยู่ในกราฟ
