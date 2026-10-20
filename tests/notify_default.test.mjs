@@ -56,11 +56,14 @@ if (N) {
   execSync(`"${join(here, '../node_modules/.bin/esbuild')}" "${join(here, '../app/api/src/systems/notify/reminders.ts')}" --bundle --format=esm --outfile="${outFile}" --log-level=error`);
   const R = await import(pathToFileURL(outFile).href + '?v=' + Date.now());
   const base = { id: 1, title: 'ส่งงาน', time: '09:00', start: '2026-10-14', end: '', repeat: { unit: 'none', every: 1, days: [] }, skip: {} };
-  const tags = (rem, now) => R.dueReminders([{ ...base, rem }], now).map((d) => d.key.split('|')[2]);
-  t('N17a ค่าเริ่มต้นของแอป -> Worker ส่งตรงเวลาตอน 09:00', () => deq(tags(N.defaultRem(), '2026-10-14 09:00'), ['before:0']));
-  t('N17b ผู้ใช้ปิดตรงเวลา (toggleOnTime false) -> Worker ไม่ส่งตอน 09:00', () => deq(tags(N.toggleOnTime(N.defaultRem(), false), '2026-10-14 09:00'), []));
-  t('N17c ปิดตรงเวลาแต่เปิดล่วงหน้า 30 นาที -> ส่งตอน 08:30 ไม่ส่งตอน 09:00', () => { const rem = N.toggleAhead(N.toggleOnTime(N.defaultRem(), false), 30); deq(tags(rem, '2026-10-14 08:30'), ['before:30']); deq(tags(rem, '2026-10-14 09:00'), []); });
-  t('N17d เปิดตรงเวลา + ล่วงหน้า 1 วัน -> ส่ง 2 ครั้ง (เมื่อวาน 09:00 และวันนี้ 09:00) คีย์ไม่ซ้ำ', () => { const rem = N.toggleAhead(N.defaultRem(), 1440); deq(tags(rem, '2026-10-13 09:00'), ['before:1440']); deq(tags(rem, '2026-10-14 09:00'), ['before:0']); });
+  // ตรวจ "เวลายิงจริง" (atAbs เป็นนาทีสัมบูรณ์) ไม่ผูกกับรูปแบบ key ซึ่งเปลี่ยนเป็น @เวลา ตั้งแต่ 08b7df2
+  const absMin = (ds, hm) => { const [y, m, d] = ds.split('-').map(Number); const [h, mi] = hm.split(':').map(Number); return Math.floor(Date.UTC(y, m - 1, d, h, mi) / 60000); };
+  const fires = (rem, now) => R.dueReminders([{ ...base, rem }], now).map((d) => d.atAbs);
+  const at = (ds, hm) => [absMin(ds, hm)];
+  t('N17a ค่าเริ่มต้นของแอป -> Worker ส่งตรงเวลาตอน 09:00', () => deq(fires(N.defaultRem(), '2026-10-14 09:00'), at('2026-10-14', '09:00')));
+  t('N17b ผู้ใช้ปิดตรงเวลา (toggleOnTime false) -> Worker ไม่ส่งตอน 09:00', () => deq(fires(N.toggleOnTime(N.defaultRem(), false), '2026-10-14 09:00'), []));
+  t('N17c ปิดตรงเวลาแต่เปิดล่วงหน้า 30 นาที -> ส่งตอน 08:30 ไม่ส่งตอน 09:00', () => { const rem = N.toggleAhead(N.toggleOnTime(N.defaultRem(), false), 30); deq(fires(rem, '2026-10-14 08:30'), at('2026-10-14', '08:30')); deq(fires(rem, '2026-10-14 09:00'), []); });
+  t('N17d เปิดตรงเวลา + ล่วงหน้า 1 วัน -> ส่ง 2 ครั้ง (เมื่อวาน 09:00 และวันนี้ 09:00) คีย์ไม่ซ้ำ', () => { const rem = N.toggleAhead(N.defaultRem(), 1440); deq(fires(rem, '2026-10-13 09:00'), at('2026-10-13', '09:00')); deq(fires(rem, '2026-10-14 09:00'), at('2026-10-14', '09:00')); });
   t('N17e ข้อมูลจริง 8 รายการเปิดตรงเวลาแต่ไม่มีเวลา -> แอปแจ้งปัญหา และ Worker ไม่ส่ง (ปลอดภัย ไม่ส่งผิดเวลา)', () => { assert.notEqual(N.checkNotify(N.defaultRem(), ''), ''); deq(R.dueReminders([{ ...base, time: '', rem: N.defaultRem() }], '2026-10-14 09:00'), []); });
 }
 console.log(`\nผ่าน ${pass} | ตก ${fail}`); process.exit(fail ? 1 : 0);

@@ -11,12 +11,21 @@ const appSrc = readFileSync(join(here, '../../../../web/js/m/06-services__schedu
 const datesSrc = readFileSync(join(here, '../../../../web/js/m/02-core__dates.js'), 'utf8');
 const constSrc = readFileSync(join(here, '../../../../web/js/m/01-core__constants.js'), 'utf8');
 
-// ดึงเฉพาะ occursOn + ตัวช่วยวันที่ของแอป มารันใน sandbox (ไม่แก้ไฟล์แอป)
-const pick = (src, re) => { const m = src.match(re); if (!m) throw new Error('ไม่พบ ' + re); return m[0]; };
+// ดึง occursOn ตัวจริงของแอปด้วยการนับวงเล็บปีกกา (ทนต่อการ format ไฟล์ ไม่ผูกกับรูปแบบช่องว่าง)
+// และประกอบตัวช่วยวันที่ที่มันใช้ (pad, ymd, parse, addDays, DAY_MS) จากค่านิยามเดียวกับแอป
+const grabFn = (src, name) => {
+  const i = src.indexOf(`function ${name}(`); if (i < 0) throw new Error('ไม่พบฟังก์ชัน ' + name);
+  const open = src.indexOf('{', src.indexOf(')', i)); let depth = 0, j = open;
+  for (; j < src.length; j++) { if (src[j] === '{') depth++; else if (src[j] === '}' && --depth === 0) break; }
+  return src.slice(i, j + 1);
+};
+const grabConst = (src, name) => {
+  const m = src.match(new RegExp(`export const ${name}\\s*=\\s*([^\\n]+)`)); if (!m) throw new Error('ไม่พบค่า ' + name);
+  return `const ${name} = ${m[1].replace(/;\\s*$/, '')};`;
+};
 const code = [
-  pick(datesSrc, /const pad=[^\n]+/), 'const DAY_MS=' + pick(constSrc, /const DAY_MS=(\d+)/).match(/\d+/)[0], pick(datesSrc, /const addDays=[^\n]+/),
-  pick(datesSrc, /const ymd=[^\n]+/), pick(datesSrc, /const parse=[^\n]+/),
-  pick(appSrc, /function occursOn\(it,ds\)\{[\s\S]*?\n(?=const val=)/),
+  grabConst(datesSrc, 'pad'), grabConst(constSrc, 'DAY_MS'), grabConst(datesSrc, 'ymd'),
+  grabConst(datesSrc, 'parse'), grabConst(datesSrc, 'addDays'), grabFn(appSrc, 'occursOn'),
 ].join('\n');
 const sandbox = { out: null }; vm.createContext(sandbox);
 vm.runInContext(code + '\nout={occursOn};', sandbox);

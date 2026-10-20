@@ -39,16 +39,17 @@ t('T4 พิมพ์ชื่อฟิลด์ ST ผิด (ST.TMM) ถูก
 });
 t('T5 สะกดเมธอด DOM ผิด (e.target.cloest) ยังถูกจับ ไฟล์ types/dom.d.ts ไม่ได้ทำให้ตัวตรวจตาบอด', () => {
   const p = join(d, 'app/web/js/m/25-actions.js'); const k = readFileSync(p, 'utf8');
-  const a = "document.addEventListener('click',e=>{const el=e.target.closest('[data-act]')";
-  eq(k.split(a).length, 2, 'ไม่พบจุดอ้างอิงใน 25-actions.js (โค้ดเปลี่ยน ให้แก้เทสต์ไม่ใช่ผ่อนเกณฑ์)');
-  writeFileSync(p, k.replace(a, a.replace('e.target.closest', 'e.target.cloest'))); const r = run(d); writeFileSync(p, k);
+  // ไม่ผูกกับช่องว่าง: ไฟล์ถูก format ใหม่ได้ ต้องเจอจุดนี้พอดี 1 จุดเสมอ ไม่งั้นเทสต์ล้ม (ไม่ผ่อนเกณฑ์)
+  const re = /(document\.addEventListener\('click',\s*e\s*=>\s*\{\s*const el\s*=\s*e\.target\.)closest(\('\[data-act\]'\))/g;
+  eq((k.match(re) || []).length, 1, 'ไม่พบจุดอ้างอิงใน 25-actions.js (โค้ดเปลี่ยน ให้แก้เทสต์ไม่ใช่ผ่อนเกณฑ์)');
+  writeFileSync(p, k.replace(re, '$1cloest$2')); const r = run(d); writeFileSync(p, k);
   eq(r.status, 1, 'ควรจับได้');
 });
 t('T6 เรียกเมธอดที่ไม่มีจริงบน element (el.nonexistentMethod()) ยังถูกจับ', () => {
   const p = join(d, 'app/web/js/m/25-actions.js'); const k = readFileSync(p, 'utf8');
-  const a = "const el=e.target.closest('[data-act]');if(!el)return;";
-  eq(k.split(a).length, 2, 'ไม่พบจุดอ้างอิงใน 25-actions.js');
-  writeFileSync(p, k.replace(a, a + 'el.nonexistentMethod();')); const r = run(d); writeFileSync(p, k);
+  const re = /(const el\s*=\s*e\.target\.closest\('\[data-act\]'\);\s*if \(!el\)\s*return;)/g;
+  eq((k.match(re) || []).length, 1, 'ไม่พบจุดอ้างอิงใน 25-actions.js (ต้องมีพอดี 1 จุด)');
+  writeFileSync(p, k.replace(re, '$1 el.nonexistentMethod();')); const r = run(d); writeFileSync(p, k);
   eq(r.status, 1, 'ควรจับได้');
 });
 rmSync(d, { recursive: true, force: true });
