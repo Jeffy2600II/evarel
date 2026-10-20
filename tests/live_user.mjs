@@ -8,6 +8,17 @@ export const API = process.env.EVAREL_TEST_API || 'https://evarel-api-forge.nont
 const KEY = pick('SUPABASE_SERVICE_KEY');
 const H = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', 'User-Agent': 'evarel-test/1.0' };
 
+
+/* AUTO_CLEAN: ตัวลบผู้ใช้ทดสอบที่ยังไม่ถูกลบ รันตอนโปรเซสจบ (จบปกติ ข้อผิดพลาดที่ไม่ถูกจับ หรือสัญญาณ) ลบซ้ำได้ปลอดภัย (idempotent)
+   ต้นเหตุเดิม: เทสต์ 9 ไฟล์ไม่เรียก cleanup เลย และอีกหลายไฟล์ไม่ได้เรียกใน finally ทำให้ฐานจริงมีบัญชีทดสอบค้าง 278 บัญชี */
+const AUTO_CLEAN = new Set();
+let _sweeping = false;
+const sweep = async () => { if (_sweeping) return; _sweeping = true; await Promise.allSettled([...AUTO_CLEAN].map((f) => f())); };
+process.on('beforeExit', () => { if (AUTO_CLEAN.size) sweep(); });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { sweep().finally(() => process.exit(130)); });
+process.on('uncaughtException', (e) => { console.error(e); sweep().finally(() => process.exit(1)); });
+process.on('unhandledRejection', (e) => { console.error(e); sweep().finally(() => process.exit(1)); });
+
 export async function makeTestUser(tag = 'gate') {
   const rnd = Math.random().toString(36).slice(2, 8);
   const email = `gate-${tag}-${rnd}@example.com`, password = 'Passw0rd!' + Math.random().toString(36).slice(2, 8);
@@ -19,7 +30,9 @@ export async function makeTestUser(tag = 'gate') {
   const session = await l.json();
   /* เส้นล็อกอินคืนแค่ {id,email} (ไม่มีชื่อ) ส่วนแอปจริงได้ชื่อจากตอนสมัคร จึงเติมชื่อให้ session ทดสอบเหมือนกัน */
   session.user = { ...session.user, name: 'Nontakorn', provider: 'email' };
-  const cleanup = async () => (await fetch(SB + '/auth/v1/admin/users/' + user.id, { method: 'DELETE', headers: H })).status;
+  let deleted = false;
+  const cleanup = async () => { if (deleted) return 200; deleted = true; AUTO_CLEAN.delete(cleanup); return (await fetch(SB + '/auth/v1/admin/users/' + user.id, { method: 'DELETE', headers: H })).status; };
+  AUTO_CLEAN.add(cleanup); // ลงทะเบียนลบอัตโนมัติ: เทสต์ที่ลืม cleanup หรือล้มกลางทางก็ไม่ทิ้งบัญชีในฐานจริง
   return { id: user.id, email, password, session, cleanup };
 }
 
