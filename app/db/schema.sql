@@ -62,11 +62,19 @@ create table if not exists public.notification_log (
   primary key (user_id, key)
 );
 
--- ============ 5) ตารางที่ PoC สร้างไว้แล้ว: เติมของที่ขาด ไม่ลบอะไร ============
--- settings (PoC เป็นคอลัมน์แยก ไม่มีข้อมูล): เพิ่ม data jsonb สำหรับค่าอื่นของแอป
-alter table public.settings add column if not exists data jsonb not null default '{}'::jsonb;
-alter table public.settings add column if not exists updated_at timestamptz not null default now();
+-- ============ 5) ตารางที่ฐานจริงมีมาก่อนไฟล์นี้ (สร้างให้ครบเพื่อสร้างฐานใหม่ได้) ============
+-- settings เลิกใช้แล้ว (ไม่มีโค้ดเรียก ข้อมูล 0 แถว) จึงไม่สร้างและไม่แตะ
 -- push_subscriptions: คงแถวเดิม; user_id ยัง null ได้จนกว่าเครื่องนั้นล็อกอิน แล้วค่อยบังคับ not null (ทำทีหลัง ไม่ใช่ตอนนี้)
+create table if not exists public.push_subscriptions (
+  id         uuid        not null default gen_random_uuid(),
+  user_id    uuid        references auth.users(id) on delete cascade,
+  endpoint   text        not null,
+  p256dh     text        not null,
+  auth       text        not null,
+  created_at timestamptz not null default now(),
+  constraint push_subscriptions_pkey primary key (id),
+  constraint push_subscriptions_endpoint_key unique (endpoint)
+);
 
 -- ============ 6) RLS : ทุกตารางเห็นเฉพาะของตัวเอง ============
 alter table public.items            enable row level security;
@@ -74,7 +82,6 @@ alter table public.item_logs        enable row level security;
 alter table public.chats            enable row level security;
 alter table public.messages         enable row level security;
 alter table public.notification_log enable row level security;
-alter table public.settings         enable row level security;
 alter table public.push_subscriptions enable row level security;
 
 do $$
@@ -85,7 +92,7 @@ begin
     execute format('create policy "own %1$s" on public.%1$s for all using (auth.uid() = user_id) with check (auth.uid() = user_id)', t);
   end loop;
 end $$;
--- settings / push_subscriptions มีนโยบาย "own ..." จาก PoC อยู่แล้ว (ตรวจแล้วจากสคีมา PoC เดิม ซึ่งถูกลบแล้ว ดูประวัติ git ที่ tag pre-restructure-develop)
+-- push_subscriptions: นโยบาย "own push_subscriptions" และ trigger จำกัดจำนวนเครื่อง สร้างใน migrations-005-push-limit.sql
 
 -- ============ 7) index ที่ใช้จริง ============
 create index if not exists item_logs_user_date on public.item_logs (user_id, date);
