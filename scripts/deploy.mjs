@@ -47,8 +47,11 @@ if (!accountId) {
 const buildDir = resolve(ROOT, 'build/web');
 if (!existsSync(resolve(buildDir, 'index.html'))) { console.error('ไม่มี build/web/index.html — รัน build ก่อน'); process.exit(1); }
 const expectApi = mode === 'forge' ? 'evarel-api-forge' : 'evarel-api';
+const buildHtmlPath = resolve(ROOT, 'build/web/index.html');
 const sw = readFileSync(resolve(buildDir, 'sw.js'), 'utf8');
-if (!sw.includes(expectApi)) { console.error(`build นี้ฉีด API ไม่ตรงเส้นทาง (ต้องการ ${expectApi}) — รัน build:web:${mode} ก่อน`); process.exit(1); }
+/* บิลด์ Next ไม่ฝัง URL API ใน sw.js แล้ว ตรวจจาก index.html แทน (ค่า API ที่แอปใช้จริง) */
+const html = existsSync(buildHtmlPath) ? readFileSync(buildHtmlPath, 'utf8') : '';
+if (!html.includes(expectApi)) { console.error(`build นี้ฉีด API ไม่ตรงเส้นทาง (ต้องการ ${expectApi}) — รัน build:web:${mode} ก่อน`); process.exit(1); }
 
 /* deploy ด้วย wrangler (assets จาก wrangler.toml ของ app/web) */
 const args = ['wrangler', 'deploy', '--config', resolve(ROOT, 'app/web/wrangler.toml'), '--env', mode];
