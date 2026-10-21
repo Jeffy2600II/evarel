@@ -11,8 +11,8 @@ const FONT_CSS=(()=>{ const css=fs.readFileSync('/tmp/evarel-repo/app/web/styles
   return blocks.join('\n').replace(/url\(\s*['"]?\.\.\/fonts\//g,'url(\'http://localhost:8779/fonts/'); })();
 /* ฝั่งแอป = ผู้ใช้จริงผ่าน API forge (สร้างครั้งเดียว ลบท้ายสุด) | ฝั่งเดโม = mock ของไฟล์ต้นฉบับเอง ไม่แตะ | ชื่อและอีเมลที่แสดงผลตั้งให้ตรงเดโม (ไม่กระทบการยืนยันตัวตน เพราะเซิร์ฟเวอร์ตรวจ JWT) */
 const user=await makeTestUser('parity'); user.session.user={...user.session.user,name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}; await seedItems(user.session,SEED_ITEMS);
-/* ฐานเทียบ = เดโมจริงทั้งไฟล์ master-demo-v24.html ไม่ใช่ไฟล์ intended | ต่างได้เฉพาะที่ Master อนุญาต: หน้าตั้งค่าที่ลบจุดออก, ข้อความ/ส่วนที่บอกว่าเป็นเดโมหรือจำลอง | ที่เหลือทุกพิกเซลต้อง 0 */
-const DEMO='http://localhost:8779/design/master-demo-v24.html', APP=process.argv[2]||'http://localhost:8779/index.html';
+/* ฐานเทียบ = เดโมจริงทั้งไฟล์ Evarel v24.html ไม่ใช่ไฟล์ intended | ต่างได้เฉพาะที่ Master อนุญาต: หน้าตั้งค่าที่ลบจุดออก, ข้อความ/ส่วนที่บอกว่าเป็นเดโมหรือจำลอง | ที่เหลือทุกพิกเซลต้อง 0 */
+const DEMO='http://localhost:8779/design/Evarel%20v24.html', APP=process.argv[2]||'http://localhost:8779/index.html';
 async function run(url,cs,file,step,logged,name){
   const isApp=url===APP; let ctx=null, p;
   if(isApp){ ctx=logged?await openAsUser(b,user,{colorScheme:cs}):await openAsUser(b,{session:null},{colorScheme:cs}); p=await ctx.newPage(); }
