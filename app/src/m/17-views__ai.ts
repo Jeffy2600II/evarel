@@ -18,7 +18,6 @@ const cardHTML=(m,i)=>{if(m.cards)return cardsHTML(m,i);if(!m.card)return '';con
  ${st==='pending'?`<div class="ev-row" style="margin-top:12px;gap:8px"><button class="ev-btn-primary ev-btn-sm" data-act="ai-ok" data-id="${i}">ยืนยัน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-edit" data-id="${i}">แก้ก่อน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-no" data-id="${i}">ยกเลิก</button></div>`:`<span class="ev-chip" style="display:inline-block;margin-top:8px">${st==='added'?'เพิ่มแล้ว':'ยกเลิกแล้ว'}</span>`}</div>`};
 const AI_MARK='<svg class="ev-ai-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="5" fill="currentColor" stroke="none"/></svg>';
 /* ตามเดโม v24 จริง: สวัสดี+ชื่อ, ev-sub, ปุ่มแนะนำใช้ index, notice, ปุ่มข้อความ, ev-disc, typing — AI state อ่านจาก window (ของจริงเขียนโดย services) */
-const firstName=()=>((window as any).profileOf?.().name||'').trim().split(/\s+/)[0];
 const msgActions=(m:any,i:number)=>`<div class="ev-msg-actions"><button data-act="ai-copy" data-id="${i}" aria-label="คัดลอก">${icon('copy')}</button><button data-act="ai-vote" data-id="${i}:up" aria-pressed="${m.vote==='up'}" aria-label="ชอบ">${icon('thumbup')}</button><button data-act="ai-vote" data-id="${i}:down" aria-pressed="${m.vote==='down'}" aria-label="ไม่ชอบ">${icon('thumbdown')}</button></div>`;
 const noticeHTML=()=>{const n=(window as any).AI?.notice;if(!n)return '';
  if(n.kind==='error')return `<div class="ev-notice" data-key="notice"><b>ส่งข้อความไม่สำเร็จ</b><span>ตรวจสอบการเชื่อมต่อแล้วลองใหม่ ข้อความของคุณยังอยู่ในช่องพิมพ์</span><div><button class="ev-btn-primary ev-btn-sm" data-act="ai-retry">ส่งอีกครั้ง</button></div></div>`;
@@ -55,4 +54,4 @@ function openAI(){const MT=(window as any).EvarelMount;const onClose=()=>{clearT
  else openPage(aiShellHTML(AI_PLACEHOLDER,initial()),onClose,'ai');
  aiRefresh();aiRenderDrawer();quotaPaint();quotaRefresh()}
 
-Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI });
+Object.assign(window, { aiShellHTML, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI });

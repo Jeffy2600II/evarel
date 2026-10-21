@@ -6,7 +6,6 @@
    แหล่งความจริงเดียวของความหมายนี้: ฟอร์ม validate และการแสดงผลต้องเรียกที่นี่ ไม่ตีความ rem เอง (Worker ตีความตรงกันใน reminders.ts) */
 const AHEAD_PRESETS = [10, 30, 60, 1440];
 /* REM_PRESETS ตามเดโม v24 จริง (REM_PRESETS=[0,10,30,60,1440]): ชิปแรก m=0 คือ ตรงเวลา อยู่ในชุดเดียวกับล่วงหน้า — ใช้ในฟอร์มเท่านั้น (string + React) */
-const REM_PRESETS = [0, 10, 30, 60, 1440];
 const isRemObj = r => r && typeof r === 'object' && !Array.isArray(r);
 const remList = rem => Array.isArray(rem) ? rem.filter(isRemObj) : [];
 const defaultRem = () => [{ k: 'before', m: 0 }];

@@ -16,7 +16,7 @@ function usageCardHTML() {
   <div class="ev-use"><div class="ev-stat"><span>ความยาวบทสนทนา</span><b>${tp}%</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-tok" data-to="${tp}" data-lv="${st}"></i></div></div>
   <p class="ev-sub" style="margin-top:14px">รีเซ็ตทุกเที่ยงคืน (00:00 น.) · ${resetIn(q.resetAt)}</p>`;
 }
-const providerChip = u => u?.provider === 'google' ? `<span class="ev-chip ev-chip-g">${GLOGO}Google</span>` : '<span class="ev-chip">อีเมล</span>';
+const providerChip = u => u?.provider === 'google' ? `<span class="ev-chip ev-chip-g">${window.GLOGO}Google</span>` : '<span class="ev-chip">อีเมล</span>';
 function settingsHTMLClassic() {
     const [st, note] = notifInfo(), total = countNotifiable(S.items);
     return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
@@ -33,7 +33,7 @@ function settingsHTMLClassic() {
 function settingsProps() {
     const [st, note] = notifInfo(), granted = 'Notification' in window && Notification.permission === 'granted', canBtn = 'Notification' in window && (Notification.permission === 'default' || (granted && !pushSavedState()));
     const pf = profileOf();
-    return { usageHTML: usageCardHTML(), googleChipInner: GLOGO + 'Google', avatarBg: pf.bg, avatarName: pf.name || 'โปรไฟล์', user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), perfSegHTML: seg('perf', [['auto', 'อัตโนมัติ'], ['full', 'เต็มรูปแบบ'], ['lite', 'ประหยัดเครื่อง']], perfPref()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' };
+    return { usageHTML: usageCardHTML(), googleChipInner: window.GLOGO + 'Google', avatarBg: pf.bg, avatarName: pf.name || 'โปรไฟล์', user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), perfSegHTML: seg('perf', [['auto', 'อัตโนมัติ'], ['full', 'เต็มรูปแบบ'], ['lite', 'ประหยัดเครื่อง']], perfPref()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' };
 }
 function settingsHTML() {
     const R = window.EvarelPages?.settings;
@@ -50,7 +50,7 @@ function settingsHTML() {
 /* S4 ไบต์ 5: หน้าตั้งค่า mount React จริงที่ #page เมื่อพร้อม (แพทเทิร์นเดียวกับ detail ใน 20-services__calendar) */
 function usagePaint() { ['usageWrap', 'usageSheet'].forEach(id => { const e = $(id); if (e) {
     e.innerHTML = usageCardHTML();
-    growBars(e);
+    window.growBars(e);
 } }); }
 async function usageRefresh() { try {
     const q = await quotaFetch();
