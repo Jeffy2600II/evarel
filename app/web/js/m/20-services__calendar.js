@@ -117,7 +117,7 @@ function detailSchedule(it) {
         if (occursOn(it, ds))
             next.push(ds);
     }
-    return `<section class="ev-card"><h3 class="ev-group" style="padding-top: 0px;">ครั้งถัดไป</h3>${next.length ? `<ul>${next.map(ds => `<li class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>${dayLab(ds)}</b><span class="ev-sub">${fmtDate(ds)}${it.time ? ` · ${timeText(it)}` : ''}</span></div></li>`).join('')}</ul>` : empty('cal', 'ไม่มีครั้งถัดไป', 'รายการนี้สิ้นสุดแล้ว')}</section>`;
+    return `<section class="ev-card"><h3 class="ev-group" style="padding-top: 0px;">ครั้งถัดไป</h3>${next.length ? `<ul>${next.map(ds => `<li class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>${dayLab(ds)}</b><span class="ev-sub">${fmtDate(ds)} · ${it.time ? timeText(it) : 'ไม่ระบุเวลา'}</span></div></li>`).join('')}</ul>` : empty('cal', 'ไม่มีครั้งถัดไป', 'รายการนี้สิ้นสุดแล้ว')}</section>`;
 }
 const DETAIL_BY_TYPE = { habit: detailHabit, task: detailTask, event: detailSchedule, class: detailSchedule };
 const metaCard = it => `<section class="ev-card"><h3 class="ev-group" style="padding-top: 0px;">การตั้งค่า</h3><div class="ev-meta"><span class="ev-chip">${TYPES[it.type]}</span><span class="ev-chip">${repeatText(it)}</span><span class="ev-chip">${it.time ? timeText(it) : 'ไม่ระบุเวลา'}</span>${it.rem.length ? it.rem.map(r => `<span class="ev-chip">เตือน ${remText(r)}</span>`).join('') : '<span class="ev-chip">ไม่มีการเตือน</span>'}</div><button class="ev-btn-ghost ev-btn-block" data-act="m-edit" data-id="${it.id}" style="margin-top: 14px;">แก้ไขการตั้งค่า</button></section>`;
@@ -132,13 +132,13 @@ function openDetail(id) {
     const MT = window.EvarelMount;
     /* S4: หน้ารายละเอียดเป็น React จริงเมื่อพร้อม (FullCalendar ของ habit mount ใน effect ของ component) ไม่พร้อมใช้ string เดิม */
     if (MT?.ready('detail')) {
+        openPage('', () => { ST.DETAIL = null; MT.unmountOne('detail'); destroyCal('habit'); }, 'detail');
         page.innerHTML = '';
         MT.mountAt(page, 'detail', { id: it.id });
-        pushLayer({ kind: 'page', el: page, onClose: () => { ST.DETAIL = null; MT.unmountOne('detail'); destroyCal('habit'); } });
         mountHabit(); /* mount ใน turn เดียวกับการเปิดหน้าเหมือน classic: effect ของ React ยิงกลาง transition (scale .98) ทำให้ FullCalendar วัดกว้างเพี้ยน */
         return;
     }
-    openPage(detailHTML(it), () => { ST.DETAIL = null; destroyCal('habit'); });
+    openPage(detailHTML(it), () => { ST.DETAIL = null; destroyCal('habit'); }, 'detail');
     mountHabit();
 }
 Object.assign(window, { FCS, destroyCal, addMin, occurrenceEvents, dotsFor, mountCal, mountMain, selectDay, mountHabit, calDayTap, detailHabit, detailTask, detailSchedule, DETAIL_BY_TYPE, metaCard, detailHTML, openDetail });

@@ -80,11 +80,16 @@ function aiRefresh(smooth) {
     if (!sc)
         return;
     const MT = window.EvarelMount;
-    /* S4: พร้อมแล้ว mount React จริงลง #aiBody (ไม่มี wrapper เพิ่ม) ไม่พร้อมใช้ string เดิม */
+    /* S4: พร้อมแล้ว mount React จริงลง #aiBody (ไม่มี wrapper เพิ่ม) ไม่พร้อมใช้ string เดิม
+       v24 ตาม patch ของเดโม: มี root อยู่แล้วให้ rerender (React reconcile คง bubble เดิมไว้ — ของเดิมไม่ขยับ เฉพาะข้อความใหม่ที่เพิ่ม) ไม่มี root = mount ใหม่ */
+    const props = { chat: curChat() };
     if (MT?.ready('ai')) {
-        MT.unmountOne('ai');
-        $('aiBody').innerHTML = '';
-        MT.mountAt($('aiBody'), 'ai', { chat: curChat() });
+        const b = document.getElementById('aiBody');
+        if (!(b && MT.els?.ai === b && MT.roots?.ai && MT.rerender('ai', props))) {
+            MT.unmountOne('ai');
+            $('aiBody').innerHTML = '';
+            MT.mountAt($('aiBody'), 'ai', props);
+        }
     }
     else
         $('aiBody').innerHTML = aiBodyHTML();
@@ -131,12 +136,12 @@ function openAI() {
     const onClose = () => { clearTimeout(ST.quotaTimer); ST.quotaTimer = 0; ST.quotaTick++; ST.QUOTA = null; window.EvarelMount?.unmountOne?.('ai'); window.EvarelMount?.unmountOne?.('aiShell'); };
     if (MT?.ready('aiShell')) {
         MT.unmountOne('aiShell');
-        openPage('', onClose);
+        openPage('', onClose, 'ai');
         page.innerHTML = '';
         MT.mountAt(page, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
     }
     else
-        openPage(aiShellHTML(AI_PLACEHOLDER, initial()), onClose);
+        openPage(aiShellHTML(AI_PLACEHOLDER, initial()), onClose, 'ai');
     aiRefresh();
     aiRenderDrawer();
     quotaPaint();

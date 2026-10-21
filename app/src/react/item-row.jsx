@@ -31,7 +31,7 @@ function ItemRow({ it, ds, i, late, next }) {
       : null;
   const subParts = [
     late ? `เลยกำหนด ${w.fmtDate(it.start)}` : '',
-    w.timeText(it),
+    w.timeText(it) || 'ไม่ระบุเวลา',
     multi ? `${v}/${tg} ${w.esc(it.unitName)}` : w.esc(it.subject),
     sk ? 'ข้ามวันนี้' : '',
   ].filter(Boolean);

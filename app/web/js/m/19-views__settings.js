@@ -64,7 +64,7 @@ function settingsOpen() {
     if (MT?.ready('settings')) {
         MT.unmountOne('settings');
         if (!LAYERS.some(l => l.el === page))
-            openPage('');
+            openPage('', undefined, 'settings');
         page.innerHTML = '';
         MT.mountAt(page, 'settings', settingsProps());
         usageRefresh();
@@ -74,7 +74,7 @@ function settingsOpen() {
     if (LAYERS.some(l => l.el === page))
         page.innerHTML = html;
     else
-        openPage(html);
+        openPage(html, undefined, 'settings');
     usageRefresh();
 }
 function settingsRepaint() {

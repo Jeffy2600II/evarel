@@ -41,12 +41,12 @@ function openFocus(id) {
     ST.focusId = id;
     if (MT?.ready('focus')) {
         MT.unmountOne('focus');
-        openPage('', onClose);
+        openPage('', onClose, 'focus');
         page.innerHTML = '';
         MT.mountAt(page, 'focus', { id: it.id });
         return;
     }
-    openPage(focusBody(it), onClose);
+    openPage(focusBody(it), onClose, 'focus');
 }
 const refreshFocus = () => {
     const it = find(ST.focusId);

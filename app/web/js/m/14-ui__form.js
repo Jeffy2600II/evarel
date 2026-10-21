@@ -44,6 +44,26 @@ function formBody() {
     return h;
 }
 const typeBody = () => `<div class="ev-types">${Object.entries(TYPE_INFO).map(([k, [ic, d]]) => `<button class="ev-type" data-act="dtype" data-id="${k}"><span class="orb">${icon(ic)}</span><b>${TYPES[k]}</b><span class="d">${d}</span></button>`).join('')}</div>`;
+/* ===== v19 ตามเดโม: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ (CSS ของ data-resize/data-stage อยู่ใน design.css แล้ว) =====
+   sheetResize: วัดความสูงก่อน/หลังสลับเนื้อหาแล้ว transition .34s — ต่างน้อยกว่า 3px ไม่เล่น | sheetStage: เปลี่ยนขั้นฟอร์ม = เนื้อหาใหม่เข้าเป็นจังหวะ 900ms */
+let sheetStageT = 0, sheetResizeT = 0, renderFormKey = '';
+function sheetStage() { clearTimeout(sheetStageT); sheet.dataset.stage = '1'; sheetStageT = setTimeout(() => { delete sheet.dataset.stage; }, 900); }
+function sheetResize(run) {
+    const el = sheet, h0 = el.offsetHeight;
+    clearTimeout(sheetResizeT);
+    el.style.height = '';
+    delete el.dataset.resize;
+    run();
+    const h1 = el.offsetHeight;
+    if (Math.abs(h1 - h0) < 3)
+        return;
+    el.style.height = h0 + 'px';
+    void el.offsetWidth;
+    el.dataset.resize = '1';
+    void el.offsetWidth;
+    el.style.height = h1 + 'px';
+    sheetResizeT = setTimeout(() => { el.style.height = ''; delete el.dataset.resize; }, 380);
+}
 function renderForm() {
     ST.sheetMode = 'form';
     const y = $('sheetBody')?.scrollTop || 0, isType = ST.D.step === 'type';
@@ -54,12 +74,16 @@ function renderForm() {
     if (MT?.ready('sheet') && MT.ready(isType ? 'typeBody' : 'formBody')) {
         o.page = isType ? 'typeBody' : 'formBody';
     }
+    const key = ST.D.step + ':' + ST.D.type;
     if (LAYERS.some(l => l.el === sheet)) {
-        setSheet(title, body, o);
-        $('sheetBody').scrollTop = y;
+        const stage = key !== renderFormKey;
+        sheetResize(() => { if (stage)
+            sheetStage(); setSheet(title, body, o); const b = $('sheetBody'); if (b)
+            b.scrollTop = y; });
     }
     else
         openSheet(title, body, o);
+    renderFormKey = key;
 }
 const openForm = (type, it) => { ST.D = it ? draftFrom(it) : type ? newDraft(type) : { ...newDraft('habit'), step: 'type' }; renderForm(); };
 function validate() {
@@ -87,4 +111,4 @@ function buildItem() {
     return mk({ id: ST.D.id || Date.now(), type: T, title: ST.D.title.trim(), subject: (ST.D.subject || '').trim(), start: ST.D.start, end: ST.D.endMode === 'date' && unit !== 'none' ? ST.D.end : '', time: ST.D.time, timeEnd: T === 'task' || T === 'habit' ? '' : ST.D.timeEnd,
         rem: ST.D.rem.slice(0, MAX_REM).map(r => ({ ...r })), repeat: { unit, every: Math.max(1, Math.round(+ST.D.every || 1)), days }, track: T === 'habit' ? ST.D.track : T === 'task' ? 'check' : 'none', target: multi ? Math.max(1, Math.round(+ST.D.target || 1)) : 1, unitName: multi ? (ST.D.unitName || '').trim() : '', log: old ? old.log : {}, skip: old ? old.skip : {} });
 }
-Object.assign(window, { TYPE_INFO, startBase, newDraft, draftFrom, chips, SR, PN, IR, ri, stepper, everyTxt, repSum, remSum, rangeSum, repPanel, rangePanel, remPanel, SET, notifyIssue, remRow, formBody, typeBody, renderForm, openForm, validate, buildItem });
+Object.assign(window, { TYPE_INFO, startBase, newDraft, draftFrom, chips, SR, PN, IR, ri, stepper, everyTxt, repSum, remSum, rangeSum, repPanel, rangePanel, remPanel, SET, notifyIssue, remRow, formBody, typeBody, sheetStage, sheetResize, renderForm, openForm, validate, buildItem });

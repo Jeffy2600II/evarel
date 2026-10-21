@@ -8,10 +8,12 @@ const refreshInert=()=>LAYERS.forEach((l,i)=>l.el.toggleAttribute('inert',i<LAYE
 function pushLayer(layer){layer.opener=document.activeElement;LAYERS.push(layer);refreshInert();lock(true);
  try{history.pushState({ev:LAYERS.length},'');layer.pushed=true}catch(e){console.warn('history',e)}
  layer.el.hidden=false;void layer.el.offsetWidth;layer.el.dataset.open='true';perfProbe();if(layer.kind==='sheet'){scrim.dataset.open='true'}
- /* เดโม v24 ไม่ autofocus ตอนเปิด layer (ปล่อย focus ตามคลิกจริง) — เอา 60ms focus ออกให้เหมือนเดโม */}
+ /* v18/v24 ตามเดโม: หลังเปิดชั้น 60ms ย้ายโฟกัสเข้าชั้นนั้น — sheet โฟกัสตัวมันเอง (tabIndex=-1 + กลบ outline) เพื่อไม่เปิดคีย์บอร์ดเอง (เดโมทำแบบนี้)
+    ชั้นอื่นโฟกัสองค์ประกอบแรกที่ใช้งานได้ ([autofocus],input,button:not(.ev-icon-btn)) ไม่มีก็โฟกัสตัวชั้น เพื่อให้คีย์บอร์ด/มือถือเข้าถึงได้เหมือนเดโม */
+ setTimeout(()=>{let t;if(layer.kind==='sheet'){layer.el.tabIndex=-1;layer.el.style.outline='0';t=layer.el}else t=layer.el.querySelector('[autofocus],input,button:not(.ev-icon-btn)')||layer.el;t?.focus?.({preventScroll:true})},60)}
 function popLayer(){const l=LAYERS.pop();if(!l)return;l.el.dataset.open='false';l.el.style.transform='';l.el.dataset.drag='false';
  if(!LAYERS.some(x=>x.kind==='sheet')){scrim.dataset.open='false';scrim.style.opacity='';scrim.style.transition=''}refreshInert();
- setTimeout(()=>{if(l.el.dataset.open==='false')l.el.hidden=true},LAYER_ANIM_MS);if(!LAYERS.length)lock(false);
+ setTimeout(()=>{if(l.el.dataset.open==='false'){l.el.hidden=true;delete l.el.dataset.exit}if(l.remove)l.el.remove()},LAYER_ANIM_MS);if(!LAYERS.length)lock(false);
  l.onClose?.();l.opener?.focus?.({preventScroll:true})}
 const CONFIRM={fn:null};
 function sheetGuard(){if(ST.sheetMode==='form'&&ST.D.dirty){confirmDialog({title:'ทิ้งการเปลี่ยนแปลง?',msg:'สิ่งที่กรอกไว้จะหายไป',keep:'กลับไปแก้',ok:'ทิ้ง',fn:()=>{ST.D.dirty=false;closeTop()}});return true}return false}
@@ -22,8 +24,13 @@ addEventListener('keydown',e=>{if(e.key==='Escape'){if(!pop.hidden)closePop();el
  if(e.key==='Tab'&&LAYERS.length){const el=LAYERS[LAYERS.length-1].el,f=[...el.querySelectorAll('button:not([disabled]),input,select,[tabindex="0"]')].filter(x=>x.offsetParent);
   if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
 function setSheet(title,body,o={}){const MT=(window as any).EvarelMount;
- /* S4: โครง sheet เป็น React จริงเมื่อพร้อม; caller ส่ง o.page = เนื้อเป็น React จริง (ฟอร์ม 14) ไม่ส่ง = html เดิม */
- if(MT?.ready('sheet')){MT.unmountOne('sheet');sheet.innerHTML='';MT.mountAt(sheet,'sheet',{title,back:!!o.back,foot:o.foot||'',html:body,page:(o as any).page||'',props:(o as any).props||{}});return}
+ /* S4: โครง sheet เป็น React จริงเมื่อพร้อม; caller ส่ง o.page = เนื้อเป็น React จริง (ฟอร์ม 14) ไม่ส่ง = html เดิม
+    v24 ตามจังหวะ ui/patch ของเดโม: ถ้า root ของ sheet ยังอยู่ ให้ rerender ทับตำแหน่งเดิมแทน unmount+mount ใหม่
+    — React reconcile คง node เดิมไว้ ของที่ไม่เปลี่ยนไม่ขยับ เฉพาะของใหม่เท่านั้นที่เพิ่มเข้ามา (เทียบ patch ของเดโม)
+    ทำให้อนิเมชั่นเข้า .ev-in ของเนื้อใหม่ + sheetResize เล่นตรงจังหวะเดียวกับเดโม */
+ const props={title,back:!!o.back,foot:o.foot||'',html:body,page:(o as any).page||'',props:(o as any).props||{}};
+ if(MT?.ready('sheet')&&MT.els?.sheet===sheet&&MT.roots?.sheet&&MT.rerender('sheet',props))return;
+ if(MT?.ready('sheet')){MT.unmountOne('sheet');sheet.innerHTML='';MT.mountAt(sheet,'sheet',props);return}
  sheet.innerHTML=`<div class="ev-grab" data-drag></div><h2 data-drag>${o.back?`<button class="ev-icon-btn" data-flat data-act="dback" aria-label="ย้อนกลับ">${icon('back')}</button>`:''}<span id="sheetTitle" class="grow">${esc(title)}</span><button class="ev-icon-btn" data-flat data-act="close" aria-label="ปิด">${icon('x')}</button></h2><div class="ev-sheet-body" id="sheetBody">${body}</div>${o.foot?`<div class="ev-sheet-foot">${o.foot}</div>`:''}`}
 function openSheet(title,body,o={}){setSheet(title,body,o);pushLayer({kind:'sheet',el:sheet,onClose:()=>{ST.sheetMode='';o.onClose?.()},guard:sheetGuard})}
 function openDialog(html){const MT=(window as any).EvarelMount;
@@ -36,7 +43,10 @@ function confirmDialog(o){CONFIRM.fn=o.fn;const MT=(window as any).EvarelMount;
  if(MT?.ready('confirmCard')){MT.unmountOne('dialogCard');dialog.innerHTML='';MT.mountAt(dialog,'confirmCard',{title:o.title,msg:o.msg,keep:o.keep||'ยกเลิก',ok:o.ok,tone:o.tone});pushLayer({kind:'dialog',el:dialog});return}
  openDialog(`<h3>${o.title}</h3><p class="ev-sub">${o.msg}</p><div class="ev-dlg-actions"><button class="ev-btn-ghost" data-act="close">${o.keep||'ยกเลิก'}</button><button class="${o.tone==='primary'?'ev-btn-primary':'ev-btn-solid-danger'}" data-act="cf-ok">${o.ok}</button></div>`)}
 dialog.addEventListener('click',e=>{if(e.target===dialog)closeTop()});
-function openPage(html,onClose){page.innerHTML=html;pushLayer({kind:'page',el:page,onClose})}
+function openPage(html,onClose,name=''){
+ /* v24 ตามเดโม: ตั้งชื่อหน้า (data-page) + เล่นอนิเมชั่นเข้าหน้า (data-enter .52s เล่นครั้งเดียว ปิดโดย html[data-settled] ตาม CSS เดโม) — แอปใช้ #page ตัวเดียวจึงไม่สร้าง element ใหม่ต่อชั้น */
+ page.dataset.page=name;page.innerHTML=html;pushLayer({kind:'page',name,el:page,onClose});
+ page.dataset.enter='true';setTimeout(()=>{delete page.dataset.enter},800)}
 /* ===== ui/perf (v24): ปรับอนิเมชั่นตามกำลังเครื่อง =====
    auto: เดาจาก CPU/RAM/โหมดประหยัดข้อมูล แล้ววัดเฟรมจริงตอนเปิดหน้าแรก ๆ ถ้าเฉลี่ยต่ำกว่า ~40fps จะสลับเป็น lite และจำไว้
    ผู้ใช้เลือกเองได้ในตั้งค่า (auto · full · lite) */
@@ -82,8 +92,15 @@ function attachGesture(el:any,cfg:any){const st:any={track:false,on:false,a0:0,c
 attachGesture(sheet,{axis:'y',dir:1,scroll:true,handle:'.ev-grab,h2',size:()=>sheet.offsetHeight,
  onStart:()=>{sheet.dataset.drag='true';scrim.style.transition='none'},onMove:(d:number,r:number)=>{sheet.style.transform=`translateY(${d}px)`;scrim.style.opacity=String(1-r)},
  onEnd:(c:boolean)=>{sheet.dataset.drag='false';if(!(c&&closeTop())){sheet.style.transform='';scrim.style.opacity='';scrim.style.transition=''}}});
+/* v24 ตามเดโม: ปัดจากขอบซ้ายเพื่อปิดหน้าเต็มจอ (เดโมติดให้ทุกหน้ายกเว้นหน้า AI) — แอปใช้ #page ตัวเดียวจึงติดครั้งเดียวที่นี่
+   canStart เช็คว่า #page เป็นชั้นบนสุดจริง ๆ + ไม่ใช่หน้า AI เท่านั้น (เทียบกับเดโมที่เช็คทีละ element ของหน้านั้น) */
+const EDGE_BACK_PX=24;
+attachGesture(page,{axis:'x',dir:1,size:()=>page.offsetWidth,
+ canStart:p=>p.x<=EDGE_BACK_PX&&LAYERS[LAYERS.length-1]?.el===page&&page.dataset.page!=='ai',
+ onStart:()=>{page.dataset.drag='true'},onMove:x=>{page.style.transform=`translateX(${x}px)`},
+ onEnd:c=>{page.dataset.drag='false';if(c)page.dataset.exit='x';if(!(c&&closeTop())){delete page.dataset.exit;page.style.transform=''}}});
 
 /* moved by move_defs (evarel-ts-1f) */
 function closePop(){if(pop.hidden)return;pop.dataset.open='false';ST.popBtn?.setAttribute?.('aria-expanded','false');ST.popBtn=null;setTimeout(()=>{if(pop.dataset.open==='false')pop.hidden=true},170)}
 
-Object.assign(window, { $, sheet, scrim, page, dialog, pop, LAYERS, BEHIND, scrollY0, lock, pushLayer, popLayer, CONFIRM, sheetGuard, closeTop, setSheet, openSheet, openDialog, confirmDialog, openPage, attachGesture, gScrolledAway, refreshInert, G, closePop, perfPref, perfApply, perfDetect, perfProbe, PERF_PREF_KEY, PERF_AUTO_KEY, kbSync, syncThemeColor });
+Object.assign(window, { $, sheet, scrim, page, dialog, pop, LAYERS, BEHIND, scrollY0, lock, pushLayer, popLayer, CONFIRM, sheetGuard, closeTop, setSheet, openSheet, openDialog, confirmDialog, openPage, attachGesture, gScrolledAway, refreshInert, G, closePop, perfPref, perfApply, perfDetect, perfProbe, PERF_PREF_KEY, PERF_AUTO_KEY, kbSync, syncThemeColor, EDGE_BACK_PX });

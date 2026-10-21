@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.jeffy.evarel",
+    "sha256_cert_fingerprints": ["38:DA:E8:AE:80:AC:87:25:D3:44:ED:88:28:FB:1D:9D:39:7D:B7:97:B8:33:8A:90:9B:F8:DD:09:03:1A:2A:FC"]
+  }
+}]

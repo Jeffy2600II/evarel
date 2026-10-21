@@ -78,7 +78,7 @@ function ScheduleCard({ it }) {
       h('span', { className: 'ev-badge', dangerouslySetInnerHTML: raw(w.icon('cal')) }),
       h('div', { className: 'grow' }, [
         h('b', null, w.dayLab(ds)),
-        h('span', { className: 'ev-sub' }, `${w.fmtDate(ds)}${it.time ? ` · ${w.timeText(it)}` : ''}`),
+        h('span', { className: 'ev-sub' }, `${w.fmtDate(ds)} · ${it.time ? w.timeText(it) : 'ไม่ระบุเวลา'}`),
       ]),
     ]))) : h(Empty, { key: 'e', ic: 'cal', t: 'ไม่มีครั้งถัดไป', h: 'รายการนี้สิ้นสุดแล้ว' }),
   ]);
