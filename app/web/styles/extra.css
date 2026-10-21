@@ -1,0 +1,12 @@
+/* Path: app/web/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ชิป/แถบโควตา AI) ชั่วคราวจนกว่าหน้า AI จะแทนด้วย ev-limit/ev-notice ตามเดโม | Used by: scripts/build-css.mjs */
+.ev-qchip{align-self:center;justify-self:center;margin:0 12px 6px;max-width:calc(100% - 24px);min-height:32px;padding:6px 14px;border-radius:var(--r-pill);border:0;background:var(--c-fill);color:var(--c-muted);font:600 13px/1.2 var(--font);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .2s,color .2s;cursor:pointer}
+.ev-qchip[hidden]{display:none}
+.ev-qchip{--qc-warn:#A25F08;--qc-danger:#B7393D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ev-qchip{--qc-warn:#E8890C;--qc-danger:#FB4F54}}
+:root[data-theme="dark"] .ev-qchip{--qc-warn:#E8890C;--qc-danger:#FB4F54}
+.ev-qchip[data-state="low"]{background:var(--c-warn-soft);color:var(--qc-warn)}
+.ev-qchip[data-state="out"]{background:var(--c-danger-soft);color:var(--qc-danger)}
+.ev-qchip:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
+.ev-qrow{display:grid;gap:8px;margin-top:14px}.ev-qrow:first-child{margin-top:4px}
+.ev-qbar{height:8px;border-radius:var(--r-pill);background:var(--c-fill);overflow:hidden}
+.ev-qbar>i{display:block;width:100%;height:100%;border-radius:inherit;background:var(--c-accent);transform-origin:left;transform:scaleX(var(--p,0));transition:transform .4s var(--ease)}

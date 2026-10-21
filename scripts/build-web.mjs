@@ -7,6 +7,9 @@ import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// คอมไพล์ app.css จาก design.css ด้วย Tailwind CLI ก่อนทุก build กันเสิร์ฟ CSS ค้าง
+execFileSync(process.execPath, [join(dirname(fileURLToPath(import.meta.url)), 'build-css.mjs')], { stdio: 'inherit' });
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API = {
   forge: 'https://evarel-api-forge.nontakorn2600.workers.dev',

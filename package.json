@@ -16,12 +16,14 @@
     "setup:web-shell": "npm install --prefix web-shell --no-audit --no-fund",
     "build:ts": "node scripts/compile-ts.mjs",
     "build:react": "node scripts/build-react.mjs",
-    "check:react": "node scripts/build-react.mjs --check"
+    "check:react": "node scripts/build-react.mjs --check",
+    "build:css": "node scripts/build-css.mjs"
   },
   "devDependencies": {
     "esbuild": "0.27.3",
     "typescript": "7.0.2",
-    "wrangler": "^4.86.0"
+    "wrangler": "^4.86.0",
+    "tailwindcss": "^3.4.17"
   },
   "dependencies": {
     "webpush-webcrypto": "1.0.5"

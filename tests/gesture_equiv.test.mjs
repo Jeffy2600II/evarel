@@ -1,4 +1,4 @@
-/* ทดสอบพฤติกรรมท่าทางนิ้วของ sheet ด้วย touch events จริง เทียบ demo v24-intended กับแอปจริง ด้วยสถานการณ์ชุดเดียวกัน
+/* ทดสอบพฤติกรรมท่าทางนิ้วของ sheet ด้วย touch events จริง เทียบเดโมจริง กับแอปจริง ด้วยสถานการณ์ชุดเดียวกัน
    กฎจาก v24: ปิดเมื่อลากเกิน 35% ของความสูง หรือเร็วเกิน .55 px/ms | ขยับต่ำกว่า SLOP 8px ไม่นับ | แนวนอนมากกว่าแนวตั้งไม่นับ
    กฎเลื่อนซ้อน: ถ้าเนื้อหาข้างในยังเลื่อนกลับได้ตอนเริ่มแตะ จะเลื่อนเนื้อหาและไม่ปิด | ลากที่ด้ามจับ (.ev-grab,h2) ปิดได้เสมอ
    รัน: node tests/gesture_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ app/web) ผล: exit 1 ถ้ามีสถานการณ์ใดสองฝั่งไม่ตรงกัน */
@@ -8,7 +8,7 @@ const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe });
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };
-const DEMO = 'file:///tmp/evarel-repo/design/master-demo-v24-intended.html';
+const DEMO = 'file:///tmp/evarel-repo/design/master-demo-v24.html';
 const BODY = '<div id="gbody" style="height:1400px">' + Array.from({ length: 40 }, (_, i) => `<p>บรรทัด ${i}</p>`).join('') + '</div>';
 
 /* ส่ง touch จริงผ่าน CDP: เริ่มที่ (x,y0) ลากไปทีละขั้นถึง y1 ใช้เวลา ms แล้วปล่อย */
