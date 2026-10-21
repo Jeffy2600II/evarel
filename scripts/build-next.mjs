@@ -29,7 +29,7 @@ execFileSync(process.execPath, [join(root, 'scripts/compile-ts.mjs')], { cwd: ro
 try {
   // public: เฉพาะสินทรัพย์ที่โหลดผ่าน URL จริง — ไม่มี js/m (อยู่ในบันเดิล) ไม่มี index.html (Next สร้าง) ไม่มี sw.js (ขั้น N3)
   rmSync(PUB, { recursive: true, force: true });
-  for (const a of ['styles', 'icons', 'vendor', 'js/react']) cpSync(join(SRC, a), join(PUB, a), { recursive: true });
+  for (const a of ['styles', 'icons', 'fonts', 'vendor', 'js/react']) cpSync(join(SRC, a), join(PUB, a), { recursive: true });
   cpSync(join(SRC, 'manifest.webmanifest'), join(PUB, 'manifest.webmanifest'));
 
   rmSync(OUT, { recursive: true, force: true });
