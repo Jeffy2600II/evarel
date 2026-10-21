@@ -11,7 +11,14 @@ else if (el.closest('.ev-prog'))
 else
     el.style.width = v + '%'; }
 function growBars(root, anim) { root.querySelectorAll('[data-to]').forEach(el => { const to = Math.max(0, Math.min(100, +el.dataset.to || 0)), k = el.dataset.k || ''; setBar(el, anim ? 0 : (UI.lastW[k] ?? 0)); UI.lastW[k] = to; requestAnimationFrame(() => requestAnimationFrame(() => setBar(el, to))); }); }
+let settleT = 0;
 function render() {
+    const H = document.documentElement;
+    if (UI.animate) {
+        H.removeAttribute('data-settled');
+        clearTimeout(settleT);
+        settleT = 0;
+    }
     document.body.dataset.auth = UI.auth.status === 'in' ? 'in' : 'out';
     if (UI.auth.status !== 'in') {
         window.EvarelMount?.unmountApp();
@@ -53,6 +60,8 @@ function render() {
     updateLive();
     refreshDetail();
     /* แจ้ง store กลางที่ React subscribe ได้ (s4f-store-react): งานสุดท้ายของรอบ ห่อ try เพื่อให้ผู้ฟังพังแล้วไม่ล้ม render | ไม่มีผู้ฟัง/ไม่มี store = ไม่ทำอะไร */
+    if (!H.dataset.settled && !settleT)
+        settleT = setTimeout(() => { H.dataset.settled = '1'; settleT = 0; }, 1300); /* v24: เล่นอนิเมชั่นเข้าครั้งเดียว — 1.3 วิหลัง render ปิดอนิเมชั่นเข้าทั้งแอป */
     try {
         window.EvarelStore?.notify();
     }
@@ -60,6 +69,14 @@ function render() {
         console.warn('store notify', e);
     }
 }
+/* v22/v23: อนิเมชั่นเข้าเล่นครั้งเดียว — เล่นจบแล้วถอดคลาส/แอตทริบิวต์ กันเล่นซ้ำตอนองค์ประกอบถูกแสดงใหม่ */
+document.addEventListener('animationend', e => { const b = e.target; if (b.matches && b.matches('.ev-check[data-pop]')) {
+    b.removeAttribute('data-pop');
+    if (UI.pop != null)
+        UI.pop = null;
+} }, true);
+let enterT = 0;
+document.addEventListener('animationend', () => { clearTimeout(enterT); enterT = setTimeout(() => { $('app')?.classList.remove('ev-enter'); document.querySelectorAll('.ev-page[data-enter]').forEach(p => p.removeAttribute('data-enter')); }, 300); }, true);
 /* ย้ายข้อมูลเดิมครั้งเดียว (v11/v12 เก็บที่คีย์ไม่มี :userId) -> คีย์ของผู้ใช้ที่ล็อกอิน | คัดลอกเท่านั้น ไม่ลบต้นฉบับ (เป็นสำรอง)
    ทำเมื่อ: ผู้ใช้ยังไม่มีข้อมูลของตัวเอง และมีข้อมูลเดิมที่อ่านได้ ; ทำครั้งเดียวต่อเครื่อง (ธง evarel-legacy-claimed) */
 function claimLegacyData() {

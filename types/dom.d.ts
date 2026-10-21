@@ -7,6 +7,7 @@ interface EventTarget {
   classList: DOMTokenList; querySelector(sel: string): HTMLElement | null;
   getAttribute(n: string): string | null; setAttribute(n: string, v: string): void;
   insertAdjacentHTML(pos: InsertPosition, html: string): void;
+  matches(sel: string): boolean; removeAttribute(n: string): void;
 }
 interface Element {
   dataset: DOMStringMap; style: CSSStyleDeclaration; value: string; disabled: boolean; focus(o?: FocusOptions): void; select(): void;
@@ -21,3 +22,7 @@ interface DOMStringMap { [name: string]: string | number | undefined; }
 interface FocusEvent { readonly relatedTarget: (EventTarget & Node) | null; }
 interface MouseEvent { readonly relatedTarget: (EventTarget & Node) | null; }
 interface PointerEvent { readonly relatedTarget: (EventTarget & Node) | null; }
+/* API ของเบราว์เซอร์ที่ lib มาตรฐานยังไม่ครอบ (ใช้ใน ui/perf: เดากำลังเครื่อง) ค่าอาจไม่มีในบางเบราว์เซอร์ โค้ดจริงกันไว้ด้วย ?. และค่าเริ่มต้น */
+interface Navigator { readonly deviceMemory?: number; readonly connection?: { saveData?: boolean }; }
+/* querySelector('meta[name=theme-color]') คืน HTMLElement ตามชนิดทั่วไป แต่ตัวจริงคือ HTMLMetaElement ที่มี content */
+interface HTMLElement { content: string; }

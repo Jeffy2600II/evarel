@@ -24,7 +24,7 @@ try {
       const a = document.createElement('div'); a.innerHTML = html; document.body.appendChild(a);
       const bEl = document.createElement('div'); document.body.appendChild(bEl);
       const root = w.EvarelReact.createRoot(bEl);
-      w.EvarelReact.flushSync(() => root.render(w.EvarelReact.h(w.EvarelComponents.aiShell, { placeholder: w.AI_PLACEHOLDER, avatarText: w.initial() })));
+      w.EvarelReact.flushSync(() => root.render(w.EvarelReact.h(w.EvarelComponents.aiShell, { placeholder: w.AI_PLACEHOLDER, avatarText: w.initial(), avatarBg: w.profileOf().bg })));
       const A = a.innerHTML, B = bEl.innerHTML;
       a.remove(); bEl.remove(); root.unmount();
       return { same: A === B, i: A === B ? -1 : A.split('').findIndex((c, i) => c !== B[i]), lenA: A.length, lenB: B.length };

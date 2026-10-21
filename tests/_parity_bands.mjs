@@ -8,13 +8,15 @@ const b=await chromium.launch({executablePath:exe});
 /* ฝั่งแอป = ผู้ใช้จริงผ่าน API forge (สร้างครั้งเดียว ลบท้ายสุด) | ฝั่งเดโม = mock ของไฟล์ต้นฉบับเอง ไม่แตะ | ชื่อและอีเมลที่แสดงผลตั้งให้ตรงเดโม (ไม่กระทบการยืนยันตัวตน เพราะเซิร์ฟเวอร์ตรวจ JWT) */
 const user=await makeTestUser('parity'); user.session.user={...user.session.user,name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}; await seedItems(user.session,SEED_ITEMS);
 /* ต้นฉบับ = master-demo-v12.html ปรับเฉพาะ 3 จุดที่ตั้งใจให้แอปต่าง (พิสูจน์แล้ว 15 ต.ค. 2026): (1) ไม่มีปุ่มข้อมูลตัวอย่าง (คอมมิต 4d989eb), (2) รีเซ็ตข้อมูลทั้งหมด -> ลบรายการทั้งหมด, (3) ข้อความแจ้งเตือนตรงความจริง | ที่เหลือทุกพิกเซลต้อง 0 */
-const DEMO='file:///tmp/evarel-repo/design/master-demo-v12-intended.html', APP=process.argv[2]||'http://localhost:8779/index.html';
+const DEMO='file:///tmp/evarel-repo/design/master-demo-v24-intended.html', APP=process.argv[2]||'http://localhost:8779/index.html';
 async function run(url,cs,file,step,logged){
   const isApp=url===APP; let ctx=null, p;
   if(isApp){ ctx=logged?await openAsUser(b,user,{colorScheme:cs}):await openAsUser(b,{session:null},{colorScheme:cs}); p=await ctx.newPage(); }
   else{ p=await b.newPage({viewport:{width:412,height:915},colorScheme:cs,timezoneId:'Asia/Bangkok'}); }
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
-  await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());
+  await p.route(/fonts\.(googleapis|gstatic)/,async r=>{ const u=r.request().url();
+    if(/fonts\.googleapis\.com\/css/.test(u)){ const css=fs.readFileSync('/tmp/evarel-repo/app/web/styles/app.css','utf8'); const m=css.match(/@font-face\{font-family:'Anuphan'[^\n]*\n(?:@font-face[^\n]*\n)*/); return r.fulfill({contentType:'text/css',body:(m?m[0]:'').replace(/url\(\.\.\/fonts\//g,'url(file:///tmp/evarel-repo/app/web/fonts/')}); }
+    return r.abort(); });
   /* เดโมโหลด FullCalendar จาก CDN: ป้อนไฟล์เดียวกับที่แอปเก็บเองไว้ เพื่อเทียบเงื่อนไขเท่ากัน */
   await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/,r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('/tmp/evarel-repo/app-v13/vendor/fullcalendar.min.js')}));
   await p.addInitScript(()=>{Math.random=()=>0.5; const D=Date, fixed=new D('2026-10-09T10:00:00+07:00').getTime(); class F extends D{constructor(...a){a.length?super(...a):super(fixed)} static now(){return fixed}} globalThis.Date=F;
@@ -23,7 +25,15 @@ async function run(url,cs,file,step,logged){
   else{ await p.goto(url); await p.waitForTimeout(800); await p.evaluate(()=>localStorage.clear()); }
   if(logged&&!isApp){ await p.evaluate((items)=>{const u={id:'u_test',name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}; localStorage.setItem('evarel-demo-users',JSON.stringify([u])); localStorage.setItem('evarel-demo-session','u_test'); localStorage.setItem('evarel-demo-v3:u_test',JSON.stringify({items}))},SEED_ITEMS); }
   if(!isApp){ await p.reload(); await p.waitForTimeout(2600); }
-  await step(p); await p.waitForTimeout(500); await p.screenshot({path:file}); await p.close(); if(ctx) await ctx.close(); return errs;
+  /* เงื่อนไขทดสอบ: สีอวตารสร้างจาก hash ของ id ผู้ใช้ (v24: id||email||name) เดโมใช้ id 'u_test' แต่ผู้ใช้ทดสอบของแอปมี UUID จริงจาก Supabase
+     จึงได้ hue คนละเบอร์ทั้งที่อัลกอริทึมตรงกัน ตั้ง id ฝั่งแอปให้เท่าเดโมเฉพาะในหน้านี้ (ไม่แตะ session/ข้อมูล) แล้ววาดใหม่ก่อนถ่ายภาพ */
+  if(isApp&&logged){ await p.evaluate(()=>{ if(window.ST?.USER){ window.ST.USER.id='u_test'; window.render?.(); } }); await p.waitForTimeout(400); }
+
+  await step(p); await p.waitForTimeout(500);
+  /* เงื่อนไขทดสอบ: การ์ดโควตาในตั้งค่า เดโมใช้ข้อมูลตัวอย่าง (UsageView ชนิดเดียวกับ GET /api/ai/quota: calls 6/40 tokens 7200/60000, รีเซ็ตเที่ยงคืนกรุงเทพถัดไปตามนาฬิกาที่ล็อก)
+     แอปได้ค่าจริงของผู้ใช้ทดสอบ (0/40) จึงตั้ง ST.QUOTA ให้เท่าตัวอย่างเดโมเฉพาะฉากตั้งค่า แล้วหยุดไม่ให้ดึงทับ */
+  if(isApp&&logged){ await p.evaluate(()=>{ const n=new Date(Date.now()+7*3600000); n.setUTCHours(0,0,0,0); const resetAt=new Date(+n+86400000-7*3600000).toISOString();
+      window.ST.QUOTA={resetAt,blocked:false,calls:{used:6,limit:40,remaining:34},tokens:{used:7200,limit:60000,remaining:52800}}; const e=document.getElementById('usageWrap'); if(e){ e.innerHTML=window.usageCardHTML(); window.growBars?.(e); } }); await p.waitForTimeout(300); } await p.screenshot({path:file}); await p.close(); if(ctx) await ctx.close(); return errs;
 }
 const click=s=>async p=>{await p.click(s)};
 const steps={
@@ -41,7 +51,7 @@ const steps={
  'auth-forgot':[false,async p=>{await p.click('[data-act="au-go"][data-id="login"]');await p.waitForTimeout(300);await p.click('[data-act="au-go"][data-id="forgot"]')}],
 };
 let bad=0,total=0;
-for(const cs of ['light','dark']) for(const [n,[lg,st]] of Object.entries(steps)){
+for(const cs of (process.env.PB_CS||'light,dark').split(',')) for(const [n,[lg,st]] of Object.entries(steps).filter(([k])=>!process.env.PB_ONLY||process.env.PB_ONLY.split(',').includes(k))){
   const e1=await run(DEMO,cs,'o.png',st,lg), e2=await run(APP,cs,'n.png',st,lg);
   const bands=execSync(`python3 -W ignore -c "from PIL import Image,ImageChops;a=Image.open('o.png').convert('RGB');b=Image.open('n.png').convert('RGB');d=ImageChops.difference(a,b).convert('L');w,h=d.size;px=d.load();rows=[y for y in range(h) if any(px[x,y]>8 for x in range(w))];g=[];
 for y in rows:

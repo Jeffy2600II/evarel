@@ -1,26 +1,40 @@
 /* ===== MODULE: views/settings ===== */
 function notifInfo(){if(!('Notification' in window))return ['ไม่รองรับ','เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'];const p=Notification.permission;if(p==='denied')return ['ถูกปิดไว้','ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์'];if(p==='granted')return pushSavedState()?['อนุญาตแล้ว','เครื่องนี้พร้อมรับการแจ้งเตือน']:['อนุญาตแล้ว แต่ยังไม่ได้ลงทะเบียน','กดปุ่มเพื่อลงทะเบียนเครื่องนี้กับระบบ'];return ['ยังไม่ได้ขอ','กดปุ่มเพื่อให้เครื่องนี้รับการแจ้งเตือนได้']}
 const themeNow=()=>document.documentElement.dataset.theme||'auto';
+/* การ์ดการใช้งาน AI (v24): อ่าน ST.QUOTA จริง (ได้จาก quotaFetch) สถานะเดียวกับ quotaState: ok/low/out, ไม่ทราบ = null */
+function usageCardHTML(){const q=ST.QUOTA,st=quotaState(q);
+ if(!st)return `<b>การใช้งาน AI วันนี้</b><p class="ev-sub" style="margin-top:6px">${q?'ดูข้อมูลการใช้งานไม่ได้ในขณะนี้ แต่ยังใช้ AI ได้ตามปกติ':'กำลังโหลด…'}</p>`;
+ const c=q.calls,t=q.tokens,cp=Math.min(100,Math.round(100*c.used/c.limit)),tp=Math.min(100,Math.round(100*t.used/t.limit)),lab={ok:'ปกติ',low:'ใกล้ถึงขีดจำกัด',out:'ถึงขีดจำกัดแล้ว'}[st];
+ return `<div class="ev-stat"><b>การใช้งาน AI วันนี้</b><span class="ev-chip" data-state="${st==='out'?'late':st==='low'?'soon':'done'}">${lab}</span></div>
+  <div class="ev-use"><div class="ev-stat"><span>จำนวนครั้งที่ถาม</span><b>${c.used} / ${c.limit}</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-calls" data-to="${cp}" data-lv="${st}"></i></div></div>
+  <div class="ev-use"><div class="ev-stat"><span>ความยาวบทสนทนา</span><b>${tp}%</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-tok" data-to="${tp}" data-lv="${st}"></i></div></div>
+  <p class="ev-sub" style="margin-top:14px">รีเซ็ตทุกเที่ยงคืน (00:00 น.) · ${resetIn(q.resetAt)}</p>`}
+const providerChip=u=>u?.provider==='google'?`<span class="ev-chip ev-chip-g">${GLOGO}Google</span>`:'<span class="ev-chip">อีเมล</span>';
 function settingsHTMLClassic(){const [st,note]=notifInfo(),total=countNotifiable(S.items);
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
- <section class="ev-card ev-row" style="gap:14px"><span class="ev-avatar" style="width:52px;height:52px;font-size:20px;display:grid">${initial()}</span><div class="grow"><b>${esc(ST.USER?.name||'ผู้ใช้')}</b><p class="ev-sub" style="overflow:hidden;text-overflow:ellipsis">${esc(ST.USER?.email||'')}</p></div><span class="ev-chip">${ST.USER?.provider==='google'?'Google':'อีเมล'}</span></section>
+ <section class="ev-card ev-row" style="gap:14px">${avatarHTML({size:56})}<div class="grow"><b>${esc(ST.USER?.name||'ผู้ใช้')}</b><p class="ev-sub" style="overflow:hidden;text-overflow:ellipsis">${esc(ST.USER?.email||'')}</p></div>${providerChip(ST.USER)}</section>
+ <section class="ev-card" id="usageWrap">${usageCardHTML()}</section>
  <section class="ev-card"><b>ธีม</b><div style="margin-top:12px">${seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow())}</div></section>
+  <section class="ev-card"><b>อนิเมชั่น</b><p class="ev-sub">อัตโนมัติจะลดเอฟเฟกต์เองเมื่อเครื่องไม่ลื่น</p><div style="margin-top:12px">${seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref())}</div></section>
  <section class="ev-card"><div class="ev-stat"><div><b>การแจ้งเตือน</b><p class="ev-sub">${note}</p></div><span class="ev-chip">${st}</span></div>${'Notification' in window&&(Notification.permission==='default'||(Notification.permission==='granted'&&!pushSavedState()))?`<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">${Notification.permission==='granted'?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}</button>`:''}
-  <p class="ev-sub" style="margin-top:12px">ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ แจ้งเฉพาะเวลาที่คุณตั้งเท่านั้น เวลาที่ตั้งไว้บันทึกกับบัญชีของคุณและส่งถึงเครื่องนี้ตามเวลา</p></section>
+  <p class="ev-sub" style="margin-top:12px">ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ (รายการใหม่เปิด "ตรงเวลา" ให้อัตโนมัติ และต้องมีเวลา) · เวลาที่ตั้งไว้บันทึกกับบัญชีของคุณและส่งถึงเครื่องนี้ตามเวลา</p></section>
  
  <section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div></section></div>`}
 /* ชั้น 4: หน้าตั้งค่าผลิตโดย React (runtime ร่วม + ไฟล์หน้า โหลดแบบ lazy หลัง load) ถ้ายังโหลดไม่ครบหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
 function settingsProps(){const [st,note]=notifInfo(),granted='Notification' in window&&Notification.permission==='granted',canBtn='Notification' in window&&(Notification.permission==='default'||(granted&&!pushSavedState()));
- return {user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}}
+ const pf=profileOf();
+ return {usageHTML:usageCardHTML(),googleChipInner:GLOGO+'Google',avatarBg:pf.bg,avatarName:pf.name||'โปรไฟล์',user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),perfSegHTML:seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}}
 function settingsHTML(){
  const R=(window as any).EvarelPages?.settings;
  if(typeof R!=='function')return settingsHTMLClassic();
  try{return R(settingsProps())}
  catch(e){console.warn('settings react',e);return settingsHTMLClassic()}}
 /* S4 ไบต์ 5: หน้าตั้งค่า mount React จริงที่ #page เมื่อพร้อม (แพทเทิร์นเดียวกับ detail ใน 20-services__calendar) */
+function usagePaint(){const e=$('usageWrap');if(!e)return;e.innerHTML=usageCardHTML();growBars(e)}
+async function usageRefresh(){try{const q=await quotaFetch();ST.QUOTA=q||{unknown:true}}catch(err){ST.QUOTA={unknown:true}}usagePaint()}
 function settingsOpen(){const MT=(window as any).EvarelMount;
- if(MT?.ready('settings')){MT.unmountOne('settings');if(!LAYERS.some(l=>l.el===page))openPage('');page.innerHTML='';MT.mountAt(page,'settings',settingsProps());return}
- const html=settingsHTML();if(LAYERS.some(l=>l.el===page))page.innerHTML=html;else openPage(html)}
+ if(MT?.ready('settings')){MT.unmountOne('settings');if(!LAYERS.some(l=>l.el===page))openPage('');page.innerHTML='';MT.mountAt(page,'settings',settingsProps());usageRefresh();return}
+ const html=settingsHTML();if(LAYERS.some(l=>l.el===page))page.innerHTML=html;else openPage(html);usageRefresh()}
 function settingsRepaint(){const MT=(window as any).EvarelMount;
  if(MT?.ready('settings')&&LAYERS.some(l=>l.el===page)){MT.mountAt(page,'settings',settingsProps());return}
  page.innerHTML=settingsHTML()}
@@ -35,8 +49,8 @@ function loadReactSettings(){const W=window as any;if(REACT_PAGES.every(n=>W.Eva
  /* เรียก render ผ่าน window ตอนรันเท่านั้น (ไม่อ้างชื่อตรง) ไม่ให้เกิดเส้นพึ่งพาย้อนทิศไป 23-render ซึ่งโหลดหลังไฟล์นี้ */
  return loadReactFile('runtime').then(()=>REACT_PAGES.reduce((p,n)=>p.then(()=>loadReactFile(n)),Promise.resolve(0))).then(()=>{try{if(W.UI?.auth?.status!=='in'&&typeof W.renderAuthRoot==='function'){(document.getElementById('auth')||{}).dataset.screen='';W.renderAuthRoot()}else if((W.UI?.tab==='stats'||W.UI?.tab==='all')&&typeof W.render==='function')W.render()}catch(e){}}).catch(e=>console.warn('react ไม่พร้อม ใช้หน้าเดิม',e&&e.message))}
 window.addEventListener('load',()=>setTimeout(loadReactSettings,0));
-function applyTheme(t){t==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=t;try{localStorage.setItem(THEME_KEY,t)}catch(e){console.warn('theme',e)}}
+function applyTheme(t){t==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=t;try{localStorage.setItem(THEME_KEY,t)}catch(e){console.warn('theme',e)}syncThemeColor()}
 try{const t=localStorage.getItem(THEME_KEY);if(t&&t!=='auto')applyTheme(t)}catch(e){console.warn('theme load',e)}
 
 
-Object.assign(window, { notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, loadReactFile, applyTheme, settingsProps, settingsOpen, settingsRepaint });
+Object.assign(window, { usageCardHTML, usagePaint, usageRefresh, providerChip, notifInfo, themeNow, settingsHTML, settingsHTMLClassic, loadReactSettings, loadReactFile, applyTheme, settingsProps, settingsOpen, settingsRepaint });

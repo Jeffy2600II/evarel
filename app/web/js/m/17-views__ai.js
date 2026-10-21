@@ -111,7 +111,7 @@ function aiShellHTML(placeholder, avatarText) {
  <button type="button" class="ev-qchip" id="aiQuota" data-act="ai-quota" data-state="ok" role="status" aria-live="polite" aria-atomic="true" hidden></button>
  <form class="ev-composer" id="aiForm"><textarea id="aiText" rows="1" placeholder="${AI_PLACEHOLDER}" aria-label="ข้อความถึง AI"></textarea><div class="ev-composer-bar"><button type="button" class="ev-plus" data-act="ai-plus" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวช่วยพิมพ์">${icon('plus')}</button><button class="ev-send" data-empty="true" aria-label="ส่ง">${icon('send')}</button></div></form>
  <div class="ev-drawer-scrim" id="dScrim" data-open="false" data-act="ai-hist"></div>
- <aside class="ev-drawer" id="drawer" data-open="false" aria-label="ประวัติแชท"><div class="ev-drawer-head"><h2>Evarel AI</h2><label class="ev-search">${icon('search')}<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท"></label></div><div class="ev-drawer-list" id="drawerList"></div><div class="ev-drawer-foot"><button class="ev-avatar" data-act="settings" aria-label="ตั้งค่า">${initial()}</button><button class="ev-btn-ink" data-act="ai-new">${icon('plus')}แชทใหม่</button></div></aside>`;
+ <aside class="ev-drawer" id="drawer" data-open="false" aria-label="ประวัติแชท"><div class="ev-drawer-head"><h2>Evarel AI</h2><label class="ev-search">${icon('search')}<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท"></label></div><div class="ev-drawer-list" id="drawerList"></div><div class="ev-drawer-foot">${avatarHTML({ tag: 'button' })}<button class="ev-btn-ink" data-act="ai-new">${icon('plus')}แชทใหม่</button></div></aside>`;
 }
 function openAI() {
     const MT = window.EvarelMount;
@@ -120,7 +120,7 @@ function openAI() {
         MT.unmountOne('aiShell');
         openPage('', onClose);
         page.innerHTML = '';
-        MT.mountAt(page, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial() });
+        MT.mountAt(page, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg });
     }
     else
         openPage(aiShellHTML(AI_PLACEHOLDER, initial()), onClose);

@@ -3,12 +3,16 @@
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v70-aishell-focus-react';
+const VERSION = 'evarel-v81-u11-stats';
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
   './styles/app.css',
+  './fonts/Anuphan-thai.woff2',
+  './fonts/Anuphan-latin.woff2',
+  './fonts/NotoSansThai-thai.woff2',
+  './fonts/NotoSansThai-latin.woff2',
   './js/m/00-head.js',
   './js/m/01-core__constants.js',
   './js/m/02-core__dates.js',

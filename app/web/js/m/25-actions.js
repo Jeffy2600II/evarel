@@ -160,6 +160,14 @@ const ACTIONS = {
     else
         confirmDialog({ title: 'ทิ้งเวลาที่จับไว้?', msg: `เวลา ${fmtClock(tmMs())} จะไม่ถูกบันทึก`, keep: 'จับเวลาต่อ', ok: 'ทิ้งเวลา', fn: drop }); return NR; },
     theme: id => { applyTheme(id); settingsRepaint(); return NR; },
+    perf: id => { try {
+        localStorage.setItem(PERF_PREF_KEY, id);
+        if (id === 'auto')
+            localStorage.removeItem(PERF_AUTO_KEY);
+    }
+    catch (e) {
+        console.warn('perf', e);
+    } perfApply(); settingsRepaint(); return NR; },
     notify: () => { pushSubscribe(true).then(r => { settingsRepaint(); toast(r.ok ? 'เครื่องนี้พร้อมรับการแจ้งเตือนแล้ว' : pushWhyText(r.why)); }); return NR; },
     dopen: id => {
         ST.D.open = ST.D.open === id ? '' : id;

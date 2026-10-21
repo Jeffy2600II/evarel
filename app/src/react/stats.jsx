@@ -16,7 +16,7 @@ function StatsPage(p) {
             h('circle', { className: 'ev-arc', 'data-kind': 'arc', 'data-k': `ring-${period}`, 'data-to': String(rate), cx: '50', cy: '50', r: '42', strokeDasharray: String(arcC), strokeDashoffset: String(arcC) })),
           h('div', { className: 'ev-ringnum' }, h('span', null, h('span', { 'data-count': String(rate) }, '0'), h('small', null, '%')))),
         h('div', null,
-          h('div', { style: { fontSize: '18px', fontWeight: 600, lineHeight: 1.35 } }, `ทำแล้ว ${K} จาก ${T} ครั้ง`),
+          h('div', { style: { fontSize: '16px', fontWeight: 600, lineHeight: 1.35 } }, `ทำแล้ว ${K} จาก ${T} ครั้ง`),
           h('div', { className: 'ev-sum-lab', style: { marginTop: '4px' } }, `ที่ตั้งไว้ใน${isM ? ' 4 สัปดาห์' : ' 7 วัน'}ที่ผ่านมา`))),
       h('div', { key: 'r2', className: 'ev-row2' }, [
         h('section', { key: 'a', className: 'ev-card' }, h('div', { className: 'ev-sub' }, 'ต่อเนื่องสูงสุด'), h('div', { className: 'ev-big' }, h('span', { 'data-count': String(best) }, '0'), h('small', null, ' วัน'))),

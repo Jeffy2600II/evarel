@@ -91,8 +91,8 @@ function MetaCard({ it }) {
     h('div', { key: 'm', className: 'ev-meta' }, [
       h('span', { key: 't', className: 'ev-chip' }, w.TYPES[it.type]),
       h('span', { key: 'r', className: 'ev-chip' }, w.repeatText(it)),
-      it.time ? h('span', { key: 'tm', className: 'ev-chip' }, w.timeText(it)) : null,
-      ...(it.rem || []).map((r, i) => h('span', { key: 'rm' + i, className: 'ev-chip' }, `เตือน ${w.remText(r)}`)),
+      h('span', { key: 'tm', className: 'ev-chip' }, it.time ? w.timeText(it) : 'ไม่ระบุเวลา'),
+      ...((it.rem || []).length ? it.rem.map((r, i) => h('span', { key: 'rm' + i, className: 'ev-chip' }, `เตือน ${w.remText(r)}`)) : [h('span', { key: 'rm0', className: 'ev-chip' }, 'ไม่มีการเตือน')]),
     ]),
     h('button', { key: 'e', className: 'ev-btn-ghost ev-btn-block', 'data-act': 'm-edit', 'data-id': String(it.id), style: { marginTop: '14px' } }, 'แก้ไขการตั้งค่า'),
   ]);

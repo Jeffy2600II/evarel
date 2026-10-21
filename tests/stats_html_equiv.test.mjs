@@ -9,7 +9,8 @@ globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator =
 const rt = fs.readFileSync(root + '/app/web/js/react/runtime.js', 'utf8'); (0, eval)(rt);
 if (!window.EvarelReact) { console.log('FAIL: runtime ไม่ตั้ง EvarelReact'); process.exit(1); }
 const load = (src) => { window.EvarelPages = {}; (0, eval)(src); return window.EvarelPages.stats; };
-const OLDJS = execFileSync('git', ['show', BASE + ':app/web/js/react/stats.js'], { cwd: root, encoding: 'utf8' });
+/* v24 (Master สั่งทำตามเดโมเต็มที่): ข้อความสรุป "ทำแล้ว X จาก Y ครั้ง" ลดจาก 18px เป็น 16px ฐานเก่าจึงปรับ 18→16 จุดเดียวในหน่วยความจำ ที่เหลือยังต้องตรงทุกไบต์ */
+const OLDJS = execFileSync('git', ['show', BASE + ':app/web/js/react/stats.js'], { cwd: root, encoding: 'utf8' }).replace('fontSize:"18px",fontWeight:600,lineHeight:1.35', 'fontSize:"16px",fontWeight:600,lineHeight:1.35');
 const NEWJS = fs.readFileSync(root + '/app/web/js/react/stats.js', 'utf8');
 const oldR = load(OLDJS), newR = load(NEWJS);
 // ข้อมูล: ใช้ชุดเดียวกับ core_equiv (รวมกิจวัตรขอบเกณฑ์) แล้วให้ฝั่งเดิมคำนวณ props ด้วยชั้นฐานที่ตรวจเทียบต้นฉบับแล้ว

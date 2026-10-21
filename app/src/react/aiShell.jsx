@@ -37,7 +37,7 @@ function AiShellContent(p) {
       ]),
       h('div', { key: 'dl', className: 'ev-drawer-list', id: 'drawerList' }),
       h('div', { key: 'df', className: 'ev-drawer-foot' }, [
-        h('button', { key: 'av', className: 'ev-avatar', 'data-act': 'settings', 'aria-label': 'ตั้งค่า' }, p.avatarText),
+        h('button', { key: 'av', className: 'ev-avatar', type: 'button', 'data-act': 'settings', 'aria-label': 'ตั้งค่า', style: { '--av': p.avatarBg } }, p.avatarText),
         h('button', { key: 'nw', className: 'ev-btn-ink', 'data-act': 'ai-new', dangerouslySetInnerHTML: { __html: w.icon('plus') + 'แชทใหม่' } }),
       ]),
     ]),
