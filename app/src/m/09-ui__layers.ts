@@ -8,7 +8,7 @@ const refreshInert=()=>LAYERS.forEach((l,i)=>l.el.toggleAttribute('inert',i<LAYE
 function pushLayer(layer){layer.opener=document.activeElement;LAYERS.push(layer);refreshInert();lock(true);
  try{history.pushState({ev:LAYERS.length},'');layer.pushed=true}catch(e){console.warn('history',e)}
  layer.el.hidden=false;void layer.el.offsetWidth;layer.el.dataset.open='true';perfProbe();if(layer.kind==='sheet'){scrim.dataset.open='true'}
- setTimeout(()=>(layer.el.querySelector('[autofocus],input,button:not(.ev-icon-btn)')||layer.el).focus?.({preventScroll:true}),60)}
+ /* เดโม v24 ไม่ autofocus ตอนเปิด layer (ปล่อย focus ตามคลิกจริง) — เอา 60ms focus ออกให้เหมือนเดโม */}
 function popLayer(){const l=LAYERS.pop();if(!l)return;l.el.dataset.open='false';l.el.style.transform='';l.el.dataset.drag='false';
  if(!LAYERS.some(x=>x.kind==='sheet')){scrim.dataset.open='false';scrim.style.opacity='';scrim.style.transition=''}refreshInert();
  setTimeout(()=>{if(l.el.dataset.open==='false')l.el.hidden=true},LAYER_ANIM_MS);if(!LAYERS.length)lock(false);

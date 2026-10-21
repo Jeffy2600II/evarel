@@ -17,7 +17,7 @@ const ACTIONS={
  inc:(id,el)=>bump(id,1,date(el)),dec:(id,el)=>bump(id,-1,date(el)),
  date:id=>{UI.date=id},type:id=>{UI.type=id},cday:id=>{UI.cday=+id},
  add:()=>{haptic();openForm(null);return NR},
- dtype:id=>{ST.D={...newDraft(id),title:ST.D.title,fromType:true};renderForm();setTimeout(()=>sheet.querySelector('.ev-title-input')?.focus({preventScroll:true}),80);return NR},
+ dtype:id=>{ST.D={...newDraft(id),title:ST.D.title,fromType:true};renderForm();return NR},
  dback:()=>{ST.D.step='type';renderForm();return NR},
  open:(id,el)=>{const it=find(id),ds=date(el);if(it){UI.fdate=ds;openPop(el,itemMenu(it,ds),{align:'left'})}return NR},
  'm-edit':id=>{openForm(null,find(id));return NR},
@@ -97,16 +97,18 @@ const ACTIONS={
  dtrack:id=>{ST.D.track=id;ST.D.target=id==='timer'?30:id==='count'?8:1;ST.D.unitName=id==='timer'?'นาที':id==='count'?'แก้ว':'';renderForm();return NR},
  dtarget:id=>{ST.D.target=Math.max(1,(+ST.D.target||1)+(+id)*(ST.D.track==='timer'?5:1));renderForm();return NR},
  dday:id=>{const n=+id,i=ST.D.days.indexOf(n);i<0?ST.D.days.push(n):ST.D.days.splice(i,1);renderForm();return NR},
- drem:id=>{const m=+id,had=ST.D.rem.some(r=>r.k==='before'&&r.m===m);if(!had&&ST.D.rem.length>=MAX_REM)return NR;ST.D.rem=toggleAhead(ST.D.rem,m);renderForm();return NR},
- dontime:()=>{ST.D.rem=toggleOnTime(ST.D.rem,!notifyState(ST.D.rem,true).onTime);renderForm();return NR},
+ drem:id=>{const m=+id,i=ST.D.rem.findIndex(r=>r.k==='before'&&r.m===m);i<0?ST.D.rem.length<MAX_REM&&ST.D.rem.push({k:'before',m}):ST.D.rem.splice(i,1);renderForm();return NR},
  remadd:()=>{const v=$('remTime').value;if(!HHMM.test(v)||ST.D.rem.some(r=>r.k==='at'&&r.t===v)||ST.D.rem.length>=MAX_REM)return NR;ST.D.rem.push({k:'at',t:v});renderForm();return NR},
  remdel:id=>{ST.D.rem=ST.D.rem.filter(r=>!(r.k==='at'&&r.t===id));renderForm();return NR},
  live:()=>{ST.TM&&openFocus(ST.TM.id);return NR}};
-['dunit','devery','dend','dtrack','dtarget','dday','drem','dontime','remadd','remdel'].forEach(k=>{const f=ACTIONS[k];ACTIONS[k]=(...a)=>{ST.D.dirty=true;return f(...a)}});
+['dunit','devery','dend','dtrack','dtarget','dday','drem','remadd','remdel'].forEach(k=>{const f=ACTIONS[k];ACTIONS[k]=(...a)=>{ST.D.dirty=true;return f(...a)}});
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const inPop=!!el.closest('#pop');if(inPop)closePop();const r=ACTIONS[el.dataset.act]?.(el.dataset.id,el);if(r!==NR)ST._render()});
 $('live').addEventListener('click',()=>ACTIONS.live());
-document.addEventListener('input',e=>{if(e.target.id==='dSearch'){aiRenderDrawer(e.target.value);return}if(e.target.id==='aiText'){aiAutosize();return}
+document.addEventListener('input',e=>{if(e.target.id==='dSearch'){aiRenderDrawer(e.target.value);return}if(e.target.id==='aiText'){aiAutosize();return}if(e.target.id==='remTime'){const l=e.target.closest('.ev-tbox');if(l){l.dataset.empty=String(!e.target.value);l.firstElementChild.textContent=e.target.value?e.target.value+' น.':'＋ เลือกเวลา'}return}
  if(e.target.closest('#addForm')&&e.target.name&&e.target.name in ST.D){ST.D[e.target.name]=e.target.value;ST.D.dirty=true}});
+/* เดโม v20/v24: ปุ่มล้างเวลา (tclear) และ เลือกเวลาใน tbox แล้ว render ใหม่ให้สถานะถูก */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tclear]');if(!b||!ST.D)return;e.stopPropagation();ST.D[b.dataset.tclear]='';ST.D.dirty=true;renderForm()},true);
+document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.ev-tbox')&&ST.D){const t=e.target;if(t.id==='remTime'){/* เดโม morphdom คง node เดิวมีค่าไว้ ฝั่ง React remount จึงต้องคืนค่าหลังเรนเดอร์ */const v=t.value;renderForm();const n=$('remTime');if(n)n.value=v;return}renderForm()}});
 document.addEventListener('keydown',e=>{if(e.target.id==='aiText'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('aiForm').requestSubmit?.()}
  const r=e.target.closest?.('[role="button"][data-act]');if(r&&(e.key==='Enter'||e.key===' ')){e.preventDefault();r.click()}});
 document.addEventListener('submit',e=>{e.preventDefault();

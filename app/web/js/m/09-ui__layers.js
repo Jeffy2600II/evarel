@@ -37,7 +37,7 @@ function pushLayer(layer) {
     if (layer.kind === 'sheet') {
         scrim.dataset.open = 'true';
     }
-    setTimeout(() => (layer.el.querySelector('[autofocus],input,button:not(.ev-icon-btn)') || layer.el).focus?.({ preventScroll: true }), 60);
+    /* เดโม v24 ไม่ autofocus ตอนเปิด layer (ปล่อย focus ตามคลิกจริง) — เอา 60ms focus ออกให้เหมือนเดโม */ 
 }
 function popLayer() {
     const l = LAYERS.pop();

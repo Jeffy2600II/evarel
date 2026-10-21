@@ -102,6 +102,7 @@ for (const per of ['week','month']) { O.UI.period = per; eq('chartData_'+per, O.
     for (const type of ['all', 'habit', 'task', 'event', 'class']) {
       O.UI.type = type; O.S.items = ITEMS; let got = null;
       O.EvarelPages = { all: (p) => { got = p; return '<ul><li></li></ul>'; } };
+      O.window = { ...(O.window || {}), EvarelPages: O.EvarelPages }; /* ในบราวเซอร์จริงโค้ดอ่าน window.EvarelPages — จำลองให้ตรง ไม่ใช่ผ่อนเกณฑ์ */
       const run = new Function('O', 'with(O){ ' + fnSrc + ' }');
       let threw = null; try { run(O).call({}); } catch (e) { threw = e; }
       const want = T.buildAllProps(ITEMS, type, O.icon);

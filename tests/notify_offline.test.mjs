@@ -28,8 +28,8 @@ await t('O3 ออฟไลน์: รีโหลดแล้วแอปบู
 await t('O4 ออฟไลน์: โมดูลแจ้งเตือนโหลดแล้ว (ฟังก์ชันพร้อม)', async () => eq(await p.evaluate(() => typeof notifyState + typeof checkNotify + typeof countNotifiable), 'functionfunctionfunction'));
 await p.click('[data-act="add"]'); await p.click('[data-act="dtype"][data-id="task"]'); await p.waitForSelector('#addForm'); await p.waitForTimeout(400);
 await p.click('[data-act="dopen"][data-id="rem"]'); await p.waitForTimeout(400);
-await t('O5 ออฟไลน์: ฟอร์มแสดงสวิตช์ (เปิดตามค่าเริ่มต้น) และชิปล่วงหน้า 4 ตัว', async () => { eq(await p.locator('.ev-panel[data-key="rem"] .ev-switch').getAttribute('aria-checked'), 'true'); eq(await p.locator('.ev-panel[data-key="rem"] [data-act="drem"]').count(), 4); });
-await p.fill('input[name="title"]', 'ออฟไลน์'); await p.fill('input[name="time"]', '07:15'); await p.locator('.ev-panel[data-key="rem"] [data-act="drem"]').nth(0).click(); await p.waitForTimeout(200);
+await t('O5 ออฟไลน์: ฟอร์มตามเดโม v24 — ชิป 5 ตัว "ตรงเวลา" กดอยู่ ไม่มีสวิตช์', async () => { eq(await p.locator('.ev-panel[data-key="rem"] .ev-switch').count(), 0); eq(await p.locator('.ev-panel[data-key="rem"] [data-act="drem"]').count(), 5); eq(await p.locator('.ev-panel[data-key="rem"] [data-act="drem"][aria-pressed="true"]').count(), 1); });
+await p.fill('input[name="title"]', 'ออฟไลน์'); await p.fill('input[name="time"]', '07:15'); await p.locator('.ev-panel[data-key="rem"] [data-act="drem"]').nth(1).click(); await p.waitForTimeout(200);
 await p.click('button[type="submit"][form="addForm"]'); await p.waitForTimeout(900);
 await t('O6a ออฟไลน์: กดบันทึกแล้วไม่ crash ผู้ใช้ได้ข้อความล้มเหลว และรายการไม่ค้างบนหน้าจอ', async () => {
   await p.waitForTimeout(1500);
@@ -43,7 +43,7 @@ await t('O6b กลับออนไลน์: บันทึกซ้ำส�
   await p.click('[data-act="add"]'); await p.click('[data-act="dtype"][data-id="task"]'); await p.waitForSelector('#addForm'); await p.waitForTimeout(400);
   await p.click('[data-act="dopen"][data-id="rem"]'); await p.waitForTimeout(400);
   await p.fill('input[name="title"]', 'ออฟไลน์'); await p.fill('input[name="time"]', '07:15');
-  await p.locator('.ev-panel[data-key="rem"] [data-act="drem"]').nth(0).click(); await p.waitForTimeout(200);
+  await p.locator('.ev-panel[data-key="rem"] [data-act="drem"]').nth(1).click(); await p.waitForTimeout(200); /* เดโม: ตรงเวลากดอยู่แล้ว กดเพิ่ม "ก่อน 10 นาที" */
   await p.click('button[type="submit"][form="addForm"]'); await p.waitForTimeout(3500);
   const rows = await (await fetch(API + '/api/items', { headers: { Authorization: 'Bearer ' + user.session.access_token } })).json();
   const it = rows.items.find((x) => x.title === 'ออฟไลน์');

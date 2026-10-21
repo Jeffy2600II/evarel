@@ -5,6 +5,8 @@
    {k:'before',m>0} = เตือนล่วงหน้า m นาที (เพื่อเตือนความจำ) | {k:'at',t:'HH:MM'} = เตือนตามเวลาที่ตั้งเอง
    แหล่งความจริงเดียวของความหมายนี้: ฟอร์ม validate และการแสดงผลต้องเรียกที่นี่ ไม่ตีความ rem เอง (Worker ตีความตรงกันใน reminders.ts) */
 const AHEAD_PRESETS = [10, 30, 60, 1440];
+/* REM_PRESETS ตามเดโม v24 จริง (REM_PRESETS=[0,10,30,60,1440]): ชิปแรก m=0 คือ ตรงเวลา อยู่ในชุดเดียวกับล่วงหน้า — ใช้ในฟอร์มเท่านั้น (string + React) */
+const REM_PRESETS = [0, 10, 30, 60, 1440];
 const isRemObj = r => r && typeof r === 'object' && !Array.isArray(r);
 const remList = rem => Array.isArray(rem) ? rem.filter(isRemObj) : [];
 const defaultRem = () => [{ k: 'before', m: 0 }];
@@ -145,4 +147,4 @@ function pushAutoSync() {
 }
 const PUSH_WHY = { unsupported: 'เบราว์เซอร์นี้ไม่รองรับ Push', denied: 'ถูกปิดไว้ ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์', 'no-backend': 'โหมดนี้ยังไม่เชื่อมระบบหลังบ้าน', 'not-asked': 'ยังไม่ได้อนุญาต', auth: 'ต้องเข้าสู่ระบบก่อน', 'no-key': 'ระบบยังไม่พร้อมรับสมัคร ลองใหม่ภายหลัง', subscribe: 'เครื่องนี้สมัครไม่สำเร็จ ลองใหม่อีกครั้ง', server: 'ระบบหลังบ้านไม่รับการสมัคร ลองใหม่ภายหลัง', limit: 'สมัครครบ 5 เครื่องแล้ว' };
 const pushWhyText = w => PUSH_WHY[w] || 'สมัครไม่สำเร็จ';
-Object.assign(window, { AHEAD_PRESETS, defaultRem, notifyState, checkNotify, toggleOnTime, toggleAhead, countNotifiable, urlB64ToU8, pushSupported, pushSavedState, pushSaveState, pushSubscribe, pushAutoSync, pushWhyText });
+Object.assign(window, { AHEAD_PRESETS, REM_PRESETS, defaultRem, notifyState, checkNotify, toggleOnTime, toggleAhead, countNotifiable, urlB64ToU8, pushSupported, pushSavedState, pushSaveState, pushSubscribe, pushAutoSync, pushWhyText });

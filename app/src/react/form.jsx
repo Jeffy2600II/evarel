@@ -29,6 +29,18 @@ function PN(p) {
 function IR(p) {
   return h('div', { className: 'ev-set-row' }, h('span', {}, p.label), p.inner);
 }
+function TR(p) {
+  /* TR (เดโม v20/v24): แถวเวลาแบบ tbox — DOM ตรงฉบับ string เป๊ะ */
+  const w = W(), D = w.ST.D;
+  const v = D[p.name] || '';
+  return h('div', { className: 'ev-set-row' }, h('span', {}, p.label),
+    h('span', { className: 'ev-tbox-w' },
+      h('label', { className: 'ev-tbox', 'data-empty': String(!v) },
+        h('span', { className: 'ev-tbox-t' }, v ? `${v} น.` : '＋ เพิ่มเวลา'),
+        h('input', { name: p.name, 'aria-label': p.label, type: 'time', defaultValue: v })),
+      v ? h('button', { type: 'button', className: 'ev-tx', 'data-tclear': p.name, 'aria-label': `ล้าง${p.label}` }, '✕')
+        : h('small', { className: 'ev-tbox-h' }, 'ยังไม่ได้ตั้ง')));
+}
 function RI(p) {
   const w = W(), D = w.ST.D;
   return h('input', { className: 'ev-row-input', 'aria-label': p.name, type: p.type, defaultValue: D[p.name] ?? '', name: p.name }); /* prop order = React DOM: regular ก่อน แล้ว type,value,name ท้าย (SSR พิมพ์ตาม insertion order ตรงกัน) */
@@ -62,19 +74,20 @@ function RangePanel(p) {
   return els;
 }
 function RemPanel() {
+  /* ตามเดโม v24 จริง: ไม่มีสวิตช์ตรงเวลา ใช้ชิป m=0 รวมในพรีเซ็ตเดียวกัน + empty-note + tbox */
   const w = W(), D = w.ST.D;
-  const s = w.notifyState(D.rem, true), at = D.rem.filter(r => r.k === 'at');
+  const at = D.rem.filter(r => r.k === 'at');
   return [
-    h('div', { key: 't', className: 'ev-stepper' }, h('span', {}, 'แจ้งเตือนตรงเวลา'),
-      h('button', { type: 'button', className: 'ev-switch', role: 'switch', 'aria-checked': String(s.onTime), 'data-act': 'dontime', 'aria-label': 'แจ้งเตือนตรงเวลา' })),
-    h('span', { key: 'c', className: 'ev-cap' }, 'เตือนล่วงหน้า'),
-    h(Chips, { key: 'a', act: 'drem', opts: w.AHEAD_PRESETS.map(m => [m, w.remText({ k: 'before', m })]), active: s.ahead }),
+    h(Chips, { key: 'a', act: 'drem', opts: w.REM_PRESETS.map(m => [m, w.remText({ k: 'before', m })]), active: D.rem.filter(r => r.k === 'before').map(r => r.m) }),
     at.length ? h('div', { key: 'r', className: 'ev-rem' }, at.map(r =>
       h('span', { key: r.t, className: 'ev-rem-tag' }, `${r.t} น.`,
-        h('button', { type: 'button', 'data-act': 'remdel', 'data-id': r.t, 'aria-label': `ลบการแจ้งเตือน ${r.t}`, dangerouslySetInnerHTML: raw(w.icon('x')) })))) : null,
-    h('div', { key: 'n', className: 'ev-stepper' }, h('span', {}, 'แจ้งเตือนตามเวลา'),
+        h('button', { type: 'button', 'data-act': 'remdel', 'data-id': r.t, 'aria-label': `ลบการเตือน ${r.t}`, dangerouslySetInnerHTML: raw(w.icon('x')) }))))
+      : h('div', { key: 'r0', className: 'ev-empty-note' }, 'ยังไม่มีการเตือนตามเวลา เลือกเวลาด้านล่างแล้วกดเพิ่ม'),
+    h('div', { key: 'n', className: 'ev-stepper' }, h('span', {}, 'เตือนตามเวลา'),
       h('div', { className: 'ev-row', style: { gap: '8px' } },
-        h('input', { className: 'ev-row-input', id: 'remTime', 'aria-label': 'เวลาแจ้งเตือน', type: 'time' }),
+        h('label', { key: 'l', className: 'ev-tbox', 'data-empty': 'true' },
+          h('span', { key: 't', className: 'ev-tbox-t' }, '＋ เลือกเวลา'),
+          h('input', { key: 'i', type: 'time', id: 'remTime', 'aria-label': 'เวลาเตือน' })),
         h('button', { type: 'button', className: 'ev-btn-ghost ev-btn-sm', 'data-act': 'remadd' }, 'เพิ่ม'))),
   ];
 }
@@ -82,7 +95,7 @@ function RemRow() {
   const w = W();
   /* notifyIssue ตามเดโม v24: เตือนเมื่อตั้งแจ้งก่อนถึงเวลาแต่ไม่มีเวลาทำรายการ พร้อมปุ่มปิดแจ้งเตือน */
   const issue = w.notifyIssue ? w.notifyIssue() : '';
-  return [h(SR, { key: 'r', label: 'แจ้งเตือน', val: w.remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel)),
+  return [h(SR, { key: 'r', label: 'เตือน', val: w.remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel)),
     issue ? h('div', { key: 'e', className: 'ev-field-err', 'data-tone': 'hint', style: { padding: '6px 14px 12px' },
       dangerouslySetInnerHTML: raw(w.icon('alert') + '<span>' + issue + '</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button>') }) : null];
 }
@@ -114,7 +127,7 @@ function FormFields() {
       multi ? h(Stepper, { label: 'เป้าหมายต่อวัน', act: 'dtarget', v: D.target,
         unit: h('input', { className: 'ev-unit', placeholder: D.track === 'timer' ? 'นาที' : 'หน่วย', maxLength: 12, 'aria-label': 'หน่วย', defaultValue: D.unitName ?? '', name: 'unitName' }) }) : null));
     els.push(SET(
-      h(IR, { key: 'time', label: 'เวลา', inner: h(RI, { name: 'time', type: 'time' }) }),
+      h(TR, { key: 'time', label: 'เวลา (ไม่บังคับ)', name: 'time' }),
       h(SR, { key: 'rep', label: 'ทำซ้ำ', val: w.repSum(), k: 'rep' }),
       h(PN, { key: 'rep', k: 'rep' }, h(RepPanel)),
       h(SR, { key: 'range', label: 'ช่วงเวลา', val: w.rangeSum(), k: 'range' }),
@@ -124,15 +137,15 @@ function FormFields() {
   if (T === 'task') {
     els.push(SET(
       h(IR, { key: 's', label: 'กำหนดส่ง', inner: h(RI, { name: 'start', type: 'date' }) }),
-      h(IR, { key: 't', label: 'เวลา', inner: h(RI, { name: 'time', type: 'time' }) }),
+      h(TR, { key: 't', label: 'เวลา (ไม่บังคับ)', name: 'time' }),
       h(IR, { key: 'j', label: 'วิชา/หมวด', inner: h('input', { className: 'ev-row-input', placeholder: 'ไม่บังคับ', maxLength: 30, 'aria-label': 'วิชา', defaultValue: D.subject ?? '', name: 'subject' }) })));
     els.push(SET(h(RemRow, { key: 'rem' })));
   }
   if (T === 'event') {
     els.push(SET(
       h(IR, { key: 'd', label: 'วันที่', inner: h(RI, { name: 'start', type: 'date' }) }),
-      h(IR, { key: 'b', label: 'เริ่ม', inner: h(RI, { name: 'time', type: 'time' }) }),
-      h(IR, { key: 'e', label: 'จบ', inner: h(RI, { name: 'timeEnd', type: 'time' }) }),
+      h(TR, { key: 'b', label: 'เริ่ม', name: 'time' }),
+      h(TR, { key: 'e', label: 'จบ', name: 'timeEnd' }),
       h(SR, { key: 'rep', label: 'ทำซ้ำ', val: w.repSum(), k: 'rep' }),
       h(PN, { key: 'rep', k: 'rep' }, h(RepPanel)),
       D.unit !== 'none' ? h(SR, { key: 'range', label: 'ช่วงเวลา', val: w.rangeSum(), k: 'range' }) : null,
@@ -144,8 +157,8 @@ function FormFields() {
       h('span', { className: 'ev-cap' }, 'วันที่เรียน'),
       h(Chips, { act: 'dday', opts: w.WEEK_OPTS, active: D.days })));
     els.push(SET(
-      h(IR, { key: 'b', label: 'เริ่ม', inner: h(RI, { name: 'time', type: 'time' }) }),
-      h(IR, { key: 'e', label: 'จบ', inner: h(RI, { name: 'timeEnd', type: 'time' }) }),
+      h(TR, { key: 'b', label: 'เริ่ม', name: 'time' }),
+      h(TR, { key: 'e', label: 'จบ', name: 'timeEnd' }),
       h(SR, { key: 'range', label: 'ภาคเรียน', val: w.rangeSum(), k: 'range' }),
       h(PN, { key: 'range', k: 'range' }, h(RangePanel, { lab: 'เปิดเทอม' }))));
     els.push(SET(h(RemRow, { key: 'rem' })));

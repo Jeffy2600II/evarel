@@ -8,36 +8,39 @@ const chips = (act, o, arr) => `<div class="ev-filters ev-wrap">${o.map(([k, l])
 const SR = (l, v, k) => `<button type="button" class="ev-set-row" data-act="dopen" data-id="${k}" aria-expanded="${ST.D.open === k}"><span>${l}</span><small>${v}${icon('chev')}</small></button>`;
 const PN = (k, h) => `<div class="ev-panel" data-key="${k}" data-open="${ST.D.open === k}"><div><div class="ev-panel-in">${h}</div></div></div>`;
 const IR = (l, h) => `<div class="ev-set-row"><span>${l}</span>${h}</div>`;
-const ri = (n, t) => `<input class="ev-row-input" aria-label="${n}" type="${t}" value="${esc(ST.D[n] ?? '')}" name="${n}">`; /* S4: ลำดับ attribute ตรง React DOM (type,value,name ท้าย) */
+const ri = (n, t) => `<input class="ev-row-input" aria-label="${n}" type="${t}" value="${esc(ST.D[n] ?? '')}" name="${n}">`;
+/* TR (เดโม v20/v24): แถวเวลาแบบ tbox — ตั้งแล้วโชว์ HH:MM น. + ปุ่มล้าง ✕, ยังไม่ตั้งโชว์ ＋ เพิ่มเวลา + คำใบ้ ลำดับ attribute ตรง React DOM */
+const TR = (l, n) => { const v = ST.D[n] || ''; return `<div class="ev-set-row"><span>${l}</span><span class="ev-tbox-w"><label class="ev-tbox" data-empty="${!v}"><span class="ev-tbox-t">${v ? v + ' น.' : '＋ เพิ่มเวลา'}</span><input aria-label="${l}" type="time" value="${esc(v)}" name="${n}"></label>${v ? `<button type="button" class="ev-tx" data-tclear="${n}" aria-label="ล้าง${l}">✕</button>` : '<small class="ev-tbox-h">ยังไม่ได้ตั้ง</small>'}</span></div>`; }; /* S4: ลำดับ attribute ตรง React DOM (type,value,name ท้าย) */
 const stepper = (l, act, v, u) => `<div class="ev-stepper"><span>${l}</span><div class="ev-step"><button type="button" data-act="${act}" data-id="-1" aria-label="ลด" ${v <= 1 ? 'disabled' : ''}>−</button><b>${v}</b><button type="button" data-act="${act}" data-id="1" aria-label="เพิ่ม">+</button></div>${u}</div>`;
 const everyTxt = () => ST.D.every > 1 ? `ทุก ${ST.D.every} ` : 'ทุก';
 const repSum = () => ST.D.unit === 'none' ? 'ไม่ซ้ำ' : ST.D.unit === 'week' ? `${everyTxt()}สัปดาห์${ST.D.days.length ? ` · ${[...ST.D.days].sort().map(d => WD[d]).join(' ')}` : ''}` : `${everyTxt()}${UNIT_TH[ST.D.unit]}`;
-const remSum = () => { const s = notifyState(ST.D.rem, true), p = [...(s.onTime ? ['ตรงเวลา'] : []), ...s.ahead.map(m => remText({ k: 'before', m })), ...s.at.map(x => remText({ k: 'at', t: x }))]; return p.length ? p.slice(0, 2).join(', ') + (p.length > 2 ? ` +${p.length - 2}` : '') : 'ปิด'; };
+const remSum = () => ST.D.rem.length ? ST.D.rem.slice(0, 2).map(remText).join(', ') + (ST.D.rem.length > 2 ? ` +${ST.D.rem.length - 2}` : '') : 'ปิดแจ้งเตือน';
 const rangeSum = () => `${ST.D.start === TODAY ? 'เริ่มวันนี้' : `เริ่ม ${ST.D.start}`} · ${ST.D.endMode === 'date' && ST.D.end ? `ถึง ${ST.D.end}` : 'ไม่สิ้นสุด'}`;
 const repPanel = () => seg('dunit', [['none', 'ไม่ซ้ำ'], ['day', 'วัน'], ['week', 'สัปดาห์'], ['month', 'เดือน']], ST.D.unit) + (ST.D.unit === 'none' ? '' : stepper('ทุก ๆ', 'devery', ST.D.every, `<span>${UNIT_TH[ST.D.unit]}</span>`)) + (ST.D.unit === 'week' ? chips('dday', WEEK_OPTS, ST.D.days) : '');
 const rangePanel = lab => `<div class="ev-stepper"><span>${lab}</span>${ri('start', 'date')}</div><div class="ev-stepper"><span>มีวันสิ้นสุด</span><button type="button" class="ev-switch" role="switch" aria-checked="${ST.D.endMode === 'date'}" data-act="dend" aria-label="มีวันสิ้นสุด"></button></div>${ST.D.endMode === 'date' ? `<div class="ev-stepper"><span>สิ้นสุดวันที่</span>${ri('end', 'date')}</div>` : ''}`;
+/* ตามเดโม v24 จริง: ไม่มีสวิตช์ตรงเวลา ใช้ชิป m=0 รวมในพรีเซ็ตเดียวกัน + empty-note + tbox | REM_PRESETS จาก services/notify */
 const remPanel = () => {
-    const s = notifyState(ST.D.rem, true), at = ST.D.rem.filter(r => r.k === 'at');
-    return `<div class="ev-stepper"><span>แจ้งเตือนตรงเวลา</span><button type="button" class="ev-switch" role="switch" aria-checked="${s.onTime}" data-act="dontime" aria-label="แจ้งเตือนตรงเวลา"></button></div><span class="ev-cap">เตือนล่วงหน้า</span>` + chips('drem', AHEAD_PRESETS.map(m => [m, remText({ k: 'before', m })]), s.ahead)
-        + (at.length ? `<div class="ev-rem">${at.map(r => `<span class="ev-rem-tag">${r.t} น.<button type="button" data-act="remdel" data-id="${r.t}" aria-label="ลบการแจ้งเตือน ${r.t}">${icon('x')}</button></span>`).join('')}</div>` : '')
-        + `<div class="ev-stepper"><span>แจ้งเตือนตามเวลา</span><div class="ev-row" style="gap: 8px;"><input class="ev-row-input" id="remTime" aria-label="เวลาแจ้งเตือน" type="time"><button type="button" class="ev-btn-ghost ev-btn-sm" data-act="remadd">เพิ่ม</button></div></div>`;
+    const at = ST.D.rem.filter(r => r.k === 'at');
+    return chips('drem', REM_PRESETS.map(m => [m, remText({ k: 'before', m })]), ST.D.rem.filter(r => r.k === 'before').map(r => r.m))
+        + (at.length ? `<div class="ev-rem">${at.map(r => `<span class="ev-rem-tag">${r.t} น.<button type="button" data-act="remdel" data-id="${r.t}" aria-label="ลบการเตือน ${r.t}">${icon('x')}</button></span>`).join('')}</div>` : '<div class="ev-empty-note">ยังไม่มีการเตือนตามเวลา เลือกเวลาด้านล่างแล้วกดเพิ่ม</div>')
+        + `<div class="ev-stepper"><span>เตือนตามเวลา</span><div class="ev-row" style="gap: 8px;"><label class="ev-tbox" data-empty="true"><span class="ev-tbox-t">＋ เลือกเวลา</span><input id="remTime" aria-label="เวลาเตือน" type="time"></label><button type="button" class="ev-btn-ghost ev-btn-sm" data-act="remadd">เพิ่ม</button></div></div>`;
 };
 const SET = h => `<div class="ev-set">${h}</div>`;
 /* notifyIssue + ปุ่มปิดแจ้งเตือน ตามเดโม v24: เตือนเมื่อตั้งแจ้งก่อนถึงเวลาแต่ไม่มีเวลาทำรายการ */
 const notifyIssue = () => ST.D.rem.some(r => r.k === 'before' && r.m >= 0) && !ST.D.time ? 'ต้องใส่เวลา จึงจะแจ้งเตือนได้ ถ้าไม่ต้องการแจ้งเตือน ให้ปิดแจ้งเตือน' : '';
-const remRow = () => SR('แจ้งเตือน', remSum(), 'rem') + PN('rem', remPanel()) + (notifyIssue() ? `<div class="ev-field-err" data-tone="hint" style="padding: 6px 14px 12px;">${icon('alert')}<span>${notifyIssue()}</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button></div>` : '');
+const remRow = () => SR('เตือน', remSum(), 'rem') + PN('rem', remPanel()) + (notifyIssue() ? `<div class="ev-field-err" data-tone="hint" style="padding: 6px 14px 12px;">${icon('alert')}<span>${notifyIssue()}</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button></div>` : '');
 function formBody() {
     const T = ST.D.type, multi = ST.D.track !== 'check', ph = { habit: 'เช่น ดื่มน้ำ', task: 'เช่น การบ้านคณิต', event: 'เช่น ประชุมชมรม', class: 'ชื่อวิชา' }[T];
     let h = `<input class="ev-title-input" placeholder="${ph}" maxlength="80" aria-label="ชื่อ" value="${esc(ST.D.title)}" name="title">${ST.D.err ? `<div class="ev-form-err" role="alert">${esc(ST.D.err)}</div>` : ''}`;
     if (T === 'habit')
         h += `<div class="ev-block"><span class="ev-cap">ติดตามผลแบบ</span>${seg('dtrack', TRACK_OPTS, ST.D.track)}${multi ? stepper('เป้าหมายต่อวัน', 'dtarget', ST.D.target, `<input class="ev-unit" placeholder="${ST.D.track === 'timer' ? 'นาที' : 'หน่วย'}" maxlength="12" aria-label="หน่วย" value="${esc(ST.D.unitName)}" name="unitName">`) : ''}</div>`
-            + SET(IR('เวลา', ri('time', 'time')) + SR('ทำซ้ำ', repSum(), 'rep') + PN('rep', repPanel()) + SR('ช่วงเวลา', rangeSum(), 'range') + PN('range', rangePanel('เริ่มวันที่'))) + SET(remRow());
+            + SET(TR('เวลา (ไม่บังคับ)', 'time') + SR('ทำซ้ำ', repSum(), 'rep') + PN('rep', repPanel()) + SR('ช่วงเวลา', rangeSum(), 'range') + PN('range', rangePanel('เริ่มวันที่'))) + SET(remRow());
     if (T === 'task')
-        h += SET(IR('กำหนดส่ง', ri('start', 'date')) + IR('เวลา', ri('time', 'time')) + IR('วิชา/หมวด', `<input class="ev-row-input" placeholder="ไม่บังคับ" maxlength="30" aria-label="วิชา" value="${esc(ST.D.subject)}" name="subject">`)) + SET(remRow());
+        h += SET(IR('กำหนดส่ง', ri('start', 'date')) + TR('เวลา (ไม่บังคับ)', 'time') + IR('วิชา/หมวด', `<input class="ev-row-input" placeholder="ไม่บังคับ" maxlength="30" aria-label="วิชา" value="${esc(ST.D.subject)}" name="subject">`)) + SET(remRow());
     if (T === 'event')
-        h += SET(IR('วันที่', ri('start', 'date')) + IR('เริ่ม', ri('time', 'time')) + IR('จบ', ri('timeEnd', 'time')) + SR('ทำซ้ำ', repSum(), 'rep') + PN('rep', repPanel()) + (ST.D.unit !== 'none' ? SR('ช่วงเวลา', rangeSum(), 'range') + PN('range', rangePanel('เริ่มวันที่')) : '')) + SET(remRow());
+        h += SET(IR('วันที่', ri('start', 'date')) + TR('เริ่ม', 'time') + TR('จบ', 'timeEnd') + SR('ทำซ้ำ', repSum(), 'rep') + PN('rep', repPanel()) + (ST.D.unit !== 'none' ? SR('ช่วงเวลา', rangeSum(), 'range') + PN('range', rangePanel('เริ่มวันที่')) : '')) + SET(remRow());
     if (T === 'class')
-        h += `<div class="ev-block"><span class="ev-cap">วันที่เรียน</span>${chips('dday', WEEK_OPTS, ST.D.days)}</div>` + SET(IR('เริ่ม', ri('time', 'time')) + IR('จบ', ri('timeEnd', 'time')) + SR('ภาคเรียน', rangeSum(), 'range') + PN('range', rangePanel('เปิดเทอม'))) + SET(remRow());
+        h += `<div class="ev-block"><span class="ev-cap">วันที่เรียน</span>${chips('dday', WEEK_OPTS, ST.D.days)}</div>` + SET(TR('เริ่ม', 'time') + TR('จบ', 'timeEnd') + SR('ภาคเรียน', rangeSum(), 'range') + PN('range', rangePanel('เปิดเทอม'))) + SET(remRow());
     return h;
 }
 const typeBody = () => `<div class="ev-types">${Object.entries(TYPE_INFO).map(([k, [ic, d]]) => `<button class="ev-type" data-act="dtype" data-id="${k}"><span class="orb">${icon(ic)}</span><b>${TYPES[k]}</b><span class="d">${d}</span></button>`).join('')}</div>`;
