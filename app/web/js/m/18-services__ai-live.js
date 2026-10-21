@@ -11,22 +11,20 @@ async function aiAsk(text, history) {
         }
         catch (e) { }
         if (r.status === 503)
-            return { text: j.text || 'ตอนนี้ AI ใช้งานไม่ได้ชั่วคราว ลองใหม่ภายหลังนะ', cards: [] };
+            return { text: '', cards: [], notice: { kind: 'limit', reason: 'global' } };
         if (r.status === 401)
             throw new Error('auth');
         if (r.status === 429) {
             quotaFromChat(j.quota, true);
-            return { text: j.text || 'วันนี้ใช้ AI ครบโควตาแล้ว โควตาจะรีเซ็ตตอนเที่ยงคืน', cards: [] };
+            return { text: '', cards: [], notice: { kind: 'limit', reason: 'user', ...(ST.QUOTA?.resetAt ? { resetAt: ST.QUOTA.resetAt } : {}) } };
         }
         if (!r.ok)
-            return { text: 'ขออภัย เกิดข้อผิดพลาด ลองใหม่อีกครั้งนะ', cards: [] };
+            return { text: '', cards: [], notice: { kind: 'error' } };
         quotaFromChat(j.quota, false);
         return { text: j.text || '', cards: (j.proposals || []).map(p => ({ status: 'pending', tool: p.tool, args: p.args, summary: p.summary, ...(p.sensitive ? { sensitive: true } : {}) })) };
     }
     catch (e) {
-        if (e.name === 'AbortError')
-            return { text: 'AI ตอบช้าเกินไป ลองใหม่อีกครั้งนะ', cards: [] };
-        return { text: 'เชื่อมต่อ AI ไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่นะ', cards: [] };
+        return { text: '', cards: [], notice: { kind: 'error' } };
     }
     finally {
         clearTimeout(tm);

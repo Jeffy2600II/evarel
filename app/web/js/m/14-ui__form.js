@@ -23,7 +23,9 @@ const remPanel = () => {
         + `<div class="ev-stepper"><span>แจ้งเตือนตามเวลา</span><div class="ev-row" style="gap: 8px;"><input class="ev-row-input" id="remTime" aria-label="เวลาแจ้งเตือน" type="time"><button type="button" class="ev-btn-ghost ev-btn-sm" data-act="remadd">เพิ่ม</button></div></div>`;
 };
 const SET = h => `<div class="ev-set">${h}</div>`;
-const remRow = () => SR('แจ้งเตือน', remSum(), 'rem') + PN('rem', remPanel());
+/* notifyIssue + ปุ่มปิดแจ้งเตือน ตามเดโม v24: เตือนเมื่อตั้งแจ้งก่อนถึงเวลาแต่ไม่มีเวลาทำรายการ */
+const notifyIssue = () => ST.D.rem.some(r => r.k === 'before' && r.m >= 0) && !ST.D.time ? 'ต้องใส่เวลา จึงจะแจ้งเตือนได้ ถ้าไม่ต้องการแจ้งเตือน ให้ปิดแจ้งเตือน' : '';
+const remRow = () => SR('แจ้งเตือน', remSum(), 'rem') + PN('rem', remPanel()) + (notifyIssue() ? `<div class="ev-field-err" data-tone="hint" style="padding: 6px 14px 12px;">${icon('alert')}<span>${notifyIssue()}</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button></div>` : '');
 function formBody() {
     const T = ST.D.type, multi = ST.D.track !== 'check', ph = { habit: 'เช่น ดื่มน้ำ', task: 'เช่น การบ้านคณิต', event: 'เช่น ประชุมชมรม', class: 'ชื่อวิชา' }[T];
     let h = `<input class="ev-title-input" placeholder="${ph}" maxlength="80" aria-label="ชื่อ" value="${esc(ST.D.title)}" name="title">${ST.D.err ? `<div class="ev-form-err" role="alert">${esc(ST.D.err)}</div>` : ''}`;
@@ -82,4 +84,4 @@ function buildItem() {
     return mk({ id: ST.D.id || Date.now(), type: T, title: ST.D.title.trim(), subject: (ST.D.subject || '').trim(), start: ST.D.start, end: ST.D.endMode === 'date' && unit !== 'none' ? ST.D.end : '', time: ST.D.time, timeEnd: T === 'task' || T === 'habit' ? '' : ST.D.timeEnd,
         rem: ST.D.rem.slice(0, MAX_REM).map(r => ({ ...r })), repeat: { unit, every: Math.max(1, Math.round(+ST.D.every || 1)), days }, track: T === 'habit' ? ST.D.track : T === 'task' ? 'check' : 'none', target: multi ? Math.max(1, Math.round(+ST.D.target || 1)) : 1, unitName: multi ? (ST.D.unitName || '').trim() : '', log: old ? old.log : {}, skip: old ? old.skip : {} });
 }
-Object.assign(window, { TYPE_INFO, startBase, newDraft, draftFrom, chips, SR, PN, IR, ri, stepper, everyTxt, repSum, remSum, rangeSum, repPanel, rangePanel, remPanel, SET, remRow, formBody, typeBody, renderForm, openForm, validate, buildItem });
+Object.assign(window, { TYPE_INFO, startBase, newDraft, draftFrom, chips, SR, PN, IR, ri, stepper, everyTxt, repSum, remSum, rangeSum, repPanel, rangePanel, remPanel, SET, notifyIssue, remRow, formBody, typeBody, renderForm, openForm, validate, buildItem });

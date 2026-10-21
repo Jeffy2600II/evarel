@@ -21,7 +21,9 @@ const remPanel=()=>{const s=notifyState(ST.D.rem,true),at=ST.D.rem.filter(r=>r.k
 +(at.length?`<div class="ev-rem">${at.map(r=>`<span class="ev-rem-tag">${r.t} น.<button type="button" data-act="remdel" data-id="${r.t}" aria-label="ลบการแจ้งเตือน ${r.t}">${icon('x')}</button></span>`).join('')}</div>`:'')
 +`<div class="ev-stepper"><span>แจ้งเตือนตามเวลา</span><div class="ev-row" style="gap: 8px;"><input class="ev-row-input" id="remTime" aria-label="เวลาแจ้งเตือน" type="time"><button type="button" class="ev-btn-ghost ev-btn-sm" data-act="remadd">เพิ่ม</button></div></div>`};
 const SET=h=>`<div class="ev-set">${h}</div>`;
-const remRow=()=>SR('แจ้งเตือน',remSum(),'rem')+PN('rem',remPanel());
+/* notifyIssue + ปุ่มปิดแจ้งเตือน ตามเดโม v24: เตือนเมื่อตั้งแจ้งก่อนถึงเวลาแต่ไม่มีเวลาทำรายการ */
+const notifyIssue=()=>ST.D.rem.some(r=>r.k==='before'&&r.m>=0)&&!ST.D.time?'ต้องใส่เวลา จึงจะแจ้งเตือนได้ ถ้าไม่ต้องการแจ้งเตือน ให้ปิดแจ้งเตือน':'';
+const remRow=()=>SR('แจ้งเตือน',remSum(),'rem')+PN('rem',remPanel())+(notifyIssue()?`<div class="ev-field-err" data-tone="hint" style="padding: 6px 14px 12px;">${icon('alert')}<span>${notifyIssue()}</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button></div>`:'');
 function formBody(){const T=ST.D.type,multi=ST.D.track!=='check',ph={habit:'เช่น ดื่มน้ำ',task:'เช่น การบ้านคณิต',event:'เช่น ประชุมชมรม',class:'ชื่อวิชา'}[T];
  let h=`<input class="ev-title-input" placeholder="${ph}" maxlength="80" aria-label="ชื่อ" value="${esc(ST.D.title)}" name="title">${ST.D.err?`<div class="ev-form-err" role="alert">${esc(ST.D.err)}</div>`:''}`;
  if(T==='habit')h+=`<div class="ev-block"><span class="ev-cap">ติดตามผลแบบ</span>${seg('dtrack',TRACK_OPTS,ST.D.track)}${multi?stepper('เป้าหมายต่อวัน','dtarget',ST.D.target,`<input class="ev-unit" placeholder="${ST.D.track==='timer'?'นาที':'หน่วย'}" maxlength="12" aria-label="หน่วย" value="${esc(ST.D.unitName)}" name="unitName">`):''}</div>`
@@ -49,4 +51,4 @@ function buildItem(){const T=ST.D.type,old=ST.D.id?find(ST.D.id):null,week=T==='
   rem:ST.D.rem.slice(0,MAX_REM).map(r=>({...r})),repeat:{unit,every:Math.max(1,Math.round(+ST.D.every||1)),days},track:T==='habit'?ST.D.track:T==='task'?'check':'none',target:multi?Math.max(1,Math.round(+ST.D.target||1)):1,unitName:multi?(ST.D.unitName||'').trim():'',log:old?old.log:{},skip:old?old.skip:{}})}
 
 
-Object.assign(window, { TYPE_INFO, startBase, newDraft, draftFrom, chips, SR, PN, IR, ri, stepper, everyTxt, repSum, remSum, rangeSum, repPanel, rangePanel, remPanel, SET, remRow, formBody, typeBody, renderForm, openForm, validate, buildItem });
+Object.assign(window, { TYPE_INFO, startBase, newDraft, draftFrom, chips, SR, PN, IR, ri, stepper, everyTxt, repSum, remSum, rangeSum, repPanel, rangePanel, remPanel, SET, notifyIssue, remRow, formBody, typeBody, renderForm, openForm, validate, buildItem });

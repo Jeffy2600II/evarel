@@ -34,9 +34,9 @@ try {
     /* AI วงจรจริง: เปิดหน้า AI → เช็คโครงครบ → ปิดสะอาด */
     const c1 = await p.evaluate(() => {
       const w = window; w.openAI();
-      return { shellRoot: !!w.EvarelMount?.roots?.aiShell, aiRoot: !!w.EvarelMount?.roots?.ai, hasComposer: !!document.getElementById('aiForm'), hasDrawer: !!document.getElementById('drawer'), hasChip: !!document.getElementById('aiQuota'), hasScroll: !!document.getElementById('aiScroll') };
+      return { shellRoot: !!w.EvarelMount?.roots?.aiShell, aiRoot: !!w.EvarelMount?.roots?.ai, hasComposer: !!document.getElementById('aiForm'), hasDrawer: !!document.getElementById('drawer'), hasAibar: !!document.querySelector('.ev-aibar'), hasScroll: !!document.getElementById('aiScroll') };
     });
-    ok('วงจรเปิดหน้า AI (aiShell mount ที่ #page + ai ที่ #aiBody)', c1.shellRoot && c1.aiRoot && c1.hasComposer && c1.hasDrawer && c1.hasChip && c1.hasScroll, JSON.stringify(c1));
+    ok('วงจรเปิดหน้า AI (aiShell mount ที่ #page + ai ที่ #aiBody)', c1.shellRoot && c1.aiRoot && c1.hasComposer && c1.hasDrawer && c1.hasAibar && c1.hasScroll, JSON.stringify(c1));
     const c2 = await p.evaluate(() => { const n = window.LAYERS.length; for (let i = 0; i < n; i++) window.popLayer(); return { empty: window.LAYERS.length === 0, shellGone: !window.EvarelMount?.roots?.aiShell, aiGone: !window.EvarelMount?.roots?.ai }; });
     ok('วงจรปิดหน้า AI (unmount ทั้งสอง root สะอาด)', c2.empty && c2.shellGone && c2.aiGone, JSON.stringify(c2));
 

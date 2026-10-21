@@ -3,7 +3,7 @@ function notifInfo(){if(!('Notification' in window))return ['ไม่รอง�
 const themeNow=()=>document.documentElement.dataset.theme||'auto';
 /* การ์ดการใช้งาน AI (v24): อ่าน ST.QUOTA จริง (ได้จาก quotaFetch) สถานะเดียวกับ quotaState: ok/low/out, ไม่ทราบ = null */
 function usageCardHTML(){const q=ST.QUOTA,st=quotaState(q);
- if(!st)return `<b>การใช้งาน AI วันนี้</b><p class="ev-sub" style="margin-top:6px">${q?'ดูข้อมูลการใช้งานไม่ได้ในขณะนี้ แต่ยังใช้ AI ได้ตามปกติ':'กำลังโหลด…'}</p>`;
+ if(!st)return `<b>การใช้งาน AI วันนี้</b><p class="ev-sub" style="margin-top:6px">${q?'ดูข้อมูลการใช้งานไม่ได้ในขณะนี้ แต่ยังใช้ AI ได้ตามปกติ':'กำลังโหลด…'}</p>${q?'<button class="ev-btn-ghost ev-btn-sm" style="margin-top:10px" data-act="usage-refresh">ลองใหม่</button>':''}`;
  const c=q.calls,t=q.tokens,cp=Math.min(100,Math.round(100*c.used/c.limit)),tp=Math.min(100,Math.round(100*t.used/t.limit)),lab={ok:'ปกติ',low:'ใกล้ถึงขีดจำกัด',out:'ถึงขีดจำกัดแล้ว'}[st];
  return `<div class="ev-stat"><b>การใช้งาน AI วันนี้</b><span class="ev-chip" data-state="${st==='out'?'late':st==='low'?'soon':'done'}">${lab}</span></div>
   <div class="ev-use"><div class="ev-stat"><span>จำนวนครั้งที่ถาม</span><b>${c.used} / ${c.limit}</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-calls" data-to="${cp}" data-lv="${st}"></i></div></div>
@@ -30,7 +30,7 @@ function settingsHTML(){
  try{return R(settingsProps())}
  catch(e){console.warn('settings react',e);return settingsHTMLClassic()}}
 /* S4 ไบต์ 5: หน้าตั้งค่า mount React จริงที่ #page เมื่อพร้อม (แพทเทิร์นเดียวกับ detail ใน 20-services__calendar) */
-function usagePaint(){const e=$('usageWrap');if(!e)return;e.innerHTML=usageCardHTML();growBars(e)}
+function usagePaint(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e){e.innerHTML=usageCardHTML();growBars(e)}})}
 async function usageRefresh(){try{const q=await quotaFetch();ST.QUOTA=q||{unknown:true}}catch(err){ST.QUOTA={unknown:true}}usagePaint()}
 function settingsOpen(){const MT=(window as any).EvarelMount;
  if(MT?.ready('settings')){MT.unmountOne('settings');if(!LAYERS.some(l=>l.el===page))openPage('');page.innerHTML='';MT.mountAt(page,'settings',settingsProps());usageRefresh();return}

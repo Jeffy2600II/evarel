@@ -88,7 +88,7 @@ const ACTIONS = {
         closeTop(); return NR; }, undo: () => { toastEl._undo?.(); toastEl._undo = null; toastEl.dataset.open = 'false'; return NR; },
     'cf-ok': () => { const f = CONFIRM.fn; closeTop(); setTimeout(() => f?.(), 200); return NR; }, 'imp-add': () => { closeTop(); setTimeout(() => runImport('add'), 200); return NR; }, 'imp-skip': () => { closeTop(); setTimeout(() => runImport('skip'), 200); return NR; },
     ai: () => { openAI(); return NR; }, settings: () => { settingsOpen(); return NR; },
-    sugg: id => { aiSend(id); return NR; },
+    sugg: id => { aiSend(SUGG[+id] || ''); return NR; },
     'ai-hist': () => { drawerOpen($('drawer').dataset.open !== 'true'); return NR; },
     'ai-new': () => { ST.CH.cur = null; saveCH(); aiRefresh(); drawerOpen(false); $('aiText')?.focus(); return NR; },
     'ai-open': id => { ST.CH.cur = +id; saveCH(); aiRefresh(); drawerOpen(false); return NR; },
@@ -106,6 +106,24 @@ const ACTIONS = {
         confirmDialog({ title: 'ลบแชทนี้?', msg: `“${esc(c.title || 'แชทใหม่')}” จะถูกลบออกจากประวัติ`, ok: 'ลบ', fn: () => { const snap = JSON.stringify(ST.CH); ST.CH.list = ST.CH.list.filter(x => x.id != id); if (ST.CH.cur == id)
                 ST.CH.cur = null; saveCH(); aiSync(); toast('ลบแชทแล้ว', () => { ST.CH = JSON.parse(snap); saveCH(); aiSync(); }); } }); return NR; },
     'ai-plus': (id, el) => { openPop(el, aiPlusItems, { prefer: 'up', align: 'left' }); return NR; },
+    'ai-more': (id, el) => { openPop(el, moreItems(), { align: 'right' }); return NR; },
+    'ai-search': () => { const w = $('dSearchWrap'); if (!w)
+        return NR; w.hidden = !w.hidden; if (w.hidden) {
+        $('dSearch').value = '';
+        aiRenderDrawer('');
+    }
+    else
+        $('dSearch').focus(); return NR; },
+    'ai-copy': id => { const m = aiMsg(id); if (!m)
+        return NR; const done = () => toast('คัดลอกแล้ว'); (navigator.clipboard?.writeText(m.text) || Promise.reject(new Error('no clipboard'))).then(done, err => { console.warn('copy', err); toast('คัดลอกไม่สำเร็จ'); }); return NR; },
+    'ai-vote': id => { const [i, v] = String(id).split(':'), m = aiMsg(i); if (!m)
+        return NR; m.vote = m.vote === v ? null : v; saveCH(); aiRefresh(); haptic(); return NR; },
+    'ai-usage': () => { ST.sheetMode = 'usage'; openSheet('การใช้งาน AI', '<div id="usageSheet">' + usageCardHTML() + '</div><p class="ev-sub" style="margin-top:12px">ขีดจำกัดต่อวันช่วยให้บริการเสถียรสำหรับทุกคน</p>'); usagePaint(); usageRefresh(); return NR; },
+    'usage-refresh': () => { ST.QUOTA = null; usagePaint(); usageRefresh(); return NR; },
+    'ai-retry': () => { const t = ST.AI.draft; ST.AI.notice = null; ST.AI.draft = ''; aiRefresh(); if (t)
+        aiSend(t); return NR; },
+    'ai-retry-global': () => { ST.AI.notice = null; aiRefresh(); quotaPaint(); return NR; },
+    'rem-off': () => { ST.D.rem = []; renderForm(); return NR; },
     'ai-q': id => { if (id.startsWith('สรุป')) {
         aiSend(id);
     }
@@ -279,11 +297,17 @@ document.addEventListener('pointerout', e => { const d = e.target.closest?.('.ev
 document.addEventListener('contextmenu', e => { if (e.target.closest?.('.ev-fcday'))
     e.preventDefault(); });
 /* moved by move_defs (evarel-ts-1f) */
+const moreItems = () => {
+    const ci = curChat() ? chatItems(ST.CH.cur) : null;
+    return ci ? [...ci.slice(0, 2), { act: 'ai-usage', id: '', icon: 'chart', label: 'ขีดจำกัดการใช้งาน' }, '-', ci[3]] : [{ act: 'ai-usage', id: '', icon: 'chart', label: 'ขีดจำกัดการใช้งาน' }];
+};
 function aiSend(text) {
     text = text.trim();
-    if (!text)
+    if (!text || ST.AI.busy)
         return;
     if (ST.QUOTA && ST.QUOTA.blocked && AI_LIVE() && +new Date(ST.QUOTA.resetAt) > Date.now()) {
+        ST.AI.notice = { kind: 'limit', reason: ST.QUOTA.reason === 'tokens' ? 'user' : (ST.QUOTA.reason || 'user'), ...(ST.QUOTA.resetAt ? { resetAt: ST.QUOTA.resetAt } : {}) };
+        aiRefresh();
         quotaPaint();
         return;
     }
@@ -293,20 +317,48 @@ function aiSend(text) {
         ST.CH.list.unshift(c);
         ST.CH.cur = c.id;
     }
-    const hist = c.msgs.filter(m => m.text).map(m => ({ who: m.who, text: m.text })).slice(-8);
     c.msgs.push({ who: 'u', text });
     c.t = Date.now();
+    ST.AI.busy = true;
+    ST.AI.typing = true;
+    ST.AI.notice = null;
+    ST.AI.draft = '';
     saveCH();
     aiRefresh(true);
-    $('aiBody').firstElementChild?.insertAdjacentHTML('beforeend', '<div class="ev-bubble-ai ev-typing" id="typing"><i></i><i></i><i></i></div>');
-    $('aiScroll').scrollTo({ top: $('aiScroll').scrollHeight, behavior: 'smooth' });
+    const paint = () => { try {
+        aiRefresh(true);
+        aiRenderDrawer($('dSearch')?.value || '');
+    }
+    catch (err) {
+        console.warn('ai paint', err);
+    } };
     if (AI_LIVE()) {
-        aiAsk(text, hist).then(r => { c.msgs.push({ who: 'a', text: r.text, ...(r.cards.length ? { cards: r.cards } : {}) }); c.t = Date.now(); saveCH(); if (ST.CH.cur === c.id)
-            aiRefresh(true); }).catch(() => { c.msgs.push({ who: 'a', text: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง' }); saveCH(); if (ST.CH.cur === c.id)
-            aiRefresh(true); });
+        aiAsk(text, c.msgs.filter(m => m.text).map(m => ({ who: m.who, text: m.text })).slice(-8)).then(r => {
+            if (r && r.notice) {
+                c.msgs.pop();
+                saveCH();
+                ST.AI.draft = text;
+                ST.AI.notice = r.notice;
+                if (r.notice.kind === 'limit' && r.notice.reason !== 'global')
+                    usageRefresh();
+                ST.AI.busy = false;
+                ST.AI.typing = false;
+                paint();
+                quotaPaint();
+                return;
+            }
+            c.msgs.push({ who: 'a', text: r.text, ...(r.cards.length ? { cards: r.cards } : {}) });
+            c.t = Date.now();
+            saveCH();
+            ST.AI.busy = false;
+            ST.AI.typing = false;
+            if (ST.CH.cur === c.id)
+                paint();
+            quotaPaint();
+        }).catch(err => { c.msgs.pop(); saveCH(); ST.AI.draft = text; ST.AI.notice = { kind: 'error' }; ST.AI.busy = false; ST.AI.typing = false; paint(); });
         return;
     }
-    setTimeout(() => { const r = aiReply(text); c.msgs.push({ who: 'a', ...r }); c.t = Date.now(); saveCH(); if (ST.CH.cur === c.id)
-        aiRefresh(true); }, AI_REPLY_MS);
+    setTimeout(() => { const r = aiReply(text); c.msgs.push({ who: 'a', ...r }); c.t = Date.now(); saveCH(); ST.AI.busy = false; ST.AI.typing = false; if (ST.CH.cur === c.id)
+        paint(); }, AI_REPLY_MS);
 }
 Object.assign(window, { date, bump, aiMsg, closeAnyDrawer, itemMenu, promptRename, ACTIONS, aiSend });

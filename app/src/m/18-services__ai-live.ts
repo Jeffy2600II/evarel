@@ -6,12 +6,12 @@ async function aiAsk(text,history){
  const t=await ST.Repo.token(),ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),45000);
  try{const r=await fetch(`${SUPA_API}/ai/chat`,{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({text,history})});
   let j={};try{j=await r.json()}catch(e){}
-  if(r.status===503)return {text:j.text||'ตอนนี้ AI ใช้งานไม่ได้ชั่วคราว ลองใหม่ภายหลังนะ',cards:[]};
+  if(r.status===503)return {text:'',cards:[],notice:{kind:'limit',reason:'global'}};
   if(r.status===401)throw new Error('auth');
-  if(r.status===429){quotaFromChat(j.quota,true);return {text:j.text||'วันนี้ใช้ AI ครบโควตาแล้ว โควตาจะรีเซ็ตตอนเที่ยงคืน',cards:[]}}
-  if(!r.ok)return {text:'ขออภัย เกิดข้อผิดพลาด ลองใหม่อีกครั้งนะ',cards:[]};
+  if(r.status===429){quotaFromChat(j.quota,true);return {text:'',cards:[],notice:{kind:'limit',reason:'user',...(ST.QUOTA?.resetAt?{resetAt:ST.QUOTA.resetAt}:{})}}}
+  if(!r.ok)return {text:'',cards:[],notice:{kind:'error'}};
   quotaFromChat(j.quota,false);return {text:j.text||'',cards:(j.proposals||[]).map(p=>({status:'pending',tool:p.tool,args:p.args,summary:p.summary,...(p.sensitive?{sensitive:true}:{})}))}}
- catch(e){if(e.name==='AbortError')return {text:'AI ตอบช้าเกินไป ลองใหม่อีกครั้งนะ',cards:[]};return {text:'เชื่อมต่อ AI ไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่นะ',cards:[]}}
+ catch(e){return {text:'',cards:[],notice:{kind:'error'}}}
  finally{clearTimeout(tm)}}
 /* รูปแบบ rem ของแอปคือ [{k:'before',m:นาที}] ส่วนเซิร์ฟเวอร์ส่งเป็นตัวเลขนาที -> แปลงที่นี่ที่เดียว */
 const remFrom=a=>(Array.isArray(a)?a:[]).map(Number).filter(m=>m>=0).map(m=>({k:'before',m}));

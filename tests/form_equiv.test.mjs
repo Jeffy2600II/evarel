@@ -32,9 +32,11 @@ try {
       w.EvarelReact.flushSync(() => root.render(w.EvarelReact.h(comp, {})));
       const A = a.innerHTML, B = bEl.innerHTML;
       a.remove(); bEl.remove(); root.unmount();
-      return { same: A === B, A: A.slice(0, 400), B: B.slice(0, 400) };
+      let d=-1; for(let i=0;i<Math.min(A.length,B.length);i++){if(A[i]!==B[i]){d=i;break}}
+      return { same: A === B, A: A.slice(0, 400), B: B.slice(0, 400), diffAt: d, lenA: A.length, lenB: B.length,
+        ctxA: d>=0?A.slice(Math.max(0,d-80),d+120):'', ctxB: d>=0?B.slice(Math.max(0,d-80),d+120):'' };
     }, { isType, mut: { ...mut } });
-    ok(name, r.same, r.same ? '' : `\n A=${r.A}\n B=${r.B}`);
+    ok(name, r.same, r.same ? '' : ` diff@${r.diffAt} lenA=${r.lenA} lenB=${r.lenB}\n ctxA=${r.ctxA}\n ctxB=${r.ctxB}`);
   };
 
   await run('ขั้นเลือกประเภท (typeBody)', true, {});

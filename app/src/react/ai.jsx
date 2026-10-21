@@ -15,11 +15,45 @@ function AiMark() {
 
 function AiHello() {
   const w = W();
-  /* SUGG เป็นค่าคงที่ ปุ่มคำแนะนำ join ไม่มีตัวคั่น เทียบ template หน้าทักทายเดิม */
-  return h('div', { className: 'ev-ai-hello' }, [
+  const fn = (w.profileOf ? (w.profileOf().name || '') : '').trim().split(/\s+/)[0];
+  return h('div', { className: 'ev-ai-hello', 'data-key': 'hello' }, [
     h(AiMark, { key: 'm' }),
-    h('h3', { key: 'h' }, 'มีอะไรให้ช่วยวันนี้'),
-    h('div', { key: 's', className: 'ev-sugg' }, w.SUGG.map((s, k) => h('button', { key: k, 'data-act': 'sugg', 'data-id': s }, s))),
+    h('h3', { key: 'h' }, fn ? `สวัสดี ${fn}` : 'สวัสดี'),
+    h('p', { key: 'p', className: 'ev-sub', style: { 'margin-top': '-6px' } }, 'มีอะไรให้ช่วยวันนี้'),
+    h('div', { key: 's', className: 'ev-sugg' }, w.SUGG.map((s, i) => h('button', { key: i, type: 'button', 'data-act': 'sugg', 'data-id': String(i) }, s))),
+  ]);
+}
+
+/* การแจ้งเหตุการณ์ของ AI (ตาม noticeHTML ของเดโม) — ข้อผิดพลาดหรือโควตาเต็ม พร้อมปุ่มตามสถานะ */
+function AiNotice() {
+  const w = W();
+  const n = w.AI && w.AI.notice;
+  if (!n) return null;
+  if (n.kind === 'error') return h('div', { className: 'ev-notice', 'data-key': 'notice' }, [
+    h('b', { key: 'b' }, 'ส่งข้อความไม่สำเร็จ'),
+    h('span', { key: 's' }, 'ตรวจสอบการเชื่อมต่อแล้วลองใหม่ ข้อความของคุณยังอยู่ในช่องพิมพ์'),
+    h('div', { key: 'r' }, h('button', { key: 'rt', className: 'ev-btn-primary ev-btn-sm', 'data-act': 'ai-retry' }, 'ส่งอีกครั้ง')),
+  ]);
+  const g = n.reason === 'global';
+  return h('div', { className: 'ev-notice', 'data-key': 'notice' }, [
+    h('b', { key: 'b' }, 'ข้อความนี้ยังไม่ได้ส่ง'),
+    h('span', { key: 's' }, g ? 'ระบบเต็มชั่วคราว ข้อความของคุณยังอยู่ในช่องพิมพ์ ลองส่งใหม่ในอีกสักครู่'
+      : `ถึงขีดจำกัดการใช้งานแล้ว ข้อความของคุณยังอยู่ในช่องพิมพ์ ส่งได้อีกครั้ง${w.whenText ? w.whenText(n.resetAt) : ''}`),
+    h('div', { key: 'r', className: 'ev-row', style: { gap: '8px', 'flex-wrap': 'wrap' } }, [
+      h('button', { key: 'ad', className: 'ev-btn-ghost ev-btn-sm', 'data-act': 'add' }, 'เพิ่มรายการเอง'),
+      h('button', { key: 'us', className: 'ev-btn-ghost ev-btn-sm', 'data-act': 'ai-usage' }, 'ดูการใช้งาน'),
+    ]),
+  ]);
+}
+
+/* แถบปุ่มข้อความ AI (ตาม msgActions ของเดโม): คัดลอก · โหวตชอบ/ไม่ชอบ */
+function MsgActions({ m, i }) {
+  const w = W();
+  const ic = (n) => ({ dangerouslySetInnerHTML: { __html: w.icon(n) } });
+  return h('div', { className: 'ev-msg-actions' }, [
+    h('button', { key: 'c', 'data-act': 'ai-copy', 'data-id': String(i), 'aria-label': 'คัดลอก', ...ic('copy') }),
+    h('button', { key: 'u', 'data-act': 'ai-vote', 'data-id': i + ':up', 'aria-pressed': String(m.vote === 'up'), 'aria-label': 'ชอบ', ...ic('thumbup') }),
+    h('button', { key: 'd', 'data-act': 'ai-vote', 'data-id': i + ':down', 'aria-pressed': String(m.vote === 'down'), 'aria-label': 'ไม่ชอบ', ...ic('thumbdown') }),
   ]);
 }
 
@@ -62,16 +96,21 @@ function AiItemCard({ m, i }) {
 }
 
 function AiContent(p) {
+  const w = W();
   const c = p.chat;
-  if (!c || !c.msgs.length) return h(AiHello);
-  /* ข้อความเรียงตามลำดับ join ไม่มีตัวคั่น ผู้ใช้=บับเบิลเดียว AI=บับเบิล+การ์ด(หากมี) */
-  return h('div', { className: 'ev-chat' }, c.msgs.map((m, i) => m.who === 'u'
-    ? h('div', { key: 'm' + i, className: 'ev-bubble-user' }, m.text)
+  if (!c || !c.msgs.length) return [h(AiHello, { key: 'h' }), h(AiNotice, { key: 'n' })];
+  const ms = c.msgs, lastA = ms.map(m => m.who).lastIndexOf('a'), typing = w.AI && w.AI.typing;
+  const out = ms.map((m, i) => m.who === 'u'
+    ? h('div', { key: 'm' + i, className: 'ev-bubble-user', 'data-key': 'm' + i }, m.text)
     : [
-        h('div', { key: 'b' + i, className: 'ev-bubble-ai' }, m.text),
+        h('div', { key: 'b' + i, className: 'ev-bubble-ai', 'data-key': 'm' + i }, m.text),
         m.cards && m.cards.length ? m.cards.map((c2, k) => h(AiToolCard, { key: 'c' + i + '_' + k, c: c2, i, k }))
           : m.card ? h(AiItemCard, { key: 'ic' + i, m, i }) : null,
-      ]));
+        h(MsgActions, { key: 'ma' + i, m, i }),
+        i === lastA && !typing ? h('p', { key: 'disc' + i, className: 'ev-disc' }, 'AI อาจผิดพลาดได้ ตรวจสอบคำตอบอีกครั้ง') : null,
+      ]);
+  if (typing) out.push(h('div', { key: 'typing', className: 'ev-bubble-ai ev-typing', 'data-key': 'typing' }, [h('i', { key: '1' }), h('i', { key: '2' }), h('i', { key: '3' })]));
+  return [h('div', { key: 'chat', className: 'ev-chat' }, out), h(AiNotice, { key: 'n' })];
 }
 
 window.EvarelPages = window.EvarelPages || {};

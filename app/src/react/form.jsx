@@ -80,7 +80,11 @@ function RemPanel() {
 }
 function RemRow() {
   const w = W();
-  return [h(SR, { key: 'r', label: 'แจ้งเตือน', val: w.remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel))];
+  /* notifyIssue ตามเดโม v24: เตือนเมื่อตั้งแจ้งก่อนถึงเวลาแต่ไม่มีเวลาทำรายการ พร้อมปุ่มปิดแจ้งเตือน */
+  const issue = w.notifyIssue ? w.notifyIssue() : '';
+  return [h(SR, { key: 'r', label: 'แจ้งเตือน', val: w.remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel)),
+    issue ? h('div', { key: 'e', className: 'ev-field-err', 'data-tone': 'hint', style: { padding: '6px 14px 12px' },
+      dangerouslySetInnerHTML: raw(w.icon('alert') + '<span>' + issue + '</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button>') }) : null];
 }
 function SET() { return h('div', { className: 'ev-set' }, ...arguments); }
 

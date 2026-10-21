@@ -46,11 +46,29 @@ async function quotaFetch() {
         clearTimeout(tm);
     }
 }
+/* limitBanner ตามเดโม v24: แถบเตือนเมื่อถึงขีดจำกัด (notice kind limit หรือโควตา out) วาดใน slot #aiLimit ของ composer */
+function aiLockInfo() { if (ST.AI.notice && ST.AI.notice.kind === 'limit')
+    return ST.AI.notice; const v = ST.QUOTA; return quotaState(v) === 'out' ? { reason: (v && v.reason) || 'calls', resetAt: v && v.resetAt } : null; }
+function limitBanner() {
+    const L = aiLockInfo();
+    if (!L)
+        return '';
+    const g = L.reason === 'global';
+    const title = g ? 'ตอนนี้มีผู้ใช้จำนวนมาก' : L.reason === 'tokens' ? 'บทสนทนายาวถึงขีดจำกัดของวันนี้แล้ว' : 'ถึงขีดจำกัดการถามของวันนี้แล้ว';
+    const sub = g ? 'ระบบเต็มชั่วคราว ลองใหม่อีกครั้งในอีกสักครู่' : `ใช้ได้อีกครั้ง ${resetIn(L.resetAt)} (${resetClock(L.resetAt)} น.)`;
+    return `<div class="ev-limit" role="status" data-key="limit"><span class="ev-limit-ic">${icon('clock')}</span><div class="grow"><b>${title}</b><span>${sub}</span></div>${g ? '<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-retry-global">ลองใหม่</button>' : '<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">รายละเอียด</button>'}</div>`;
+}
 /* วาดชิป + สถานะช่องพิมพ์จาก QUOTA (จุดเดียวที่แตะ DOM ของโควตา) */
 function quotaPaint() {
     const form = $('aiForm'), ta = $('aiText'), send = form?.querySelector('.ev-send'), chip = $('aiQuota');
     if (!form || !ta || !send)
         return;
+    const lim = $('aiLimit');
+    if (lim) {
+        const bh = limitBanner();
+        lim.hidden = !bh;
+        lim.innerHTML = bh;
+    }
     const st = quotaState(ST.QUOTA), out = st === 'out', wasLocked = form.dataset.locked === 'true';
     if (chip) {
         if (!st) {
@@ -123,4 +141,4 @@ function quotaSheet() {
         return;
     openSheet('โควตา AI วันนี้', quotaSheetHTML(), { page: 'quotaBody', props: { quota: ST.QUOTA } });
 }
-Object.assign(window, { QUOTA_LOW, QUOTA_POLL_MAX, QUOTA_UNKNOWN, quotaEnabled, quotaState, quotaShort, resetMs, resetClock, resetIn, quotaFetch, quotaPaint, quotaRefresh, quotaFromChat, quotaSheet, quotaSheetHTML });
+Object.assign(window, { limitBanner, aiLockInfo, QUOTA_LOW, QUOTA_POLL_MAX, QUOTA_UNKNOWN, quotaEnabled, quotaState, quotaShort, resetMs, resetClock, resetIn, quotaFetch, quotaPaint, quotaRefresh, quotaFromChat, quotaSheet, quotaSheetHTML });
