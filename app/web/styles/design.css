@@ -5,7 +5,7 @@
 
 /* ============ TOKENS ============ */
 :root{
-  --font:'Inter','Noto Sans Thai',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font:'Inter','IBM Plex Sans Thai',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --c-bg:#F7F7F9;--c-surface:#fff;--c-text:#14141A;--c-muted:#6A6A77;--c-line:#E8E8ED;--c-fill:#EDEDF1;--c-on-ink-soft:rgba(255,255,255,.2);
   --c-accent:#4B2FF5;--c-accent-text:#4B2FF5;--c-accent-soft:#EEEBFF;--c-accent-2:#7A5CFF;--c-on-accent:#fff;
   --c-ok:#18A66A;--c-on-ok:#fff;--c-warn:#E8890C;--c-danger:#E5484D;--c-danger-soft:#FDECEC;--c-warn-soft:#FFF3E0;--c-scrim:rgba(10,10,20,.45);
