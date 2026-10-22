@@ -14,7 +14,10 @@ function render(){renderBusy=true;const H=document.documentElement;try{if(UI.ani
  const root=$('app'),enter=UI.animate&&!UI.loading,view=UI.loading?'load':UI.error?'err':UI.tab,MT0=(window as any).EvarelMount;
  const html=UI.loading?skeleton():UI.error?errorView():VIEWS[UI.tab]();
  /* ตรงเดโม v24: เข้าหน้าใหม่ (animate / เปลี่ยน view / loading / ว่าง) = เขียนใหม่ทั้งก้อน + อนิเมชั่นเข้า · อัปเดตในหน้าเดิม = reconcile คง node เดิม (กราฟ/ตัวเลข/เนื้อหา transition จากค่าเดิม) */
- const fresh=enter||UI.loading||root.dataset.view!==view||!root.firstElementChild;
+ /* หน้านี้ขอ React mount (pending) แต่ยังไม่มี root ผูกกับ <main> จริงใน DOM = ต้องเข้าทางเขียนใหม่+commit เสมอ (กัน <main> ว่างค้างไม่มี React) */
+ const reqName=MT0?.pending?.name,hasRoot=!!(reqName&&MT0.roots?.[reqName]&&MT0.els?.[reqName]&&root.contains(MT0.els[reqName]));
+ const needMount=!!MT0?.pending&&!hasRoot;
+ const fresh=enter||UI.loading||needMount||root.dataset.view!==view||!root.firstElementChild;
  let rm=false;
  if(fresh){MT0?.unmountApp(); /* ปลด React root เดิมก่อนเขียนทับ — เฉพาะใน #app/#nav ไม่แตะชั้นลอย */
   root.innerHTML=html;root.dataset.view=view;rm=MT0?.commit(root)||false;
