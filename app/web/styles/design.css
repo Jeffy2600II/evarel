@@ -637,13 +637,24 @@ body{line-height:1.5;letter-spacing:0}
 .fc .fc-timegrid-slot{height:60px}.fc .fc-event{border-radius:12px}
 #agenda .ev-card{padding:22px}
 
-/* ===== หน้า AI: ขอบนุ่มด้วยแถบไล่สีบางๆ (Master สั่ง 22 ต.ค. 2026) =====
-   หลักการ: ไม่แตะ layout ใดๆ ของหน้า (ระยะ/กรอบ/ช่องพิมพ์ใช้ของเดิมทุกอย่าง) เพิ่มเพียงแถบพื้นหลังสูงนิดเดียวที่ขอบรอยต่อ แล้วเต็มความกว้างจอ
-   · แถบบน: ::after ใต้ .ev-aibar สูง 18px ไล่ สีพื้น -> โปร่ง ทับเนื้อที่เลื่อนผ่านเล็กน้อย
-   · แถบล่าง: ::before เหนือ .ev-composer สูง 22px ไล่ โปร่ง -> สีพื้น เต็มความกว้างจอ (ยื่นออกข้างด้วย 100vw) กรอบพิมพ์ไม่ไล่สี ไม่ถูกตัด */
-.ev-page[data-page="ai"] .ev-aibar{position:relative;z-index:3}
-.ev-page[data-page="ai"] .ev-aibar::after{content:"";position:absolute;left:0;right:0;top:100%;height:18px;pointer-events:none;
- background:linear-gradient(to bottom,var(--c-bg),transparent)}
-.ev-page[data-page="ai"] .ev-composer{position:relative}
-.ev-page[data-page="ai"] .ev-composer::before{content:"";position:absolute;left:50%;width:100vw;transform:translateX(-50%);bottom:100%;margin-bottom:0;height:22px;pointer-events:none;z-index:-1;
- background:linear-gradient(to bottom,transparent,var(--c-bg))}
+/* ===== หน้า AI: พื้นหลังโปร่งไล่สีที่ "ตัวคอนเทนเนอร์เอง" (Master สั่ง 22 ต.ค. 2026) =====
+   หลักการ: ไม่เพิ่มเอฟเฟกต์ ไม่ใช้ ::before/::after · แก้ background ของคอนเทนเนอร์ต้นทางโดยตรง (ถูกสุดต่อ GPU: ชั้นเดียว ไม่มี blend/filter/blur)
+   · แถบบน .ev-aibar และ dock ล่าง .ev-aidock ลอยทับเนื้อแชท (เนื้อเลื่อนใต้ได้) พื้นหลังไล่จากสีพื้นไปโปร่งสนิท ไม่มีจุดไหนทึบเกินจำเป็น
+   · กรอบพิมพ์ .ev-composer ไม่ถูกแตะแม้แต่พร็อพเพอร์ตี้เดียว (กรอบ/เงา/มุม/padding/margin เดิมทุกค่า)
+   · dock ยกตามคีย์บอร์ดด้วย --kb (kbSync) จึงไม่ต้องรอเบราว์เซอร์เลื่อนหน้าเอง */
+.ev-page[data-page="ai"]{--ai-bar-h:calc(env(safe-area-inset-top,0px) + 62px);--ai-dock-h:calc(108px + env(safe-area-inset-bottom,0px))}
+.ev-page[data-page="ai"] .ev-aibar{position:absolute;top:0;left:0;right:0;z-index:3;pointer-events:none;
+ background:linear-gradient(to bottom,color-mix(in srgb,var(--c-bg) 86%,transparent) calc(100% - 22px),transparent 100%)}
+.ev-page[data-page="ai"] .ev-aibar>*{pointer-events:auto}
+.ev-page[data-page="ai"] .ev-aidock{position:absolute;left:0;right:0;bottom:var(--kb,0px);z-index:3;pointer-events:none;
+ padding-top:20px;background:linear-gradient(to top,color-mix(in srgb,var(--c-bg) 86%,transparent) calc(100% - 20px),transparent 100%);
+ transition:bottom .22s var(--ease)}
+.ev-page[data-page="ai"] .ev-aidock>.ev-composer{pointer-events:auto}
+/* เนื้อแชทเลื่อนใต้แถบ: เว้นบน/ล่างเท่าความสูงแถบ เพื่อให้หน้าแรกพอดีจอและ hero อยู่กึ่งกลางพื้นที่ที่เห็นจริง */
+.ev-page[data-page="ai"] .ev-page-scroll{padding-top:var(--ai-bar-h);padding-bottom:var(--ai-dock-h);scroll-padding-bottom:var(--ai-dock-h)}
+.ev-page[data-page="ai"] #aiBody{justify-content:center}
+.ev-page[data-page="ai"] .ev-ai-hello{margin:0;padding:0 8px 8px}
+/* กึ่งกลางวงแหวน = กึ่งกลางไอคอน (ไอคอน 56px อยู่บนสุดของ hero เมื่อ padding-top = 0 → y = 28px) */
+.ev-page[data-page="ai"] .ev-ai-hello::before{top:28px}
+/* วงแหวน halo กว้างสุด 2×(66+98)=328px ต้องไม่เกินความกว้างคอลัมน์ ไม่งั้นโดนขอบตัด: ลดชั้นนอกสุดให้พอดีจอแคบ */
+@media (max-width:420px){.ev-page[data-page="ai"] .ev-ai-hello::before{box-shadow:0 0 0 26px var(--c-halo),0 0 0 54px var(--c-halo),0 0 0 84px var(--c-halo)}}

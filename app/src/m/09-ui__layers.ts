@@ -72,6 +72,8 @@ function perfProbe(){if(perfProbing||perfPref()!=='auto'||document.documentEleme
 /* ===== ui/native (v24): ยกช่องพิมพ์พ้นคีย์บอร์ดผ่าน --kb + สีแถบสถานะตามธีม ===== */
 const kbSync=()=>{const v=window.visualViewport;if(!v)return;document.documentElement.style.setProperty('--kb',Math.max(0,Math.round(innerHeight-v.height-v.offsetTop))+'px')};
 window.visualViewport?.addEventListener('resize',kbSync);window.visualViewport?.addEventListener('scroll',kbSync);
+/* โฟกัสช่องพิมพ์แล้วคีย์บอร์ดค่อยเปิด: ยิง kbSync ซ้ำสั้นๆ ให้ dock ตามทัน (กรณีเติมข้อความจากชิป/โฟกัสโดยโปรแกรม) */
+document.addEventListener('focusin',e=>{const n:any=e.target;if(n&&(n.tagName==='TEXTAREA'||n.tagName==='INPUT'))[60,180,360].forEach(ms=>setTimeout(kbSync,ms))});
 function syncThemeColor(){const m=document.querySelector('meta[name="theme-color"]') as HTMLMetaElement|null;if(m)m.content=getComputedStyle(document.documentElement).getPropertyValue('--c-bg').trim()||'#F7F7F9'}
 window.matchMedia?.('(prefers-color-scheme:dark)').addEventListener?.('change',syncThemeColor);
 /* ===== เอนจินสัมผัสนิ้ว (v24 ui/gesture): ปัดเพื่อปิด ใช้ร่วม sheet · หน้าเต็มจอ · drawer =====

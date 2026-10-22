@@ -21,14 +21,15 @@ function AiShellContent(p) {
     '\n ',
     h('div', { key: 'scroll', className: 'ev-page-scroll', id: 'aiScroll' }, h('div', { id: 'aiBody' })),
     '\n ',
+    h('div', { key: 'dock', className: 'ev-aidock' },
     h('form', { key: 'c', className: 'ev-composer', id: 'aiForm' }, [
-      h('div', { key: 'lim', id: 'aiLimit', hidden: true }),
-      h('textarea', { key: 'ta', id: 'aiText', rows: 1, placeholder: p.placeholder, 'aria-label': 'ข้อความถึง AI' }),
-      h('div', { key: 'cbar', className: 'ev-composer-bar' }, [
-        h('button', { key: 'plus', type: 'button', className: 'ev-plus', 'data-act': 'ai-plus', 'aria-haspopup': 'menu', 'aria-expanded': false, 'aria-label': 'ตัวช่วยพิมพ์', ...ic('plus') }),
-        h('button', { key: 'send', className: 'ev-send', 'data-empty': 'true', 'aria-label': 'ส่ง', ...ic('send') }),
-      ]),
-    ]),
+        h('div', { key: 'lim', id: 'aiLimit', hidden: true }),
+        h('textarea', { key: 'ta', id: 'aiText', rows: 1, placeholder: p.placeholder, 'aria-label': 'ข้อความถึง AI' }),
+        h('div', { key: 'cbar', className: 'ev-composer-bar' }, [
+          h('button', { key: 'plus', type: 'button', className: 'ev-plus', 'data-act': 'ai-plus', 'aria-haspopup': 'menu', 'aria-expanded': false, 'aria-label': 'ตัวช่วยพิมพ์', ...ic('plus') }),
+          h('button', { key: 'send', className: 'ev-send', 'data-empty': 'true', 'aria-label': 'ส่ง', ...ic('send') }),
+        ]),
+      ])),
     '\n ',
     h('div', { key: 'dsc', className: 'ev-drawer-scrim', id: 'dScrim', 'data-open': 'false', 'data-act': 'ai-hist' }),
     '\n ',
