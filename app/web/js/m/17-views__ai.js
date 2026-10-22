@@ -56,6 +56,7 @@ const cardHTML = (m, i) => {
 };
 const AI_MARK = '<svg class="ev-ai-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="5" fill="currentColor" stroke="none"/></svg>';
 /* ตามเดโม v24 จริง: สวัสดี+ชื่อ, ev-sub, ปุ่มแนะนำใช้ index, notice, ปุ่มข้อความ, ev-disc, typing — AI state อ่านจาก window (ของจริงเขียนโดย services) */
+const firstName = () => (window.profileOf?.().name || '').trim().split(/\s+/)[0];
 const msgActions = (m, i) => `<div class="ev-msg-actions"><button data-act="ai-copy" data-id="${i}" aria-label="คัดลอก">${icon('copy')}</button><button data-act="ai-vote" data-id="${i}:up" aria-pressed="${m.vote === 'up'}" aria-label="ชอบ">${icon('thumbup')}</button><button data-act="ai-vote" data-id="${i}:down" aria-pressed="${m.vote === 'down'}" aria-label="ไม่ชอบ">${icon('thumbdown')}</button></div>`;
 const noticeHTML = () => {
     const n = window.AI?.notice;
@@ -135,8 +136,9 @@ function openAI() {
     const onClose = () => { clearTimeout(ST.quotaTimer); ST.quotaTimer = 0; ST.quotaTick++; ST.QUOTA = null; window.EvarelMount?.unmountOne?.('ai'); window.EvarelMount?.unmountOne?.('aiShell'); };
     if (MT?.ready('aiShell')) {
         MT.unmountOne('aiShell');
-        const el = openPage('', onClose, 'ai');
-        MT.mountAt(el, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
+        openPage('', onClose, 'ai');
+        page.innerHTML = '';
+        MT.mountAt(page, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
     }
     else
         openPage(aiShellHTML(AI_PLACEHOLDER, initial()), onClose, 'ai');
@@ -145,4 +147,4 @@ function openAI() {
     quotaPaint();
     quotaRefresh();
 }
-Object.assign(window, { aiShellHTML, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI });
+Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI });

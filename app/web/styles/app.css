@@ -220,7 +220,7 @@
 
 .ev-dialog-card{
   display:grid;
-  width:min(100%,340px);
+  width:min(100%, 340px);
   --tw-scale-x:.95;
   --tw-scale-y:.95;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -295,10 +295,10 @@
   position:absolute;
   top:0px;
   bottom:0px;
-  left:max(0px,calc(50% - var(--col-max) / 2));
+  left:max(0px, calc(50% - var(--col-max) / 2));
   z-index:3;
   display:flex;
-  width:min(86vw,330px) !important;
+  width:min(86vw, 330px) !important;
   max-width:none !important;
   --tw-translate-x:-102%;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));

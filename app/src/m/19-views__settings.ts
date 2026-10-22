@@ -9,7 +9,7 @@ function usageCardHTML(){const q=ST.QUOTA,st=quotaState(q);
   <div class="ev-use"><div class="ev-stat"><span>จำนวนครั้งที่ถาม</span><b>${c.used} / ${c.limit}</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-calls" data-to="${cp}" data-lv="${st}"></i></div></div>
   <div class="ev-use"><div class="ev-stat"><span>ความยาวบทสนทนา</span><b>${tp}%</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-tok" data-to="${tp}" data-lv="${st}"></i></div></div>
   <p class="ev-sub" style="margin-top:14px">รีเซ็ตทุกเที่ยงคืน (00:00 น.) · ${resetIn(q.resetAt)}</p>`}
-const providerChip=u=>u?.provider==='google'?`<span class="ev-chip ev-chip-g">${(window as any).GLOGO}Google</span>`:'<span class="ev-chip">อีเมล</span>';
+const providerChip=u=>u?.provider==='google'?`<span class="ev-chip ev-chip-g">${GLOGO}Google</span>`:'<span class="ev-chip">อีเมล</span>';
 function settingsHTMLClassic(){const [st,note]=notifInfo(),total=countNotifiable(S.items);
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
  <section class="ev-card ev-row" style="gap:14px">${avatarHTML({size:56})}<div class="grow"><b>${esc(ST.USER?.name||'ผู้ใช้')}</b><p class="ev-sub" style="overflow:hidden;text-overflow:ellipsis">${esc(ST.USER?.email||'')}</p></div>${providerChip(ST.USER)}</section>
@@ -23,23 +23,21 @@ function settingsHTMLClassic(){const [st,note]=notifInfo(),total=countNotifiable
 /* ชั้น 4: หน้าตั้งค่าผลิตโดย React (runtime ร่วม + ไฟล์หน้า โหลดแบบ lazy หลัง load) ถ้ายังโหลดไม่ครบหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
 function settingsProps(){const [st,note]=notifInfo(),granted='Notification' in window&&Notification.permission==='granted',canBtn='Notification' in window&&(Notification.permission==='default'||(granted&&!pushSavedState()));
  const pf=profileOf();
- return {usageHTML:usageCardHTML(),googleChipInner:(window as any).GLOGO+'Google',avatarBg:pf.bg,avatarName:pf.name||'โปรไฟล์',user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),perfSegHTML:seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}}
+ return {usageHTML:usageCardHTML(),googleChipInner:GLOGO+'Google',avatarBg:pf.bg,avatarName:pf.name||'โปรไฟล์',user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),perfSegHTML:seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}}
 function settingsHTML(){
  const R=(window as any).EvarelPages?.settings;
  if(typeof R!=='function')return settingsHTMLClassic();
  try{return R(settingsProps())}
  catch(e){console.warn('settings react',e);return settingsHTMLClassic()}}
 /* S4 ไบต์ 5: หน้าตั้งค่า mount React จริงที่ #page เมื่อพร้อม (แพทเทิร์นเดียวกับ detail ใน 20-services__calendar) */
-function usagePaint(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e){e.innerHTML=usageCardHTML();(window as any).growBars(e)}})}
+function usagePaint(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e){e.innerHTML=usageCardHTML();growBars(e)}})}
 async function usageRefresh(){try{const q=await quotaFetch();ST.QUOTA=q||{unknown:true}}catch(err){ST.QUOTA={unknown:true}}usagePaint()}
 function settingsOpen(){const MT=(window as any).EvarelMount;
- if(hasPage('settings'))return;
- if(hasPage('ai'))drawerOpen(false);
- const el=openPage('',undefined,'settings');
- if(MT?.ready('settings')){MT.mountAt(el,'settings',settingsProps())}else el.innerHTML=settingsHTML();growBars(el);usageRefresh()}
+ if(MT?.ready('settings')){MT.unmountOne('settings');if(!LAYERS.some(l=>l.el===page))openPage('',undefined,'settings');page.innerHTML='';MT.mountAt(page,'settings',settingsProps());usageRefresh();return}
+ const html=settingsHTML();if(LAYERS.some(l=>l.el===page))page.innerHTML=html;else openPage(html,undefined,'settings');usageRefresh()}
 function settingsRepaint(){const MT=(window as any).EvarelMount;
- const p=pageOf('settings');if(!p)return;
- if(MT?.ready('settings')){MT.mountAt(p,'settings',settingsProps())}else p.innerHTML=settingsHTML();growBars(p)}
+ if(MT?.ready('settings')&&LAYERS.some(l=>l.el===page)){MT.mountAt(page,'settings',settingsProps());return}
+ page.innerHTML=settingsHTML()}
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name){return new Promise((ok,no)=>{const W=window as any;if(name==='runtime'&&W.EvarelReact)return ok(0);/* index โหลด runtime ก่อนบูตแล้ว ห้าม execute ซ้ำเพราะจะเกิด React สองชุด */
  const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);

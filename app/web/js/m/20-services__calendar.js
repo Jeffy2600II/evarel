@@ -132,8 +132,9 @@ function openDetail(id) {
     const MT = window.EvarelMount;
     /* S4: หน้ารายละเอียดเป็น React จริงเมื่อพร้อม (FullCalendar ของ habit mount ใน effect ของ component) ไม่พร้อมใช้ string เดิม */
     if (MT?.ready('detail')) {
-        const el = openPage('', () => { ST.DETAIL = null; MT.unmountOne('detail'); destroyCal('habit'); }, 'detail');
-        MT.mountAt(el, 'detail', { id: it.id });
+        openPage('', () => { ST.DETAIL = null; MT.unmountOne('detail'); destroyCal('habit'); }, 'detail');
+        page.innerHTML = '';
+        MT.mountAt(page, 'detail', { id: it.id });
         mountHabit(); /* mount ใน turn เดียวกับการเปิดหน้าเหมือน classic: effect ของ React ยิงกลาง transition (scale .98) ทำให้ FullCalendar วัดกว้างเพี้ยน */
         return;
     }
