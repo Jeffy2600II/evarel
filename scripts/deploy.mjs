@@ -30,11 +30,12 @@ if (mode === 'production' && process.argv[3] !== '--confirm-production') {
 }
 
 const API_BASE = 'https://api.cloudflare.com/client/v4';
-const token = readEnvOne('CF_API_TOKEN') || readEnvOne('CLOUDFLARE_API_TOKEN');
+/* ใน GitHub Actions ไม่มีไฟล์ .env: รับจากตัวแปรสภาพแวดล้อมก่อน (secret) ในเครื่องผมยังอ่านจาก .env เหมือนเดิม */
+const token = process.env.CF_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || readEnvOne('CF_API_TOKEN') || readEnvOne('CLOUDFLARE_API_TOKEN');
 if (!token) { console.error('ไม่พบ CF_API_TOKEN ใน .env'); process.exit(1); }
 
 /* account id: ใช้ค่าจาก .env ก่อน ถ้าไม่มีค่อยถาม API ด้วย token */
-let accountId = readEnvOne('CLOUDFLARE_ACCOUNT_ID');
+let accountId = process.env.CLOUDFLARE_ACCOUNT_ID || readEnvOne('CLOUDFLARE_ACCOUNT_ID');
 if (!accountId) {
   const r = JSON.parse(execFileSync('curl', ['-s', '-m', '20', `${API_BASE}/accounts`,
     '-H', `Authorization: Bearer ${token}`]).toString());

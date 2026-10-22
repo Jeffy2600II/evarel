@@ -1,0 +1,85 @@
+# Path: .github/workflows/web.yml | Purpose: ระบบอัปเดตเว็บ Evarel — ตรวจโน้ตรุ่น, ทดสอบ, build, deploy forge, ตรวจหลัง deploy
+# ขอบเขต: develop -> forge เท่านั้น | production ไม่มี job ใดแตะ (กฎ Master: ห้ามแตะ production โดยพลการ ต้องสั่งเอง)
+# ฐานสำหรับแอปมือถือ (ภายหลัง): job ปล่อยรุ่นจะอ่าน releases/current.json และสร้าง GitHub Release ตัวเดียวกัน
+name: web
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web-shell/package-lock.json
+      - name: ตรวจโน้ตรุ่น (ทุกอัปเดตที่ส่งถึงผู้ใช้ต้องมีโน้ตใหม่)
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then BASE="HEAD~1"; fi
+          node scripts/check-release-notes.mjs "$BASE"
+      - name: ติดตั้งแพ็กเกจ (ราก = tailwind/esbuild/wrangler | web-shell = next/react แล้วทำ symlink เหมือนเครื่องพัฒนา)
+        run: |
+          npm ci
+          npm ci --prefix web-shell
+          ln -sfn ../web-shell/node_modules web-next/node_modules
+      - name: build forge (พิสูจน์ว่า build ผ่าน)
+        run: node scripts/build-web.mjs forge
+      - name: ตรวจ release.json ตรงกับ service worker
+        run: |
+          node -e "
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('build/web/release.json','utf8'));
+          const sw=fs.readFileSync('build/web/sw.js','utf8');
+          const m=sw.match(/const VERSION = 'evarel-next-([0-9a-f]+)'/);
+          if(!m||m[1]!==r.build){console.error('release.build != sw VERSION',r.build,m&&m[1]);process.exit(1)}
+          if(/release\.json/.test(sw.match(/const CORE = \[[\s\S]*?\];/)[0])){console.error('release.json ห้ามอยู่ในแคช CORE');process.exit(1)}
+          console.log('RELEASE-JSON OK build',r.build,'v'+r.version);"
+      - uses: actions/upload-artifact@v4
+        with: { name: web-build, path: build/web, retention-days: 3 }
+
+  deploy-forge:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: forge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/download-artifact@v4
+        with: { name: web-build, path: build/web }
+      - name: deploy forge
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm ci
+          node scripts/deploy.mjs forge
+      - name: ตรวจหลัง deploy (release.json บนเว็บจริงต้องตรงกับที่เพิ่ง build)
+        run: |
+          WANT=$(node -p "require('./build/web/release.json').build")
+          for i in 1 2 3 4 5 6; do
+            GOT=$(curl -fsS -H 'Cache-Control: no-store' "https://evarel-app-forge.nontakorn2600.workers.dev/release.json?_=$RANDOM" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).build" 2>/dev/null || echo none)
+            echo "ลองครั้งที่ $i: เว็บ=$GOT ต้องการ=$WANT"
+            [ "$GOT" = "$WANT" ] && echo "POST-DEPLOY OK" && exit 0
+            sleep 10
+          done
+          echo "POST-DEPLOY FAIL: เว็บยังไม่ได้รุ่นที่เพิ่ง deploy"; exit 1

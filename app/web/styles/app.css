@@ -5454,3 +5454,88 @@ body{
   transform:scaleX(var(--p,0));
   transition:transform .4s var(--ease)
 }
+
+/* ===== หน้าต่างอัปเดต (ระบบอัปเดตเว็บ) — ใช้โทเคนจริงของแอป (--c-accent / --c-accent-soft / --c-muted) ปุ่มหลัก = ev-btn-primary ปุ่มรอง = ev-btn-ghost ===== */
+
+.ev-upd{
+  display:grid;
+  gap:6px;
+  text-align:left
+}
+
+.ev-upd h3{
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:-.01em
+}
+
+.ev-upd-title{
+  margin-top:6px;
+  font-size:15px;
+  font-weight:600
+}
+
+.ev-upd-body{
+  display:grid;
+  gap:14px;
+  margin-top:10px;
+  max-height:min(46vh,360px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-right:2px
+}
+
+.ev-upd-group ul{
+  margin:6px 0 0;
+  padding:0;
+  list-style:none;
+  display:grid;
+  gap:8px
+}
+
+.ev-upd-group li{
+  position:relative;
+  padding-left:16px;
+  font-size:14px;
+  line-height:1.55;
+  color:var(--c-text)
+}
+
+.ev-upd-group li::before{
+  content:"";
+  position:absolute;
+  left:2px;
+  top:.62em;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--c-muted)
+}
+
+.ev-upd-tag{
+  display:inline-block;
+  font-size:12px;
+  font-weight:600;
+  padding:2px 10px;
+  border-radius:999px;
+  background:var(--c-fill);
+  color:var(--c-text)
+}
+
+.ev-upd-tag[data-t="new"]{
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text)
+}
+
+.ev-upd-tag[data-t="fix"]{
+  background:var(--c-warn-soft);
+  color:var(--c-warn)
+}
+
+.ev-upd .ev-dlg-actions{
+  margin-top:16px
+}
+
+.ev-upd .ev-upd-one{
+  grid-column:1 / -1
+}

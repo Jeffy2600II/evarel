@@ -65,6 +65,11 @@ const CORE = [
   './icons/icon-512.png',
 ];
 
+/* ให้หน้าถามได้ว่ากำลังรัน build ไหน (ระบบอัปเดตเทียบกับ release.json) | VERSION = evarel-next-<digest> */
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'get-build' && e.ports && e.ports[0]) e.ports[0].postMessage({ build: VERSION.replace(/^evarel-next-/, '') });
+});
+
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
@@ -77,12 +82,42 @@ self.addEventListener('activate', e => {
   );
 });
 
+/* network-first: ได้ของใหม่ทันทีเมื่อมีเน็ต | เน็ตช้า/ขาด = ใช้แคช (ออฟไลน์ยังเปิดได้) | เขียนแคชเสมอเมื่อได้ของจริง */
+const NET_FIRST_MS = 3000;
+async function networkFirst(req, url, isNav) {
+  const cache = await caches.open(VERSION);
+  const key = isNav ? './index.html' : req;
+  try {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), NET_FIRST_MS);
+    let res = await fetch(url.href, { cache: 'no-store', credentials: 'same-origin', signal: ctl.signal });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    /* ล้าง redirected flag (เบราว์เซอร์ห้ามใช้ response ที่ผ่าน redirect ตอบ navigation) */
+    if (res.redirected) res = new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers });
+    if (isNav) await cache.put(key, res.clone());
+    return res;
+  } catch (err) {
+    const hit = await cache.match(key);
+    if (hit) return hit;
+    if (isNav) { const idx = await cache.match('./'); if (idx) return idx; }
+    return new Response('ออฟไลน์', { status: 503 });
+  }
+}
+
 /* Stale-while-revalidate: เปิดจากแคชทันที (เร็ว + ออฟไลน์ได้) แล้วดึงฉบับใหม่เบื้องหลังเสมอ
    ครั้งถัดไปจะได้ของใหม่ และถ้าไฟล์หลักเปลี่ยนจะแจ้งหน้าเว็บให้ผู้ใช้กดรีเฟรช */
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+  /* ระบบอัปเดต: หน้า (navigation) และ release.json ดึงจากเครือข่ายก่อน (รอไม่เกิน NET_FIRST_MS) แล้วค่อยใช้แคช
+     เหตุผล: stale-while-revalidate ส่งของเก่าให้หน้าก่อนเสมอ ผู้ใช้จึงต้อง refresh สองรอบ | asset อื่นยังแคชก่อนเพื่อความเร็ว */
+  const isNav = e.request.mode === 'navigate' || e.request.destination === 'document';
+  if (isNav || url.pathname.endsWith('/release.json')) {
+    e.respondWith(networkFirst(e.request, url, isNav));
+    return;
+  }
   /* งานเบื้องหลังต้องผูกกับ event ทันที (ก่อนมี await ใดๆ) ไม่งั้นเบราว์เซอร์อาจปิด SW ก่อนอัปเดตแคชเสร็จ */
   let bg;
   const done = new Promise(r => { bg = r; });

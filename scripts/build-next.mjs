@@ -56,6 +56,13 @@ try {
     .replace(/const CORE = \[[\s\S]*?\];/, 'const CORE = ' + JSON.stringify(CORE, null, 2).replace(/\n/g, '\n  ') + ';');
   if (!sw.includes('evarel-next-')) { console.error('เจน sw.js ไม่สำเร็จ (VERSION ไม่ถูกแทน)'); process.exit(1); }
   writeFileSync(join(OUT, 'sw.js'), sw);
+
+  // ระบบอัปเดต: release.json = แหล่งความจริงของรุ่น build ตรงกับ VERSION ของ sw.js เสมอ (digest เดียวกัน)
+  // การบังคับ "ทุกอัปเดตต้องมีโน้ตใหม่" อยู่ที่ scripts/check-release-notes.mjs (เทียบกับ git) ไม่ผูกกับ build เพื่อให้ build ซ้ำทดสอบได้
+  const relSrc = JSON.parse(readFileSync(join(root, 'releases/current.json'), 'utf8'));
+  if (!relSrc.version || !Array.isArray(relSrc.notes) || !relSrc.notes.length) { console.error('releases/current.json ต้องมี version และ notes อย่างน้อย 1 ข้อ'); process.exit(1); }
+  if (relSrc.notes.some(n => !['new', 'improve', 'fix'].includes(n.type) || !String(n.text || '').trim())) { console.error('notes แต่ละข้อต้องมี type = new|improve|fix และ text'); process.exit(1); }
+  writeFileSync(join(OUT, 'release.json'), JSON.stringify({ build: digest, version: relSrc.version, date: relSrc.date, title: relSrc.title || '', notes: relSrc.notes }, null, 2));
   console.log(`NEXT-BUILD OK (${env}) -> ${OUT} | sw evarel-next-${digest} | แคช ${CORE.length} ไฟล์`);
 } finally {
   rmSync(PUB, { recursive: true, force: true });
