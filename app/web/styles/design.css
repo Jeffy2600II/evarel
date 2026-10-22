@@ -701,11 +701,3 @@ body{line-height:1.5;letter-spacing:0}
 .ev-md-table th{background:var(--c-fill);font-weight:600;white-space:nowrap}
 .ev-md-table tr:last-child td{border-bottom:0}
 .ev-md-table td+td,.ev-md-table th+th{border-left:1px solid var(--c-line)}
-
-/* ===== ตำแหน่งระหว่างลากมาจากเอนจินผ่านตัวแปร --gx (px) / --gp (0-1) : เขียนครั้งเดียวต่อเฟรม · transform เป็น compositor-only =====
-   JS ไม่เขียน style.transform ตรงๆ อีกต่อไป · will-change ถูกตั้งโดยเอนจินเฉพาะตอนลาก */
-.ev-sheet[data-drag="true"]{transform:translate3d(0,var(--gx,0px),0)}
-.ev-page[data-drag="true"]{transform:translate3d(var(--gx,0px),0,0)}
-.ev-drawer[data-drag="true"][data-open="true"]{transform:translate3d(calc(var(--gx,0px) * -1),0,0)}
-.ev-drawer[data-drag="true"][data-open="false"]{transform:translate3d(calc(-102% + var(--gx,0px)),0,0)}
-.ev-sheet,.ev-drawer,.ev-page{backface-visibility:hidden}

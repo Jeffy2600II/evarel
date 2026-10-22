@@ -51,9 +51,8 @@ function openPage(html,onClose,name=''){
  el.dataset.page=name||'';el.innerHTML=html;el.style.zIndex=String(22+LAYERS.length);document.body.appendChild(el);
  if(name!=='ai')attachGesture(el,{axis:'x',dir:1,size:()=>el.offsetWidth,
   canStart:p=>p.x<=EDGE_BACK_PX&&LAYERS[LAYERS.length-1]?.el===el,
-  onStart:()=>{el.dataset.drag='true'},onMove:()=>{},
-  spring:(c:boolean,d:number)=>({prop:(x:number)=>`translate3d(${x}px,0,0)`,target:c?el.offsetWidth:0,k:c?260:420,c:c?34:38,maxMs:c?320:520}),
-  onEnd:(c:boolean)=>{el.dataset.drag='false';if(c)el.dataset.exit='x';el.style.removeProperty('--gx');el.style.removeProperty('--gp');if(!(c&&closeTop())){delete el.dataset.exit}}});
+  onStart:()=>{el.dataset.drag='true'},onMove:x=>{el.style.transform=`translateX(${x}px)`},
+  onEnd:c=>{el.dataset.drag='false';if(c)el.dataset.exit='x';if(!(c&&closeTop())){delete el.dataset.exit;el.style.transform=''}}});
  el.dataset.enter='true';setTimeout(()=>{delete el.dataset.enter},800);perfProbe();
  pushLayer({kind:'page',name,el,remove:true,onClose:()=>{onClose?.()}});return el}
 /* ===== ui/perf (v24): ปรับอนิเมชั่นตามกำลังเครื่อง =====
@@ -77,75 +76,45 @@ window.visualViewport?.addEventListener('resize',kbSync);window.visualViewport?.
 document.addEventListener('focusin',e=>{const n:any=e.target;if(n&&(n.tagName==='TEXTAREA'||n.tagName==='INPUT'))[60,180,360].forEach(ms=>setTimeout(kbSync,ms))});
 function syncThemeColor(){const m=document.querySelector('meta[name="theme-color"]') as HTMLMetaElement|null;if(m)m.content=getComputedStyle(document.documentElement).getPropertyValue('--c-bg').trim()||'#F7F7F9'}
 window.matchMedia?.('(prefers-color-scheme:dark)').addEventListener?.('change',syncThemeColor);
-/* ===== เอนจินติดตามนิ้ว (ระดับมืออาชีพ: แนวเดียวกับ native / Vaul / Framer Motion) =====
-   1) Pointer Events ชุดเดียว + setPointerCapture (นิ้ว/เมาส์/ปากกา) · touch-action ประกาศแกนที่ยอมให้เบราว์เซอร์จัดการ เบราว์เซอร์ตัดสินแกนเองที่ compositor ไม่ต้องรอ JS
-   2) ไม่เขียน style ทีละพิกเซล: เก็บตำแหน่งในตัวแปร แล้วเขียน "ครั้งเดียวต่อเฟรม" ด้วย rAF เป็น CSS variable (--gx พิกเซล, --gp 0-1) บน element เดียว
-      transform/opacity ทั้งหมดคำนวณใน CSS จากตัวแปรนั้น (translate3d + calc) = compositor-only ไม่ trigger layout
-   3) getCoalescedEvents(): ใช้ทุกจุดย่อยของเฟรมคำนวณความเร็ว (แม่นกว่า ตำแหน่งยังใช้จุดล่าสุด)
-   4) ความเร็ว = ถดถอยเชิงเส้นของจุดในหน้าต่าง 100ms (ทน noise กว่าใช้สองจุดปลาย)
-   5) ปล่อยนิ้ว = Web Animations API บน compositor thread เริ่ม "จากตำแหน่งปัจจุบัน + ความเร็วนิ้ว" ด้วยสปริงหน่วงจริง (คำนวณ keyframes ล่วงหน้า) ไม่กิน main thread
-      แตะซ้ำระหว่างแอนิเมชันได้ (interruptible): อ่านตำแหน่ง ณ ตอนนั้น ยกเลิกแอนิเมชัน แล้วลากต่อทันที
-   6) rubber-band เมื่อลากสวนทิศ/เกินขอบ · will-change เฉพาะตอนลาก
-   cfg: {axis, dir, size(), mover?, scroll, handle, canStart(p,t), mouseAny, onStart(), onMove(delta,ratio), onEnd(commit,delta,velocity)}
-        settle?: {from:(d)=>keyframe, to:(commit)=>keyframe} ถ้าให้มา engine เล่นสปริงให้เอง (ไม่ต้องพึ่ง CSS transition) */
-
-const G={SLOP:4,FLING:.55,RATIO:.35,STALE_MS:80,VWIN:100};
+/* ===== เอนจินสัมผัสนิ้ว (v24 ui/gesture): ปัดเพื่อปิด ใช้ร่วม sheet · หน้าเต็มจอ · drawer =====
+   cfg: {axis:'x'|'y', dir:+1|-1, size():px, scroll:true, handle:'selector', canStart(p,target), mouseAny, onStart(), onMove(delta,ratio), onEnd(commit,delta)}
+   กฎเลื่อนซ้อน: ตัดสินใจ "ตอนเริ่มแตะ" ครั้งเดียว ถ้าเนื้อหาข้างในยังเลื่อนกลับได้จะเลื่อนเนื้อหาตามปกติและไม่ปิดตลอดการแตะนั้น */
+const G={SLOP:4,FLING:.55,RATIO:.35,STALE_MS:80};
 function gScrolledAway(target:any,root:any,axis:string,dir:number){for(let n=target;n&&n!==root&&n!==document.body;n=n.parentElement){const cs=getComputedStyle(n);
  if(axis==='y'&&/(auto|scroll)/.test(cs.overflowY)&&n.scrollHeight>n.clientHeight+1&&(dir>0?n.scrollTop>0:n.scrollTop+n.clientHeight<n.scrollHeight-1))return true;
  if(axis==='x'&&/(auto|scroll)/.test(cs.overflowX)&&n.scrollWidth>n.clientWidth+1&&(dir>0?n.scrollLeft>0:n.scrollLeft+n.clientWidth<n.scrollWidth-1))return true}return false}
-/* สปริงหน่วงจริง (critically/under-damped) -> keyframes ของ WAAPI: x(t) จาก x0 ความเร็ว v0 ไป 0 (ปลายทางคือ 0 หลังเลื่อนระบบพิกัด) */
-function springFrames(x0:number,v0:number,k=420,c=38,m=1,N=28,maxMs=520){const out:number[]=[];const wn=Math.sqrt(k/m),z=c/(2*Math.sqrt(k*m));let dur=maxMs;
- for(let i=0;i<=N;i++){const t=(i/N)*(dur/1000);let x:number;
-  if(z<1){const wd=wn*Math.sqrt(1-z*z);x=Math.exp(-z*wn*t)*(x0*Math.cos(wd*t)+((v0+z*wn*x0)/wd)*Math.sin(wd*t))}
-  else x=Math.exp(-wn*t)*(x0+(v0+wn*x0)*t);out.push(x)}
- return {frames:out,dur}}
-function attachGesture(el:any,cfg:any){
- const st:any={id:-1,track:false,on:false,a0:0,c0:0,o:0,delta:0,blocked:false,pts:[] as number[][],raf:0,pend:-1,anim:null as any};
- const mv=()=>cfg.mover||el;
+/* เอนจินติดตามนิ้ว (เขียนใหม่): แก้อาการ "ตามช้า แล้วกระตุกปึ๊บ" ที่ต้นเหตุ
+   1) ระยะ dead-zone (SLOP) ไม่ถูกทิ้งแล้วกระโดด: เมื่อ lock แกน ใช้ตำแหน่งนิ้ว ณ จุด lock เป็นศูนย์ใหม่ (origin) ให้แผงเริ่มจาก 0 แล้วตามนิ้วทุกพิกเซลต่อเนื่อง
+      และตั้ง SLOP เล็กลง (4px) เพราะตัดสินแกนด้วยอัตราส่วนแล้ว
+   2) เขียน transform ครั้งเดียวต่อเฟรมด้วย rAF (ใช้ตำแหน่งล่าสุดเสมอ) ไม่เขียนทุก touchmove ที่ถี่กว่าจอ
+   3) ความเร็วคำนวณจากตำแหน่งนิ้วจริงในหน้าต่างเวลา 100ms ล่าสุด (ไม่ใช่ EMA ของค่าที่กระโดด) fling จึงแม่น
+   4) ปิด transition แบบ inline ตอนเริ่มลาก (ชนะกฎ CSS ทุกชั้น) แล้วคืนค่าตอนปล่อย
+   5) pointercapture/touch-action ให้เบราว์เซอร์ไม่แย่งนิ้วไปเลื่อนเอง เมื่อ lock แล้ว preventDefault ทุก move */
+function attachGesture(el:any,cfg:any){const st:any={track:false,on:false,a0:0,c0:0,o:0,delta:0,blocked:false,hist:[] as number[][],raf:0,pend:-1};
  const ax=(p:any)=>cfg.axis==='x'?p.x:p.y,cx=(p:any)=>cfg.axis==='x'?p.y:p.x,size=()=>Math.max(1,cfg.size());
- const SLOP=cfg.slop??G.SLOP;
- /* เขียนครั้งเดียวต่อเฟรม: ตัวแปร CSS บน mover (CSS คำนวณ transform/opacity เอง) แล้วเรียก onMove เพื่อ side effect ที่ CSS ทำไม่ได้ */
- const paint=()=>{st.raf=0;if(!st.on||st.pend<0)return;const d=st.pend;st.pend=-1;const m=mv();m.style.setProperty('--gx',d+'px');m.style.setProperty('--gp',String(Math.min(1,d/size())));cfg.onMove(d,Math.min(1,d/size()))};
- const flush=()=>{if(st.raf){cancelAnimationFrame(st.raf);st.raf=0}if(st.pend>=0&&st.on){const d=st.pend;st.pend=-1;const m=mv();m.style.setProperty('--gx',d+'px');m.style.setProperty('--gp',String(Math.min(1,d/size())));cfg.onMove(d,Math.min(1,d/size()))}};
- const rubber=(d:number)=>d;           /* ทิศที่ยอมให้เลื่อนมีเพดานตามขนาด · สวนทิศ = ต้านแบบยาง */
- const vel=()=>{const h=st.pts;if(h.length<2)return 0;const n=h.length,t0=h[0][0];let sx=0,sy=0,sxx=0,sxy=0;for(const [t,a] of h){const x=t-t0;sx+=x;sy+=a;sxx+=x*x;sxy+=x*a}const den=n*sxx-sx*sx;return den?((n*sxy-sx*sy)/den)*cfg.dir:0};
- const begin=(p:any,target:any,id:number)=>{if(cfg.canStart&&!cfg.canStart(p,target))return;const inHandle=!!(cfg.handle&&target?.closest?.(cfg.handle));
-  /* แตะซ้ำระหว่างแอนิเมชันปล่อยนิ้ว = จับตำแหน่งปัจจุบันแล้วลากต่อทันที */
-  if(st.anim){try{const m=mv();const cs=getComputedStyle(m);const tr=cs.transform;st.anim.cancel();st.anim=null;if(tr&&tr!=='none'){const mat=new DOMMatrixReadOnly(tr);m.style.setProperty('--gx',(cfg.axis==='x'?mat.m41*cfg.dir:mat.m42*cfg.dir)+'px')}}catch{st.anim=null}}
-  Object.assign(st,{id,track:true,on:false,a0:ax(p),c0:cx(p),o:0,delta:0,pts:[[performance.now(),ax(p)]],pend:-1,blocked:!inHandle&&!!cfg.scroll&&gScrolledAway(target,el,cfg.axis,cfg.dir)})};
- const move=(p:any,coal?:any[])=>{if(!st.track)return false;const a=ax(p),raw=a-st.a0,d0=raw*cfg.dir,c=Math.abs(cx(p)-st.c0);
-  if(!st.on){if(Math.abs(raw)<SLOP&&c<SLOP)return false;if(d0>0&&Math.abs(raw)>=c&&!st.blocked){st.on=true;st.o=a;const m=mv();m.style.willChange='transform';m.style.transition='none';cfg.onStart?.()}else{st.track=false;return false}}
-  const now=performance.now();if(coal&&coal.length)for(const ce of coal)st.pts.push([ce.timeStamp?performance.timeOrigin+ce.timeStamp-performance.timeOrigin:now,ax({x:ce.clientX,y:ce.clientY})]);else st.pts.push([now,a]);
-  while(st.pts.length>2&&now-st.pts[0][0]>G.VWIN)st.pts.shift();
-  st.delta=Math.max(0,rubber((a-st.o)*cfg.dir));st.pend=st.delta;if(!st.raf)st.raf=requestAnimationFrame(paint);return true};
- const end=()=>{if(!st.track)return;const was=st.on;st.track=false;st.on=false;flush();const m=mv();
-  if(!was){return}
-  const stale=performance.now()-(st.pts[st.pts.length-1]?.[0]||0)>G.STALE_MS*2;const v=stale?0:vel();
-  const commit=st.delta>size()*(cfg.ratio||G.RATIO)||v>(cfg.fling||G.FLING);
-  /* ปล่อย: ล้างตัวแปรลาก แล้วให้ onEnd ตั้งสถานะปลายทาง · เล่นสปริงต่อจากตำแหน่ง+ความเร็วปัจจุบัน (ถ้า cfg.spring) ด้วย WAAPI บน compositor */
-  const startD=st.delta;m.style.willChange='';m.style.transition='';
-  cfg.onEnd(commit,startD,v);
-  if(cfg.spring&&m.animate){try{const tgt=cfg.spring(commit,startD);/* tgt: {prop:(x)=>string, target:number} — target = ระยะปลายทางของ "ตัวแปรลาก" เทียบกับ CSS สถานะใหม่ */
-    const from=startD-tgt.target;const sp=springFrames(from*cfg.dir,v*1000*cfg.dir,tgt.k,tgt.c,1,28,tgt.maxMs||520);
-    const kf=sp.frames.map((x:number,i:number)=>({transform:tgt.prop(x*cfg.dir),offset:i/28}));
-    st.anim=m.animate(kf,{duration:sp.dur,easing:'linear',composite:'replace'});const a=st.anim;a.onfinish=a.oncancel=()=>{if(st.anim===a)st.anim=null}}catch{st.anim=null}}};
- /* Pointer Events ชุดเดียว (นิ้ว/เมาส์/ปากกา) — touchmove ไม่ต้อง preventDefault: ใช้ touch-action บน element เป็นตัวบอกแกนที่ปล่อยให้เบราว์เซอร์ */
- el.addEventListener('pointerdown',(e:any)=>{if(e.pointerType==='mouse'){if(e.button)return;if(!cfg.mouseAny&&!(cfg.handle&&e.target.closest?.(cfg.handle)))return}
-  if(st.track&&st.id!==e.pointerId)return;begin({x:e.clientX,y:e.clientY},e.target,e.pointerId)},{passive:true});
- const onMove=(e:any)=>{if(!st.track||e.pointerId!==st.id)return;const wasOn=st.on;const coal=e.getCoalescedEvents?.();const moved=move({x:e.clientX,y:e.clientY},coal&&coal.length?coal:undefined);
-  if(st.on&&!wasOn){try{el.setPointerCapture(e.pointerId)}catch{}}};
- el.addEventListener('pointermove',onMove,{passive:true});
- const onUp=(e:any)=>{if(e.pointerId!==st.id)return;try{el.releasePointerCapture(e.pointerId)}catch{}end();st.id=-1};
- el.addEventListener('pointerup',onUp);el.addEventListener('pointercancel',onUp);
- /* เมาส์ที่ออกนอก element: pointer capture ดูแลแล้ว · ปล่อยนอกหน้าต่าง -> lostpointercapture */
- el.addEventListener('lostpointercapture',(e:any)=>{if(e.pointerId===st.id&&st.on){end();st.id=-1}});
+ const SLOP=cfg.slop??4;
+ const paint=()=>{st.raf=0;if(!st.on||st.pend<0)return;const d=st.pend;st.pend=-1;cfg.onMove(d,Math.min(1,d/size()))};
+ const flush=()=>{if(st.raf){cancelAnimationFrame(st.raf);st.raf=0}if(st.pend>=0&&st.on){const d=st.pend;st.pend=-1;cfg.onMove(d,Math.min(1,d/size()))}};
+ const begin=(p:any,target:any)=>{if(cfg.canStart&&!cfg.canStart(p,target))return;const inHandle=!!(cfg.handle&&target?.closest?.(cfg.handle));
+  Object.assign(st,{track:true,on:false,a0:ax(p),c0:cx(p),o:0,delta:0,hist:[[performance.now(),ax(p)]],pend:-1,blocked:!inHandle&&!!cfg.scroll&&gScrolledAway(target,el,cfg.axis,cfg.dir)})};
+ const move=(p:any,stop?:any)=>{if(!st.track)return;const a=ax(p),raw=a-st.a0,d0=raw*cfg.dir,c=Math.abs(cx(p)-st.c0);
+  if(!st.on){if(Math.abs(raw)<SLOP&&c<SLOP)return;if(d0>0&&Math.abs(raw)>=c&&!st.blocked){st.on=true;st.o=a;(cfg.mover||el).style.transition='none';cfg.onStart?.()}else{st.track=false;return}}
+  stop?.();const now=performance.now();st.hist.push([now,a]);while(st.hist.length>2&&now-st.hist[0][0]>100)st.hist.shift();
+  st.delta=Math.max(0,(a-st.o)*cfg.dir);st.pend=st.delta;if(!st.raf)st.raf=requestAnimationFrame(paint)};
+ const end=()=>{if(!st.track)return;const was=st.on;st.track=false;st.on=false;flush();if(!was)return;
+  const now=performance.now(),h=st.hist,last=h[h.length-1],first=h[0];let v=0;if(last&&first&&last[0]>first[0]&&now-last[0]<=G.STALE_MS*2)v=((last[1]-first[1])*cfg.dir)/(last[0]-first[0]);
+  const mv=cfg.mover||el;mv.style.transition='';void mv.offsetWidth;cfg.onEnd(st.delta>size()*(cfg.ratio||G.RATIO)||v>(cfg.fling||G.FLING),st.delta)};
+ const tp=(t:any)=>({x:t.clientX,y:t.clientY});
+ el.addEventListener('touchstart',(e:any)=>{if(e.touches.length===1)begin(tp(e.touches[0]),e.target)},{passive:true});
+ el.addEventListener('touchmove',(e:any)=>{if(e.touches.length===1)move(tp(e.touches[0]),()=>{if(e.cancelable)e.preventDefault()})},{passive:false});
+ el.addEventListener('touchend',end);el.addEventListener('touchcancel',end);
+ const mm=(e:any)=>move({x:e.clientX,y:e.clientY}),mu=()=>{removeEventListener('pointermove',mm);end()};
+ el.addEventListener('pointerdown',(e:any)=>{if(e.pointerType!=='mouse'||e.button)return;if(!cfg.mouseAny&&!(cfg.handle&&e.target.closest?.(cfg.handle)))return;begin({x:e.clientX,y:e.clientY},e.target);if(st.track){addEventListener('pointermove',mm);addEventListener('pointerup',mu,{once:true})}});
  return st}
 /* ลากปิด sheet: ใช้เอนจินกลาง (แทน pointer drag เดิม) ปิดเมื่อลากเกิน 35% ของความสูง หรือเร็วเกิน .55 px/ms */
 attachGesture(sheet,{axis:'y',dir:1,scroll:true,handle:'.ev-grab,h2',size:()=>sheet.offsetHeight,
- /* ตำแหน่งระหว่างลากอยู่ใน --gx (CSS ประกอบ transform + ความจางของม่าน) · ตอนปล่อยเล่นสปริงต่อจากความเร็วนิ้ว: ปิด = สปริงไปพ้นขอบล่าง, ไม่ปิด = เด้งกลับ 0 */
- onStart:()=>{sheet.dataset.drag='true';scrim.style.transition='none'},onMove:(d:number,r:number)=>{scrim.style.opacity=String(1-r)},
- spring:(c:boolean,d:number)=>({prop:(x:number)=>`translate3d(0,${x}px,0)`,target:c?sheet.offsetHeight:0,k:c?260:420,c:c?34:38,maxMs:c?340:520}),
- onEnd:(c:boolean)=>{sheet.dataset.drag='false';sheet.style.removeProperty('--gx');sheet.style.removeProperty('--gp');if(!(c&&closeTop())){scrim.style.opacity='';scrim.style.transition=''}else{scrim.style.opacity='';scrim.style.transition=''}}});
+ onStart:()=>{sheet.dataset.drag='true';scrim.style.transition='none'},onMove:(d:number,r:number)=>{sheet.style.transform=`translateY(${d}px)`;scrim.style.opacity=String(1-r)},
+ onEnd:(c:boolean)=>{sheet.dataset.drag='false';if(!(c&&closeTop())){sheet.style.transform='';scrim.style.opacity='';scrim.style.transition=''}}});
 /* moved by move_defs (evarel-ts-1f) */
 function closePop(){if(pop.hidden)return;pop.dataset.open='false';ST.popBtn?.setAttribute?.('aria-expanded','false');ST.popBtn=null;setTimeout(()=>{if(pop.dataset.open==='false')pop.hidden=true},170)}
 

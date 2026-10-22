@@ -5288,29 +5288,6 @@ body{
   border-left:1px solid var(--c-line)
 }
 
-/* ===== ตำแหน่งระหว่างลากมาจากเอนจินผ่านตัวแปร --gx (px) / --gp (0-1) : เขียนครั้งเดียวต่อเฟรม · transform เป็น compositor-only =====
-   JS ไม่เขียน style.transform ตรงๆ อีกต่อไป · will-change ถูกตั้งโดยเอนจินเฉพาะตอนลาก */
-
-.ev-sheet[data-drag="true"]{
-  transform:translate3d(0,var(--gx,0px),0)
-}
-
-.ev-page[data-drag="true"]{
-  transform:translate3d(var(--gx,0px),0,0)
-}
-
-.ev-drawer[data-drag="true"][data-open="true"]{
-  transform:translate3d(calc(var(--gx,0px) * -1),0,0)
-}
-
-.ev-drawer[data-drag="true"][data-open="false"]{
-  transform:translate3d(calc(-102% + var(--gx,0px)),0,0)
-}
-
-.ev-sheet,.ev-drawer,.ev-page{
-  backface-visibility:hidden
-}
-
 /* Path: app/web/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
 
 /* ===== ฟอนต์แบบเสิร์ฟเอง (v24: เดโมโหลด Anuphan/Noto Sans Thai จาก Google Fonts — แอปจริงเสิร์ฟไฟล์เดียวกันแบบออฟไลน์)

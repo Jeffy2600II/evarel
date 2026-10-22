@@ -137,12 +137,9 @@ function attachDrawerGestures(root) {
     if (!d || !sc || d.dataset.gestureBound)
         return;
     d.dataset.gestureBound = 'true';
-    /* ตำแหน่งระหว่างลากอยู่ใน --gx/--gp (CSS ประกอบ transform ของ drawer และความจางของม่าน) · ปล่อยแล้วสปริงต่อจากความเร็วนิ้วด้วย WAAPI */
-    const start = () => { d.dataset.drag = 'true'; sc.style.transition = 'none'; }, clear = () => { d.style.removeProperty('--gx'); d.style.removeProperty('--gp'); sc.style.opacity = ''; sc.style.transition = ''; }, fin = open => { d.dataset.drag = 'false'; drawerOpen(open); clear(); };
-    attachGesture(d, { axis: 'x', dir: -1, scroll: true, mouseAny: true, mover: d, size, canStart: () => d.dataset.open === 'true', onStart: start, onMove: (x, r) => { sc.style.opacity = String(1 - r); },
-        spring: (c, x) => ({ prop: v => `translate3d(${-v}px,0,0)`, target: c ? size() : 0, k: c ? 260 : 420, c: c ? 34 : 38, maxMs: c ? 340 : 520 }), onEnd: c => fin(!c) });
-    attachGesture(edge, { axis: 'x', dir: 1, mouseAny: true, mover: d, size, canStart: p => d.dataset.open !== 'true' && p.x >= colLeft() && p.x - colLeft() <= DRAWER_EDGE_PX, onStart: start, onMove: (x, r) => { sc.style.opacity = String(r); },
-        spring: (c, x) => ({ prop: v => `translate3d(${-size() + v}px,0,0)`, target: c ? size() : 0, k: c ? 260 : 420, c: c ? 34 : 38, maxMs: c ? 340 : 520 }), onEnd: c => fin(c) });
+    const start = () => { d.dataset.drag = 'true'; sc.style.transition = 'none'; }, fin = open => { d.dataset.drag = 'false'; sc.style.transition = ''; drawerOpen(open); d.style.transform = ''; sc.style.opacity = ''; };
+    attachGesture(d, { axis: 'x', dir: -1, scroll: true, mouseAny: true, mover: d, size, canStart: () => d.dataset.open === 'true', onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-x}px)`; sc.style.opacity = String(1 - r); }, onEnd: c => fin(!c) });
+    attachGesture(edge, { axis: 'x', dir: 1, mouseAny: true, mover: d, size, canStart: p => d.dataset.open !== 'true' && p.x >= colLeft() && p.x - colLeft() <= DRAWER_EDGE_PX, onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-size() + x}px)`; sc.style.opacity = String(r); }, onEnd: c => fin(c) });
 }
 const drawerOpen = on => { const d = $('drawer'); if (!d)
     return; d.dataset.open = String(on); $('dScrim').dataset.open = String(on); if (on)
