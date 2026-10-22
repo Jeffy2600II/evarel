@@ -47,7 +47,7 @@ const detailHTML=it=>`<div class="ev-page-bar"><button class="ev-icon-btn" data-
 function openDetail(id){const it=find(id);if(!it)return;const n=new Date();UI.cal={y:n.getFullYear(),m:n.getMonth()};
  ST.DETAIL=id;const MT=(window as any).EvarelMount;
  /* S4: หน้ารายละเอียดเป็น React จริงเมื่อพร้อม (FullCalendar ของ habit mount ใน effect ของ component) ไม่พร้อมใช้ string เดิม */
- if(MT?.ready('detail')){openPage('',()=>{ST.DETAIL=null;MT.unmountOne('detail');destroyCal('habit')},'detail');page.innerHTML='';MT.mountAt(page,'detail',{id:it.id});
+ if(MT?.ready('detail')){const el=openPage('',()=>{ST.DETAIL=null;MT.unmountOne('detail');destroyCal('habit')},'detail');MT.mountAt(el,'detail',{id:it.id});
   mountHabit(); /* mount ใน turn เดียวกับการเปิดหน้าเหมือน classic: effect ของ React ยิงกลาง transition (scale .98) ทำให้ FullCalendar วัดกว้างเพี้ยน */ return}
  openPage(detailHTML(it),()=>{ST.DETAIL=null;destroyCal('habit')},'detail');mountHabit()}
 

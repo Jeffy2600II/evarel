@@ -14,7 +14,7 @@ function openFocus(id){const it=find(id);if(!it)return;if(ST.TM&&ST.TM.id!=id){t
  const MT=(window as any).EvarelMount,onClose=()=>{ST.focusId=null;updateLive();(window as any).EvarelMount?.unmountOne?.('focus')};
  if(ST.focusId!==null){if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;page.innerHTML=focusBody(it);return}
  ST.focusId=id;
- if(MT?.ready('focus')){MT.unmountOne('focus');openPage('',onClose,'focus');page.innerHTML='';MT.mountAt(page,'focus',{id:it.id});return}
+ if(MT?.ready('focus')){MT.unmountOne('focus');const el=openPage('',onClose,'focus');MT.mountAt(el,'focus',{id:it.id});return}
  openPage(focusBody(it),onClose,'focus')}
 const refreshFocus=()=>{const it=find(ST.focusId);if(!it)return;const MT=(window as any).EvarelMount;
  if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;page.innerHTML=focusBody(it)};

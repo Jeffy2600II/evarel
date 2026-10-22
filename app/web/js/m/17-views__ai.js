@@ -135,9 +135,8 @@ function openAI() {
     const onClose = () => { clearTimeout(ST.quotaTimer); ST.quotaTimer = 0; ST.quotaTick++; ST.QUOTA = null; window.EvarelMount?.unmountOne?.('ai'); window.EvarelMount?.unmountOne?.('aiShell'); };
     if (MT?.ready('aiShell')) {
         MT.unmountOne('aiShell');
-        openPage('', onClose, 'ai');
-        page.innerHTML = '';
-        MT.mountAt(page, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
+        const el = openPage('', onClose, 'ai');
+        MT.mountAt(el, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
     }
     else
         openPage(aiShellHTML(AI_PLACEHOLDER, initial()), onClose, 'ai');

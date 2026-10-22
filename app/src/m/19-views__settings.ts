@@ -33,11 +33,13 @@ function settingsHTML(){
 function usagePaint(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e){e.innerHTML=usageCardHTML();(window as any).growBars(e)}})}
 async function usageRefresh(){try{const q=await quotaFetch();ST.QUOTA=q||{unknown:true}}catch(err){ST.QUOTA={unknown:true}}usagePaint()}
 function settingsOpen(){const MT=(window as any).EvarelMount;
- if(MT?.ready('settings')){MT.unmountOne('settings');if(!LAYERS.some(l=>l.el===page))openPage('',undefined,'settings');page.innerHTML='';MT.mountAt(page,'settings',settingsProps());usageRefresh();return}
- const html=settingsHTML();if(LAYERS.some(l=>l.el===page))page.innerHTML=html;else openPage(html,undefined,'settings');usageRefresh()}
+ if(hasPage('settings'))return;
+ if(hasPage('ai'))drawerOpen(false);
+ const el=openPage('',undefined,'settings');
+ if(MT?.ready('settings')){MT.mountAt(el,'settings',settingsProps())}else el.innerHTML=settingsHTML();growBars(el);usageRefresh()}
 function settingsRepaint(){const MT=(window as any).EvarelMount;
- if(MT?.ready('settings')&&LAYERS.some(l=>l.el===page)){MT.mountAt(page,'settings',settingsProps());return}
- page.innerHTML=settingsHTML()}
+ const p=pageOf('settings');if(!p)return;
+ if(MT?.ready('settings')){MT.mountAt(p,'settings',settingsProps())}else p.innerHTML=settingsHTML();growBars(p)}
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name){return new Promise((ok,no)=>{const W=window as any;if(name==='runtime'&&W.EvarelReact)return ok(0);/* index โหลด runtime ก่อนบูตแล้ว ห้าม execute ซ้ำเพราะจะเกิด React สองชุด */
  const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);
