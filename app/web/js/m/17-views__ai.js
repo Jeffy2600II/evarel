@@ -129,6 +129,18 @@ function fillComposer(text) {
         return; n.focus({ preventScroll: true }); n.setSelectionRange?.(n.value.length, n.value.length); });
 }
 const aiSync = () => { aiRefresh(); aiRenderDrawer($('dSearch')?.value || ''); };
+/* ปัดปิด/เปิดแถบข้าง (ตรงเดโม v24 บรรทัด 1148): ใช้เอนจิน attachGesture ตัวเดียวกับ bottom sheet เพียงเปลี่ยน axis เป็น x
+   ปัดใน drawer ไปทางซ้าย = ปิด · ปัดจากขอบซ้ายจอ (22px) ไปทางขวา = เปิด — กฎเลื่อนซ้อน (เนื้อในยังเลื่อนกลับได้ = เลื่อนเนื้อ) ใช้ของเอนจินเดิม */
+const DRAWER_EDGE_PX = 22;
+function attachDrawerGestures(root) {
+    const d = (root || document).querySelector('#drawer'), sc = (root || document).querySelector('#dScrim'), edge = root || document, size = () => d.offsetWidth, colLeft = () => Math.max(0, (innerWidth - 480) / 2);
+    if (!d || !sc || d.dataset.gestureBound)
+        return;
+    d.dataset.gestureBound = 'true';
+    const start = () => { d.dataset.drag = 'true'; sc.style.transition = 'none'; }, fin = open => { d.dataset.drag = 'false'; d.style.transform = ''; sc.style.opacity = ''; sc.style.transition = ''; drawerOpen(open); };
+    attachGesture(d, { axis: 'x', dir: -1, scroll: true, mouseAny: true, size, canStart: () => d.dataset.open === 'true', onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-x}px)`; sc.style.opacity = String(1 - r); }, onEnd: c => fin(!c) });
+    attachGesture(edge, { axis: 'x', dir: 1, mouseAny: true, size, canStart: p => d.dataset.open !== 'true' && p.x >= colLeft() && p.x - colLeft() <= DRAWER_EDGE_PX, onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-size() + x}px)`; sc.style.opacity = String(r); }, onEnd: c => fin(c) });
+}
 const drawerOpen = on => { const d = $('drawer'); if (!d)
     return; d.dataset.open = String(on); $('dScrim').dataset.open = String(on); if (on)
     aiRenderDrawer($('dSearch').value); };
@@ -149,12 +161,14 @@ function openAI() {
         const ae = openPage('', onClose, 'ai');
         ae.innerHTML = '';
         MT.mountAt(ae, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
+        setTimeout(() => attachDrawerGestures(ae), 0);
     }
     else
         openPage(aiShellHTML(AI_PLACEHOLDER, initial()), onClose, 'ai');
+    setTimeout(() => attachDrawerGestures(pageOf('ai')), 0);
     aiRefresh();
     aiRenderDrawer();
     quotaPaint();
     quotaRefresh();
 }
-Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI, fillComposer });
+Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI, fillComposer, attachDrawerGestures });

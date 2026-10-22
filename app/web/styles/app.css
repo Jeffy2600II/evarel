@@ -220,7 +220,7 @@
 
 .ev-dialog-card{
   display:grid;
-  width:min(100%, 340px);
+  width:min(100%,340px);
   --tw-scale-x:.95;
   --tw-scale-y:.95;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -295,10 +295,10 @@
   position:absolute;
   top:0px;
   bottom:0px;
-  left:max(0px, calc(50% - var(--col-max) / 2));
+  left:max(0px,calc(50% - var(--col-max) / 2));
   z-index:3;
   display:flex;
-  width:min(86vw, 330px) !important;
+  width:min(86vw,330px) !important;
   max-width:none !important;
   --tw-translate-x:-102%;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -4975,6 +4975,65 @@ body{
 
 #agenda .ev-card{
   padding:22px
+}
+
+/* ===== หน้า AI: แถบบน/ล่างโปร่งแบบ AI สมัยใหม่ (Master สั่ง 22 ต.ค. 2026) =====
+   เนื้อแชทไหลใต้แถบทั้งสอง · แถบบน gradient จากสีพื้นไล่ลงจนเบาสุด (เห็นเนื้อข้างหลังแบบบางเบา)
+   แถบล่าง: ปรับเฉพาะ "พื้นหลังรอบกล่องแชท" เป็น gradient โปร่งจากล่างขึ้นบน สูงพอดีไม่ยืดตามความสูงช่องแชท กล่อง composer เองคงหน้าตาเดิมทุกอย่าง
+   ใช้เฉพาะ .ev-page[data-page="ai"] ไม่แตะหน้าอื่น */
+
+.ev-page[data-page="ai"] .ev-aibar{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  z-index:3;
+  pointer-events:none;
+  background:linear-gradient(to bottom,var(--c-bg) 34%,color-mix(in srgb,var(--c-bg) 58%,transparent) 68%,transparent)
+}
+
+.ev-page[data-page="ai"] .ev-aibar>*{
+  pointer-events:auto
+}
+
+.ev-page[data-page="ai"] .ev-page-scroll{
+  flex:1;
+  padding-top:calc(env(safe-area-inset-top,0px) + 64px) var(--s2) calc(112px + env(safe-area-inset-bottom,0px))
+}
+
+/* composer ลอยติดขอบล่าง เนื้อแชทเลื่อนผ่านใต้กล่องได้ · ::before คือแถบพื้นหลังรอบกล่อง: gradient จากสีพื้น (ล่าง) ไล่ขึ้นหาโปร่ง ยื่นเกินกล่องรอบด้าน 8-26px พอให้เห็นการไล่เฉด */
+
+.ev-page[data-page="ai"] .ev-composer{
+  position:absolute;
+  bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  left:var(--s2);
+  right:var(--s2);
+  z-index:3;
+  width:auto !important;
+  margin:0;
+  border-radius:30px
+}
+
+.ev-page[data-page="ai"] .ev-composer::before{
+  content:"";
+  position:absolute;
+  left:-8px;
+  right:-8px;
+  bottom:calc(-8px - env(safe-area-inset-bottom,0px));
+  top:-30px;
+  pointer-events:none;
+  z-index:-1;
+  background:linear-gradient(to top,var(--c-bg) 58%,color-mix(in srgb,var(--c-bg) 50%,transparent) 82%,transparent)
+}
+
+/* เลื่อนได้เสมอแม้เนื้อน้อย (Master สั่ง: หน้าแชทใหม่ต้องเลื่อนได้): เนื้อยืดเต็มความสูง มีพื้นที่เกินจอเสมอ */
+
+.ev-page[data-page="ai"] #aiBody{
+  min-height:100%
+}
+
+.ev-page[data-page="ai"] .ev-chat{
+  padding-bottom:26px
 }
 
 /* Path: app/web/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
