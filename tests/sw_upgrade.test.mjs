@@ -38,6 +38,11 @@ try {
   ok('รุ่นเก่าติดตั้ง SW และมีแคชเฉพาะรุ่นเก่า', s1.ctrl && s1.keys.length === 1 && s1.keys[0] === OLDV, JSON.stringify(s1));
   DIR = NEW;
   await p.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); await r.update(); });
+  /* นโยบายใหม่ (ไม่เรียลไทม์): SW ใหม่ติดตั้งเสร็จแล้ว "รอ" ไม่ทับรุ่นที่ผู้ใช้กำลังใช้ และแคชรุ่นเก่ายังอยู่จนกว่าจะรีเฟรช */
+  let wait = null; for (let i = 0; i < 40; i++) { await p.waitForTimeout(500); wait = await p.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); return { w: !!r.waiting, k: await caches.keys() }; }); if (wait.w) break; }
+  ok('ไม่เรียลไทม์: SW ใหม่ติดตั้งแล้วรอ และแคชรุ่นเก่ายังอยู่ระหว่างใช้งาน', wait.w && wait.k.includes(OLDV), JSON.stringify(wait));
+  /* สิ่งที่ boot.js ทำเมื่อหน้าใหม่โหลด: สั่งให้ SW ที่รออยู่รับช่วง */
+  await p.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' }); });
   let done = null; for (let i = 0; i < 40; i++) { await p.waitForTimeout(500); done = await p.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); return { k: await caches.keys(), a: r.active && r.active.state, w: !!r.waiting, i: !!r.installing }; }); if (done.k.length === 1 && done.k[0] === NEWV && done.a === 'activated' && !done.w && !done.i) break; }
   ok('หลังอัปเดต: SW ใหม่ activate และแคชเก่าถูกล้าง เหลือเฉพาะรุ่นใหม่', done.k.length === 1 && done.k[0] === NEWV && done.a === 'activated', JSON.stringify(done));
   await p.reload(); await p.waitForTimeout(4000);

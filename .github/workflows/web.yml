@@ -63,7 +63,11 @@ jobs:
           const av=sw.match(/const APP_VERSION = '([^']*)'/);
           if(!av||av[1]!==r.version){console.error('release.version != sw APP_VERSION',r.version,av&&av[1]);process.exit(1)}
           if(!/^\d{4}\.[1-9]\d*\.(0|[1-9]\d*)-forge\$/.test(r.version)){console.error('เลขรุ่นบน forge ต้องเป็น ปี.รอบ.แพตช์-forge ได้',r.version);process.exit(1)}
-          console.log('RELEASE-JSON OK build',r.build,'v'+r.version);"
+          const as=sw.match(/const ASSET_V = '([0-9a-f]+)'/); const html=fs.readFileSync('build/web/index.html','utf8');
+          if(!as||as[1]!==r.assets){console.error('release.assets != sw ASSET_V',r.assets,as&&as[1]);process.exit(1)}
+          if(!html.includes('styles/app.css?v='+r.assets)){console.error('index.html ไม่ได้ผูก ?v= ตรงกับ release.assets');process.exit(1)}
+          const hv=html.match(/__EV_VERSION__ = \"([^\"]+)\"/); if(!hv||hv[1]!==r.version){console.error('index.html __EV_VERSION__ != release.version',hv&&hv[1],r.version);process.exit(1)}
+          console.log('RELEASE-JSON OK build',r.build,'assets',r.assets,'v'+r.version);"
       - uses: actions/upload-artifact@v4
         with: { name: web-build, path: build/web, retention-days: 3 }
 

@@ -52,7 +52,7 @@ function settingsRepaint(){const MT=(window as any).EvarelMount;
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name){return new Promise((ok,no)=>{const W=window as any;if(name==='runtime'&&W.EvarelReact)return ok(0);/* index โหลด runtime ก่อนบูตแล้ว ห้าม execute ซ้ำเพราะจะเกิด React สองชุด */
  const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);
- const el=document.createElement('script');el.type='module';el.src=`js/react/${name}.js`;el.async=false;el.dataset.evReact=name;el.onload=()=>ok(0);el.onerror=()=>no(new Error(name));document.head.appendChild(el)})}
+ const el=document.createElement('script');el.type='module';el.src=`js/react/${name}.js`+((window as any).__EV_BUILD__?`?v=${(window as any).__EV_BUILD__}`:'');el.async=false;el.dataset.evReact=name;el.onload=()=>ok(0);el.onerror=()=>no(new Error(name));document.head.appendChild(el)})}
 /* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
 /* today+calendar โหลดจาก index.html ก่อนบูต (render แรกเป็น mount ทันที) ที่เหลือยัง lazy */
 const REACT_LAZY=['settings','stats','all'];const REACT_PAGES=['settings','stats','all','item-row','today','calendar','ai','nav','dialog','sheet','form','detail','auth','quota','aiShell','focus'];

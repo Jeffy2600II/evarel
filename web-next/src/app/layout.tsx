@@ -5,6 +5,11 @@ import type { ReactNode } from 'react';
 
 export const metadata = { title: 'Evarel' };
 
+/* รหัสเนื้อหาไฟล์ชื่อคงที่ ฝังตอน build (scripts/build-next.mjs) ใช้ต่อท้าย ?v= ให้ไฟล์ที่ SW แคชไว้ */
+const V = process.env.NEXT_PUBLIC_EVAREL_ASSET_V || '';
+const VER = process.env.NEXT_PUBLIC_EVAREL_VERSION || '';
+const q = (u: string) => (V ? `${u}?v=${V}` : u);
+
 export default function Root({ children }: { children: ReactNode }) {
   return (
     <html lang="th">
@@ -17,8 +22,8 @@ export default function Root({ children }: { children: ReactNode }) {
       <link rel="apple-touch-icon" href="icons/icon-192.png" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="styles/app.css" />
-      <script id="ev-api" dangerouslySetInnerHTML={{ __html: `window.EVAREL_API = window.EVAREL_API || ${JSON.stringify(process.env.NEXT_PUBLIC_EVAREL_API || '')};` }} />
+      <link rel="stylesheet" href={q('styles/app.css')} />
+      <script id="ev-api" dangerouslySetInnerHTML={{ __html: `window.EVAREL_API = window.EVAREL_API || ${JSON.stringify(process.env.NEXT_PUBLIC_EVAREL_API || '')};window.__EV_BUILD__ = ${JSON.stringify(V)};window.__EV_VERSION__ = ${JSON.stringify(VER)};` }} />
     </head>
     <body>{children}</body>
     </html>

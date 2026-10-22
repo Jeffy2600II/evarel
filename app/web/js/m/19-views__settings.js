@@ -137,7 +137,7 @@ function loadReactFile(name) {
             return ok(0);
         const el = document.createElement('script');
         el.type = 'module';
-        el.src = `js/react/${name}.js`;
+        el.src = `js/react/${name}.js` + (window.__EV_BUILD__ ? `?v=${window.__EV_BUILD__}` : '');
         el.async = false;
         el.dataset.evReact = name;
         el.onload = () => ok(0);

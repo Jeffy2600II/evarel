@@ -1,30 +1,19 @@
-/* Path: app/web/js/boot.js | Purpose: ลงทะเบียน Service Worker + ระบบอัปเดตเว็บ (เช็คอัปเดต + popup เต็มหน้าต่าง + โน้ตรุ่น)
-   หลักการ: build ที่กำลังรัน = VERSION ของ SW ที่คุมหน้านี้ | build ล่าสุด = release.json จากเครือข่าย (no-store)
-   ต่างกัน = ขึ้นหน้าต่างอัปเดต | ผู้ใช้กด "อัปเดตเลย" = registration.update() แล้ว reload (SW ใหม่ skipWaiting อยู่แล้ว)
-   ฐานสำหรับแอปมือถือ: ใช้ release.json ตัวเดียวกัน แต่ฝั่งแอปจะยึดตาม release ที่ปล่อย (ยังไม่ทำ) */
+/* Path: app/web/js/boot.js | Purpose: ลงทะเบียน Service Worker + หน้าต่าง "มีอะไรใหม่" (What's New) ของแต่ละเวอร์ชัน
+   เป้าหมายของ popup (Master สั่ง 22 ต.ค. 2026): บอกผู้ใช้อย่างเป็นทางการว่าเวอร์ชันนี้ปรับปรุง/เปลี่ยนแปลงอะไร
+   แบบเดียวกับแพลตฟอร์มใหญ่ ไม่ใช่การแจ้งว่าระบบอัปเดตตัวเองสำเร็จ | ขึ้นหนึ่งครั้งต่อเลขเวอร์ชัน | ปุ่มเดียวคือปิด
+   การอัปเดตตัวแอปเป็นเรื่องเงียบๆ ไม่เรียลไทม์: รุ่นใหม่เข้าเมื่อรีเฟรช/เปิดหน้าใหม่เท่านั้น (HTML network-first + ไฟล์ผูก ?v=<build>)
+   หน้าที่เพิ่งโหลดสั่ง SW ที่รออยู่ให้รับช่วง (SKIP_WAITING) | เลขเวอร์ชันที่รันอยู่ = window.__EV_VERSION__ (ฝังใน HTML ตอน build) */
 (function () {
-  const SEEN_KEY = 'evarel.seenBuild';   /* build ที่ผู้ใช้เห็นโน้ตแล้ว */
-  const SKIP_KEY = 'evarel.skipBuild';   /* build ที่ผู้ใช้กด "ไว้ทีหลัง" (เฉพาะ session นี้) */
-  const CHECK_EVERY_MS = 30 * 60 * 1000;
+  const SEEN_KEY = 'evarel.seenVersion';   /* เลขเวอร์ชันล่าสุดที่ผู้ใช้เห็นหน้าต่าง มีอะไรใหม่ แล้ว */
   const TYPES = { new: 'ใหม่', improve: 'ปรับปรุง', fix: 'แก้ไข' };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let showing = false;
 
   const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* โหมดส่วนตัว = ข้าม */ } };
-  const ssGet = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
-  const ssSet = (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) { /* ข้าม */ } };
 
-  async function runningBuild() {
-    const c = navigator.serviceWorker.controller;
-    if (!c) return null;
-    return new Promise(res => {
-      const ch = new MessageChannel();
-      const t = setTimeout(() => res(null), 1500);
-      ch.port1.onmessage = e => { clearTimeout(t); res(e.data && e.data.build || null); };
-      c.postMessage({ type: 'get-build' }, [ch.port2]);
-    });
-  }
+  /* เลขเวอร์ชันที่หน้านี้รันจริง = ค่าที่ฝังใน HTML ตอน build (ไม่ถาม SW: ระหว่างเปลี่ยนรุ่น SW เก่าอาจยังคุมอยู่และตอบรุ่นเก่า) */
+  const runningVersion = () => (typeof window !== 'undefined' && window.__EV_VERSION__) || null;
   async function latestRelease() {
     try {
       const r = await fetch('release.json?_=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' });
@@ -39,54 +28,47 @@
     return groups || '<p class="ev-sub">ปรับปรุงทั่วไปและแก้ไขข้อผิดพลาด</p>';
   }
   const dialogOpen = () => { const d = document.getElementById('dialog'); return !!(d && d.dataset.open === 'true'); };
-  function open(rel, mode) {
-    if (showing && !dialogOpen()) showing = false;   /* ถูกปิดด้วยปุ่มย้อนกลับ/แตะพื้นหลัง = ปล่อยธง */
+  /* What's New: หัวข้อ + เลขเวอร์ชัน + รายการสิ่งที่เปลี่ยน แล้วปิดด้วยปุ่มเดียว (ไม่มีปุ่มอัปเดต/ไว้ทีหลัง) */
+  function open(rel) {
+    if (showing && !dialogOpen()) showing = false;
     if (showing || typeof openDialog !== 'function') return;
     showing = true;
-    const isNew = mode === 'available';
-    const head = isNew ? 'มีเวอร์ชันใหม่' : 'อัปเดตเรียบร้อยแล้ว';
-    const sub = `เวอร์ชัน ${esc(rel.version || '')}${rel.date ? ' · ' + esc(rel.date) : ''}`;
-    const actions = isNew
-      ? '<button class="ev-btn-ghost" data-upd="later">ไว้ทีหลัง</button><button class="ev-btn-primary" data-upd="now">อัปเดตเลย</button>'
-      : '<button class="ev-btn-primary ev-upd-one" data-upd="ok">เข้าใจแล้ว</button>';
-    openDialog(`<div class="ev-upd"><h3>${head}</h3><p class="ev-sub">${sub}</p>${rel.title ? `<p class="ev-upd-title">${esc(rel.title)}</p>` : ''}<div class="ev-upd-body">${notesHtml(rel)}</div><div class="ev-dlg-actions">${actions}</div></div>`);
+    const ver = String(rel.version || '').replace(/-[a-z]+$/, '');   /* ผู้ใช้เห็นเลขรุ่นสาธารณะ ไม่เห็นช่อง -forge */
+    const sub = `เวอร์ชัน ${esc(ver)}${rel.date ? ' · ' + esc(rel.date) : ''}`;
+    openDialog(`<div class="ev-upd"><h3>มีอะไรใหม่</h3><p class="ev-sub">${sub}</p>${rel.title ? `<p class="ev-upd-title">${esc(rel.title)}</p>` : ''}<div class="ev-upd-body">${notesHtml(rel)}</div><div class="ev-dlg-actions"><button class="ev-btn-primary ev-upd-one" data-upd="ok">เริ่มใช้งาน</button></div></div>`);
     const root = document.getElementById('dialog') || document;
     root.addEventListener('click', function h(e) {
       const b = e.target.closest && e.target.closest('[data-upd]');
       if (!b) return;
       root.removeEventListener('click', h);
       showing = false;
-      const a = b.dataset.upd;
-      if (a === 'now') applyUpdate(rel);
-      else { if (a === 'later') ssSet(SKIP_KEY, rel.build); else lsSet(SEEN_KEY, rel.build); if (typeof closeTop === 'function') closeTop(); }
+      if (typeof closeTop === 'function') closeTop();
     });
   }
-  async function applyUpdate(rel) {
-    lsSet(SEEN_KEY, '');  /* ให้รุ่นใหม่แสดง "อัปเดตเรียบร้อยแล้ว" หลังโหลดซ้ำ */
-    try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch (e) { /* โหลดซ้ำต่อ */ }
-    location.reload();
-  }
-  async function check(reason) {
-    if (showing && !dialogOpen()) showing = false;
-    if (showing || document.visibilityState === 'hidden') return;
-    const [rel, mine] = await Promise.all([latestRelease(), runningBuild()]);
-    if (!rel || !rel.build) return;
+  /* เรียกครั้งเดียวตอนเปิดหน้า: ถ้าเลขเวอร์ชันที่รันอยู่ต่างจากที่ผู้ใช้เคยเห็น = แสดง มีอะไรใหม่ หนึ่งครั้ง
+     (แก้แค่ไฟล์โดยไม่ขยับเลขเวอร์ชัน = ไม่ขึ้น เพราะไม่มีอะไรใหม่ให้บอกผู้ใช้) */
+  async function check() {
+    const mine = runningVersion();
+    if (!mine) return;
     const seen = lsGet(SEEN_KEY);
-    if (mine && mine !== rel.build) {                       /* มีรุ่นใหม่กว่าที่กำลังรัน */
-      if (ssGet(SKIP_KEY) === rel.build && reason !== 'start') return;
-      open(rel, 'available'); return;
-    }
-    if (seen === null) { lsSet(SEEN_KEY, rel.build); return; }   /* ผู้ใช้ใหม่ครั้งแรก = ไม่ขึ้น popup */
-    if (seen !== rel.build) { open(rel, 'updated'); lsSet(SEEN_KEY, rel.build); }   /* เพิ่งอัปเดตเสร็จ = แสดงโน้ตหนึ่งครั้ง */
+    if (seen === null) { lsSet(SEEN_KEY, mine); return; }      /* ผู้ใช้ใหม่ครั้งแรก = ไม่ขึ้น (ไม่มีรุ่นก่อนให้เทียบ) */
+    if (seen === mine) return;
+    const rel = await latestRelease();
+    lsSet(SEEN_KEY, mine);
+    if (rel && rel.version === mine) open(rel);                /* โน้ตต้องเป็นของเวอร์ชันที่รันอยู่เท่านั้น กันขึ้นโน้ตของรุ่นอื่น */
   }
-  window.EvarelUpdate = { check, latestRelease, runningBuild };  /* จุดต่อให้แอปมือถือ/ทดสอบเรียกใช้ */
+  window.EvarelUpdate = { check, latestRelease, runningVersion };  /* จุดต่อให้แอปมือถือ/ทดสอบเรียกใช้ */
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW register fail', err));
-    navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'update-ready') check('sw'); });
-    navigator.serviceWorker.addEventListener('controllerchange', () => setTimeout(() => check('sw'), 400));
-    navigator.serviceWorker.ready.then(() => setTimeout(() => check('start'), 800));
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check('visible'); });
-    setInterval(() => check('timer'), CHECK_EVERY_MS);
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      /* รุ่นใหม่ที่ติดตั้งเสร็จและรออยู่ -> ให้รับช่วงเดี๋ยวนี้ (หน้านี้โหลดด้วยรุ่นใหม่แล้ว ไม่ทับอะไรที่ผู้ใช้ทำอยู่) */
+      const take = w => { if (w) w.postMessage({ type: 'SKIP_WAITING' }); };
+      take(reg.waiting);
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing; if (!w) return;
+        w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) take(reg.waiting); });
+      });
+    }).catch(err => console.warn('SW register fail', err));
+    navigator.serviceWorker.ready.then(() => setTimeout(() => check(), 800));
   }
 })();

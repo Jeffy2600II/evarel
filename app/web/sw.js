@@ -4,6 +4,7 @@
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
 const VERSION = 'evarel-v81-u11-stats';
+const ASSET_V = '';    /* รหัสเนื้อหาไฟล์ชื่อคงที่ (ฝังตอน build ตรงกับ ?v= ใน HTML) */
 const APP_VERSION = '';  /* เลขรุ่นที่ผู้ใช้เห็น (ปี.รอบ.แพตช์[-ช่อง]) ถูกแทนตอน build ดู docs/versioning.md */
 const CORE = [
   './',
@@ -71,8 +72,19 @@ self.addEventListener('message', e => {
   if (e.data && e.data.type === 'get-build' && e.ports && e.ports[0]) e.ports[0].postMessage({ build: VERSION.replace(/^evarel-next-/, ''), version: APP_VERSION });
 });
 
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  /* ไม่ skipWaiting เอง: ผู้ใช้ที่กำลังใช้งานอยู่ต้องไม่ถูกทับกลางทาง รุ่นใหม่เข้าเมื่อรีเฟรช/เปิดหน้าใหม่ (หน้าใหม่สั่ง SKIP_WAITING เอง ดู boot.js) */
+  /* ไฟล์ชื่อคงที่ (นอก _next/) เก็บด้วยคีย์ที่มี ?v=<build> เพราะหน้าใหม่ขอด้วยคีย์นั้น (ไม่งั้นออฟไลน์หาไม่เจอ) | เก็บคีย์เปล่าด้วยเพื่อรองรับคำขอที่ไม่มี ?v= */
+  const BUILD = ASSET_V;
+  const fixed = u => /^\.\/(styles|fonts|vendor|js)\//.test(u);
+  e.waitUntil(caches.open(VERSION).then(async c => {
+    await c.addAll(CORE);
+    await Promise.all(CORE.filter(fixed).map(async u => { const r = await c.match(u); if (r) await c.put(u + '?v=' + BUILD, r.clone()); }));
+  }));
 });
 
 self.addEventListener('activate', e => {
@@ -115,6 +127,19 @@ self.addEventListener('fetch', e => {
   /* ระบบอัปเดต: หน้า (navigation) และ release.json ดึงจากเครือข่ายก่อน (รอไม่เกิน NET_FIRST_MS) แล้วค่อยใช้แคช
      เหตุผล: stale-while-revalidate ส่งของเก่าให้หน้าก่อนเสมอ ผู้ใช้จึงต้อง refresh สองรอบ | asset อื่นยังแคชก่อนเพื่อความเร็ว */
   const isNav = e.request.mode === 'navigate' || e.request.destination === 'document';
+  /* ไฟล์ชื่อคงที่ที่ build ฝัง ?v=<รหัส build> ให้: คีย์แคชผูกกับ build เนื้อหาเปลี่ยนไม่ได้ จึงตอบจากแคชก่อนได้ (เร็ว+ออฟไลน์) | รหัสไม่ตรง build นี้ = ไม่ใช่ของเรา ปล่อยไปเครือข่าย */
+  const bq = url.searchParams.get('v');
+  if (!isNav && bq && ASSET_V && bq === ASSET_V) {
+    e.respondWith((async () => {
+      const cache = await caches.open(VERSION);
+      const hit = await cache.match(e.request);
+      if (hit) return hit;
+      const res = await fetch(e.request);
+      if (res && res.ok && !res.redirected) await cache.put(e.request, res.clone());
+      return res;
+    })());
+    return;
+  }
   if (isNav || url.pathname.endsWith('/release.json')) {
     e.respondWith(networkFirst(e.request, url, isNav));
     return;
