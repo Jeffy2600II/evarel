@@ -49,7 +49,10 @@ try {
     .filter(f => !/\.(txt|html)$|(^|\/)sw\.js$|(^|\/)404\.html$/.test(f) || f.endsWith('index.html'))
     .map(rel);
   const CORE = ['./', './index.html', ...files.filter(f => f !== './index.html')];
-  const digest = createHash('sha256').update(CORE.join('\n')).digest('hex').slice(0, 12);
+  /* digest = รายชื่อไฟล์ + เนื้อโน้ตรุ่น: เปลี่ยนโน้ตเมื่อไรก็ได้ build ใหม่เสมอ ผู้ใช้เก่าจึงเห็นรุ่นใหม่แน่นอน (ไม่พึ่งแฮชชื่อ chunk ของ Next) */
+  const relFile = join(root, 'releases/current.json');
+  const relRaw = existsSync(relFile) ? readFileSync(relFile, 'utf8') : '';
+  const digest = createHash('sha256').update(CORE.join('\n') + '\n--release--\n' + relRaw).digest('hex').slice(0, 12);
   const swSrc = readFileSync(join(root, 'app/web/sw.js'), 'utf8');
   const sw = swSrc
     .replace(/const VERSION = '[^']*';/, `const VERSION = 'evarel-next-${digest}';`)
