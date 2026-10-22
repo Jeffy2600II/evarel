@@ -1,6 +1,7 @@
 // S4 next-pages ไบต์ N1: build ขนาน — Next สร้างหน้าจริง (src/app มี layout.tsx/page.tsx) บันเดิลเครื่องยนต์ทั้งหมด
 // ผลลัพธ์ที่ web-next/out แยกจาก build/web เดิม (S3 passthrough) — ทั้งสองอยู่ร่วมกันจนกว่า parity ของของใหม่ผ่านครบจึงสลับ
 // ใช้: node scripts/build-next.mjs <forge|production|local>
+import { parseVersion } from './version-rules.mjs';
 import { cpSync, rmSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -65,7 +66,14 @@ try {
   const relSrc = JSON.parse(readFileSync(join(root, 'releases/current.json'), 'utf8'));
   if (!relSrc.version || !Array.isArray(relSrc.notes) || !relSrc.notes.length) { console.error('releases/current.json ต้องมี version และ notes อย่างน้อย 1 ข้อ'); process.exit(1); }
   if (relSrc.notes.some(n => !['new', 'improve', 'fix'].includes(n.type) || !String(n.text || '').trim())) { console.error('notes แต่ละข้อต้องมี type = new|improve|fix และ text'); process.exit(1); }
-  writeFileSync(join(OUT, 'release.json'), JSON.stringify({ build: digest, version: relSrc.version, date: relSrc.date, title: relSrc.title || '', notes: relSrc.notes }, null, 2));
+  if (!parseVersion(relSrc.version)) { console.error(`releases/current.json: version "${relSrc.version}" ต้องเป็น ปี.รอบ.แพตช์ เช่น 2026.1.0 (ดู docs/versioning.md)`); process.exit(1); }
+  /* ช่อง (channel): production = ไม่มีต่อท้าย | forge = -forge ใส่ตอน build เท่านั้น ห้ามเขียนใน current.json */
+  const channel = env === 'production' ? '' : env;
+  const displayVersion = relSrc.version + (channel ? '-' + channel : '');
+  /* ฝังเลขรุ่นที่ "รันอยู่จริง" ลงใน sw.js เพื่อให้หน้าตั้งค่าอ่านจากตัวที่คุมหน้าอยู่ ไม่ใช่รุ่นล่าสุดบนเซิร์ฟเวอร์ */
+  writeFileSync(join(OUT, 'sw.js'), readFileSync(join(OUT, 'sw.js'), 'utf8').replace(/const APP_VERSION = '[^']*';/, `const APP_VERSION = '${displayVersion}';`));
+  if (!readFileSync(join(OUT, 'sw.js'), 'utf8').includes(`const APP_VERSION = '${displayVersion}';`)) { console.error('ฝังเลขรุ่นลง sw.js ไม่สำเร็จ'); process.exit(1); }
+  writeFileSync(join(OUT, 'release.json'), JSON.stringify({ build: digest, version: displayVersion, date: relSrc.date, title: relSrc.title || '', notes: relSrc.notes }, null, 2));
   console.log(`NEXT-BUILD OK (${env}) -> ${OUT} | sw evarel-next-${digest} | แคช ${CORE.length} ไฟล์`);
 } finally {
   rmSync(PUB, { recursive: true, force: true });

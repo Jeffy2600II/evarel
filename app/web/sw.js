@@ -4,6 +4,7 @@
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
 const VERSION = 'evarel-v81-u11-stats';
+const APP_VERSION = '';  /* เลขรุ่นที่ผู้ใช้เห็น (ปี.รอบ.แพตช์[-ช่อง]) ถูกแทนตอน build ดู docs/versioning.md */
 const CORE = [
   './',
   './index.html',
@@ -67,7 +68,7 @@ const CORE = [
 
 /* ให้หน้าถามได้ว่ากำลังรัน build ไหน (ระบบอัปเดตเทียบกับ release.json) | VERSION = evarel-next-<digest> */
 self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'get-build' && e.ports && e.ports[0]) e.ports[0].postMessage({ build: VERSION.replace(/^evarel-next-/, '') });
+  if (e.data && e.data.type === 'get-build' && e.ports && e.ports[0]) e.ports[0].postMessage({ build: VERSION.replace(/^evarel-next-/, ''), version: APP_VERSION });
 });
 
 self.addEventListener('install', e => {

@@ -5,11 +5,15 @@
    ผ่านเมื่อ: (ก) code ใต้ app/ web-next/ scripts/ ไม่เปลี่ยน หรือ (ข) releases/current.json เปลี่ยน (version หรือ notes ต่างจากฐาน)
    Used by: .github/workflows/web.yml */
 import { execFileSync } from 'node:child_process';
+import { checkBump } from './version-rules.mjs';
 const base = process.argv[2] || 'HEAD~1';
 const git = (...a) => execFileSync('git', a, { encoding: 'utf8' });
 let files;
 try { files = git('diff', '--name-only', base, 'HEAD').split('\n').filter(Boolean); }
 catch { console.log('RELEASE-NOTES: ไม่มีฐานเทียบ (commit แรก?) ข้ามการตรวจ'); process.exit(0); }
+/* รูปแบบเลขรุ่นของรุ่นปัจจุบันต้องถูกเสมอ ไม่ว่าไฟล์อะไรเปลี่ยน (กันค่าเสียหลุดเข้า release.json) */
+{ const cur = JSON.parse(git('show', 'HEAD:releases/current.json')); const e = checkBump(null, cur.version, cur.notes);
+  if (e) { console.error('VERSION FAIL: ' + e); process.exit(1); } }
 const shipped = files.filter(f => /^(app\/web|app\/src|web-next\/src)\//.test(f));
 if (!shipped.length) { console.log('RELEASE-NOTES: ไม่มีไฟล์ที่ส่งถึงผู้ใช้เปลี่ยน ไม่ต้องมีโน้ตใหม่'); process.exit(0); }
 let before = null;
@@ -20,4 +24,6 @@ if (key(before) === key(now)) {
   console.error(`RELEASE-NOTES FAIL: มีไฟล์ที่ส่งถึงผู้ใช้เปลี่ยน ${shipped.length} ไฟล์ (เช่น ${shipped[0]}) แต่ releases/current.json ไม่เปลี่ยน — ทุกอัปเดตต้องมีโน้ตรุ่น`);
   process.exit(1);
 }
+const bumpErr = checkBump(before && before.version, now.version, now.notes);
+if (bumpErr) { console.error('VERSION FAIL: ' + bumpErr); process.exit(1); }
 console.log(`RELEASE-NOTES OK: รุ่น ${now.version} มีโน้ต ${now.notes.length} ข้อ`);

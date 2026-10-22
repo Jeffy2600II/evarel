@@ -23,6 +23,7 @@ function SettingsPage(p) {
         h('div', { className: 'ev-stat' }, h('div', null, h('b', null, 'การแจ้งเตือน'), h('p', { className: 'ev-sub' }, notif.note)), h('span', { className: 'ev-chip' }, notif.state)),
         showNotifyBtn ? h('button', { className: 'ev-btn-primary ev-btn-block', style: { marginTop: '12px' }, 'data-act': 'notify' }, notifyBtnLabel) : null,
         h('p', { className: 'ev-sub', style: { marginTop: '12px' } }, `ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ (รายการใหม่เปิด "ตรงเวลา" ให้อัตโนมัติ และต้องมีเวลา) · เวลาที่ตั้งไว้บันทึกกับบัญชีของคุณและส่งถึงเครื่องนี้ตามเวลา`)),
+      h('section', { key: 'ver', className: 'ev-card', id: 'appVerWrap', ...html(p.versionHTML) }),
       h('section', { key: 'acct', className: 'ev-card' }, h('b', null, 'บัญชี'),
         h('div', { className: 'ev-form', style: { marginTop: '12px' } },
           h('button', { className: 'ev-btn-ghost ev-btn-block', 'data-act': 'au-signout-ask' }, 'ออกจากระบบ'),

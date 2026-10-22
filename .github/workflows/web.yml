@@ -51,6 +51,9 @@ jobs:
           const m=sw.match(/const VERSION = 'evarel-next-([0-9a-f]+)'/);
           if(!m||m[1]!==r.build){console.error('release.build != sw VERSION',r.build,m&&m[1]);process.exit(1)}
           if(/release\.json/.test(sw.match(/const CORE = \[[\s\S]*?\];/)[0])){console.error('release.json ห้ามอยู่ในแคช CORE');process.exit(1)}
+          const av=sw.match(/const APP_VERSION = '([^']*)'/);
+          if(!av||av[1]!==r.version){console.error('release.version != sw APP_VERSION',r.version,av&&av[1]);process.exit(1)}
+          if(!/^\d{4}\.[1-9]\d*\.(0|[1-9]\d*)-forge\$/.test(r.version)){console.error('เลขรุ่นบน forge ต้องเป็น ปี.รอบ.แพตช์-forge ได้',r.version);process.exit(1)}
           console.log('RELEASE-JSON OK build',r.build,'v'+r.version);"
       - uses: actions/upload-artifact@v4
         with: { name: web-build, path: build/web, retention-days: 3 }
