@@ -14,4 +14,15 @@ function itemRow(it,ds,i,opts={}){const v=val(it,ds),tg=target(it),done=tracked(
 /* moved by move_defs (evarel-ts-1f) */
 function agendaHTML(ds){const list=onDate(ds);return `<section class="ev-card"><div class="ev-sec-head"><h3 class="ev-group">${dayLab(ds)}<span>${fmtDate(ds)}</span></h3></div>${list.length?`<ul>${list.map((it,i)=>itemRow(it,ds,i)).join('')}</ul>`:empty('inbox','ไม่มีรายการในวันนี้','กดปุ่ม + เพื่อเพิ่มรายการ')}</section>`}
 
-Object.assign(window, { empty, skeleton, header, pills, itemRow, agendaHTML });
+/* ===== ui/patch (ตรงเดโมทุกกฎ): อัปเดต DOM เฉพาะส่วนที่เปลี่ยน — ของที่ไม่เปลี่ยนไม่ขยับ ของที่เปลี่ยนมี CSS transition ของที่เพิ่มใหม่เล่น .ev-in ครั้งเดียว =====
+   ใช้ morphdom 2.7.4 (vendor/morphdom-umd.min.js เวอร์ชันเดียวกับเดโม) ไม่มี = innerHTML */
+function patch(el:any,html:string){if(!el)return;const md=(window as any).morphdom;if(typeof md==='undefined'){el.innerHTML=html;return}
+ const tmp=el.cloneNode(false);tmp.innerHTML=html;
+ md(el,tmp,{childrenOnly:true,getNodeKey:(n:any)=>n.id||n.dataset?.key||undefined,
+  onBeforeElUpdated:(from:any,to:any)=>{if(from.hasAttribute('data-keep'))return false;
+   if(to.hasAttribute('data-to'))to.setAttribute('style',from.getAttribute('style')||'');
+   if(to.hasAttribute('data-count')&&from.hasAttribute('data-count'))to.textContent=from.textContent;
+   if((from.tagName==='TEXTAREA'||from.tagName==='INPUT')&&from.type!=='checkbox'&&(from===document.activeElement||from.id==='aiText'))to.value=from.value;return true},
+  onNodeAdded:(n:any)=>{if(n.nodeType!==1||n.parentElement?.closest('.ev-in'))return n;if(n.matches('svg,svg *,small,span,i,b,label,input,button,.ev-chip,.ev-sub,.ev-sheet-foot')||n.closest('button,.ev-set-row,#nav,nav,.ev-sheet-foot'))return n;n.classList.add('ev-in');n.addEventListener('animationend',()=>n.classList.remove('ev-in'),{once:true});return n}})}
+
+Object.assign(window, { empty, skeleton, header, pills, itemRow, agendaHTML, patch });

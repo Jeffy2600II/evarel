@@ -118,6 +118,16 @@ function aiRenderDrawer(q = '') {
 }
 const chatItems = id => { const c = ST.CH.list.find(x => x.id == id); return [{ act: 'ai-pin', id, icon: 'pin', label: c?.pinned ? 'เลิกปักหมุด' : 'ปักหมุด' }, { act: 'ai-rename', id, icon: 'edit', label: 'เปลี่ยนชื่อ' }, '-', { act: 'ai-delask', id, icon: 'trash', label: 'ลบแชท', tone: 'danger' }]; };
 const aiPlusItems = [{ act: 'ai-q', id: 'สรุปวันนี้ให้หน่อย', icon: 'chart', label: 'สรุปวันนี้' }, { act: 'ai-q', id: 'เพิ่มงาน ', icon: 'tasks', label: 'เพิ่มงาน' }, { act: 'ai-q', id: 'เพิ่มกิจวัตร ', icon: 'clock', label: 'เพิ่มกิจวัตร' }];
+function fillComposer(text) {
+    const t = $('aiText');
+    if (!t || t.disabled)
+        return;
+    window.AI && (window.AI.draft = text);
+    t.value = text;
+    aiAutosize();
+    requestAnimationFrame(() => { const n = $('aiText'); if (!n)
+        return; n.focus({ preventScroll: true }); n.setSelectionRange?.(n.value.length, n.value.length); });
+}
 const aiSync = () => { aiRefresh(); aiRenderDrawer($('dSearch')?.value || ''); };
 const drawerOpen = on => { const d = $('drawer'); if (!d)
     return; d.dataset.open = String(on); $('dScrim').dataset.open = String(on); if (on)
@@ -136,9 +146,9 @@ function openAI() {
     const onClose = () => { clearTimeout(ST.quotaTimer); ST.quotaTimer = 0; ST.quotaTick++; ST.QUOTA = null; window.EvarelMount?.unmountOne?.('ai'); window.EvarelMount?.unmountOne?.('aiShell'); };
     if (MT?.ready('aiShell')) {
         MT.unmountOne('aiShell');
-        openPage('', onClose, 'ai');
-        page.innerHTML = '';
-        MT.mountAt(page, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
+        const ae = openPage('', onClose, 'ai');
+        ae.innerHTML = '';
+        MT.mountAt(ae, 'aiShell', { placeholder: AI_PLACEHOLDER, avatarText: initial(), avatarBg: profileOf().bg, userName: ST.USER?.name || '' });
     }
     else
         openPage(aiShellHTML(AI_PLACEHOLDER, initial()), onClose, 'ai');
@@ -147,4 +157,4 @@ function openAI() {
     quotaPaint();
     quotaRefresh();
 }
-Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI });
+Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI, fillComposer });

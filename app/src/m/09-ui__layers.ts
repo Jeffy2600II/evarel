@@ -43,10 +43,18 @@ function confirmDialog(o){CONFIRM.fn=o.fn;const MT=(window as any).EvarelMount;
  if(MT?.ready('confirmCard')){MT.unmountOne('dialogCard');dialog.innerHTML='';MT.mountAt(dialog,'confirmCard',{title:o.title,msg:o.msg,keep:o.keep||'ยกเลิก',ok:o.ok,tone:o.tone});pushLayer({kind:'dialog',el:dialog});return}
  openDialog(`<h3>${o.title}</h3><p class="ev-sub">${o.msg}</p><div class="ev-dlg-actions"><button class="ev-btn-ghost" data-act="close">${o.keep||'ยกเลิก'}</button><button class="${o.tone==='primary'?'ev-btn-primary':'ev-btn-solid-danger'}" data-act="cf-ok">${o.ok}</button></div>`)}
 dialog.addEventListener('click',e=>{if(e.target===dialog)closeTop()});
+const EDGE_BACK_PX=24;
+const pageOf=(name:any)=>LAYERS.find(l=>l.name===name)?.el,hasPage=(name:any)=>LAYERS.some(l=>l.name===name);
+/* หน้าเต็มจอเป็นสแต็กตามเดโม: สร้าง section.ev-page ใหม่ต่อการเปิด เปิดซ้อนกันได้ไม่จำกัด กลับ/ปัดขอบทีละชั้น หน้าข้างล่างยังอยู่ครบ */
 function openPage(html,onClose,name=''){
- /* v24 ตามเดโม: ตั้งชื่อหน้า (data-page) + เล่นอนิเมชั่นเข้าหน้า (data-enter .52s เล่นครั้งเดียว ปิดโดย html[data-settled] ตาม CSS เดโม) — แอปใช้ #page ตัวเดียวจึงไม่สร้าง element ใหม่ต่อชั้น */
- page.dataset.page=name;page.innerHTML=html;pushLayer({kind:'page',name,el:page,onClose});
- page.dataset.enter='true';setTimeout(()=>{delete page.dataset.enter},800)}
+ const el=document.createElement('section');el.className='ev-page';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+ el.dataset.page=name||'';el.innerHTML=html;el.style.zIndex=String(22+LAYERS.length);document.body.appendChild(el);
+ if(name!=='ai')attachGesture(el,{axis:'x',dir:1,size:()=>el.offsetWidth,
+  canStart:p=>p.x<=EDGE_BACK_PX&&LAYERS[LAYERS.length-1]?.el===el,
+  onStart:()=>{el.dataset.drag='true'},onMove:x=>{el.style.transform=`translateX(${x}px)`},
+  onEnd:c=>{el.dataset.drag='false';if(c)el.dataset.exit='x';if(!(c&&closeTop())){delete el.dataset.exit;el.style.transform=''}}});
+ el.dataset.enter='true';setTimeout(()=>{delete el.dataset.enter},800);perfProbe();
+ pushLayer({kind:'page',name,el,remove:true,onClose:()=>{onClose?.()}});return el}
 /* ===== ui/perf (v24): ปรับอนิเมชั่นตามกำลังเครื่อง =====
    auto: เดาจาก CPU/RAM/โหมดประหยัดข้อมูล แล้ววัดเฟรมจริงตอนเปิดหน้าแรก ๆ ถ้าเฉลี่ยต่ำกว่า ~40fps จะสลับเป็น lite และจำไว้
    ผู้ใช้เลือกเองได้ในตั้งค่า (auto · full · lite) */
@@ -92,15 +100,7 @@ function attachGesture(el:any,cfg:any){const st:any={track:false,on:false,a0:0,c
 attachGesture(sheet,{axis:'y',dir:1,scroll:true,handle:'.ev-grab,h2',size:()=>sheet.offsetHeight,
  onStart:()=>{sheet.dataset.drag='true';scrim.style.transition='none'},onMove:(d:number,r:number)=>{sheet.style.transform=`translateY(${d}px)`;scrim.style.opacity=String(1-r)},
  onEnd:(c:boolean)=>{sheet.dataset.drag='false';if(!(c&&closeTop())){sheet.style.transform='';scrim.style.opacity='';scrim.style.transition=''}}});
-/* v24 ตามเดโม: ปัดจากขอบซ้ายเพื่อปิดหน้าเต็มจอ (เดโมติดให้ทุกหน้ายกเว้นหน้า AI) — แอปใช้ #page ตัวเดียวจึงติดครั้งเดียวที่นี่
-   canStart เช็คว่า #page เป็นชั้นบนสุดจริง ๆ + ไม่ใช่หน้า AI เท่านั้น (เทียบกับเดโมที่เช็คทีละ element ของหน้านั้น) */
-const EDGE_BACK_PX=24;
-attachGesture(page,{axis:'x',dir:1,size:()=>page.offsetWidth,
- canStart:p=>p.x<=EDGE_BACK_PX&&LAYERS[LAYERS.length-1]?.el===page&&page.dataset.page!=='ai',
- onStart:()=>{page.dataset.drag='true'},onMove:x=>{page.style.transform=`translateX(${x}px)`},
- onEnd:c=>{page.dataset.drag='false';if(c)page.dataset.exit='x';if(!(c&&closeTop())){delete page.dataset.exit;page.style.transform=''}}});
-
 /* moved by move_defs (evarel-ts-1f) */
 function closePop(){if(pop.hidden)return;pop.dataset.open='false';ST.popBtn?.setAttribute?.('aria-expanded','false');ST.popBtn=null;setTimeout(()=>{if(pop.dataset.open==='false')pop.hidden=true},170)}
 
-Object.assign(window, { $, sheet, scrim, page, dialog, pop, LAYERS, BEHIND, scrollY0, lock, pushLayer, popLayer, CONFIRM, sheetGuard, closeTop, setSheet, openSheet, openDialog, confirmDialog, openPage, attachGesture, gScrolledAway, refreshInert, G, closePop, perfPref, perfApply, perfDetect, perfProbe, PERF_PREF_KEY, PERF_AUTO_KEY, kbSync, syncThemeColor, EDGE_BACK_PX });
+Object.assign(window, { pageOf, hasPage, $, sheet, scrim, page, dialog, pop, LAYERS, BEHIND, scrollY0, lock, pushLayer, popLayer, CONFIRM, sheetGuard, closeTop, setSheet, openSheet, openDialog, confirmDialog, openPage, attachGesture, gScrolledAway, refreshInert, G, closePop, perfPref, perfApply, perfDetect, perfProbe, PERF_PREF_KEY, PERF_AUTO_KEY, kbSync, syncThemeColor, EDGE_BACK_PX });

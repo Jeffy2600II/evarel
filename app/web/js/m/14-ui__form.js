@@ -49,7 +49,12 @@ const typeBody = () => `<div class="ev-types">${Object.entries(TYPE_INFO).map(([
 let sheetStageT = 0, sheetResizeT = 0, renderFormKey = '';
 function sheetStage() { clearTimeout(sheetStageT); sheet.dataset.stage = '1'; sheetStageT = setTimeout(() => { delete sheet.dataset.stage; }, 900); }
 function sheetResize(run) {
-    const el = sheet, h0 = el.offsetHeight;
+    const el = sheet;
+    if (el.hidden || el.dataset.open !== 'true' || el.dataset.drag === 'true' || document.documentElement.dataset.perf === 'lite') {
+        run();
+        return;
+    }
+    const h0 = el.offsetHeight;
     clearTimeout(sheetResizeT);
     el.style.height = '';
     delete el.dataset.resize;
@@ -58,9 +63,9 @@ function sheetResize(run) {
     if (Math.abs(h1 - h0) < 3)
         return;
     el.style.height = h0 + 'px';
-    void el.offsetWidth;
+    void el.offsetHeight;
     el.dataset.resize = '1';
-    void el.offsetWidth;
+    void el.offsetHeight;
     el.style.height = h1 + 'px';
     sheetResizeT = setTimeout(() => { el.style.height = ''; delete el.dataset.resize; }, 380);
 }

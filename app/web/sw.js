@@ -58,6 +58,7 @@ const CORE = [
   './js/react/all.js',
   './js/route.js',
   './js/boot.js',
+  './vendor/morphdom-umd.min.js',
   './vendor/fullcalendar.min.js',
   './icons/icon-192.png',
   './icons/icon-512.png',

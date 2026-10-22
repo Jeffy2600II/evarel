@@ -4,7 +4,7 @@ const date = el => el?.dataset.date || UI.date;
 const bump = (id, n, d = UI.date) => { const it = find(id); if (!it)
     return; const v = Math.max(0, val(it, d) + n); commit('', () => { it.log[d] = v; }, true); haptic(); return NR; };
 const aiMsg = id => curChat()?.msgs[+id];
-const closeAnyDrawer = () => { const d = $('drawer'); if (d && d.dataset.open === 'true' && LAYERS[LAYERS.length - 1]?.el === page) {
+const closeAnyDrawer = () => { const d = $('drawer'); if (d && d.dataset.open === 'true' && LAYERS[LAYERS.length - 1]?.el === pageOf('ai')) {
     drawerOpen(false);
     return true;
 } return false; };
@@ -88,7 +88,7 @@ const ACTIONS = {
         closeTop(); return NR; }, undo: () => { toastEl._undo?.(); toastEl._undo = null; toastEl.dataset.open = 'false'; return NR; },
     'cf-ok': () => { const f = CONFIRM.fn; closeTop(); setTimeout(() => f?.(), 200); return NR; }, 'imp-add': () => { closeTop(); setTimeout(() => runImport('add'), 200); return NR; }, 'imp-skip': () => { closeTop(); setTimeout(() => runImport('skip'), 200); return NR; },
     ai: () => { openAI(); return NR; }, settings: () => { settingsOpen(); return NR; },
-    sugg: id => { aiSend(SUGG[+id] || ''); return NR; },
+    sugg: id => { fillComposer(SUGG[+id] ?? id); return NR; },
     'ai-hist': () => { drawerOpen($('drawer').dataset.open !== 'true'); return NR; },
     'ai-new': () => { ST.CH.cur = null; saveCH(); aiRefresh(); drawerOpen(false); $('aiText')?.focus(); return NR; },
     'ai-open': id => { ST.CH.cur = +id; saveCH(); aiRefresh(); drawerOpen(false); return NR; },
@@ -124,15 +124,7 @@ const ACTIONS = {
         aiSend(t); return NR; },
     'ai-retry-global': () => { ST.AI.notice = null; aiRefresh(); quotaPaint(); return NR; },
     'rem-off': () => { ST.D.rem = []; renderForm(); return NR; },
-    'ai-q': id => { if (id.startsWith('สรุป')) {
-        aiSend(id);
-    }
-    else {
-        const t = $('aiText');
-        t.value = id;
-        aiAutosize();
-        t.focus();
-    } return NR; },
+    'ai-q': id => { fillComposer(id); return NR; },
     'ai-ok': id => { const m = aiMsg(id); if (!m?.card)
         return NR; const p = m.card.p; commit('', () => S.items.push(mk({ ...p, id: Date.now() })), true); m.card.status = 'added'; saveCH(); aiRefresh(); return NR; },
     'ai-cok': id => {

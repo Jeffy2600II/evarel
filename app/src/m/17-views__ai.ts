@@ -42,6 +42,8 @@ function aiRenderDrawer(q=''){const box=$('drawerList');if(!box)return;const k=q
  box.innerHTML=h}
 const chatItems=id=>{const c=ST.CH.list.find(x=>x.id==id);return [{act:'ai-pin',id,icon:'pin',label:c?.pinned?'เลิกปักหมุด':'ปักหมุด'},{act:'ai-rename',id,icon:'edit',label:'เปลี่ยนชื่อ'},'-',{act:'ai-delask',id,icon:'trash',label:'ลบแชท',tone:'danger'}]};
 const aiPlusItems=[{act:'ai-q',id:'สรุปวันนี้ให้หน่อย',icon:'chart',label:'สรุปวันนี้'},{act:'ai-q',id:'เพิ่มงาน ',icon:'tasks',label:'เพิ่มงาน'},{act:'ai-q',id:'เพิ่มกิจวัตร ',icon:'clock',label:'เพิ่มกิจวัตร'}];
+function fillComposer(text:string){const t=$('aiText') as any;if(!t||t.disabled)return;(window as any).AI&&((window as any).AI.draft=text);t.value=text;aiAutosize();
+ requestAnimationFrame(()=>{const n=$('aiText') as any;if(!n)return;n.focus({preventScroll:true});n.setSelectionRange?.(n.value.length,n.value.length)})}
 const aiSync=()=>{aiRefresh();aiRenderDrawer($('dSearch')?.value||'')};
 const drawerOpen=on=>{const d=$('drawer');if(!d)return;d.dataset.open=String(on);$('dScrim').dataset.open=String(on);if(on)aiRenderDrawer($('dSearch').value)};
 const aiAutosize=()=>{const t=$('aiText');if(!t)return;t.style.height='auto';t.style.height=Math.min(120,t.scrollHeight)+'px';$('aiForm').querySelector('.ev-send').dataset.empty=String(!t.value.trim())};
@@ -51,8 +53,8 @@ function aiShellHTML(placeholder,avatarText){return `<div class="ev-aibar"><butt
  <div class="ev-drawer-scrim" id="dScrim" data-open="false" data-act="ai-hist"></div>
  <aside class="ev-drawer" id="drawer" data-open="false" aria-label="เมนูแชท"><div class="ev-drawer-head"><div class="ev-drawer-top"><h2>Evarel AI</h2><button class="ev-icon-btn" data-flat data-act="ai-hist" aria-label="ปิดเมนูแชท">${icon('x')}</button></div><button class="ev-navrow" data-tone="primary" data-act="ai-new">${icon('edit')}<span>แชทใหม่</span></button><button class="ev-navrow" data-act="ai-search">${icon('search')}<span>ค้นหาแชท</span></button><label class="ev-search" id="dSearchWrap" hidden>${icon('search')}<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท"></label></div><div class="ev-drawer-list" id="drawerList"></div><div class="ev-drawer-foot">${avatarHTML({tag:'button',size:38})}<span class="ev-foot-name">${esc(ST.USER?.name||'')}</span><button class="ev-icon-btn" data-flat data-act="settings" aria-label="ตั้งค่า">${icon('gear')}</button></div></aside>`}
 function openAI(){const MT=(window as any).EvarelMount;const onClose=()=>{clearTimeout(ST.quotaTimer);ST.quotaTimer=0;ST.quotaTick++;ST.QUOTA=null;(window as any).EvarelMount?.unmountOne?.('ai');(window as any).EvarelMount?.unmountOne?.('aiShell')};
- if(MT?.ready('aiShell')){MT.unmountOne('aiShell');openPage('',onClose,'ai');page.innerHTML='';MT.mountAt(page,'aiShell',{placeholder:AI_PLACEHOLDER,avatarText:initial(),avatarBg:profileOf().bg,userName:ST.USER?.name||''})}
+ if(MT?.ready('aiShell')){MT.unmountOne('aiShell');const ae=openPage('',onClose,'ai');ae.innerHTML='';MT.mountAt(ae,'aiShell',{placeholder:AI_PLACEHOLDER,avatarText:initial(),avatarBg:profileOf().bg,userName:ST.USER?.name||''})}
  else openPage(aiShellHTML(AI_PLACEHOLDER,initial()),onClose,'ai');
  aiRefresh();aiRenderDrawer();quotaPaint();quotaRefresh()}
 
-Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI });
+Object.assign(window, { aiShellHTML, firstName, noticeHTML, msgActions, SUGG, AI_TITLE_MAX, AI_REPLY_MS, loadChats, saveCH, curChat, aiReply, cardsHTML, cardHTML, AI_MARK, aiBodyHTML, aiRefresh, aiRenderDrawer, chatItems, aiPlusItems, aiSync, drawerOpen, aiAutosize, openAI, fillComposer });

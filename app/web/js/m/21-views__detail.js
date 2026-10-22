@@ -4,26 +4,29 @@ const HIST_STEP_TIMER = 5;
 function refreshDetail() {
     if (ST.DETAIL == null)
         return;
+    const dp = pageOf('detail');
     const it = find(ST.DETAIL);
     if (!it) {
         ST.DETAIL = null;
-        if (LAYERS.some(l => l.el === page))
+        if (dp)
             closeTop();
         return;
     }
-    const y = page.querySelector('.ev-page-scroll')?.scrollTop || 0;
+    if (!dp)
+        return;
+    const y = dp.querySelector('.ev-page-scroll')?.scrollTop || 0;
     const MT = window.EvarelMount;
     /* S4: เป็น React อยู่ (root detail ที่ page) = remount ใหม่ คงตำแหน่งเลื่อนเหมือนเดิม */
-    if (MT?.ready('detail') && MT.els?.detail === page) {
-        MT.mountAt(page, 'detail', { id: it.id });
-        const sc = page.querySelector('.ev-page-scroll');
+    if (MT?.ready('detail') && MT.els?.detail === dp) {
+        MT.mountAt(dp, 'detail', { id: it.id });
+        const sc = dp.querySelector('.ev-page-scroll');
         if (sc)
             sc.scrollTop = y;
         mountHabit();
         return;
     }
-    page.innerHTML = detailHTML(it);
-    const sc = page.querySelector('.ev-page-scroll');
+    patch(dp, detailHTML(it));
+    const sc = dp.querySelector('.ev-page-scroll');
     if (sc)
         sc.scrollTop = y;
     mountHabit();

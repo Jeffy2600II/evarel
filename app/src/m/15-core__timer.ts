@@ -12,12 +12,12 @@ function focusBody(it){const mine=ST.TM&&ST.TM.id==it.id,run=mine&&!!ST.TM.start
  <p class="ev-sub">ปิดแอปแล้วเวลายังเดินต่อ เพราะเก็บเวลาเริ่มไว้ ไม่ได้นับวินาทีในหน้านี้</p></div>`}
 function openFocus(id){const it=find(id);if(!it)return;if(ST.TM&&ST.TM.id!=id){toast('มีตัวจับเวลาอื่นทำงานอยู่ ต้องจบก่อน');return openFocus(ST.TM.id)}
  const MT=(window as any).EvarelMount,onClose=()=>{ST.focusId=null;updateLive();(window as any).EvarelMount?.unmountOne?.('focus')};
- if(ST.focusId!==null){if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;page.innerHTML=focusBody(it);return}
+ if(ST.focusId!==null){if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;const fp=pageOf('focus');if(fp)patch(fp,focusBody(it));return}
  ST.focusId=id;
- if(MT?.ready('focus')){MT.unmountOne('focus');openPage('',onClose,'focus');page.innerHTML='';MT.mountAt(page,'focus',{id:it.id});return}
+ if(MT?.ready('focus')){MT.unmountOne('focus');const fe=openPage('',onClose,'focus');fe.innerHTML='';MT.mountAt(fe,'focus',{id:it.id});return}
  openPage(focusBody(it),onClose,'focus')}
 const refreshFocus=()=>{const it=find(ST.focusId);if(!it)return;const MT=(window as any).EvarelMount;
- if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;page.innerHTML=focusBody(it)};
+ if(MT?.ready('focus')&&MT.rerender('focus',{id:it.id}))return;const fp=pageOf('focus');if(fp)patch(fp,focusBody(it))};
 function updateLive(){const l=$('live'),it=ST.TM&&find(ST.TM.id);if(!it||ST.focusId!==null){l.dataset.show='false';return}l.dataset.show='true';l.dataset.run=String(!!ST.TM.startedAt);l.dataset.id=it.id;
  l.innerHTML=`<i></i><span>${ST.TM.startedAt?'กำลังจับเวลา':'หยุดชั่วคราว'} · ${esc(it.title)}</span><b>${fmtClock(tmMs())}</b>`}
 function tick(){if(!ST.TM)return;const it=find(ST.TM.id);if(!it){ST.TM=null;saveTM();return updateLive()}

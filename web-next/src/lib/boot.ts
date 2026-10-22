@@ -19,6 +19,7 @@ export default function AppBoot() {
   useEffect(() => {
     /* ลำดับสำคัญ: react runtime ก่อน แล้วหน้า boot ต้น (index เดิมโหลดทันที) แล้วเครื่องยนต์ 00..25 แล้ว route แล้ว SW */
     const seq: Array<() => Promise<unknown>> = [
+      () => loadScript('vendor/morphdom-umd.min.js'),
       () => loadScript('vendor/fullcalendar.min.js'),
       () => import('../../../app/web/js/react/runtime.js'),
       /* โหลดครบทุกหน้าตั้งแต่บูต (รวมที่เดิมเป็น lazy) — แก้ที่ต้นตอ React #130:

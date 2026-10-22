@@ -35,15 +35,17 @@ function openFocus(id) {
     if (ST.focusId !== null) {
         if (MT?.ready('focus') && MT.rerender('focus', { id: it.id }))
             return;
-        page.innerHTML = focusBody(it);
+        const fp = pageOf('focus');
+        if (fp)
+            patch(fp, focusBody(it));
         return;
     }
     ST.focusId = id;
     if (MT?.ready('focus')) {
         MT.unmountOne('focus');
-        openPage('', onClose, 'focus');
-        page.innerHTML = '';
-        MT.mountAt(page, 'focus', { id: it.id });
+        const fe = openPage('', onClose, 'focus');
+        fe.innerHTML = '';
+        MT.mountAt(fe, 'focus', { id: it.id });
         return;
     }
     openPage(focusBody(it), onClose, 'focus');
@@ -55,7 +57,9 @@ const refreshFocus = () => {
     const MT = window.EvarelMount;
     if (MT?.ready('focus') && MT.rerender('focus', { id: it.id }))
         return;
-    page.innerHTML = focusBody(it);
+    const fp = pageOf('focus');
+    if (fp)
+        patch(fp, focusBody(it));
 };
 function updateLive() {
     const l = $('live'), it = ST.TM && find(ST.TM.id);

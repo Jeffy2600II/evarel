@@ -139,7 +139,7 @@ function pushAutoSync() {
     try {
         if (!pushSupported() || !SUPA_API || Notification.permission !== 'granted' || pushSavedState())
             return;
-        pushSubscribe(false).then(r => { if (r.ok && typeof page !== 'undefined' && page && page.querySelector && page.querySelector('[data-act="notify"]'))
+        pushSubscribe(false).then(r => { if (r.ok && pageOf('settings')?.querySelector('[data-act="notify"]'))
             ST._render(); }).catch(() => { });
     }
     catch (e) { }

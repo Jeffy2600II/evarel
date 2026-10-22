@@ -78,7 +78,7 @@ async function pushSubscribe(askPermission){
 /** ซิงก์เงียบหลังเข้าสู่ระบบ: ถ้าอนุญาตแล้วแต่เครื่องนี้ยังไม่ลงทะเบียน -> ลงทะเบียนเอง (ไม่ขอสิทธิ์ ไม่ถ่วงการเปิดแอป ล้มเงียบ) */
 function pushAutoSync(){
  try{if(!pushSupported()||!SUPA_API||Notification.permission!=='granted'||pushSavedState())return;
-  pushSubscribe(false).then(r=>{if(r.ok&&typeof page!=='undefined'&&page&&page.querySelector&&page.querySelector('[data-act="notify"]'))ST._render()}).catch(()=>{})}catch(e){}}
+  pushSubscribe(false).then(r=>{if(r.ok&&pageOf('settings')?.querySelector('[data-act="notify"]'))ST._render()}).catch(()=>{})}catch(e){}}
 const PUSH_WHY={unsupported:'เบราว์เซอร์นี้ไม่รองรับ Push',denied:'ถูกปิดไว้ ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์','no-backend':'โหมดนี้ยังไม่เชื่อมระบบหลังบ้าน','not-asked':'ยังไม่ได้อนุญาต',auth:'ต้องเข้าสู่ระบบก่อน','no-key':'ระบบยังไม่พร้อมรับสมัคร ลองใหม่ภายหลัง',subscribe:'เครื่องนี้สมัครไม่สำเร็จ ลองใหม่อีกครั้ง',server:'ระบบหลังบ้านไม่รับการสมัคร ลองใหม่ภายหลัง',limit:'สมัครครบ 5 เครื่องแล้ว'};
 const pushWhyText=w=>PUSH_WHY[w]||'สมัครไม่สำเร็จ';
 Object.assign(window, { AHEAD_PRESETS, REM_PRESETS, defaultRem, notifyState, checkNotify, toggleOnTime, toggleAhead, countNotifiable, urlB64ToU8, pushSupported, pushSavedState, pushSaveState, pushSubscribe, pushAutoSync, pushWhyText });

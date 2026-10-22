@@ -40,8 +40,10 @@ const typeBody=()=>`<div class="ev-types">${Object.entries(TYPE_INFO).map(([k,[i
    sheetResize: วัดความสูงก่อน/หลังสลับเนื้อหาแล้ว transition .34s — ต่างน้อยกว่า 3px ไม่เล่น | sheetStage: เปลี่ยนขั้นฟอร์ม = เนื้อหาใหม่เข้าเป็นจังหวะ 900ms */
 let sheetStageT:any=0,sheetResizeT:any=0,renderFormKey='';
 function sheetStage(){clearTimeout(sheetStageT);sheet.dataset.stage='1';sheetStageT=setTimeout(()=>{delete sheet.dataset.stage},900)}
-function sheetResize(run){const el=sheet,h0=el.offsetHeight;clearTimeout(sheetResizeT);el.style.height='';delete el.dataset.resize;run();const h1=el.offsetHeight;if(Math.abs(h1-h0)<3)return;
- el.style.height=h0+'px';void el.offsetWidth;el.dataset.resize='1';void el.offsetWidth;el.style.height=h1+'px';
+function sheetResize(run){const el=sheet;
+ if(el.hidden||el.dataset.open!=='true'||el.dataset.drag==='true'||document.documentElement.dataset.perf==='lite'){run();return}
+ const h0=el.offsetHeight;clearTimeout(sheetResizeT);el.style.height='';delete el.dataset.resize;run();const h1=el.offsetHeight;if(Math.abs(h1-h0)<3)return;
+ el.style.height=h0+'px';void el.offsetHeight;el.dataset.resize='1';void el.offsetHeight;el.style.height=h1+'px';
  sheetResizeT=setTimeout(()=>{el.style.height='';delete el.dataset.resize},380)}
 function renderForm(){ST.sheetMode='form';const y=$('sheetBody')?.scrollTop||0,isType=ST.D.step==='type';
  const title=isType?'เพิ่มอะไรดี':`${ST.D.id?'แก้ไข':'เพิ่ม'}${TYPES[ST.D.type]}`,body=isType?typeBody():`<form class="ev-form" id="addForm" novalidate>${formBody()}</form>`;
