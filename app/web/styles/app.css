@@ -4993,7 +4993,7 @@ body{
   top:0;
   left:0;
   right:0;
-  z-index:3;
+  z-index:10;
   pointer-events:none;
   background:linear-gradient(to bottom,color-mix(in srgb,var(--c-bg) 86%,transparent) calc(100% - 22px),transparent 100%)
 }
@@ -5007,7 +5007,7 @@ body{
   left:0;
   right:0;
   bottom:var(--kb,0px);
-  z-index:3;
+  z-index:10;
   pointer-events:none;
   padding-top:20px;
   background:linear-gradient(to top,color-mix(in srgb,var(--c-bg) 86%,transparent) calc(100% - 20px),transparent 100%);
@@ -5047,6 +5047,268 @@ body{
   .ev-page[data-page="ai"] .ev-ai-hello::before{
     box-shadow:0 0 0 26px var(--c-halo),0 0 0 54px var(--c-halo),0 0 0 84px var(--c-halo)
   }
+}
+
+/* ===== หน้า AI: ลำดับชั้น (z-index) เดียวทั้งหน้า =====
+   ต้นเหตุเดิม: bar/dock = 3 เท่ากับ drawer และ scrim = 2 ต่ำกว่า จึงกดปุ่มบน bar/dock ทะลุ scrim ได้ · สเกลใหม่: เนื้อ 1 < bar/dock 10 < scrim 20 < drawer 30
+   isolation แยก stacking context ของหน้า AI ออกจากชั้นนอก (sheet 24 / scrim 23 / dialog) ไม่ปะปนกัน */
+
+.ev-page[data-page="ai"]{
+  isolation:isolate
+}
+
+.ev-page[data-page="ai"] .ev-page-scroll{
+  position:relative;
+  z-index:1
+}
+
+.ev-page[data-page="ai"] .ev-drawer-scrim{
+  z-index:20
+}
+
+.ev-page[data-page="ai"] .ev-drawer{
+  z-index:30
+}
+
+/* scrim เปิดอยู่ = รับทุกการแตะทั้งจอ (รวมพื้นที่ bar/dock) เพราะมันอยู่เหนือทั้งสอง */
+
+/* ===== ระยะแชท + ความกว้างบับเบิล AI (Master สั่ง 22 ต.ค. 2026) ===== */
+
+.ev-page[data-page="ai"] .ev-chat{
+  padding-top:20px;
+  padding-bottom:8px
+}
+
+.ev-page[data-page="ai"] .ev-disc{
+  margin:6px 4px 30px
+}
+
+.ev-page[data-page="ai"] .ev-bubble-ai{
+  max-width:100%;
+  width:-moz-fit-content;
+  width:fit-content;
+  justify-self:start
+}
+
+.ev-page[data-page="ai"] .ev-bubble-ai.ev-md{
+  width:100%;
+  box-sizing:border-box;
+  min-width:0;
+  overflow-wrap:anywhere
+}
+
+/* ===== Markdown ในบับเบิล AI (.ev-md) — สีจากโทเคน ใช้ได้ทั้งโหมดสว่าง/มืด ===== */
+
+.ev-md{
+  white-space:normal !important;
+  line-height:1.65
+}
+
+.ev-md>*:first-child{
+  margin-top:0
+}
+
+.ev-md>*:last-child{
+  margin-bottom:0
+}
+
+.ev-md-p{
+  margin:0 0 10px;
+  white-space:pre-wrap
+}
+
+.ev-md-h{
+  margin:16px 0 8px;
+  line-height:1.35;
+  font-weight:700;
+  letter-spacing:-.2px
+}
+
+.ev-md-h1{
+  font-size:20px
+}
+
+.ev-md-h2{
+  font-size:18px
+}
+
+.ev-md-h3{
+  font-size:16.5px
+}
+
+.ev-md-h4,.ev-md-h5,.ev-md-h6{
+  font-size:15px
+}
+
+.ev-md-h5,.ev-md-h6{
+  color:var(--c-muted)
+}
+
+.ev-md strong{
+  font-weight:700
+}
+
+.ev-md em{
+  font-style:italic
+}
+
+.ev-md del{
+  opacity:.6
+}
+
+.ev-md-a{
+  color:var(--c-accent-text,var(--c-accent));
+  text-decoration:underline;
+  text-underline-offset:2px;
+  word-break:break-word
+}
+
+.ev-md-code{
+  font:500 .88em/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:var(--c-fill);
+  border-radius:6px;
+  padding:2px 6px
+}
+
+.ev-md-pre{
+  position:relative;
+  margin:10px 0;
+  background:var(--c-fill);
+  border-radius:14px;
+  overflow:hidden
+}
+
+.ev-md-lang{
+  display:block;
+  padding:8px 14px 0;
+  font:600 11px/1 var(--font);
+  letter-spacing:.4px;
+  text-transform:uppercase;
+  color:var(--c-muted)
+}
+
+.ev-md-pre pre{
+  margin:0;
+  padding:10px 14px 12px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain
+}
+
+.ev-md-pre code{
+  font:400 13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  white-space:pre;
+  display:block;
+  min-width:-moz-max-content;
+  min-width:max-content
+}
+
+.ev-md-list{
+  margin:0 0 10px;
+  padding-left:22px
+}
+
+.ev-md-list .ev-md-list{
+  margin:4px 0 2px
+}
+
+.ev-md-li{
+  margin:3px 0;
+  padding-left:2px
+}
+
+.ev-md-li::marker{
+  color:var(--c-muted)
+}
+
+.ev-md-task{
+  list-style:none;
+  margin-left:-20px
+}
+
+.ev-md-check{
+  width:16px;
+  height:16px;
+  margin:0 8px 0 0;
+  vertical-align:-2px;
+  accent-color:var(--c-accent)
+}
+
+.ev-md-quote{
+  margin:10px 0;
+  padding:2px 0 2px 14px;
+  border-left:3px solid var(--c-line);
+  color:var(--c-muted)
+}
+
+.ev-md-quote .ev-md-p:last-child{
+  margin-bottom:0
+}
+
+.ev-md-hr{
+  border:0;
+  border-top:1px solid var(--c-line);
+  margin:16px 0
+}
+
+.ev-md-tablewrap{
+  margin:10px 0;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid var(--c-line);
+  border-radius:12px
+}
+
+.ev-md-table{
+  border-collapse:collapse;
+  width:100%;
+  min-width:-moz-max-content;
+  min-width:max-content;
+  font-size:14px
+}
+
+.ev-md-table th,.ev-md-table td{
+  padding:9px 14px;
+  border-bottom:1px solid var(--c-line);
+  text-align:left;
+  vertical-align:top
+}
+
+.ev-md-table th{
+  background:var(--c-fill);
+  font-weight:600;
+  white-space:nowrap
+}
+
+.ev-md-table tr:last-child td{
+  border-bottom:0
+}
+
+.ev-md-table td+td,.ev-md-table th+th{
+  border-left:1px solid var(--c-line)
+}
+
+/* ===== ตำแหน่งระหว่างลากมาจากเอนจินผ่านตัวแปร --gx (px) / --gp (0-1) : เขียนครั้งเดียวต่อเฟรม · transform เป็น compositor-only =====
+   JS ไม่เขียน style.transform ตรงๆ อีกต่อไป · will-change ถูกตั้งโดยเอนจินเฉพาะตอนลาก */
+
+.ev-sheet[data-drag="true"]{
+  transform:translate3d(0,var(--gx,0px),0)
+}
+
+.ev-page[data-drag="true"]{
+  transform:translate3d(var(--gx,0px),0,0)
+}
+
+.ev-drawer[data-drag="true"][data-open="true"]{
+  transform:translate3d(calc(var(--gx,0px) * -1),0,0)
+}
+
+.ev-drawer[data-drag="true"][data-open="false"]{
+  transform:translate3d(calc(-102% + var(--gx,0px)),0,0)
+}
+
+.ev-sheet,.ev-drawer,.ev-page{
+  backface-visibility:hidden
 }
 
 /* Path: app/web/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */

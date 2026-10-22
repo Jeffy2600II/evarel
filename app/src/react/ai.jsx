@@ -103,7 +103,7 @@ function AiContent(p) {
   const out = ms.map((m, i) => m.who === 'u'
     ? h('div', { key: 'm' + i, className: 'ev-bubble-user', 'data-key': 'm' + i }, m.text)
     : [
-        h('div', { key: 'b' + i, className: 'ev-bubble-ai', 'data-key': 'm' + i }, m.text),
+        h('div', { key: 'b' + i, className: 'ev-bubble-ai ev-md', 'data-key': 'm' + i, dangerouslySetInnerHTML: { __html: w.mdToHtml(m.text) } }),
         m.cards && m.cards.length ? m.cards.map((c2, k) => h(AiToolCard, { key: 'c' + i + '_' + k, c: c2, i, k }))
           : m.card ? h(AiItemCard, { key: 'ic' + i, m, i }) : null,
         h(MsgActions, { key: 'ma' + i, m, i }),

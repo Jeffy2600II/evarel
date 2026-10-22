@@ -26,7 +26,7 @@ const noticeHTML=()=>{const n=(window as any).AI?.notice;if(!n)return '';
 function aiBodyHTML(){const c=curChat();const A=(window as any).AI||{};
  if((!c||!c.msgs.length)&&!A.typing)return `<div class="ev-ai-hello" data-key="hello">${AI_MARK}<h3>${firstName()?`สวัสดี ${esc(firstName())}`:'สวัสดี'}</h3><p class="ev-sub" style="margin-top:-6px">มีอะไรให้ช่วยวันนี้</p><div class="ev-sugg">${SUGG.map((s,i)=>`<button type="button" data-act="sugg" data-id="${i}">${esc(s)}</button>`).join('')}</div></div>${noticeHTML()}`;
  const ms=c?c.msgs:[],lastA=ms.map((m:any)=>m.who).lastIndexOf('a');
- return `<div class="ev-chat">${ms.map((m:any,i:number)=>m.who==='u'?`<div class="ev-bubble-user" data-key="m${i}">${esc(m.text)}</div>`:`<div class="ev-bubble-ai" data-key="m${i}">${esc(m.text)}</div>${cardHTML(m,i)}${msgActions(m,i)}${i===lastA&&!A.typing?'<p class="ev-disc">AI อาจผิดพลาดได้ ตรวจสอบคำตอบอีกครั้ง</p>':''}`).join('')}${A.typing?'<div class="ev-bubble-ai ev-typing" data-key="typing"><i></i><i></i><i></i></div>':''}${noticeHTML()}</div>`}
+ return `<div class="ev-chat">${ms.map((m:any,i:number)=>m.who==='u'?`<div class="ev-bubble-user" data-key="m${i}">${esc(m.text)}</div>`:`<div class="ev-bubble-ai ev-md" data-key="m${i}">${mdToHtml(m.text)}</div>${cardHTML(m,i)}${msgActions(m,i)}${i===lastA&&!A.typing?'<p class="ev-disc">AI อาจผิดพลาดได้ ตรวจสอบคำตอบอีกครั้ง</p>':''}`).join('')}${A.typing?'<div class="ev-bubble-ai ev-typing" data-key="typing"><i></i><i></i><i></i></div>':''}${noticeHTML()}</div>`}
 function aiRefresh(smooth){const sc=$('aiScroll');if(!sc)return;const MT=(window as any).EvarelMount;
  /* S4: พร้อมแล้ว mount React จริงลง #aiBody (ไม่มี wrapper เพิ่ม) ไม่พร้อมใช้ string เดิม
     v24 ตาม patch ของเดโม: มี root อยู่แล้วให้ rerender (React reconcile คง bubble เดิมไว้ — ของเดิมไม่ขยับ เฉพาะข้อความใหม่ที่เพิ่ม) ไม่มี root = mount ใหม่ */
@@ -50,9 +50,13 @@ const aiSync=()=>{aiRefresh();aiRenderDrawer($('dSearch')?.value||'')};
 const DRAWER_EDGE_PX=22;
 function attachDrawerGestures(root){const d=(root||document).querySelector('#drawer'),sc=(root||document).querySelector('#dScrim'),edge=root||document,size=()=>d.offsetWidth,colLeft=()=>Math.max(0,(innerWidth-480)/2);
  if(!d||!sc||d.dataset.gestureBound)return;d.dataset.gestureBound='true';
- const start=()=>{d.dataset.drag='true';sc.style.transition='none'},fin=open=>{d.dataset.drag='false';sc.style.transition='';drawerOpen(open);d.style.transform='';sc.style.opacity=''};
- attachGesture(d,{axis:'x',dir:-1,scroll:true,mouseAny:true,mover:d,size,canStart:()=>d.dataset.open==='true',onStart:start,onMove:(x,r)=>{d.style.transform=`translateX(${-x}px)`;sc.style.opacity=String(1-r)},onEnd:c=>fin(!c)});
- attachGesture(edge,{axis:'x',dir:1,mouseAny:true,mover:d,size,canStart:p=>d.dataset.open!=='true'&&p.x>=colLeft()&&p.x-colLeft()<=DRAWER_EDGE_PX,onStart:start,onMove:(x,r)=>{d.style.transform=`translateX(${-size()+x}px)`;sc.style.opacity=String(r)},onEnd:c=>fin(c)})}
+ /* ตำแหน่งระหว่างลากอยู่ใน --gx/--gp (CSS ประกอบ transform ของ drawer และความจางของม่าน) · ปล่อยแล้วสปริงต่อจากความเร็วนิ้วด้วย WAAPI */
+ const start=()=>{d.dataset.drag='true';sc.style.transition='none'},clear=()=>{d.style.removeProperty('--gx');d.style.removeProperty('--gp');sc.style.opacity='';sc.style.transition=''},
+  fin=open=>{d.dataset.drag='false';drawerOpen(open);clear()};
+ attachGesture(d,{axis:'x',dir:-1,scroll:true,mouseAny:true,mover:d,size,canStart:()=>d.dataset.open==='true',onStart:start,onMove:(x,r)=>{sc.style.opacity=String(1-r)},
+  spring:(c,x)=>({prop:v=>`translate3d(${-v}px,0,0)`,target:c?size():0,k:c?260:420,c:c?34:38,maxMs:c?340:520}),onEnd:c=>fin(!c)});
+ attachGesture(edge,{axis:'x',dir:1,mouseAny:true,mover:d,size,canStart:p=>d.dataset.open!=='true'&&p.x>=colLeft()&&p.x-colLeft()<=DRAWER_EDGE_PX,onStart:start,onMove:(x,r)=>{sc.style.opacity=String(r)},
+  spring:(c,x)=>({prop:v=>`translate3d(${-size()+v}px,0,0)`,target:c?size():0,k:c?260:420,c:c?34:38,maxMs:c?340:520}),onEnd:c=>fin(c)})}
 const drawerOpen=on=>{const d=$('drawer');if(!d)return;d.dataset.open=String(on);$('dScrim').dataset.open=String(on);if(on)aiRenderDrawer($('dSearch').value)};
 const aiAutosize=()=>{const t=$('aiText');if(!t)return;t.style.height='auto';t.style.height=Math.min(120,t.scrollHeight)+'px';$('aiForm').querySelector('.ev-send').dataset.empty=String(!t.value.trim())};
 function aiShellHTML(placeholder,avatarText){return `<div class="ev-aibar"><button class="ev-backpill" data-act="close" aria-label="กลับหน้าหลัก">${icon('back')}กลับ</button><button class="ev-roundbtn" data-act="ai-hist" aria-label="เมนูแชท">${icon('list')}</button><h2 id="aiTitle" class="ev-aititle">AI</h2><div class="ev-capsule"><button data-act="ai-new" aria-label="แชทใหม่">${icon('edit')}</button><button data-act="ai-more" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวเลือกเพิ่มเติม">${icon('more')}</button></div></div>
