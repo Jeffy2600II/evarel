@@ -5,7 +5,7 @@
 
 /* ============ TOKENS ============ */
 :root{
-  --font:'Anuphan','Noto Sans Thai',system-ui,sans-serif;
+  --font:'Inter','Noto Sans Thai',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --c-bg:#F7F7F9;--c-surface:#fff;--c-text:#14141A;--c-muted:#6A6A77;--c-line:#E8E8ED;--c-fill:#EDEDF1;--c-on-ink-soft:rgba(255,255,255,.2);
   --c-accent:#4B2FF5;--c-accent-text:#4B2FF5;--c-accent-soft:#EEEBFF;--c-accent-2:#7A5CFF;--c-on-accent:#fff;
   --c-ok:#18A66A;--c-on-ok:#fff;--c-warn:#E8890C;--c-danger:#E5484D;--c-danger-soft:#FDECEC;--c-warn-soft:#FFF3E0;--c-scrim:rgba(10,10,20,.45);
@@ -22,7 +22,7 @@
 /* ============ BASE / LAYOUT ============ */
 *{box-sizing:border-box;margin:0}
 html{-webkit-text-size-adjust:100%}
-body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-tap-highlight-color:transparent;line-height:1.45;font-size:15px}
+body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-tap-highlight-color:transparent;line-height:1.45;font-size:15px;font-synthesis:none;font-kerning:normal;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-feature-settings:'calt' 1,'cv11' 1,'ss03' 1}
 button,input,select{font-family:inherit;color:inherit}
 button{padding:0}
 button{cursor:pointer;touch-action:manipulation}
