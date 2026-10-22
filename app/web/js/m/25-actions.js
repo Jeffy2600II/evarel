@@ -118,7 +118,7 @@ const ACTIONS = {
         return NR; const done = () => toast('คัดลอกแล้ว'); (navigator.clipboard?.writeText(m.text) || Promise.reject(new Error('no clipboard'))).then(done, err => { console.warn('copy', err); toast('คัดลอกไม่สำเร็จ'); }); return NR; },
     'ai-vote': id => { const [i, v] = String(id).split(':'), m = aiMsg(i); if (!m)
         return NR; m.vote = m.vote === v ? null : v; saveCH(); aiRefresh(); haptic(); return NR; },
-    'ai-usage': () => { ST.sheetMode = 'usage'; openSheet('การใช้งาน AI', '<div id="usageSheet">' + usageCardHTML() + '</div><p class="ev-sub" style="margin-top:12px">ขีดจำกัดต่อวันช่วยให้บริการเสถียรสำหรับทุกคน</p>'); usagePaint(); usageRefresh(); return NR; },
+    'ai-usage': () => { ST.sheetMode = 'usage'; openSheet('การใช้งาน AI', '<div id="usageSheet">' + usageCardHTML() + '</div><p class="ev-sub" style="margin-top:12px">ขีดจำกัดต่อวันช่วยให้บริการเสถียรสำหรับทุกคน</p>'); growBars($('sheet')); usageRefresh(); return NR; },
     'usage-refresh': () => { ST.QUOTA = null; usagePaint(); usageRefresh(); return NR; },
     'ai-retry': () => { const t = ST.AI.draft; ST.AI.notice = null; ST.AI.draft = ''; aiRefresh(); if (t)
         aiSend(t); return NR; },

@@ -280,6 +280,9 @@ body{font-variant-numeric:tabular-nums}
 .ev-fc-wrap{padding:8px}.ev-cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.ev-cal-title{font-size:18px;font-weight:600;min-width:150px;text-align:center}
 .ev-chip-btn{height:32px;padding:0 14px;border-radius:var(--r-pill);border:0;background:var(--c-fill);font:600 13px var(--font);transition:transform var(--t-fast) var(--ease)}.ev-chip-btn:active{transform:scale(.94)}
 .ev-weekbar{display:flex;align-items:center;justify-content:space-between;padding:0 var(--s2) 6px}.ev-weekbar b{font-size:15px;font-weight:600}
+/* แถบสัปดาห์เลื่อนเข้า/ออก 28px ด้วย translateX: ทางขวา (wkL) ดันความกว้างเอกสารเกินจอชั่วคราว ทางซ้าย (wkR) ไม่ทำเพราะเบราว์เซอร์ไม่นับพื้นที่ล้นด้านซ้าย
+   ตัดการล้นแนวนอนที่ตัวห่อแท็บ (.ev-app = #app ซึ่งเป็นพ่อโดยตรงของ .ev-week) ด้วย clip: ไม่สร้าง scroll container และไม่ตัดแกนตั้ง (ปุ่มวันที่ที่ยก translateY(-2px) กับเงายังอยู่) อนิเมชั่นเล่นเหมือนเดิมทุกพิกเซล */
+.ev-app{overflow-x:clip}
 .ev-week[data-dir="1"]{animation:wkL .32s var(--ease)}.ev-week[data-dir="-1"]{animation:wkR .32s var(--ease)}
 @keyframes wkL{from{opacity:0;transform:translateX(28px)}}@keyframes wkR{from{opacity:0;transform:translateX(-28px)}}
 .ev-error{display:grid;gap:12px;justify-items:center;padding:var(--s4) var(--s2)}

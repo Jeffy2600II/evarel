@@ -79,10 +79,9 @@ async function versionRefresh() {
     }
     versionPaint();
 }
-function usagePaint() { ['usageWrap', 'usageSheet'].forEach(id => { const e = $(id); if (e) {
-    e.innerHTML = usageCardHTML();
-    growBars(e);
-} }); }
+/* ตรงเดโม v24 (paintUsage): patch() คง node เดิม ค่าใหม่ transition จากค่าเดิม ไม่เขียน innerHTML ทับ (ทับ = แถบเป็น node ใหม่ เริ่ม 0 แล้ววิ่ง/จางเข้าซ้ำตอนโควตาจริงมาถึง) */
+function usagePaint() { ['usageWrap', 'usageSheet'].forEach(id => { const e = $(id); if (e)
+    patch(e, usageCardHTML()); }); growBars(document); }
 async function usageRefresh() { try {
     const q = await quotaFetch();
     ST.QUOTA = q || { unknown: true };

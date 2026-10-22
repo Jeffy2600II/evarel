@@ -40,7 +40,8 @@ function versionPaint(){const e=$('appVerWrap');if(e)e.innerHTML=versionCardHTML
 async function versionRefresh(){try{const w=window as any;const version=w.__EV_VERSION__||'';const build=w.__EV_BUILD__||'';
   let date='';try{const rel=await w.EvarelUpdate?.latestRelease?.();if(rel&&rel.assets===build)date=rel.date||''}catch(e){}
   (ST as any).APPVER={version,build,date}}catch(e){(ST as any).APPVER={}}versionPaint()}
-function usagePaint(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e){e.innerHTML=usageCardHTML();growBars(e)}})}
+/* ตรงเดโม v24 (paintUsage): patch() คง node เดิม ค่าใหม่ transition จากค่าเดิม ไม่เขียน innerHTML ทับ (ทับ = แถบเป็น node ใหม่ เริ่ม 0 แล้ววิ่ง/จางเข้าซ้ำตอนโควตาจริงมาถึง) */
+function usagePaint(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e)patch(e,usageCardHTML())});growBars(document)}
 async function usageRefresh(){try{const q=await quotaFetch();ST.QUOTA=q||{unknown:true}}catch(err){ST.QUOTA={unknown:true}}usagePaint()}
 function settingsOpen(){const MT=(window as any).EvarelMount;
  if(MT?.ready('settings')){MT.unmountOne('settings');let sp=pageOf('settings');if(!sp)sp=openPage('',undefined,'settings');sp.innerHTML='';MT.mountAt(sp,'settings',settingsProps());usageRefresh();versionRefresh();return}
