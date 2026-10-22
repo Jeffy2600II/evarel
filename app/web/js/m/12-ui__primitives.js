@@ -16,7 +16,7 @@ function itemRow(it, ds, i, opts = {}) {
 function agendaHTML(ds) { const list = onDate(ds); return `<section class="ev-card"><div class="ev-sec-head"><h3 class="ev-group">${dayLab(ds)}<span>${fmtDate(ds)}</span></h3></div>${list.length ? `<ul>${list.map((it, i) => itemRow(it, ds, i)).join('')}</ul>` : empty('inbox', 'ไม่มีรายการในวันนี้', 'กดปุ่ม + เพื่อเพิ่มรายการ')}</section>`; }
 /* ===== ui/patch (ตรงเดโมทุกกฎ): อัปเดต DOM เฉพาะส่วนที่เปลี่ยน — ของที่ไม่เปลี่ยนไม่ขยับ ของที่เปลี่ยนมี CSS transition ของที่เพิ่มใหม่เล่น .ev-in ครั้งเดียว =====
    ใช้ morphdom 2.7.4 (vendor/morphdom-umd.min.js เวอร์ชันเดียวกับเดโม) ไม่มี = innerHTML */
-function patch(el, html) {
+function patch(el, html, opt = {}) {
     if (!el)
         return;
     const md = window.morphdom;
@@ -30,6 +30,8 @@ function patch(el, html) {
         onBeforeElUpdated: (from, to) => {
             if (from.hasAttribute('data-keep'))
                 return false;
+            if (opt.skipReact && from.hasAttribute('data-react-mount'))
+                return false; /* <main> ที่ React ถือ: ห้าม morphdom แตะ — ให้ React rerender เอง */
             if (to.hasAttribute('data-to'))
                 to.setAttribute('style', from.getAttribute('style') || '');
             if (to.hasAttribute('data-count') && from.hasAttribute('data-count'))

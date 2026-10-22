@@ -1,21 +1,40 @@
 /* ===== MODULE: render ===== */
-function countUp(el){const to=+el.dataset.count,t0=performance.now(),dur=700;const f=t=>{const k=Math.min(1,(t-t0)/dur);el.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+const COUNTED=new WeakSet();
+/* ตรงเดโม v24: ครั้งแรกนับจาก 0 · ครั้งต่อไปนับจาก "ค่าเดิมบนหน้าจอ" ไปค่าใหม่ (ต้องคง node เดิมไว้ด้วย patch/rerender ไม่ใช่ innerHTML) */
+function animateCounts(root:any){root.querySelectorAll('[data-count]').forEach((el:any)=>{const to=+el.dataset.count;let from=parseFloat(el.textContent);if(!COUNTED.has(el)){COUNTED.add(el);from=0}if(Number.isNaN(from))from=0;
+ cancelAnimationFrame(el._raf);if(from===to){el.textContent=to;return}const t0=performance.now(),dur=700,f=(t:number)=>{const k=Math.min(1,(t-t0)/dur);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));if(k<1)el._raf=requestAnimationFrame(f)};el._raf=requestAnimationFrame(f)})}
+function countUp(el:any){animateCounts({querySelectorAll:()=>[el]})}
 function setBar(el,v){const k=el.dataset.kind;if(k==='arc')el.style.strokeDashoffset=ARC_C*(1-v/100);else if(k==='col')el.style.transform=`scaleY(${v/100})`;else if(el.closest('.ev-prog'))el.style.setProperty('--w',v);else el.style.width=v+'%'}
-function growBars(root,anim){root.querySelectorAll('[data-to]').forEach(el=>{const to=Math.max(0,Math.min(100,+el.dataset.to||0)),k=el.dataset.k||'';setBar(el,anim?0:(UI.lastW[k]??0));UI.lastW[k]=to;requestAnimationFrame(()=>requestAnimationFrame(()=>setBar(el,to)))})}
+const GROWN=new WeakSet();
+/* ตรงเดโม v24: node ใหม่เริ่มที่ 0 แล้ว transition ไปค่าจริง · node เดิม (ถูก patch/rerender คงไว้) ตั้งค่าใหม่ตรงๆ ให้ CSS transition เล่นจากค่าเดิม */
+function growBars(root:any){root.querySelectorAll('[data-to]').forEach((el:any)=>{const to=Math.max(0,Math.min(100,+el.dataset.to||0));
+ if(GROWN.has(el)){setBar(el,to);return}GROWN.add(el);setBar(el,0);requestAnimationFrame(()=>requestAnimationFrame(()=>setBar(el,to)))})}
 let settleT:any=0,renderBusy=false; /* ธงช่วง render() กัน observer จับ node ที่ render เขียนทั้งก้อน (เทียบ innerHTML ของเดโม ไม่ใส่ ev-in) */
 function render(){renderBusy=true;const H=document.documentElement;try{if(UI.animate){H.removeAttribute('data-settled');clearTimeout(settleT);settleT=0}document.body.dataset.auth=UI.auth.status==='in'?'in':'out';if(UI.auth.status!=='in'){(window as any).EvarelMount?.unmountApp();(window as any).EvarelMount?.unmountOne?.('sheet');$('app').innerHTML='';$('sheet')&&($('sheet').innerHTML='');renderAuthRoot();return}$('auth').hidden=true;$('auth').dataset.screen='';(window as any).EvarelMount?.unmountOne('auth');
- const root=$('app'),anim=UI.animate&&!UI.loading;(window as any).EvarelMount?.unmountApp(); /* ปลด React root เดิมก่อนเขียนทับ — เฉพาะของที่อยู่ใน #app/#nav ไม่แตะชั้นลอยที่เปิดค้าง */
- root.innerHTML=UI.loading?skeleton():UI.error?errorView():VIEWS[UI.tab]();
- const rm=(window as any).EvarelMount?.commit(root)||false; /* mount จริงต้องเสร็จก่อน countUp/growBars */
- root.classList.toggle('ev-enter',anim);[...root.children].forEach((c,i)=>c.style.setProperty('--i',i));
- root.querySelectorAll('[data-count]').forEach(el=>anim?countUp(el):(el.textContent=el.dataset.count));
- growBars(root,anim);UI.weekDir=0;if(!rm){if(UI.tab==='calendar'&&!UI.loading&&!UI.error)mountMain();else destroyCal('main')} /* rm=true: React effect จัดการ FullCalendar เอง */
+ const root=$('app'),enter=UI.animate&&!UI.loading,view=UI.loading?'load':UI.error?'err':UI.tab,MT0=(window as any).EvarelMount;
+ const html=UI.loading?skeleton():UI.error?errorView():VIEWS[UI.tab]();
+ /* ตรงเดโม v24: เข้าหน้าใหม่ (animate / เปลี่ยน view / loading / ว่าง) = เขียนใหม่ทั้งก้อน + อนิเมชั่นเข้า · อัปเดตในหน้าเดิม = reconcile คง node เดิม (กราฟ/ตัวเลข/เนื้อหา transition จากค่าเดิม) */
+ const fresh=enter||UI.loading||root.dataset.view!==view||!root.firstElementChild;
+ let rm=false;
+ if(fresh){MT0?.unmountApp(); /* ปลด React root เดิมก่อนเขียนทับ — เฉพาะใน #app/#nav ไม่แตะชั้นลอย */
+  root.innerHTML=html;root.dataset.view=view;rm=MT0?.commit(root)||false;
+  root.classList.toggle('ev-enter',enter);[...root.children].forEach((c:any,i:number)=>c.style.setProperty('--i',i))}
+ else{root.classList.remove('ev-enter');
+  const pend=MT0?.pending; /* views ขอ mount ผ่าน request() เก็บ props ไว้ที่ pending */
+  const mainEl=root.querySelector('main[data-react-mount]'),name=mainEl?.getAttribute('data-react-mount');
+  if(name&&pend&&MT0.roots?.[name]&&MT0.els?.[name]&&root.contains(MT0.els[name])){
+   /* React ถือ <main> อยู่: patch เฉพาะส่วน HTML รอบๆ (header/weekbar) โดยข้าม <main> แล้วให้ React rerender ด้วย props ใหม่ (reconcile คง node เดิม) */
+   (window as any).patch(root,html,{skipReact:true});MT0.pending=null;MT0.rerender(name,pend.props);rm=true}
+  else{ /* ไม่มี React ถือ <main> (หน้า classic / string) = patch ทั้งก้อนด้วย morphdom */
+   MT0&&(MT0.pending=null);(window as any).patch(root,html);rm=false}}
+ animateCounts(root);
+ growBars(root);UI.weekDir=0;if(!rm){if(UI.tab==='calendar'&&!UI.loading&&!UI.error)mountMain();else destroyCal('main')} /* rm=true: React effect จัดการ FullCalendar เอง */
  UI.animate=false;
  const tabs=TABS.map(([id,l,ic])=>`<li><button data-tab="${id}" ${UI.tab===id?'aria-current="page"':''}><span class="pill">${icon(ic)}</span>${l}</button></li>`);
  tabs.splice(2,0,`<li><button class="add" data-act="add" aria-label="เพิ่มรายการ">${icon('plus')}</button></li>`);
  const MT=(window as any).EvarelMount;
  /* S4: nav เป็น React จริงเมื่อพร้อม (mountAt ลง #nav ตรงๆ) ไม่พร้อมใช้ string เดิม */
- if(MT?.ready('nav')){MT.unmountOne('nav');$('nav').innerHTML='';MT.mountAt($('nav'),'nav',{tab:UI.tab})}
+ if(MT?.ready('nav')){if(MT.roots?.nav&&MT.els?.nav===$('nav'))MT.rerender('nav',{tab:UI.tab});else{MT.unmountOne('nav');$('nav').innerHTML='';MT.mountAt($('nav'),'nav',{tab:UI.tab})}}
  else $('nav').innerHTML=tabs.join('');
  updateLive();refreshDetail();
  /* แจ้ง store กลางที่ React subscribe ได้ (s4f-store-react): งานสุดท้ายของรอบ ห่อ try เพื่อให้ผู้ฟังพังแล้วไม่ล้ม render | ไม่มีผู้ฟัง/ไม่มี store = ไม่ทำอะไร */
@@ -61,4 +80,4 @@ function claimLegacyData(){try{if(!ST.USER||localStorage.getItem('evarel-legacy-
   localStorage.setItem('evarel-legacy-claimed',ST.USER.id)}}}catch(err){console.warn('claim legacy',err)}}
 ST._render=render;
 
-Object.assign(window, { countUp, setBar, growBars, render, claimLegacyData });
+Object.assign(window, { countUp, animateCounts, setBar, growBars, render, claimLegacyData });

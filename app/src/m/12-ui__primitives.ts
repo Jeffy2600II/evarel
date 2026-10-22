@@ -16,10 +16,11 @@ function agendaHTML(ds){const list=onDate(ds);return `<section class="ev-card"><
 
 /* ===== ui/patch (ตรงเดโมทุกกฎ): อัปเดต DOM เฉพาะส่วนที่เปลี่ยน — ของที่ไม่เปลี่ยนไม่ขยับ ของที่เปลี่ยนมี CSS transition ของที่เพิ่มใหม่เล่น .ev-in ครั้งเดียว =====
    ใช้ morphdom 2.7.4 (vendor/morphdom-umd.min.js เวอร์ชันเดียวกับเดโม) ไม่มี = innerHTML */
-function patch(el:any,html:string){if(!el)return;const md=(window as any).morphdom;if(typeof md==='undefined'){el.innerHTML=html;return}
+function patch(el:any,html:string,opt:any={}){if(!el)return;const md=(window as any).morphdom;if(typeof md==='undefined'){el.innerHTML=html;return}
  const tmp=el.cloneNode(false);tmp.innerHTML=html;
  md(el,tmp,{childrenOnly:true,getNodeKey:(n:any)=>n.id||n.dataset?.key||undefined,
   onBeforeElUpdated:(from:any,to:any)=>{if(from.hasAttribute('data-keep'))return false;
+   if(opt.skipReact&&from.hasAttribute('data-react-mount'))return false; /* <main> ที่ React ถือ: ห้าม morphdom แตะ — ให้ React rerender เอง */
    if(to.hasAttribute('data-to'))to.setAttribute('style',from.getAttribute('style')||'');
    if(to.hasAttribute('data-count')&&from.hasAttribute('data-count'))to.textContent=from.textContent;
    if((from.tagName==='TEXTAREA'||from.tagName==='INPUT')&&from.type!=='checkbox'&&(from===document.activeElement||from.id==='aiText'))to.value=from.value;return true},
