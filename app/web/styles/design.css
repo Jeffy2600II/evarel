@@ -637,19 +637,13 @@ body{line-height:1.5;letter-spacing:0}
 .fc .fc-timegrid-slot{height:60px}.fc .fc-event{border-radius:12px}
 #agenda .ev-card{padding:22px}
 
-/* ===== หน้า AI: แถบบน/ล่างโปร่งแบบ AI สมัยใหม่ (Master สั่ง 22 ต.ค. 2026) =====
-   เนื้อแชทไหลใต้แถบทั้งสอง · แถบบน gradient จากสีพื้นไล่ลงจนเบาสุด (เห็นเนื้อข้างหลังแบบบางเบา)
-   แถบล่าง: ปรับเฉพาะ "พื้นหลังรอบกล่องแชท" เป็น gradient โปร่งจากล่างขึ้นบน สูงพอดีไม่ยืดตามความสูงช่องแชท กล่อง composer เองคงหน้าตาเดิมทุกอย่าง
-   ใช้เฉพาะ .ev-page[data-page="ai"] ไม่แตะหน้าอื่น */
-.ev-page[data-page="ai"] .ev-aibar{position:absolute;top:0;left:0;right:0;z-index:3;pointer-events:none;
- background:linear-gradient(to bottom,var(--c-bg) 34%,color-mix(in srgb,var(--c-bg) 58%,transparent) 68%,transparent)}
-.ev-page[data-page="ai"] .ev-aibar>*{pointer-events:auto}
-.ev-page[data-page="ai"] .ev-page-scroll{flex:1;padding-top:calc(env(safe-area-inset-top,0px) + 64px) var(--s2) calc(112px + env(safe-area-inset-bottom,0px))}
-/* composer ลอยติดขอบล่าง เนื้อแชทเลื่อนผ่านใต้กล่องได้ · ::before คือแถบพื้นหลังรอบกล่อง: gradient จากสีพื้น (ล่าง) ไล่ขึ้นหาโปร่ง ยื่นเกินกล่องรอบด้าน 8-26px พอให้เห็นการไล่เฉด */
-.ev-page[data-page="ai"] .ev-composer{position:absolute;bottom:calc(8px + env(safe-area-inset-bottom,0px));left:var(--s2);right:var(--s2);z-index:3;width:auto !important;margin:0;border-radius:30px}
-.ev-page[data-page="ai"] .ev-composer::before{content:"";position:absolute;left:-8px;right:-8px;bottom:calc(-8px - env(safe-area-inset-bottom,0px));top:-30px;pointer-events:none;z-index:-1;
- background:linear-gradient(to top,var(--c-bg) 58%,color-mix(in srgb,var(--c-bg) 50%,transparent) 82%,transparent)}
-/* เลื่อนได้เสมอแม้เนื้อน้อย (Master สั่ง: หน้าแชทใหม่ต้องเลื่อนได้): เนื้อยืดเต็มความสูง มีพื้นที่เกินจอเสมอ */
-/* เนื้อเกิน container เสมอ 56px = เลื่อนได้จริงแม้แชทใหม่ยังว่าง (Master สั่ง: หน้าแชทใหม่ต้องเลื่อนได้) */
-.ev-page[data-page="ai"] #aiBody{min-height:calc(100% + 56px)}
-.ev-page[data-page="ai"] .ev-chat{padding-bottom:26px}
+/* ===== หน้า AI: ขอบนุ่มด้วยแถบไล่สีบางๆ (Master สั่ง 22 ต.ค. 2026) =====
+   หลักการ: ไม่แตะ layout ใดๆ ของหน้า (ระยะ/กรอบ/ช่องพิมพ์ใช้ของเดิมทุกอย่าง) เพิ่มเพียงแถบพื้นหลังสูงนิดเดียวที่ขอบรอยต่อ แล้วเต็มความกว้างจอ
+   · แถบบน: ::after ใต้ .ev-aibar สูง 18px ไล่ สีพื้น -> โปร่ง ทับเนื้อที่เลื่อนผ่านเล็กน้อย
+   · แถบล่าง: ::before เหนือ .ev-composer สูง 22px ไล่ โปร่ง -> สีพื้น เต็มความกว้างจอ (ยื่นออกข้างด้วย 100vw) กรอบพิมพ์ไม่ไล่สี ไม่ถูกตัด */
+.ev-page[data-page="ai"] .ev-aibar{position:relative;z-index:3}
+.ev-page[data-page="ai"] .ev-aibar::after{content:"";position:absolute;left:0;right:0;top:100%;height:18px;pointer-events:none;
+ background:linear-gradient(to bottom,var(--c-bg),transparent)}
+.ev-page[data-page="ai"] .ev-composer{position:relative}
+.ev-page[data-page="ai"] .ev-composer::before{content:"";position:absolute;left:50%;width:100vw;transform:translateX(-50%);bottom:100%;margin-bottom:0;height:22px;pointer-events:none;z-index:-1;
+ background:linear-gradient(to bottom,transparent,var(--c-bg))}

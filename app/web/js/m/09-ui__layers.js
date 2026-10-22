@@ -255,7 +255,7 @@ window.matchMedia?.('(prefers-color-scheme:dark)').addEventListener?.('change', 
 /* ===== เอนจินสัมผัสนิ้ว (v24 ui/gesture): ปัดเพื่อปิด ใช้ร่วม sheet · หน้าเต็มจอ · drawer =====
    cfg: {axis:'x'|'y', dir:+1|-1, size():px, scroll:true, handle:'selector', canStart(p,target), mouseAny, onStart(), onMove(delta,ratio), onEnd(commit,delta)}
    กฎเลื่อนซ้อน: ตัดสินใจ "ตอนเริ่มแตะ" ครั้งเดียว ถ้าเนื้อหาข้างในยังเลื่อนกลับได้จะเลื่อนเนื้อหาตามปกติและไม่ปิดตลอดการแตะนั้น */
-const G = { SLOP: 8, FLING: .55, RATIO: .35, STALE_MS: 80 };
+const G = { SLOP: 4, FLING: .55, RATIO: .35, STALE_MS: 80 };
 function gScrolledAway(target, root, axis, dir) {
     for (let n = target; n && n !== root && n !== document.body; n = n.parentElement) {
         const cs = getComputedStyle(n);
@@ -266,24 +266,44 @@ function gScrolledAway(target, root, axis, dir) {
     }
     return false;
 }
+/* เอนจินติดตามนิ้ว (เขียนใหม่): แก้อาการ "ตามช้า แล้วกระตุกปึ๊บ" ที่ต้นเหตุ
+   1) ระยะ dead-zone (SLOP) ไม่ถูกทิ้งแล้วกระโดด: เมื่อ lock แกน ใช้ตำแหน่งนิ้ว ณ จุด lock เป็นศูนย์ใหม่ (origin) ให้แผงเริ่มจาก 0 แล้วตามนิ้วทุกพิกเซลต่อเนื่อง
+      และตั้ง SLOP เล็กลง (4px) เพราะตัดสินแกนด้วยอัตราส่วนแล้ว
+   2) เขียน transform ครั้งเดียวต่อเฟรมด้วย rAF (ใช้ตำแหน่งล่าสุดเสมอ) ไม่เขียนทุก touchmove ที่ถี่กว่าจอ
+   3) ความเร็วคำนวณจากตำแหน่งนิ้วจริงในหน้าต่างเวลา 100ms ล่าสุด (ไม่ใช่ EMA ของค่าที่กระโดด) fling จึงแม่น
+   4) ปิด transition แบบ inline ตอนเริ่มลาก (ชนะกฎ CSS ทุกชั้น) แล้วคืนค่าตอนปล่อย
+   5) pointercapture/touch-action ให้เบราว์เซอร์ไม่แย่งนิ้วไปเลื่อนเอง เมื่อ lock แล้ว preventDefault ทุก move */
 function attachGesture(el, cfg) {
-    const st = { track: false, on: false, a0: 0, c0: 0, last: 0, lastT: 0, v: 0, delta: 0, blocked: false };
+    const st = { track: false, on: false, a0: 0, c0: 0, o: 0, delta: 0, blocked: false, hist: [], raf: 0, pend: -1 };
     const ax = (p) => cfg.axis === 'x' ? p.x : p.y, cx = (p) => cfg.axis === 'x' ? p.y : p.x, size = () => Math.max(1, cfg.size());
+    const SLOP = cfg.slop ?? 4;
+    const paint = () => { st.raf = 0; if (!st.on || st.pend < 0)
+        return; const d = st.pend; st.pend = -1; cfg.onMove(d, Math.min(1, d / size())); };
+    const flush = () => { if (st.raf) {
+        cancelAnimationFrame(st.raf);
+        st.raf = 0;
+    } if (st.pend >= 0 && st.on) {
+        const d = st.pend;
+        st.pend = -1;
+        cfg.onMove(d, Math.min(1, d / size()));
+    } };
     const begin = (p, target) => {
         if (cfg.canStart && !cfg.canStart(p, target))
             return;
         const inHandle = !!(cfg.handle && target?.closest?.(cfg.handle));
-        Object.assign(st, { track: true, on: false, a0: ax(p), c0: cx(p), last: 0, lastT: performance.now(), v: 0, delta: 0, blocked: !inHandle && !!cfg.scroll && gScrolledAway(target, el, cfg.axis, cfg.dir) });
+        Object.assign(st, { track: true, on: false, a0: ax(p), c0: cx(p), o: 0, delta: 0, hist: [[performance.now(), ax(p)]], pend: -1, blocked: !inHandle && !!cfg.scroll && gScrolledAway(target, el, cfg.axis, cfg.dir) });
     };
     const move = (p, stop) => {
         if (!st.track)
             return;
-        const raw = ax(p) - st.a0, d = raw * cfg.dir, c = Math.abs(cx(p) - st.c0);
+        const a = ax(p), raw = a - st.a0, d0 = raw * cfg.dir, c = Math.abs(cx(p) - st.c0);
         if (!st.on) {
-            if (Math.abs(raw) < G.SLOP && c < G.SLOP)
+            if (Math.abs(raw) < SLOP && c < SLOP)
                 return;
-            if (d > 0 && Math.abs(raw) > c && !st.blocked) {
+            if (d0 > 0 && Math.abs(raw) >= c && !st.blocked) {
                 st.on = true;
+                st.o = a;
+                (cfg.mover || el).style.transition = 'none';
                 cfg.onStart?.();
             }
             else {
@@ -292,18 +312,33 @@ function attachGesture(el, cfg) {
             }
         }
         stop?.();
-        st.delta = Math.max(0, d);
         const now = performance.now();
-        if (now > st.lastT) {
-            st.v = .6 * st.v + .4 * ((st.delta - st.last) / (now - st.lastT));
-            st.last = st.delta;
-            st.lastT = now;
-        }
-        cfg.onMove(st.delta, Math.min(1, st.delta / size()));
+        st.hist.push([now, a]);
+        while (st.hist.length > 2 && now - st.hist[0][0] > 100)
+            st.hist.shift();
+        st.delta = Math.max(0, (a - st.o) * cfg.dir);
+        st.pend = st.delta;
+        if (!st.raf)
+            st.raf = requestAnimationFrame(paint);
     };
-    const end = () => { if (!st.track)
-        return; const was = st.on; st.track = false; st.on = false; if (!was)
-        return; const v = performance.now() - st.lastT > G.STALE_MS ? 0 : st.v; cfg.onEnd(st.delta > size() * (cfg.ratio || G.RATIO) || v > (cfg.fling || G.FLING), st.delta); };
+    const end = () => {
+        if (!st.track)
+            return;
+        const was = st.on;
+        st.track = false;
+        st.on = false;
+        flush();
+        if (!was)
+            return;
+        const now = performance.now(), h = st.hist, last = h[h.length - 1], first = h[0];
+        let v = 0;
+        if (last && first && last[0] > first[0] && now - last[0] <= G.STALE_MS * 2)
+            v = ((last[1] - first[1]) * cfg.dir) / (last[0] - first[0]);
+        const mv = cfg.mover || el;
+        mv.style.transition = '';
+        void mv.offsetWidth;
+        cfg.onEnd(st.delta > size() * (cfg.ratio || G.RATIO) || v > (cfg.fling || G.FLING), st.delta);
+    };
     const tp = (t) => ({ x: t.clientX, y: t.clientY });
     el.addEventListener('touchstart', (e) => { if (e.touches.length === 1)
         begin(tp(e.touches[0]), e.target); }, { passive: true });

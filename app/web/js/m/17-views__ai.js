@@ -137,9 +137,9 @@ function attachDrawerGestures(root) {
     if (!d || !sc || d.dataset.gestureBound)
         return;
     d.dataset.gestureBound = 'true';
-    const start = () => { d.dataset.drag = 'true'; sc.style.transition = 'none'; }, fin = open => { d.dataset.drag = 'false'; d.style.transform = ''; sc.style.opacity = ''; sc.style.transition = ''; drawerOpen(open); };
-    attachGesture(d, { axis: 'x', dir: -1, scroll: true, mouseAny: true, size, canStart: () => d.dataset.open === 'true', onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-x}px)`; sc.style.opacity = String(1 - r); }, onEnd: c => fin(!c) });
-    attachGesture(edge, { axis: 'x', dir: 1, mouseAny: true, size, canStart: p => d.dataset.open !== 'true' && p.x >= colLeft() && p.x - colLeft() <= DRAWER_EDGE_PX, onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-size() + x}px)`; sc.style.opacity = String(r); }, onEnd: c => fin(c) });
+    const start = () => { d.dataset.drag = 'true'; sc.style.transition = 'none'; }, fin = open => { d.dataset.drag = 'false'; sc.style.transition = ''; drawerOpen(open); d.style.transform = ''; sc.style.opacity = ''; };
+    attachGesture(d, { axis: 'x', dir: -1, scroll: true, mouseAny: true, mover: d, size, canStart: () => d.dataset.open === 'true', onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-x}px)`; sc.style.opacity = String(1 - r); }, onEnd: c => fin(!c) });
+    attachGesture(edge, { axis: 'x', dir: 1, mouseAny: true, mover: d, size, canStart: p => d.dataset.open !== 'true' && p.x >= colLeft() && p.x - colLeft() <= DRAWER_EDGE_PX, onStart: start, onMove: (x, r) => { d.style.transform = `translateX(${-size() + x}px)`; sc.style.opacity = String(r); }, onEnd: c => fin(c) });
 }
 const drawerOpen = on => { const d = $('drawer'); if (!d)
     return; d.dataset.open = String(on); $('dScrim').dataset.open = String(on); if (on)
