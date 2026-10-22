@@ -36,9 +36,9 @@ function settingsHTML(){
 function versionCardHTML(){const v=(ST as any).APPVER||{};const ver=v.version||'—';const bld=v.build?` · build ${v.build}`:'';
  return `<b>เกี่ยวกับ</b><div class="ev-stat" style="margin-top:12px"><div><div id="appVerNum" style="font-size:20px;font-weight:700;letter-spacing:-.01em">${ver}</div><p class="ev-sub" id="appVerSub">${v.date?v.date:'ตรวจสอบรุ่น…'}${bld}</p></div></div>`}
 function versionPaint(){const e=$('appVerWrap');if(e)e.innerHTML=versionCardHTML()}
-async function versionRefresh(){try{const U=(window as any).EvarelUpdate;const b=await U?.runningBuild?.();const sw=navigator.serviceWorker?.controller;
-  let version='',build=b||'';if(sw){version=await new Promise<string>(res=>{const ch=new MessageChannel();const t=setTimeout(()=>res(''),1500);ch.port1.onmessage=(e:any)=>{clearTimeout(t);res(e.data&&e.data.version||'')};sw.postMessage({type:'get-build'},[ch.port2])})}
-  let date='';try{const rel=await U?.latestRelease?.();if(rel&&rel.build===build)date=rel.date||''}catch(e){}
+/* เลขรุ่น/รหัสไฟล์ที่ "หน้านี้รันอยู่จริง" ฝังใน HTML ตอน build (window.__EV_VERSION__/__EV_BUILD__) ไม่ถาม SW: ระหว่างเปลี่ยนรุ่น SW เก่าอาจยังคุมอยู่และตอบรุ่นเก่า */
+async function versionRefresh(){try{const w=window as any;const version=w.__EV_VERSION__||'';const build=w.__EV_BUILD__||'';
+  let date='';try{const rel=await w.EvarelUpdate?.latestRelease?.();if(rel&&rel.assets===build)date=rel.date||''}catch(e){}
   (ST as any).APPVER={version,build,date}}catch(e){(ST as any).APPVER={}}versionPaint()}
 function usagePaint(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e){e.innerHTML=usageCardHTML();growBars(e)}})}
 async function usageRefresh(){try{const q=await quotaFetch();ST.QUOTA=q||{unknown:true}}catch(err){ST.QUOTA={unknown:true}}usagePaint()}

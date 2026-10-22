@@ -59,19 +59,16 @@ function versionCardHTML() {
 }
 function versionPaint() { const e = $('appVerWrap'); if (e)
     e.innerHTML = versionCardHTML(); }
+/* เลขรุ่น/รหัสไฟล์ที่ "หน้านี้รันอยู่จริง" ฝังใน HTML ตอน build (window.__EV_VERSION__/__EV_BUILD__) ไม่ถาม SW: ระหว่างเปลี่ยนรุ่น SW เก่าอาจยังคุมอยู่และตอบรุ่นเก่า */
 async function versionRefresh() {
     try {
-        const U = window.EvarelUpdate;
-        const b = await U?.runningBuild?.();
-        const sw = navigator.serviceWorker?.controller;
-        let version = '', build = b || '';
-        if (sw) {
-            version = await new Promise(res => { const ch = new MessageChannel(); const t = setTimeout(() => res(''), 1500); ch.port1.onmessage = (e) => { clearTimeout(t); res(e.data && e.data.version || ''); }; sw.postMessage({ type: 'get-build' }, [ch.port2]); });
-        }
+        const w = window;
+        const version = w.__EV_VERSION__ || '';
+        const build = w.__EV_BUILD__ || '';
         let date = '';
         try {
-            const rel = await U?.latestRelease?.();
-            if (rel && rel.build === build)
+            const rel = await w.EvarelUpdate?.latestRelease?.();
+            if (rel && rel.assets === build)
                 date = rel.date || '';
         }
         catch (e) { }

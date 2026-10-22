@@ -66,6 +66,12 @@ try {
   ok('What\'s New บอกเลขเวอร์ชันสาธารณะ (ไม่เห็นช่อง -forge) + รายการที่เปลี่ยน', /2099\.9\.9/.test(s2.dlgText) && !/-forge/.test(s2.dlgText) && /ฟีเจอร์ทดสอบ/.test(s2.dlgText) && /แก้ทดสอบ/.test(s2.dlgText), s2.dlgText.slice(0, 120));
   ok('ไม่ใช้ถ้อยคำแจ้งว่าอัปเดตสำเร็จ/ให้กดอัปเดต', !/อัปเดตเรียบร้อย|อัปเดตเลย|ไว้ทีหลัง|มีเวอร์ชันใหม่/.test(s2.dlgText), s2.dlgText.slice(0, 80));
   await p.click('#dialog [data-upd="ok"]').catch(() => {}); await p.waitForTimeout(500);
+  /* การ์ด เกี่ยวกับ ในหน้าตั้งค่า: ต้องแสดงเลขรุ่น + วันที่ + build ที่หน้ารันอยู่จริง ไม่ค้าง "ตรวจสอบรุ่น…" (บั๊กที่เคยหลุดเมื่อเปลี่ยนชื่อ API ใน boot.js โดยไม่ตามผู้เรียก) */
+  await p.evaluate(() => { window.ACTIONS && window.ACTIONS.settings(); }); await p.waitForSelector('#appVerNum', { timeout: 8000 }).catch(() => {}); await p.waitForTimeout(2500);
+  const about = await p.evaluate(() => ({ num: (document.getElementById('appVerNum') || {}).textContent || '', sub: (document.getElementById('appVerSub') || {}).textContent || '' }));
+  ok('การ์ดเกี่ยวกับแสดงเลขรุ่นที่รันอยู่จริง', about.num.trim() === newVer, JSON.stringify(about));
+  ok('การ์ดเกี่ยวกับแสดงวันที่ + build ไม่ค้าง "ตรวจสอบรุ่น…"', !/ตรวจสอบรุ่น/.test(about.sub) && about.sub.includes('build ' + newV) && /\d{4}-\d{2}-\d{2}/.test(about.sub), JSON.stringify(about));
+  await p.keyboard.press('Escape').catch(() => {}); await p.evaluate(() => { history.back && 0; }); await p.waitForTimeout(500);
   await p.reload({ waitUntil: 'load' }); await p.waitForTimeout(3000);
   const s3 = await state();
   ok('รีเฟรชซ้ำเวอร์ชันเดิม: ไม่ขึ้น What\'s New ซ้ำ', s3.dlg === '' && s3.ver === newVer, JSON.stringify({ dlg: s3.dlg, ver: s3.ver }));
