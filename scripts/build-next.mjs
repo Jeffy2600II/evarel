@@ -30,14 +30,14 @@ execFileSync(process.execPath, [join(root, 'scripts/compile-ts.mjs')], { cwd: ro
 try {
   // public: เฉพาะสินทรัพย์ที่โหลดผ่าน URL จริง — ไม่มี js/m (อยู่ในบันเดิล) ไม่มี index.html (Next สร้าง) ไม่มี sw.js (ขั้น N3)
   rmSync(PUB, { recursive: true, force: true });
-  for (const a of ['styles', 'icons', 'fonts', 'vendor', 'js/react']) cpSync(join(SRC, a), join(PUB, a), { recursive: true });
+  for (const a of ['styles', 'icons', 'vendor', 'js/react']) cpSync(join(SRC, a), join(PUB, a), { recursive: true });
   cpSync(join(SRC, 'manifest.webmanifest'), join(PUB, 'manifest.webmanifest'));
 
-  /* รหัสเนื้อหาไฟล์ชื่อคงที่ (styles/fonts/vendor/js/react) รู้ได้ก่อน next build จึงส่งให้ layout ใส่ ?v= ตั้งแต่ต้นทาง
+  /* รหัสเนื้อหาไฟล์ชื่อคงที่ (styles/vendor/js/react) รู้ได้ก่อน next build จึงส่งให้ layout ใส่ ?v= ตั้งแต่ต้นทาง
      (ถ้าแก้ HTML ทีหลัง React จะ hydrate ด้วยค่าคนละตัว = error #418) */
   const walkFiles = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walkFiles(join(d, e.name)) : [join(d, e.name)]);
   const fixedHash = createHash('sha256');
-  for (const a of ['styles', 'fonts', 'vendor', 'js/react']) for (const f of walkFiles(join(PUB, a)).sort()) fixedHash.update(f.slice(PUB.length) + ':').update(readFileSync(f));
+  for (const a of ['styles', 'vendor', 'js/react']) for (const f of walkFiles(join(PUB, a)).sort()) fixedHash.update(f.slice(PUB.length) + ':').update(readFileSync(f));
   const ASSET_V = fixedHash.digest('hex').slice(0, 12);
   /* เลขเวอร์ชันที่ผู้ใช้เห็น (รวมช่อง) รู้ได้ก่อน next build จึงส่งให้ layout ฝังใน HTML: หน้าบอกได้เองว่ากำลังรันเวอร์ชันไหน ไม่ต้องพึ่ง SW */
   const REL_VERSION = JSON.parse(readFileSync(join(root, 'releases/current.json'), 'utf8')).version + (env === 'production' ? '' : '-' + env);

@@ -20,8 +20,6 @@ export default function Root({ children }: { children: ReactNode }) {
       <link rel="manifest" href="manifest.webmanifest" />
       <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
       <link rel="apple-touch-icon" href="icons/icon-192.png" />
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
       <link rel="stylesheet" href={q('styles/app.css')} />
       <script id="ev-api" dangerouslySetInnerHTML={{ __html: `window.EVAREL_API = window.EVAREL_API || ${JSON.stringify(process.env.NEXT_PUBLIC_EVAREL_API || '')};window.__EV_BUILD__ = ${JSON.stringify(V)};window.__EV_VERSION__ = ${JSON.stringify(VER)};` }} />
     </head>
