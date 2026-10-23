@@ -2511,8 +2511,10 @@ body{
 .ev-sec-head .ev-group span{
   margin-left:6px;
   font-weight:500;
-  opacity:.7
+  opacity:.9
 }
+
+/* เดโม v24 ใช้ .7 = 3.06:1 บนการ์ดขาว ไม่ผ่าน WCAG 1.4.3 (ต้อง 4.5:1) | .9 = 4.62:1 ผ่าน และยังจางกว่าหัวข้อ | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
 
 .ev-link-btn{
   width:32px;

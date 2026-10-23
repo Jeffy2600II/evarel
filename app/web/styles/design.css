@@ -248,7 +248,7 @@ body{font-variant-numeric:tabular-nums}
 .ev-col-track i{display:block;width:100%;height:100%;background:var(--c-accent);border-radius:12px;transform:scaleY(0);transform-origin:bottom;transition:transform .8s var(--ease)}
 .ev-col[data-today="true"] .ev-col-l{color:var(--c-accent-text);font-weight:700}.ev-col[data-empty="true"] .ev-col-v{color:var(--c-muted);font-weight:500}
 .ev-pct{font-weight:700}.ev-pct[data-lv="hi"]{color:var(--c-ok)}.ev-pct[data-lv="mid"]{color:var(--c-warn)}.ev-pct[data-lv="lo"]{color:var(--c-danger)}
-.ev-sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}.ev-sec-head .ev-group{padding:0}.ev-sec-head .ev-group span{margin-left:6px;font-weight:500;opacity:.7}
+.ev-sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}.ev-sec-head .ev-group{padding:0}.ev-sec-head .ev-group span{margin-left:6px;font-weight:500;opacity:.9}/* เดโม v24 ใช้ .7 = 3.06:1 บนการ์ดขาว ไม่ผ่าน WCAG 1.4.3 (ต้อง 4.5:1) | .9 = 4.62:1 ผ่าน และยังจางกว่าหัวข้อ | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
 .ev-link-btn{width:32px;height:32px;border-radius:50%;border:0;background:var(--c-fill);display:grid;place-items:center;transition:transform var(--t-fast) var(--ease)}.ev-link-btn svg{width:16px;height:16px}.ev-link-btn:active{transform:scale(.9)}
 .ev-list-item .grow[role="button"]{transition:opacity var(--t-fast)}.ev-list-item .grow[role="button"]:active{opacity:.55}
 .ev-card[role="button"]{transition:transform var(--t-fast) var(--ease)}.ev-card[role="button"]:active{transform:scale(.985)}
