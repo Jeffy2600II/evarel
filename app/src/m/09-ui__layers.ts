@@ -46,8 +46,9 @@ dialog.addEventListener('click',e=>{if(e.target===dialog)closeTop()});
 const EDGE_BACK_PX=24;
 const pageOf=(name:any)=>LAYERS.find(l=>l.name===name)?.el,hasPage=(name:any)=>LAYERS.some(l=>l.name===name);
 /* หน้าเต็มจอเป็นสแต็กตามเดโม: สร้าง section.ev-page ใหม่ต่อการเปิด เปิดซ้อนกันได้ไม่จำกัด กลับ/ปัดขอบทีละชั้น หน้าข้างล่างยังอยู่ครบ */
+const PAGE_LABEL:Record<string,string>={ai:'ผู้ช่วย AI',settings:'ตั้งค่า',focus:'จับเวลา',detail:'รายละเอียดรายการ',add:'เพิ่มรายการ',usage:'การใช้งาน AI'}; /* ชื่อ dialog ของหน้าเต็มจอ: ผู้ใช้โปรแกรมอ่านหน้าจอเคยได้ยินแค่ "dialog" (axe aria-dialog-name serious) วัด 23 ต.ค. 2026 */
 function openPage(html,onClose,name=''){
- const el=document.createElement('section');el.className='ev-page';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+ const el=document.createElement('section');el.className='ev-page';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label',PAGE_LABEL[name]||'หน้าต่างย่อย');
  el.dataset.page=name||'';el.innerHTML=html;el.style.zIndex=String(22+LAYERS.length);document.body.appendChild(el);
  if(name!=='ai')attachGesture(el,{axis:'x',dir:1,size:()=>el.offsetWidth,
   canStart:p=>p.x<=EDGE_BACK_PX&&LAYERS[LAYERS.length-1]?.el===el,

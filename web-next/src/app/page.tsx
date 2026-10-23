@@ -11,7 +11,7 @@ export default function Page() {
       <nav className="ev-nav" aria-label="เมนูหลัก"><ul id="nav"></ul></nav>
       <div className="ev-toast" id="toast" role="status" aria-live="polite" data-open="false"></div>
       <div className="ev-scrim" id="scrim"></div>
-      <aside className="ev-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden></aside>
+      <div className="ev-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden></div>
       <section className="ev-page" id="page" role="dialog" aria-modal="true" hidden></section>
       <section className="ev-auth" id="auth" aria-live="polite" hidden></section>
       <div className="ev-dialog" id="dialog" role="alertdialog" aria-modal="true" hidden></div>
