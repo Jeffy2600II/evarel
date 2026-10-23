@@ -241,7 +241,7 @@ body{font-variant-numeric:tabular-nums}
 .ev-sum-row{display:flex;align-items:center;gap:20px}
 .ev-ringbox{position:relative;width:116px;height:116px;flex:none}.ev-ringbox svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ev-ringbox circle{fill:none;stroke-width:9}.ev-arc-bg{stroke:var(--c-on-ink-soft)}.ev-arc{stroke:var(--c-bg);stroke-linecap:round;transition:stroke-dashoffset 1.1s var(--ease)}
-.ev-ringnum{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;font-weight:700;letter-spacing:-1px}.ev-ringnum small{font-size:14px;opacity:.6;font-weight:600;letter-spacing:0}
+.ev-ringnum{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;font-weight:700;letter-spacing:-1px}.ev-ringnum small{font-size:14px;opacity:.9;font-weight:600;letter-spacing:0}/* หน่วย % .6 = 2.94:1 บนการ์ดสรุป ไม่ผ่าน -> .9 = 4.70:1 */
 .ev-chart{display:flex;gap:8px;align-items:stretch;margin-top:14px}
 .ev-col{flex:1;display:grid;grid-template-rows:auto 96px auto;gap:6px;justify-items:center;font-size:11px;color:var(--c-muted)}
 .ev-col-v{font-weight:600;color:var(--c-text)}.ev-col-track{width:100%;max-width:34px;border-radius:12px;background:var(--c-fill);overflow:hidden;display:flex;align-items:flex-end}
@@ -544,7 +544,7 @@ body{font-size:14.5px}
 .ev-group{font-size:12px}
 .ev-sub{font-size:13px}
 .ev-sum{padding:22px;gap:18px}
-.ev-sum-num{font-size:42px;letter-spacing:-1.5px}.ev-sum-num small{font-size:18px;opacity:.7}
+.ev-sum-num{font-size:42px;letter-spacing:-1.5px}.ev-sum-num small{font-size:18px;opacity:.9}/* ตัวส่วน (/2) .7 = 3.45:1 บนมุมสว่างสุดของการ์ด ไม่ผ่าน -> .9 = 4.70:1 */
 .ev-sum-lab{font-size:13px;opacity:.92}
 .ev-big{font-size:24px}.ev-big small{font-size:14px}
 .ev-stats3 b{font-size:21px}
@@ -595,7 +595,7 @@ body{font-size:14.5px}
 .ev-set .ev-seg{background:var(--c-line)}
 
 /* การ์ดสรุป: ปลายไล่สีเข้มขึ้นให้ตัวอักษรสีขาวอ่านชัด */
-.ev-card[data-tone="ink"]{background:linear-gradient(150deg,#4B2FF5 0%,#5B3CFA 55%,#6D50FF 100%)}
+.ev-card[data-tone="ink"]{background:linear-gradient(150deg,#4B2FF5 0%,#5B3CFA 55%,#5836FF 100%)}/* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
 
 /* ============ v19: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ · อวาตาร์โปรไฟล์ระบบกลาง ============
    ความสูง: JS วัดก่อน/หลังเปลี่ยนเนื้อหา แล้ว transition เฉพาะ height ชั่วครู่ (.34s) แล้วคืนเป็น auto — ไม่มี animation ค้างตลอดเวลา

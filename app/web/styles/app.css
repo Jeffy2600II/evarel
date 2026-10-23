@@ -2423,10 +2423,12 @@ body{
 
 .ev-ringnum small{
   font-size:14px;
-  opacity:.6;
+  opacity:.9;
   font-weight:600;
   letter-spacing:0
 }
+
+/* หน่วย % .6 = 2.94:1 บนการ์ดสรุป ไม่ผ่าน -> .9 = 4.70:1 */
 
 .ev-chart{
   display:flex;
@@ -4483,8 +4485,10 @@ body{
 
 .ev-sum-num small{
   font-size:18px;
-  opacity:.7
+  opacity:.9
 }
+
+/* ตัวส่วน (/2) .7 = 3.45:1 บนมุมสว่างสุดของการ์ด ไม่ผ่าน -> .9 = 4.70:1 */
 
 .ev-sum-lab{
   font-size:13px;
@@ -4715,8 +4719,10 @@ body{
 /* การ์ดสรุป: ปลายไล่สีเข้มขึ้นให้ตัวอักษรสีขาวอ่านชัด */
 
 .ev-card[data-tone="ink"]{
-  background:linear-gradient(150deg,#4B2FF5 0%,#5B3CFA 55%,#6D50FF 100%)
+  background:linear-gradient(150deg,#4B2FF5 0%,#5B3CFA 55%,#5836FF 100%)
 }
+
+/* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
 
 /* ============ v19: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ · อวาตาร์โปรไฟล์ระบบกลาง ============
    ความสูง: JS วัดก่อน/หลังเปลี่ยนเนื้อหา แล้ว transition เฉพาะ height ชั่วครู่ (.34s) แล้วคืนเป็น auto — ไม่มี animation ค้างตลอดเวลา

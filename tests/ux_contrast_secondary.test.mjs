@@ -28,11 +28,11 @@ try {
   await ctx.addInitScript(([a, s]) => { window.EVAREL_API = a; if (s && !localStorage.getItem('evarel-session-v2')) localStorage.setItem('evarel-session-v2', JSON.stringify(s)); localStorage.setItem('evarel-perf-pref', 'full'); }, [API, user.session]);
   await ctx.route(/fonts\.(googleapis|gstatic)|cdn\.jsdelivr/, (r) => r.abort());
   const p = await ctx.newPage(); await p.goto(`https://${HOST}/index.html`); await p.waitForFunction(() => document.body.dataset.auth === 'in', null, { timeout: 25000 }); await p.waitForTimeout(3000);
-  let total = 0, skippedAll = 0;
+  let total = 0, skippedAll = 0, disAll = 0;
   for (const tab of ['today', 'all', 'calendar', 'stats']) {
     await p.click(`[data-tab="${tab}"]`).catch(() => {}); await p.waitForTimeout(1500);
     // ข้อความรองทุกจุดที่เป็น "ข้อความจริง" บนหน้า: ตัวห่อที่ opacity<1 หรือสี --c-muted (ข้อความรอง) วัดสีที่ผสมกับพื้นแล้ว
-    const rows = await p.evaluate(() => {
+    const R = await p.evaluate(() => {
       const parse = (s) => { const m = s.match(/rgba?\(([^)]+)\)/); if (!m) return null; const x = m[1].split(',').map((v) => parseFloat(v)); return { r: x[0], g: x[1], b: x[2], a: x[3] === undefined ? 1 : x[3] }; };
       // พื้นหลังจริง: สีทึบ หรือ gradient (ใช้สีจุดหยุดที่ใกล้สีตัวอักษรที่สุด = กรณีเลวร้ายสุด) | รูปภาพ/พื้นที่ประเมินไม่ได้ = null (ข้าม ไม่ตัดสิน แล้วนับให้เห็น)
       const bgOf = (e, fg) => { let x = e; while (x) { const cs = getComputedStyle(x); const c = parse(cs.backgroundColor); if (c && c.a >= 0.99) return [c.r, c.g, c.b];
@@ -41,8 +41,11 @@ try {
           cols.sort((a, b2) => Math.abs(L(a) - lf) - Math.abs(L(b2) - lf)); return [cols[0].r, cols[0].g, cols[0].b]; }
         x = x.parentElement; } return [245, 244, 249]; };
       const effOpacity = (e) => { let o = 1, x = e; while (x) { o *= parseFloat(getComputedStyle(x).opacity); x = x.parentElement; } return o; };
-      const out = []; let skipped = 0;
+      const out = []; let skipped = 0, disabledSkipped = 0;
       for (const e of document.querySelectorAll('main *, .ev-main *, header *')) {
+        if (e.classList && e.classList.contains('ev-avatar')) continue;   // ตรวจแยกครบทุกเฉดด้านล่าง (สีขึ้นกับอีเมลผู้ใช้ จึงผันผวนถ้าวัดจากผู้ใช้เดียว)
+        // WCAG 1.4.3 ยกเว้นองค์ประกอบ UI ที่ปิดใช้งาน: ความจางคือสัญญาณว่ากดไม่ได้ ข้ามเฉพาะที่ disabled จริงแล้วนับให้เห็น
+        if (e.closest('button:disabled,[disabled],[aria-disabled="true"]')) { disabledSkipped++; continue; }
         if (!e.childNodes.length || ![...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
         const r = e.getBoundingClientRect(); if (r.width === 0 || r.height === 0) continue;
         const cs = getComputedStyle(e); if (cs.visibility === 'hidden' || cs.display === 'none') continue;
@@ -51,14 +54,15 @@ try {
         const fs = parseFloat(cs.fontSize), bold = parseInt(cs.fontWeight) >= 700;
         out.push({ t: e.textContent.trim().slice(0, 24), mix, bg, fs, large: fs >= 24 || (fs >= 18.66 && bold), cls: (typeof e.className === 'string' ? e.className : '').split(' ')[0] });
       }
-      out.skipped = skipped; return out;
+      return { rows: out, skipped, disabledSkipped };
     });
+    const rows = R.rows; rows.skipped = R.skipped; rows.disabledSkipped = R.disabledSkipped;
     const bad = rows.filter((x) => ratio(x.mix, x.bg) < (x.large ? 3 : 4.5));
-    total += rows.length; skippedAll += rows.skipped || 0;
-    ok(`แท็บ ${tab}: ข้อความทุกจุดผ่านคอนทราสต์ (ตรวจ ${rows.length} จุด ข้าม ${rows.skipped || 0} จุดที่พื้นเป็นรูปภาพ/ประเมินไม่ได้)`, bad.length === 0, bad.slice(0, 4).map((x) => `"${x.t}" ${x.cls} ${ratio(x.mix, x.bg).toFixed(2)}:1`).join(' | '));
+    total += rows.length; skippedAll += rows.skipped || 0; disAll += rows.disabledSkipped || 0;
+    ok(`แท็บ ${tab}: ข้อความทุกจุดผ่านคอนทราสต์ (ตรวจ ${rows.length} จุด ข้าม ${rows.skipped || 0} จุดพื้นรูปภาพ + ${rows.disabledSkipped || 0} จุด disabled)`, bad.length === 0, bad.slice(0, 4).map((x) => `"${x.t}" ${x.cls} ${ratio(x.mix, x.bg).toFixed(2)}:1`).join(' | '));
   }
   ok('ตรวจจริงมากกว่า 0 จุด (กันทดสอบว่างเปล่า)', total > 20, String(total));
-  console.log('หมายเหตุ: จุดที่ข้าม (พื้นเป็นรูปภาพ ตัดสินด้วยเครื่องไม่ได้ ต้องให้ตาคนดู) รวม ' + skippedAll + ' จุด');
+  console.log('หมายเหตุ: ข้ามปุ่ม disabled ' + disAll + ' จุด (WCAG ยกเว้น) | ข้ามพื้นรูปภาพ ' + skippedAll + ' จุด (ต้องให้ตาคนดู)');
 } catch (e) { fail++; console.log('FAIL exception :: ' + String(e.message).slice(0, 240)); }
 finally { try { await b.close(); } catch {} srv.close(); if (user) console.log('ลบผู้ใช้ทดสอบ ->', await user.cleanup()); fs.rmSync(tmp, { recursive: true, force: true }); }
 console.log(`\nผ่าน ${pass} | ตก ${fail}`); process.exit(fail ? 1 : 0);
