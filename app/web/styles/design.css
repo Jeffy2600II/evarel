@@ -704,3 +704,13 @@ body{line-height:1.5;letter-spacing:0}
 .ev-md-table th{background:var(--c-fill);font-weight:600;white-space:nowrap}
 .ev-md-table tr:last-child td{border-bottom:0}
 .ev-md-table td+td,.ev-md-table th+th{border-left:1px solid var(--c-line)}
+
+/* ปฏิกิริยาตอนกด (native feel): ปุ่มที่แตะบ่อยสุดเคยกดแล้วเงียบ วัดจริงด้วย CDP forcePseudoState 23 ต.ค. 2026
+   ใช้ภาษาเดิม (scale .94-.97, --t-fast, --ease) ไม่เพิ่ม token ใหม่ เจาะด้วย attribute เพราะ DOM มาจากทั้ง .ts และ React */
+.ev-check,[data-act="settings"],[data-act="date"]{transition-property:background,border-color,color,transform;transition-duration:var(--t-fast);transition-timing-function:var(--ease)}
+.ev-check:active{transform:scale(.88)}
+[data-act="settings"]:active{transform:scale(.92)}
+[data-act="date"]:active{transform:scale(.94)}
+.ev-nav button .pill{transition:background var(--t-fast) var(--ease),transform .3s var(--spring)}
+.ev-nav button:active .pill{transform:scale(.92);background:var(--c-fill)}
+.ev-nav button[aria-current="page"]:active .pill{background:var(--c-accent-soft)}
