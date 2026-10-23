@@ -32,7 +32,7 @@ function FocusContent(p) {
     '\n ',
     h('div', { key: 'scroll', className: 'ev-page-scroll', style: { textAlign: 'center' } }, [
       h('div', { key: 'h1' }, [
-        h('h1', { key: 't', className: 'ev-title', style: { padding: '0' } }, it.title),
+        h('p', { key: 't', className: 'ev-title', role: 'heading', 'aria-level': 3, style: { padding: '0' } }, it.title),
         h('p', { key: 'p', className: 'ev-sub' }, `เป้าหมาย ${it.target} ${it.unitName || 'นาที'} · ${w.dayLab(w.UI.fdate)}ทำแล้ว ${w.val(it, w.UI.fdate)}`),
       ]),
       '\n ',
