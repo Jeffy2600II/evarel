@@ -714,3 +714,20 @@ body{line-height:1.5;letter-spacing:0}
 .ev-nav button .pill{transition:background var(--t-fast) var(--ease),transform .3s var(--spring)}
 .ev-nav button:active .pill{transform:scale(.92);background:var(--c-fill)}
 .ev-nav button[aria-current="page"]:active .pill{background:var(--c-accent-soft)}
+
+/* การ์ดสรุปแบบวงแหวน (Master เลือกแบบ B 23 ต.ค. 2026: เลย์เอาต์ B + วงแหวน ไม่ฟุ้ง ไม่ไล่สี)
+   ไม่แตะ DOM: .ev-prog เดิมกลายเป็นวงแหวนด้วย conic-gradient ตามตัวแปร --w (0-100) ที่ growBars เขียนอยู่แล้ว จึงอนิเมชั่น/นับเลข/เทสต์เดิมใช้ต่อได้ */
+.ev-card[data-tone="ink"]{background:var(--c-accent);box-shadow:none;overflow:visible;isolation:auto}
+.ev-card[data-tone="ink"]::before{display:none}
+.ev-sum{position:relative;padding:24px;gap:16px;align-content:center}
+.ev-sum-top{padding-right:104px;min-height:84px;display:flex;flex-direction:column;justify-content:center}
+.ev-sum-top>.ev-sum-lab:last-child{position:absolute;right:24px;top:24px;width:84px;height:84px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:17px;font-weight:600;letter-spacing:-.2px;opacity:1;z-index:1;pointer-events:none}
+.ev-prog{position:absolute;right:24px;top:24px;width:84px;height:84px;border-radius:50%;background:none;overflow:visible}
+.ev-prog::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--c-on-ink-soft);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px))}
+/* --w ถูกตั้งบน <i> ลูก (setBar ใน 23-render) ไม่ใช่ตัวแม่ จึงให้ <i> วาดส่วนเต็มเอง: @property ทำให้ตัวแปรอนิเมชั่นได้ */
+.ev-prog i{position:absolute;inset:0;width:auto;height:auto;border-radius:50%;background:conic-gradient(#fff calc(var(--w,0)*3.6deg),transparent 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));transition:none}
+.ev-next{margin-top:2px}
+/* ชิป "ถัดไป" บนม่วงเรียบ: พื้นขาวโปร่ง 22% ทำให้พื้นสว่างเป็น #6f58f7 คอนทราสต์ 4.03 (ไม่ถึง 4.5) ใช้พื้นดำโปร่งแทนให้เข้มกว่าการ์ดนิดเดียว ได้คอนทราสต์เกิน 6 */
+.ev-card[data-tone="ink"] .ev-chip{background:rgba(0,0,0,.18);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ev-card[data-tone="ink"]{background:#43379F}}
+:root[data-theme="dark"] .ev-card[data-tone="ink"]{background:#43379F}
