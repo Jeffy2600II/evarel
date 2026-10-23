@@ -42,9 +42,10 @@ if(!SUPA_API)throw new Error('EVAREL_API ไม่ถูกตั้งค่า
 export const Auth=SupaAuth(SUPA_API);ST.Repo=SupaAdapter(SUPA_API);
 /* ===== ui/profile (v24): อวาตาร์สร้างอัตโนมัติจากชื่อ/อีเมล (ตัวอักษรแรก + สีประจำคน) ทุกหน้าเรียก avatarHTML()/profileOf() ที่เดียว ===== */
 export const AV_HUES=[250,268,286,306,330,352,12,24,162,176,190,204,222],THAI_LEAD=/^[เแโใไ]+/;
+const AV_LIGHT_FIX:Record<number,number>={162:33,176:33,190:33}; /* เฉด 162/176/190 -> L 33% = 4.70/4.60/5.9:1 ผ่าน 4.5:1 | อีก 10 เฉดผ่านอยู่แล้ว ไม่แตะ */
 export const hashStr=(s:any)=>{let h=2166136261;for(const ch of String(s)){h^=ch.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0};
-export function profileOf(){const U:any=ST.USER,name=(U?.name||'').trim(),seed=U?.id||U?.email||name||'?',src=(name||U?.email||'?').replace(THAI_LEAD,'')||'?',h=AV_HUES[hashStr(seed)%AV_HUES.length];
- return {name:name||U?.email||'',letter:([...src][0]||'?').toUpperCase(),bg:`linear-gradient(140deg,hsl(${h} 55% 38%),hsl(${(h+26)%360} 55% 28%))`}}
+export function profileOf(){const U:any=ST.USER,name=(U?.name||'').trim(),seed=U?.id||U?.email||name||'?',src=(name||U?.email||'?').replace(THAI_LEAD,'')||'?',h=AV_HUES[hashStr(seed)%AV_HUES.length],L=AV_LIGHT_FIX[h]??38; /* L = ความสว่างจุดสว่างของไล่สี: เฉดเขียวน้ำทะเลที่ 38% ให้ตัวอักษรขาวได้ 3.58-4.33:1 ไม่ผ่าน WCAG 1.4.3 จึงลดเฉพาะเฉดนั้น (วัด 23 ต.ค. 2026) */
+ return {name:name||U?.email||'',letter:([...src][0]||'?').toUpperCase(),bg:`linear-gradient(140deg,hsl(${h} 55% ${L}%),hsl(${(h+26)%360} 55% 28%))`}}
 export const initial=()=>profileOf().letter;
 export const firstName=()=>((ST.USER?.name||'').trim().split(/\s+/)[0]);
 export function avatarHTML(o:any={}){const p=profileOf(),tag=o.tag==='button'?'button':'span',a=tag==='button'?` type="button" data-act="${o.act||'settings'}" aria-label="${o.label||'ตั้งค่า'}"`:` role="img" aria-label="${esc(p.name||'โปรไฟล์')}"`;

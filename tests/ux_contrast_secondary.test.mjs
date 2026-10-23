@@ -63,6 +63,23 @@ try {
   }
   ok('ตรวจจริงมากกว่า 0 จุด (กันทดสอบว่างเปล่า)', total > 20, String(total));
   console.log('หมายเหตุ: ข้ามปุ่ม disabled ' + disAll + ' จุด (WCAG ยกเว้น) | ข้ามพื้นรูปภาพ ' + skippedAll + ' จุด (ต้องให้ตาคนดู)');
+  // อวาตาร์ทุกเฉด: สีขึ้นกับแฮชของ id ผู้ใช้ จึงเรียก profileOf() จริงด้วย id หลายค่าจนครบทุกเฉด แล้วคำนวณคอนทราสต์ตัวอักษรขาวของ "จุดสว่าง" และ "จุดมืด"
+  const hues = await p.evaluate(() => window.AV_HUES || null);
+  ok('อ่านชุดเฉดอวาตาร์ได้ (กันทดสอบว่างเปล่า)', Array.isArray(hues) && hues.length === 13, JSON.stringify(hues));
+  const perHue = await p.evaluate((hs) => {
+    const U = window.ST.USER; const seen = new Map();
+    const hsl = (H, S, L) => { S /= 100; L /= 100; const k = (n2) => (n2 + H / 30) % 12, a = S * Math.min(L, 1 - L), f = (n2) => L - a * Math.max(-1, Math.min(k(n2) - 3, Math.min(9 - k(n2), 1))); return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)]; };
+    for (let n2 = 0; n2 < 6000 && seen.size < hs.length; n2++) {
+      U.id = 'seed-' + n2; const m = window.profileOf().bg.match(/hsl\((\d+) 55% (\d+)%\),hsl\((\d+) 55% (\d+)%\)/); if (!m) continue; const h = +m[1]; if (seen.has(h)) continue;
+      seen.set(h, { h, light: hsl(+m[1], 55, +m[2]), dark: hsl(+m[3], 55, +m[4]) });
+    }
+    return [...seen.values()];
+  }, hues || []);
+  const lumf = ([r, g, b2]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b2); };
+  const rat = (c) => 1.05 / (lumf(c) + 0.05);   // ตัวอักษรขาว = ความสว่าง 1.0
+  const badH = perHue.filter((x) => Math.min(rat(x.light), rat(x.dark)) < 4.5);
+  ok('อวาตาร์ครบทุกเฉด (' + perHue.length + ' เฉด) ตัวอักษรขาวผ่าน 4.5:1', perHue.length === 13 && badH.length === 0, badH.map((x) => x.h + ':' + Math.min(rat(x.light), rat(x.dark)).toFixed(2)).join(' '));
+  console.log('หมายเหตุ: จุดที่ข้าม (พื้นเป็นรูปภาพ ตัดสินด้วยเครื่องไม่ได้ ต้องให้ตาคนดู) รวม ' + skippedAll + ' จุด');
 } catch (e) { fail++; console.log('FAIL exception :: ' + String(e.message).slice(0, 240)); }
 finally { try { await b.close(); } catch {} srv.close(); if (user) console.log('ลบผู้ใช้ทดสอบ ->', await user.cleanup()); fs.rmSync(tmp, { recursive: true, force: true }); }
 console.log(`\nผ่าน ${pass} | ตก ${fail}`); process.exit(fail ? 1 : 0);
