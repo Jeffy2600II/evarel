@@ -732,3 +732,23 @@ body{line-height:1.5;letter-spacing:0}
 .ev-card[data-tone="ink"] .ev-chip{background:rgba(0,0,0,.18);color:#fff}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ev-card[data-tone="ink"]{background:#43379F}}
 :root[data-theme="dark"] .ev-card[data-tone="ink"]{background:#43379F}
+
+/* ===== หน้า Today แบบ B ขั้น 1 (สเปก: feel/today-b/SPEC.md) CSS ล้วน ไม่แตะ DOM =====
+   พื้นหลังม่วงมีวงแหวนจางคงเดิม; layout สลับเป็นแบบ B: วงแหวนซ้าย ข้อความขวา; ค้างอยู่เป็นแคปซูล; รายการเป็นแถวบนพื้นหน้า ไม่มีกล่องขาวครอบ */
+main[data-react-mount="today"] .ev-sum{padding:22px 24px}
+main[data-react-mount="today"] .ev-sum-top{display:block;padding:0 0 0 108px;min-height:84px;align-self:center}
+main[data-react-mount="today"] .ev-sum-top>div:first-child{display:grid;gap:4px;align-content:center;min-height:84px}
+/* % อ้างอิงการ์ด (ตัวแม่ไม่ใช่ relative) จึงใช้พิกัดเดียวกับวงแหวน .ev-prog: left 24 / top 22 */
+main[data-react-mount="today"] .ev-sum-top>.ev-sum-lab:last-child{right:auto;left:24px;top:22px}
+main[data-react-mount="today"] .ev-prog{right:auto;left:24px;top:22px}
+main[data-react-mount="today"] .ev-sum .ev-sum-num{font-size:34px}
+main[data-react-mount="today"] .ev-sum .ev-sum-num small{font-size:16px}
+main[data-react-mount="today"] .ev-next{padding-left:0}
+/* ค้างอยู่: แคปซูลแทนกล่องครีมใหญ่ (รายการข้างในยังแสดง แต่กระชับ) */
+main[data-react-mount="today"] .ev-card[data-tone="warn"]{border-radius:22px;padding:14px 18px}
+main[data-react-mount="today"] .ev-card[data-tone="warn"]>b{display:flex;align-items:center;font-size:14px;margin-bottom:2px}
+main[data-react-mount="today"] .ev-card[data-tone="warn"] .ev-list-item{padding:8px 0}
+/* รายการหลัก: เอากล่องขาวออก ให้แถววางบนพื้นหน้า | จำกัดเฉพาะหน้า Today ด้วย [data-react-mount=today]: รอบแรกเขียนกว้างเกินจน main>.ev-card ในแท็บ all หลุดพื้นขาว เลขหลักเดียวคอนทราสต์ตก 4.28:1 (ux_contrast_secondary จับได้) */
+main[data-react-mount="today"]>.ev-card:not([data-tone]){background:none;box-shadow:none;border-radius:0;padding:0 4px}
+main[data-react-mount="today"]>.ev-card:not([data-tone]) .ev-group{padding:18px 0 4px}
+main[data-react-mount="today"]>.ev-card:not([data-tone]) .ev-list-item{padding:13px 0}
