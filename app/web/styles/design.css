@@ -717,9 +717,8 @@ body{line-height:1.5;letter-spacing:0}
 
 /* การ์ดสรุปแบบวงแหวน (Master เลือกแบบ B 23 ต.ค. 2026: เลย์เอาต์ B + วงแหวน ไม่ฟุ้ง ไม่ไล่สี)
    ไม่แตะ DOM: .ev-prog เดิมกลายเป็นวงแหวนด้วย conic-gradient ตามตัวแปร --w (0-100) ที่ growBars เขียนอยู่แล้ว จึงอนิเมชั่น/นับเลข/เทสต์เดิมใช้ต่อได้ */
-.ev-card[data-tone="ink"]{background:var(--c-accent);box-shadow:none}
-/* วงแหวนพื้นหลังเดิมของ Master (วงกลมซ้อน 3 ชั้นมุมขวาบน) คืนทุกค่าเดิม: รอบก่อนผมลบทิ้งเพราะเข้าใจผิดว่าเป็นส่วนที่ฟุ้ง ส่วนที่ฟุ้งจริงคือไล่สี 3 จุดกับเงาม่วง 0 14px 34px ซึ่งยังเอาออกอยู่ */
-.ev-card[data-tone="ink"]::before{content:"";position:absolute;z-index:-1;right:-72px;top:-72px;width:200px;height:200px;border-radius:50%;pointer-events:none;box-shadow:0 0 0 30px rgba(255,255,255,.06),0 0 0 62px rgba(255,255,255,.04),0 0 0 98px rgba(255,255,255,.025)}
+.ev-card[data-tone="ink"]{background:var(--c-accent);box-shadow:none;overflow:visible;isolation:auto}
+.ev-card[data-tone="ink"]::before{display:none}
 .ev-sum{position:relative;padding:24px;gap:16px;align-content:center}
 .ev-sum-top{padding-right:104px;min-height:84px;display:flex;flex-direction:column;justify-content:center}
 .ev-sum-top>.ev-sum-lab:last-child{position:absolute;right:24px;top:24px;width:84px;height:84px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:17px;font-weight:600;letter-spacing:-.2px;opacity:1;z-index:1;pointer-events:none}
