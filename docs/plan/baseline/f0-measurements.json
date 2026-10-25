@@ -1,0 +1,958 @@
+{
+  "part_a_files_and_sizes": {
+    "app/src/m/*.ts": {
+      "count": 26,
+      "total_bytes": 217563,
+      "files": [
+        {
+          "rel_path": "app/src/m/00-head.ts",
+          "size": 896
+        },
+        {
+          "rel_path": "app/src/m/01-core__constants.ts",
+          "size": 4742
+        },
+        {
+          "rel_path": "app/src/m/02-core__dates.ts",
+          "size": 1322
+        },
+        {
+          "rel_path": "app/src/m/03-core__store.ts",
+          "size": 2284
+        },
+        {
+          "rel_path": "app/src/m/04-data__repo.ts",
+          "size": 1025
+        },
+        {
+          "rel_path": "app/src/m/05-data__auth.ts",
+          "size": 8318
+        },
+        {
+          "rel_path": "app/src/m/06-services__schedule.ts",
+          "size": 4168
+        },
+        {
+          "rel_path": "app/src/m/07-services__stats.ts",
+          "size": 1546
+        },
+        {
+          "rel_path": "app/src/m/08-core__undo.ts",
+          "size": 2314
+        },
+        {
+          "rel_path": "app/src/m/09-ui__layers.ts",
+          "size": 18566
+        },
+        {
+          "rel_path": "app/src/m/10-services__notify.ts",
+          "size": 8422
+        },
+        {
+          "rel_path": "app/src/m/11-ui__popover.ts",
+          "size": 1265
+        },
+        {
+          "rel_path": "app/src/m/12-ui__primitives.ts",
+          "size": 14173
+        },
+        {
+          "rel_path": "app/src/m/13-views.ts",
+          "size": 13107
+        },
+        {
+          "rel_path": "app/src/m/14-ui__form.ts",
+          "size": 13712
+        },
+        {
+          "rel_path": "app/src/m/15-core__timer.ts",
+          "size": 4509
+        },
+        {
+          "rel_path": "app/src/m/16-services__ai-quota.ts",
+          "size": 8755
+        },
+        {
+          "rel_path": "app/src/m/17-views__ai.ts",
+          "size": 16716
+        },
+        {
+          "rel_path": "app/src/m/18-services__ai-live.ts",
+          "size": 3581
+        },
+        {
+          "rel_path": "app/src/m/19-views__settings.ts",
+          "size": 13677
+        },
+        {
+          "rel_path": "app/src/m/20-services__calendar.ts",
+          "size": 10446
+        },
+        {
+          "rel_path": "app/src/m/21-views__detail.ts",
+          "size": 2081
+        },
+        {
+          "rel_path": "app/src/m/22-views__auth.ts",
+          "size": 22333
+        },
+        {
+          "rel_path": "app/src/m/23-render.ts",
+          "size": 13313
+        },
+        {
+          "rel_path": "app/src/m/24-services__legacy-import.ts",
+          "size": 6269
+        },
+        {
+          "rel_path": "app/src/m/25-actions.ts",
+          "size": 20023
+        }
+      ]
+    },
+    "app/src/react/*.jsx": {
+      "count": 16,
+      "total_bytes": 71222,
+      "files": [
+        {
+          "rel_path": "app/src/react/ai.jsx",
+          "size": 9702
+        },
+        {
+          "rel_path": "app/src/react/aiShell.jsx",
+          "size": 5067
+        },
+        {
+          "rel_path": "app/src/react/all.jsx",
+          "size": 2081
+        },
+        {
+          "rel_path": "app/src/react/auth.jsx",
+          "size": 1688
+        },
+        {
+          "rel_path": "app/src/react/calendar.jsx",
+          "size": 2594
+        },
+        {
+          "rel_path": "app/src/react/detail.jsx",
+          "size": 8221
+        },
+        {
+          "rel_path": "app/src/react/dialog.jsx",
+          "size": 1984
+        },
+        {
+          "rel_path": "app/src/react/focus.jsx",
+          "size": 4064
+        },
+        {
+          "rel_path": "app/src/react/form.jsx",
+          "size": 12394
+        },
+        {
+          "rel_path": "app/src/react/item-row.jsx",
+          "size": 3454
+        },
+        {
+          "rel_path": "app/src/react/nav.jsx",
+          "size": 1772
+        },
+        {
+          "rel_path": "app/src/react/quota.jsx",
+          "size": 2416
+        },
+        {
+          "rel_path": "app/src/react/settings.jsx",
+          "size": 4172
+        },
+        {
+          "rel_path": "app/src/react/sheet.jsx",
+          "size": 2435
+        },
+        {
+          "rel_path": "app/src/react/stats.jsx",
+          "size": 4728
+        },
+        {
+          "rel_path": "app/src/react/today.jsx",
+          "size": 4450
+        }
+      ]
+    },
+    "app/src/react/*.js": {
+      "count": 2,
+      "total_bytes": 8477,
+      "files": [
+        {
+          "rel_path": "app/src/react/runtime.js",
+          "size": 6702
+        },
+        {
+          "rel_path": "app/src/react/store.js",
+          "size": 1775
+        }
+      ]
+    },
+    "app/src/core/*.ts": {
+      "count": 4,
+      "total_bytes": 16728,
+      "files": [
+        {
+          "rel_path": "app/src/core/dates.ts",
+          "size": 2347
+        },
+        {
+          "rel_path": "app/src/core/schedule.ts",
+          "size": 4995
+        },
+        {
+          "rel_path": "app/src/core/stats.ts",
+          "size": 5393
+        },
+        {
+          "rel_path": "app/src/core/today.ts",
+          "size": 3993
+        }
+      ]
+    }
+  },
+  "part_b_m_ts_imports_exports_assign": {
+    "total_files": 26,
+    "files_with_object_assign_window": 26,
+    "files_with_no_import_strip": 21,
+    "files_with_no_import_strict": 21,
+    "files": [
+      {
+        "file": "app/src/m/00-head.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/01-core__constants.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 18,
+        "import_lines_strict": 0,
+        "export_lines_strict": 18
+      },
+      {
+        "file": "app/src/m/02-core__dates.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 1,
+        "export_lines_strip": 11,
+        "import_lines_strict": 1,
+        "export_lines_strict": 11
+      },
+      {
+        "file": "app/src/m/03-core__store.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 1,
+        "export_lines_strip": 5,
+        "import_lines_strict": 1,
+        "export_lines_strict": 5
+      },
+      {
+        "file": "app/src/m/04-data__repo.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 4,
+        "import_lines_strict": 0,
+        "export_lines_strict": 4
+      },
+      {
+        "file": "app/src/m/05-data__auth.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 1,
+        "export_lines_strip": 19,
+        "import_lines_strict": 1,
+        "export_lines_strict": 19
+      },
+      {
+        "file": "app/src/m/06-services__schedule.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 3,
+        "export_lines_strip": 15,
+        "import_lines_strict": 3,
+        "export_lines_strict": 15
+      },
+      {
+        "file": "app/src/m/07-services__stats.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 4,
+        "export_lines_strip": 6,
+        "import_lines_strict": 4,
+        "export_lines_strict": 6
+      },
+      {
+        "file": "app/src/m/08-core__undo.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/09-ui__layers.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/10-services__notify.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/11-ui__popover.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/12-ui__primitives.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/13-views.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/14-ui__form.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/15-core__timer.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/16-services__ai-quota.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/17-views__ai.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/18-services__ai-live.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/19-views__settings.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/20-services__calendar.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/21-views__detail.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/22-views__auth.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/23-render.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/24-services__legacy-import.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      },
+      {
+        "file": "app/src/m/25-actions.ts",
+        "has_object_assign_window": true,
+        "import_lines_strip": 0,
+        "export_lines_strip": 0,
+        "import_lines_strict": 0,
+        "export_lines_strict": 0
+      }
+    ]
+  },
+  "part_c_window_counts": {
+    "app/src/m": {
+      "total_window_dot": 9,
+      "total_window_standalone": 80,
+      "total_window": 89,
+      "files": [
+        {
+          "file": "app/src/m/00-head.ts",
+          "window_dot": 0,
+          "window_standalone": 2,
+          "window_total": 2
+        },
+        {
+          "file": "app/src/m/01-core__constants.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/02-core__dates.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/03-core__store.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/04-data__repo.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/05-data__auth.ts",
+          "window_dot": 2,
+          "window_standalone": 2,
+          "window_total": 4
+        },
+        {
+          "file": "app/src/m/06-services__schedule.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/07-services__stats.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/08-core__undo.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/09-ui__layers.ts",
+          "window_dot": 4,
+          "window_standalone": 4,
+          "window_total": 8
+        },
+        {
+          "file": "app/src/m/10-services__notify.ts",
+          "window_dot": 0,
+          "window_standalone": 4,
+          "window_total": 4
+        },
+        {
+          "file": "app/src/m/11-ui__popover.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/12-ui__primitives.ts",
+          "window_dot": 0,
+          "window_standalone": 3,
+          "window_total": 3
+        },
+        {
+          "file": "app/src/m/13-views.ts",
+          "window_dot": 0,
+          "window_standalone": 7,
+          "window_total": 7
+        },
+        {
+          "file": "app/src/m/14-ui__form.ts",
+          "window_dot": 0,
+          "window_standalone": 2,
+          "window_total": 2
+        },
+        {
+          "file": "app/src/m/15-core__timer.ts",
+          "window_dot": 0,
+          "window_standalone": 4,
+          "window_total": 4
+        },
+        {
+          "file": "app/src/m/16-services__ai-quota.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/17-views__ai.ts",
+          "window_dot": 0,
+          "window_standalone": 11,
+          "window_total": 11
+        },
+        {
+          "file": "app/src/m/18-services__ai-live.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/19-views__settings.ts",
+          "window_dot": 1,
+          "window_standalone": 13,
+          "window_total": 14
+        },
+        {
+          "file": "app/src/m/20-services__calendar.ts",
+          "window_dot": 0,
+          "window_standalone": 2,
+          "window_total": 2
+        },
+        {
+          "file": "app/src/m/21-views__detail.ts",
+          "window_dot": 0,
+          "window_standalone": 2,
+          "window_total": 2
+        },
+        {
+          "file": "app/src/m/22-views__auth.ts",
+          "window_dot": 2,
+          "window_standalone": 2,
+          "window_total": 4
+        },
+        {
+          "file": "app/src/m/23-render.ts",
+          "window_dot": 0,
+          "window_standalone": 10,
+          "window_total": 10
+        },
+        {
+          "file": "app/src/m/24-services__legacy-import.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        },
+        {
+          "file": "app/src/m/25-actions.ts",
+          "window_dot": 0,
+          "window_standalone": 1,
+          "window_total": 1
+        }
+      ]
+    },
+    "app/src/react": {
+      "total_window_dot": 147,
+      "total_window_standalone": 13,
+      "total_window": 160,
+      "files": [
+        {
+          "file": "app/src/react/ai.jsx",
+          "window_dot": 8,
+          "window_standalone": 1,
+          "window_total": 9
+        },
+        {
+          "file": "app/src/react/aiShell.jsx",
+          "window_dot": 8,
+          "window_standalone": 1,
+          "window_total": 9
+        },
+        {
+          "file": "app/src/react/all.jsx",
+          "window_dot": 5,
+          "window_standalone": 0,
+          "window_total": 5
+        },
+        {
+          "file": "app/src/react/auth.jsx",
+          "window_dot": 8,
+          "window_standalone": 1,
+          "window_total": 9
+        },
+        {
+          "file": "app/src/react/calendar.jsx",
+          "window_dot": 12,
+          "window_standalone": 1,
+          "window_total": 13
+        },
+        {
+          "file": "app/src/react/detail.jsx",
+          "window_dot": 9,
+          "window_standalone": 1,
+          "window_total": 10
+        },
+        {
+          "file": "app/src/react/dialog.jsx",
+          "window_dot": 11,
+          "window_standalone": 1,
+          "window_total": 12
+        },
+        {
+          "file": "app/src/react/focus.jsx",
+          "window_dot": 8,
+          "window_standalone": 1,
+          "window_total": 9
+        },
+        {
+          "file": "app/src/react/form.jsx",
+          "window_dot": 11,
+          "window_standalone": 1,
+          "window_total": 12
+        },
+        {
+          "file": "app/src/react/item-row.jsx",
+          "window_dot": 4,
+          "window_standalone": 1,
+          "window_total": 5
+        },
+        {
+          "file": "app/src/react/nav.jsx",
+          "window_dot": 8,
+          "window_standalone": 1,
+          "window_total": 9
+        },
+        {
+          "file": "app/src/react/quota.jsx",
+          "window_dot": 8,
+          "window_standalone": 1,
+          "window_total": 9
+        },
+        {
+          "file": "app/src/react/runtime.js",
+          "window_dot": 20,
+          "window_standalone": 0,
+          "window_total": 20
+        },
+        {
+          "file": "app/src/react/settings.jsx",
+          "window_dot": 5,
+          "window_standalone": 0,
+          "window_total": 5
+        },
+        {
+          "file": "app/src/react/sheet.jsx",
+          "window_dot": 8,
+          "window_standalone": 1,
+          "window_total": 9
+        },
+        {
+          "file": "app/src/react/stats.jsx",
+          "window_dot": 5,
+          "window_standalone": 0,
+          "window_total": 5
+        },
+        {
+          "file": "app/src/react/store.js",
+          "window_dot": 0,
+          "window_standalone": 0,
+          "window_total": 0
+        },
+        {
+          "file": "app/src/react/today.jsx",
+          "window_dot": 9,
+          "window_standalone": 1,
+          "window_total": 10
+        }
+      ]
+    }
+  },
+  "part_d_css_metrics": {
+    "app/web/styles/app.css": {
+      "exists": true,
+      "lines": 5556,
+      "hex_count": 152,
+      "px_count": 1033,
+      "unique_c_vars_count": 25,
+      "unique_c_vars": [
+        "--c-accent",
+        "--c-accent-2",
+        "--c-accent-soft",
+        "--c-accent-text",
+        "--c-bg",
+        "--c-danger",
+        "--c-danger-fill",
+        "--c-danger-soft",
+        "--c-danger-text",
+        "--c-fill",
+        "--c-halo",
+        "--c-line",
+        "--c-line-ctl",
+        "--c-muted",
+        "--c-ok",
+        "--c-ok-text",
+        "--c-on-accent",
+        "--c-on-ink-soft",
+        "--c-on-ok",
+        "--c-scrim",
+        "--c-surface",
+        "--c-text",
+        "--c-warn",
+        "--c-warn-soft",
+        "--c-warn-text"
+      ]
+    },
+    "app/web/styles/design.css": {
+      "exists": true,
+      "lines": 716,
+      "hex_count": 128,
+      "px_count": 957,
+      "unique_c_vars_count": 25,
+      "unique_c_vars": [
+        "--c-accent",
+        "--c-accent-2",
+        "--c-accent-soft",
+        "--c-accent-text",
+        "--c-bg",
+        "--c-danger",
+        "--c-danger-fill",
+        "--c-danger-soft",
+        "--c-danger-text",
+        "--c-fill",
+        "--c-halo",
+        "--c-line",
+        "--c-line-ctl",
+        "--c-muted",
+        "--c-ok",
+        "--c-ok-text",
+        "--c-on-accent",
+        "--c-on-ink-soft",
+        "--c-on-ok",
+        "--c-scrim",
+        "--c-surface",
+        "--c-text",
+        "--c-warn",
+        "--c-warn-soft",
+        "--c-warn-text"
+      ]
+    },
+    "app/web/styles/extra.css": {
+      "exists": true,
+      "lines": 29,
+      "hex_count": 6,
+      "px_count": 33,
+      "unique_c_vars_count": 9,
+      "unique_c_vars": [
+        "--c-accent",
+        "--c-accent-soft",
+        "--c-accent-text",
+        "--c-danger-soft",
+        "--c-fill",
+        "--c-muted",
+        "--c-text",
+        "--c-warn",
+        "--c-warn-soft"
+      ]
+    }
+  },
+  "part_e_tests_counts": {
+    "without_underscore_count": 80,
+    "without_underscore_files": [
+      "README.md",
+      "ai-e2e.mjs",
+      "ai-live.mjs",
+      "ai-memory-live.mjs",
+      "ai-memory-ui.mjs",
+      "ai-quota-chip.mjs",
+      "ai-quota-reset.mjs",
+      "ai-quota-swap.mjs",
+      "ai-quota-ui.mjs",
+      "ai_actions.test.mjs",
+      "ai_equiv.test.mjs",
+      "aishell_focus_equiv.test.mjs",
+      "all_interact.test.mjs",
+      "auth_equiv.test.mjs",
+      "authfix-probe.mjs",
+      "behavior_equiv.mjs",
+      "calendar_equiv.test.mjs",
+      "core_equiv.test.mjs",
+      "esm_readiness_gate.mjs",
+      "fn_equiv.test.mjs",
+      "forge_deeplink.test.mjs",
+      "form_equiv.test.mjs",
+      "gesture_equiv.test.mjs",
+      "import-legacy.mjs",
+      "itemrow_equiv.test.mjs",
+      "late_note.test.mjs",
+      "layers_equiv.test.mjs",
+      "live_race.test.mjs",
+      "live_stack_check.mjs",
+      "live_user.mjs",
+      "mount_live.test.mjs",
+      "nav_equiv.test.mjs",
+      "next_boot.test.mjs",
+      "notify_default.test.mjs",
+      "notify_form.test.mjs",
+      "notify_offline.test.mjs",
+      "notify_push.test.mjs",
+      "perf_setting.test.mjs",
+      "quota-unit.mjs",
+      "quota_settings_equiv.test.mjs",
+      "refresh_once.test.mjs",
+      "rem_parity.test.mjs",
+      "row_interact.test.mjs",
+      "rt-latency.mjs",
+      "rt-leak.mjs",
+      "s3_next_wrap.test.mjs",
+      "seed_items.mjs",
+      "stats_html_equiv.test.mjs",
+      "store.test.mjs",
+      "store_live.test.mjs",
+      "sw_push.test.mjs",
+      "sw_upgrade.test.mjs",
+      "today_equiv.test.mjs",
+      "today_week_overflow.test.mjs",
+      "ts1b_order_gate.mjs",
+      "ts1c_console_gate.mjs",
+      "ts1c_state_behavior.mjs",
+      "ts1d_deps_gate.mjs",
+      "ts1d_deps_gate.mjs.bak-ts1k",
+      "ts1d_deps_gate.mjs.bak-ts1l",
+      "ts1d_deps_gate.mjs.bak-ts1m",
+      "ts1d_deps_gate.mjs.bak-ts1n",
+      "ts1j_scope_gate.mjs",
+      "typecheck.test.mjs",
+      "usage_sheet_motion.test.mjs",
+      "ux_contrast_secondary.test.mjs",
+      "ux_survey.mjs",
+      "v11feat.mjs",
+      "v11ovf.mjs",
+      "v11parity.mjs",
+      "v11pwa.mjs",
+      "v11route.mjs",
+      "v12auth.mjs",
+      "v13parity.mjs",
+      "v7parity.mjs",
+      "v7pwa.mjs",
+      "v7route.mjs",
+      "version_rules.test.mjs",
+      "visual-parity.mjs",
+      "xss-guard.mjs"
+    ],
+    "with_underscore_count": 66,
+    "with_underscore_files": [
+      "_aa_stable.mjs",
+      "_abuse_browser.mjs",
+      "_addshot.mjs",
+      "_addtxt.mjs",
+      "_app_tbox_probe.mjs",
+      "_behavior_probe.mjs",
+      "_demo_tbox_probe.mjs",
+      "_esm1a_tool_unit.mjs",
+      "_focus_trace.mjs",
+      "_formprobe.mjs",
+      "_fp_re.mjs",
+      "_legacy_inject.mjs",
+      "_live13.mjs",
+      "_live_smoke.mjs",
+      "_ovf_mobile.mjs",
+      "_ovf_probe.mjs",
+      "_ovf_settings.mjs",
+      "_ovf_settings2.mjs",
+      "_parity_bands.mjs",
+      "_pb_bisect.mjs",
+      "_pb_debug.mjs",
+      "_pb_facedump.mjs",
+      "_pb_fetch.mjs",
+      "_pb_fontvar.mjs",
+      "_pb_fontvar2.mjs",
+      "_pb_geo.mjs",
+      "_pb_grid.mjs",
+      "_pb_micro.mjs",
+      "_pb_micro2.mjs",
+      "_pb_navhide.mjs",
+      "_pb_pretty.mjs",
+      "_pb_selfcmp.mjs",
+      "_pb_wk.mjs",
+      "_pb_wk2.mjs",
+      "_pb_wk3.mjs",
+      "_probe_el.mjs",
+      "_probe_rect.mjs",
+      "_rt_probe.mjs",
+      "_rtlat.mjs",
+      "_rtleak.mjs",
+      "_seed_items.json.js",
+      "_supa_e2e.mjs",
+      "_supa_e2e_live.mjs",
+      "_supa_google.mjs",
+      "_supa_shots.mjs",
+      "_sync2dev.mjs",
+      "_sync_live.mjs",
+      "_ts1b_ab.mjs",
+      "_ts1b_errs.mjs",
+      "_ts1b_flap.mjs",
+      "_ts1b_g5.mjs",
+      "_ts1c_probe.mjs",
+      "_ts1f_g5.mjs",
+      "_ts1g_g5.mjs",
+      "_ts1h_g5.mjs",
+      "_ts1i_g5.mjs",
+      "_ts1n_authflow.mjs",
+      "_ts1n_authflow.mjs.bak-esm1a",
+      "_v13_legacydata.mjs",
+      "_v13_v11feat.mjs",
+      "_v13_v11feat.mjs.bak-esm1a",
+      "_v13_v11ovf.mjs",
+      "_v13_v11pwa.mjs",
+      "_v13_v11route.mjs",
+      "_what_is.mjs",
+      "_y437_probe.mjs"
+    ]
+  }
+}
