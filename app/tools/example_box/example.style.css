@@ -1,0 +1,8 @@
+/* สไตล์เฉพาะของกล่องตัวอย่าง */
+.box-example {
+  padding: var(--sp-4, 16px);
+  background-color: var(--c-bg, #ffffff);
+}
+.example-header {
+  color: var(--c-ink-a, #333333);
+}
