@@ -450,6 +450,7 @@
   --c-on-accent:#fff;
   --c-ok:#18A66A;
   --c-on-ok:#fff;
+  --c-on-fill:#fff;
   --c-warn:#E8890C;
   --c-danger:#E5484D;
   --c-danger-soft:#FDECEC;
@@ -1813,7 +1814,7 @@ ul{
   width:22px;
   height:22px;
   border-radius:50%;
-  background:#fff;
+  background:var(--c-on-fill);
   box-shadow:0 1px 3px rgba(0,0,0,.25);
   transition:transform .25s var(--spring)
 }
@@ -1973,7 +1974,7 @@ body{
   border-radius:var(--r-pill);
   border:0;
   background:var(--c-danger);
-  color:#fff;
+  color:var(--c-on-fill);
   font:600 15px var(--font)
 }
 
@@ -2677,7 +2678,7 @@ body{
 
 .fc .ev-fcday.st-done .ev-dnum{
   background:var(--c-ok);
-  color:#fff
+  color:var(--c-on-fill)
 }
 
 .fc .ev-fcday.st-part .ev-dnum{
@@ -2779,7 +2780,7 @@ body{
 
 .fc .fc-event.ev-fc-class{
   background:var(--c-accent);
-  color:#fff
+  color:var(--c-on-fill)
 }
 
 .fc .fc-event.ev-fc-event{
@@ -3223,8 +3224,8 @@ body[data-auth="out"] .ev-app,body[data-auth="out"] .ev-nav,body[data-auth="out"
   content:"";
   width:10px;
   height:5px;
-  border-left:2.5px solid #fff;
-  border-bottom:2.5px solid #fff;
+  border-left:2.5px solid var(--c-on-fill);
+  border-bottom:2.5px solid var(--c-on-fill);
   transform:translateY(-1px) rotate(-45deg)
 }
 
@@ -4691,7 +4692,7 @@ body{
 
 .ev-btn-solid-danger{
   background:var(--c-danger-fill);
-  color:#fff
+  color:var(--c-on-fill)
 }
 
 /* กรอบสีเหลือง: ให้เส้น วงกลม ปุ่ม และข้อความรองในกรอบอ่านชัด */
@@ -4791,7 +4792,7 @@ html[data-perf="lite"] .ev-sheet .ev-in{
   height:var(--sz,42px);
   font-size:calc(var(--sz,42px)*.4);
   font-weight:600;
-  color:#fff;
+  color:var(--c-on-fill);
   background:var(--av,var(--c-accent))
 }
 
