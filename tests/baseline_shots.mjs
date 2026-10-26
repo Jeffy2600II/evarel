@@ -72,7 +72,9 @@ fs.mkdirSync(dir,{recursive:true}); fs.mkdirSync('/tmp/baseline_work',{recursive
 let bad=0,total=0;
 for(const cs of (process.env.PB_CS||'light,dark').split(',')) for(const [n,[lg,st]] of Object.entries(steps).filter(([k])=>!process.env.PB_ONLY||process.env.PB_ONLY.split(',').includes(k))){
   const tmp=`/tmp/baseline_work/${cs}-${n}.png`, ref=`${dir}/${cs}-${n}.png`;
-  const errs=await run(APP,cs,tmp,st,lg,n); total++;
+  /* ความนิ่งต้องพิสูจน์ ไม่ใช่เชื่อ: ถ่ายซ้ำจนสองภาพติดกันตรงกันบิตต่อบิต (สูงสุด 4 ครั้ง) เพราะแถบแอนิเมชัน JS ของการ์ดโควตาสะดุดได้ครั้งคราวเมื่อรันต่อกันเป็นชุด วัดจริง 26 ต.ค. 2026 (light app-settings ต่าง 1,487 พิกเซลครั้งเดียว) ไม่ลดเกณฑ์ 0 พิกเซล */
+  let errs=await run(APP,cs,tmp,st,lg,n); total++;
+  for(let t=0;t<3;t++){ const first=fs.readFileSync(tmp); const e2=await run(APP,cs,tmp+'.chk.png',st,lg,n); if(fs.readFileSync(tmp+'.chk.png').equals(first)) break; fs.copyFileSync(tmp+'.chk.png',tmp); errs=e2; }
   if(mode==='out'){ fs.copyFileSync(tmp,ref); console.log('SAVE',cs,n,'errs app',errs.length); if(errs.length)bad++; continue; }
   if(!fs.existsSync(ref)){ console.log('FAIL',cs,n,'ไม่มีภาพอ้างอิง'); bad++; continue; }
   const r=execSync(`python3 -W ignore -c "from PIL import Image,ImageChops;a=Image.open('${ref}').convert('RGB');b=Image.open('${tmp}').convert('RGB');d=ImageChops.difference(a,b);print(a.size==b.size, sum(1 for p in d.getdata() if p!=(0,0,0)))"`).toString().trim();
