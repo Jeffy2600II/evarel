@@ -1,0 +1,224 @@
+{
+ "วัดเมื่อ": "2026-10-26",
+ "commit_โค้ดที่วัด": "3750a05",
+ "รวม": 75,
+ "ผ่าน": 44,
+ "ตก": 31,
+ "หมวดสาเหตุ": {
+  "D": 10,
+  "A": 6,
+  "B": 4,
+  "C": 9,
+  "E": 2
+ },
+ "คำอธิบายหมวด": {
+  "A": "ขาดอาร์กิวเมนต์/ตัวแปร",
+  "B": "อ้างไฟล์ห้องเก่าที่ไม่มีแล้ว",
+  "C": "ต้องเซิร์ฟเวอร์ที่ไม่ได้เปิด",
+  "D": "assertion ล้มเอง",
+  "E": "ล้าสมัยเพราะเดโมใช้ฟอนต์ Anuphan"
+ },
+ "ผ่านรายชุด": [
+  "ai-e2e.mjs",
+  "ai-live.mjs",
+  "ai-memory-live.mjs",
+  "ai-memory-ui.mjs",
+  "ai_actions.test.mjs",
+  "ai_equiv.test.mjs",
+  "aishell_focus_equiv.test.mjs",
+  "auth_equiv.test.mjs",
+  "authfix-probe.mjs",
+  "behavior_equiv.mjs",
+  "calendar_equiv.test.mjs",
+  "core_equiv.test.mjs",
+  "forge_deeplink.test.mjs",
+  "form_equiv.test.mjs",
+  "import-legacy.mjs",
+  "itemrow_equiv.test.mjs",
+  "late_note.test.mjs",
+  "layers_equiv.test.mjs",
+  "live_race.test.mjs",
+  "live_stack_check.mjs",
+  "live_user.mjs",
+  "mount_live.test.mjs",
+  "nav_equiv.test.mjs",
+  "notify_default.test.mjs",
+  "notify_form.test.mjs",
+  "notify_offline.test.mjs",
+  "quota-unit.mjs",
+  "refresh_once.test.mjs",
+  "rt-latency.mjs",
+  "rt-leak.mjs",
+  "seed_items.mjs",
+  "stats_html_equiv.test.mjs",
+  "store.test.mjs",
+  "store_live.test.mjs",
+  "sw_push.test.mjs",
+  "sw_upgrade.test.mjs",
+  "today_equiv.test.mjs",
+  "today_week_overflow.test.mjs",
+  "ts1c_console_gate.mjs",
+  "ts1j_scope_gate.mjs",
+  "usage_sheet_motion.test.mjs",
+  "ux_contrast_secondary.test.mjs",
+  "ux_survey.mjs",
+  "version_rules.test.mjs"
+ ],
+ "ตกรายชุด": {
+  "ai-quota-chip.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 106: console.log(ok ? 'ALL PASS' : 'HAS FAIL');",
+   "needs_args": ""
+  },
+  "ai-quota-reset.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 50: console.log(ok ? 'ALL PASS' : 'HAS FAIL');",
+   "needs_args": ""
+  },
+  "ai-quota-swap.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 54: console.log(ok ? 'ALL PASS' : 'HAS FAIL');",
+   "needs_args": ""
+  },
+  "ai-quota-ui.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 44: console.log(ok ? 'ALL PASS' : 'SOME FAILED');",
+   "needs_args": ""
+  },
+  "all_interact.test.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 46: console.log(`สรุป: ผ่าน ${res.length - bad.length}/${res.length}`);",
+   "needs_args": ""
+  },
+  "esm_readiness_gate.mjs": {
+   "category": "A",
+   "evidence": "บรรทัด 7: const app = process.argv[2]; const dir = path.join(app, 'js/m');",
+   "needs_args": "<appdir>"
+  },
+  "fn_equiv.test.mjs": {
+   "category": "A",
+   "evidence": "บรรทัด 5: if (!ORIG || !NEW) { console.error('ต้องระบุโฟลเดอร์ต้นฉบับและโฟลเดอร์ใหม่'); process.exit(2); }",
+   "needs_args": "<ORIG_WEB_DIR> <NEW_WEB_DIR>"
+  },
+  "gesture_equiv.test.mjs": {
+   "category": "B",
+   "evidence": "บรรทัด 11: const DEMO = 'file:///tmp/evarel-repo/design/master-demo-v24.html';",
+   "needs_args": ""
+  },
+  "next_boot.test.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 35: console.log(\"\nผล: \" + pass + \" ผ่าน \" + fail + \" ตก\"); (ผลลัพธ์จาก JSON: ผล: 6 ผ่าน 1 ตก)",
+   "needs_args": ""
+  },
+  "notify_push.test.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 7: const U = process.argv[2] || \"http://localhost:8776/index.html\"; (พอร์ต 8776 ไม่ได้เปิดอยู่)",
+   "needs_args": ""
+  },
+  "perf_setting.test.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 23: await p.click(\"#page [data-act=\"perf\"][data-id=\"\" + id + \"\"]\"); (องค์ประกอบบน DOM เปลี่ยนไป Playwright timeout)",
+   "needs_args": ""
+  },
+  "quota_settings_equiv.test.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 83: console.log(\"\nผล: \" + pass + \" ผ่าน \" + fail + \" ตก\"); (ผลลัพธ์จาก JSON: ผล: 11 ผ่าน 1 ตก)",
+   "needs_args": ""
+  },
+  "rem_parity.test.mjs": {
+   "category": "E",
+   "evidence": "บรรทัด 17: const m=css.match(/@font-face\\{font-family:'Anuphan'[^\n]*\n(?:@font-face[^\n]*\n)*/);",
+   "needs_args": ""
+  },
+  "row_interact.test.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 45: console.log(\"สรุป: ผ่าน \" + (res.length - bad) + \"/\" + res.length); (ผลลัพธ์จาก JSON: สรุป: ผ่าน 10/13)",
+   "needs_args": ""
+  },
+  "s3_next_wrap.test.mjs": {
+   "category": "B",
+   "evidence": "บรรทัด 28: const ord = JSON.parse(fs.readFileSync(path.join(OUT, 'js/m/_order.json'), 'utf8'))",
+   "needs_args": ""
+  },
+  "ts1b_order_gate.mjs": {
+   "category": "A",
+   "evidence": "บรรทัด 7: const [,, DIR] = process.argv;",
+   "needs_args": "<appdir> (เช่น app/web หรือ build/web)"
+  },
+  "ts1c_state_behavior.mjs": {
+   "category": "A",
+   "evidence": "บรรทัด 4: const [,, A, B] = process.argv; (ต้องการ URL สองฝั่ง A และ B ในการเปรียบเทียบ)",
+   "needs_args": "<url_old> <url_new>"
+  },
+  "ts1d_deps_gate.mjs": {
+   "category": "A",
+   "evidence": "บรรทัด 6: const app = process.argv[2]; (ต้องการพาธไดเรกทอรีแอปเป็นอาร์กิวเมนต์)",
+   "needs_args": "<appdir>"
+  },
+  "typecheck.test.mjs": {
+   "category": "D",
+   "evidence": "บรรทัด 28: T1 โค้ดปัจจุบันผ่าน (ไม่มี error นอก baseline) ล้มเหลวเนื่องจากพบ 18 error ใหม่นอก baseline",
+   "needs_args": ""
+  },
+  "v11feat.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 3: const U=process.argv[2]||'http://localhost:8776/index.html'; (ต้องการเซิร์ฟเวอร์ที่พอร์ต 8776)",
+   "needs_args": ""
+  },
+  "v11ovf.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 3: const U=process.argv[2]||'http://localhost:8776/index.html'; (ต้องการเซิร์ฟเวอร์ที่พอร์ต 8776)",
+   "needs_args": ""
+  },
+  "v11parity.mjs": {
+   "category": "E",
+   "evidence": "บรรทัด 27-28: เปรียบเทียบภาพเดโม (พอร์ต 8775 ที่ใช้ฟอนต์ Anuphan) กับแอป (พอร์ต 8776)",
+   "needs_args": ""
+  },
+  "v11pwa.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 3: const U=process.argv[2]||'http://localhost:8776/index.html'; (ต้องการเซิร์ฟเวอร์ที่พอร์ต 8776)",
+   "needs_args": ""
+  },
+  "v11route.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 3: const U=process.argv[2]||'http://localhost:8776/index.html'; (ต้องการเซิร์ฟเวอร์ที่พอร์ต 8776)",
+   "needs_args": ""
+  },
+  "v12auth.mjs": {
+   "category": "A",
+   "evidence": "บรรทัด 4: const U=process.argv[2]||'http://localhost:8777/index.html', EMAIL=process.env.T_EMAIL, PASS=process.env.T_PASS;",
+   "needs_args": "T_EMAIL, T_PASS"
+  },
+  "v13parity.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 6: const DEMO='file:///tmp/evarel-repo/design/master-demo-v12.html', APP=process.argv[2]||'http://localhost:8779/index.html';",
+   "needs_args": ""
+  },
+  "v7parity.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 26: const e1=await run('http://localhost:8773/index.html',cs,'o.png',st);",
+   "needs_args": ""
+  },
+  "v7pwa.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 3: const U='http://localhost:8774/index.html';",
+   "needs_args": ""
+  },
+  "v7route.mjs": {
+   "category": "C",
+   "evidence": "บรรทัด 3: const U=process.argv[2]||'http://localhost:8774/index.html';",
+   "needs_args": ""
+  },
+  "visual-parity.mjs": {
+   "category": "B",
+   "evidence": "บรรทัด 3: const base = '/app/conversations/6ac77d8632a1ea4bea84b135/evarel';",
+   "needs_args": ""
+  },
+  "xss-guard.mjs": {
+   "category": "B",
+   "evidence": "บรรทัด 7: await page.goto(pathToFileURL('/app/conversations/6ac77d8632a1ea4bea84b135/evarel/app/index.html').href);",
+   "needs_args": ""
+  }
+ }
+}
