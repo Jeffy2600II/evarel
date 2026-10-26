@@ -451,6 +451,9 @@
   --c-ok:#18A66A;
   --c-on-ok:#fff;
   --c-on-fill:#fff;
+  --c-ink-a:#4B2FF5;
+  --c-ink-b:#5B3CFA;
+  --c-ink-c:#5836FF;
   --c-warn:#E8890C;
   --c-danger:#E5484D;
   --c-danger-soft:#FDECEC;
@@ -490,7 +493,10 @@
     --shadow:none;
     --shadow-fab:0 6px 20px rgba(0,0,0,.5);
     --c-danger-soft:#3A1E21;
-    --c-warn-soft:#3A2D14
+    --c-warn-soft:#3A2D14;
+    --c-ink-a:#2D2380;
+    --c-ink-b:#43379F;
+    --c-ink-c:#5F51CC
   }
 }
 
@@ -509,7 +515,10 @@
   --shadow:none;
   --shadow-fab:0 6px 20px rgba(0,0,0,.5);
   --c-danger-soft:#3A1E21;
-  --c-warn-soft:#3A2D14
+  --c-warn-soft:#3A2D14;
+  --c-ink-a:#2D2380;
+  --c-ink-b:#43379F;
+  --c-ink-c:#5F51CC
 }
 
 @property --p{
@@ -3956,13 +3965,13 @@ body{
 
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]) .ev-card[data-tone="ink"]{
-    background:linear-gradient(150deg,#2D2380,#43379F 60%,#5F51CC);
+    background:linear-gradient(150deg,var(--c-ink-a),var(--c-ink-b) 60%,var(--c-ink-c));
     box-shadow:none
   }
 }
 
 :root[data-theme="dark"] .ev-card[data-tone="ink"]{
-  background:linear-gradient(150deg,#2D2380,#43379F 60%,#5F51CC);
+  background:linear-gradient(150deg,var(--c-ink-a),var(--c-ink-b) 60%,var(--c-ink-c));
   box-shadow:none
 }
 
@@ -4719,7 +4728,7 @@ body{
 /* การ์ดสรุป: ปลายไล่สีเข้มขึ้นให้ตัวอักษรสีขาวอ่านชัด */
 
 .ev-card[data-tone="ink"]{
-  background:linear-gradient(150deg,#4B2FF5 0%,#5B3CFA 55%,#5836FF 100%)
+  background:linear-gradient(150deg,var(--c-ink-a) 0%,var(--c-ink-b) 55%,var(--c-ink-c) 100%)
 }
 
 /* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */

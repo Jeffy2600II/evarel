@@ -1,0 +1,20 @@
+// พิสูจน์เกณฑ์ F1 ข้อ 3: เปลี่ยน --font บรรทัดเดียว ฟอนต์ทั้งเว็บเปลี่ยนตาม (วัด computed font-family ของ body/ปุ่ม/ช่องกรอก) แล้วเปลี่ยนกลับต้องตรงเดิม
+import { chromium } from 'playwright'; import fs from 'fs';
+import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
+const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
+const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
+const b=await chromium.launch({executablePath:exe,args:['--disable-gpu']});
+const user=await makeTestUser('fontproof'); const ctx=await openAsUser(b,user,{colorScheme:'light'}); const p=await ctx.newPage();
+await p.goto(APP_ORIGIN+'/index.html'); await p.waitForTimeout(2600);
+const probe=()=>p.evaluate(()=>{ const q=s=>{const e=document.querySelector(s); return e?getComputedStyle(e).fontFamily:null};
+  return {body:q('body'),button:q('button'),nav:q('nav,.ev-nav'),card:q('.ev-card'),input:q('input')}; });
+const before=await probe();
+await p.evaluate(()=>document.documentElement.style.setProperty('--font','Georgia, serif'));
+const changed=await probe();
+await p.evaluate(()=>document.documentElement.style.removeProperty('--font'));
+const after=await probe();
+const keys=Object.keys(before).filter(k=>before[k]!==null);
+const followed=keys.filter(k=>changed[k]&&changed[k].startsWith('Georgia'));
+const restored=keys.every(k=>after[k]===before[k]);
+console.log(JSON.stringify({checked:keys,followed:followed.length+'/'+keys.length,restored,before:before.body,changed:changed.body}));
+await b.close(); process.exit(followed.length===keys.length&&restored?0:1);

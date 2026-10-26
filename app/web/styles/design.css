@@ -8,15 +8,15 @@
   --font:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Thai','Noto Sans Thai UI',sans-serif;
   --c-bg:#F7F7F9;--c-surface:#fff;--c-text:#14141A;--c-muted:#6A6A77;--c-line:#E8E8ED;--c-fill:#EDEDF1;--c-on-ink-soft:rgba(255,255,255,.2);
   --c-accent:#4B2FF5;--c-accent-text:#4B2FF5;--c-accent-soft:#EEEBFF;--c-accent-2:#7A5CFF;--c-on-accent:#fff;
-  --c-ok:#18A66A;--c-on-ok:#fff;--c-on-fill:#fff;--c-warn:#E8890C;--c-danger:#E5484D;--c-danger-soft:#FDECEC;--c-warn-soft:#FFF3E0;--c-scrim:rgba(10,10,20,.45);
+  --c-ok:#18A66A;--c-on-ok:#fff;--c-on-fill:#fff;--c-ink-a:#4B2FF5;--c-ink-b:#5B3CFA;--c-ink-c:#5836FF;--c-warn:#E8890C;--c-danger:#E5484D;--c-danger-soft:#FDECEC;--c-warn-soft:#FFF3E0;--c-scrim:rgba(10,10,20,.45);
   --s1:8px;--s2:16px;--s3:24px;--s4:32px;
   --r-card:26px;--r-pill:999px;--r-sheet:32px;
   --shadow:0 0 0 1px rgba(20,20,26,.035);--dock:calc(var(--nav-h) + env(safe-area-inset-bottom,0) + 10px);--shadow-fab:0 6px 20px rgba(75,47,245,.35);
   --t-fast:.18s;--t-med:.32s;--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
   --nav-h:60px;--col-max:480px;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c-bg:#0E0E12;--c-surface:#1A1A21;--c-text:#F2F2F5;--c-muted:#9A9AA8;--c-line:#2A2A33;--c-fill:#262630;--c-on-ink-soft:rgba(0,0,0,.14);--c-accent:#6E5BEF;--c-accent-text:#9585FF;--c-accent-soft:#25214A;--c-accent-2:#9A8AFF;--shadow:none;--shadow-fab:0 6px 20px rgba(0,0,0,.5);--c-danger-soft:#3A1E21;--c-warn-soft:#3A2D14}}
-:root[data-theme="dark"]{--c-bg:#0E0E12;--c-surface:#1A1A21;--c-text:#F2F2F5;--c-muted:#9A9AA8;--c-line:#2A2A33;--c-fill:#262630;--c-on-ink-soft:rgba(0,0,0,.14);--c-accent:#6E5BEF;--c-accent-text:#9585FF;--c-accent-soft:#25214A;--c-accent-2:#9A8AFF;--shadow:none;--shadow-fab:0 6px 20px rgba(0,0,0,.5);--c-danger-soft:#3A1E21;--c-warn-soft:#3A2D14}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c-bg:#0E0E12;--c-surface:#1A1A21;--c-text:#F2F2F5;--c-muted:#9A9AA8;--c-line:#2A2A33;--c-fill:#262630;--c-on-ink-soft:rgba(0,0,0,.14);--c-accent:#6E5BEF;--c-accent-text:#9585FF;--c-accent-soft:#25214A;--c-accent-2:#9A8AFF;--shadow:none;--shadow-fab:0 6px 20px rgba(0,0,0,.5);--c-danger-soft:#3A1E21;--c-warn-soft:#3A2D14;--c-ink-a:#2D2380;--c-ink-b:#43379F;--c-ink-c:#5F51CC}}
+:root[data-theme="dark"]{--c-bg:#0E0E12;--c-surface:#1A1A21;--c-text:#F2F2F5;--c-muted:#9A9AA8;--c-line:#2A2A33;--c-fill:#262630;--c-on-ink-soft:rgba(0,0,0,.14);--c-accent:#6E5BEF;--c-accent-text:#9585FF;--c-accent-soft:#25214A;--c-accent-2:#9A8AFF;--shadow:none;--shadow-fab:0 6px 20px rgba(0,0,0,.5);--c-danger-soft:#3A1E21;--c-warn-soft:#3A2D14;--c-ink-a:#2D2380;--c-ink-b:#43379F;--c-ink-c:#5F51CC}
 @property --p{syntax:'<number>';inherits:false;initial-value:0}
 
 /* ============ BASE / LAYOUT ============ */
@@ -449,8 +449,8 @@ body{line-height:1.55;letter-spacing:.005em}
   background:linear-gradient(150deg,#4B2FF5 0%,#6446FF 55%,#8466FF 100%);box-shadow:0 14px 34px rgba(75,47,245,.2)}
 .ev-card[data-tone="ink"]::before{content:"";position:absolute;z-index:-1;right:-72px;top:-72px;width:200px;height:200px;border-radius:50%;pointer-events:none;
   box-shadow:0 0 0 30px rgba(255,255,255,.06),0 0 0 62px rgba(255,255,255,.04),0 0 0 98px rgba(255,255,255,.025)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ev-card[data-tone="ink"]{background:linear-gradient(150deg,#2D2380,#43379F 60%,#5F51CC);box-shadow:none}}
-:root[data-theme="dark"] .ev-card[data-tone="ink"]{background:linear-gradient(150deg,#2D2380,#43379F 60%,#5F51CC);box-shadow:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ev-card[data-tone="ink"]{background:linear-gradient(150deg,var(--c-ink-a),var(--c-ink-b) 60%,var(--c-ink-c));box-shadow:none}}
+:root[data-theme="dark"] .ev-card[data-tone="ink"]{background:linear-gradient(150deg,var(--c-ink-a),var(--c-ink-b) 60%,var(--c-ink-c));box-shadow:none}
 html[data-perf="lite"] .ev-card[data-tone="ink"]{box-shadow:none}
 .ev-sum{padding:26px;gap:20px}.ev-sum-num{font-size:52px;font-weight:600;letter-spacing:-2px}.ev-sum-lab{font-size:13.5px;opacity:.78}
 .ev-prog{height:7px}.ev-prog i{border-radius:7px}
@@ -595,7 +595,7 @@ body{font-size:14.5px}
 .ev-set .ev-seg{background:var(--c-line)}
 
 /* การ์ดสรุป: ปลายไล่สีเข้มขึ้นให้ตัวอักษรสีขาวอ่านชัด */
-.ev-card[data-tone="ink"]{background:linear-gradient(150deg,#4B2FF5 0%,#5B3CFA 55%,#5836FF 100%)}/* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
+.ev-card[data-tone="ink"]{background:linear-gradient(150deg,var(--c-ink-a) 0%,var(--c-ink-b) 55%,var(--c-ink-c) 100%)}/* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
 
 /* ============ v19: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ · อวาตาร์โปรไฟล์ระบบกลาง ============
    ความสูง: JS วัดก่อน/หลังเปลี่ยนเนื้อหา แล้ว transition เฉพาะ height ชั่วครู่ (.34s) แล้วคืนเป็น auto — ไม่มี animation ค้างตลอดเวลา
