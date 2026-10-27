@@ -3,6 +3,7 @@
 // คำนวณทั้งหมดที่นี่จาก core/today.buildTodayProps (รับ items/ui/today/now ดิบ ไม่อ่าน global เอง)
 // แถวรายการยังฝังผล itemRow เดิมตรงๆ (dangerouslySetInnerHTML) เพราะหน่วยนี้ยังไม่ย้าย itemRow เป็น React — ผลตรงเดิมทุกไบต์ ย้ายในหน่วยถัดไป
 import { buildTodayProps } from '../core/today';
+import { takeDates } from '../../data/dates.tray.js';
 const { h, Fragment } = window.EvarelReact;
 const ItemRow = () => window.EvarelComponents.itemRow;
 const W = () => window;
@@ -16,7 +17,7 @@ function TodayContent(p) {
   const { items, ui, today, now } = p;
   const w = W();
   const P = buildTodayProps(items, ui, today, now, {
-    fmtDate: w.fmtDate, dayLab: w.dayLab, WD: w.WD, TH_MONTH: w.TH_MONTH, pad: w.pad, hello: () => '',
+    fmtDate: takeDates().fmtDate, dayLab: w.dayLab, WD: takeDates().WD, TH_MONTH: takeDates().TH_MONTH, pad: takeDates().pad, hello: () => '',
   });
   const raw = (html) => ({ __html: html });
   /* children ต้องตรง template เดิมทุกไบต์ รวม '\n  ' ระหว่าง section (ต้นฉบับจัด indent ใน template) React พิมพ์ text child ตรงๆ และข้าม null */
