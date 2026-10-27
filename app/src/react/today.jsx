@@ -4,6 +4,7 @@
 // แถวรายการยังฝังผล itemRow เดิมตรงๆ (dangerouslySetInnerHTML) เพราะหน่วยนี้ยังไม่ย้าย itemRow เป็น React — ผลตรงเดิมทุกไบต์ ย้ายในหน่วยถัดไป
 import { buildTodayProps } from '../core/today';
 import { takeDates } from '../../data/dates.tray.js';
+import { takeTodayFns } from '../../data/today.tray.js';
 const { h, Fragment } = window.EvarelReact;
 const ItemRow = () => window.EvarelComponents.itemRow;
 const W = () => window;
@@ -43,7 +44,7 @@ function TodayContent(p) {
           h('h3', { key: g.name, className: 'ev-group' }, g.name),
           h('ul', { key: g.name + 'u' }, g.rows.map((r, k) => h(ItemRow(), { key: 'g' + k, it: r.it, ds: ui.date, i: r.idx ?? k, next: r.next }))),
         ]))
-      : h('section', { key: 'ge', className: 'ev-card', dangerouslySetInnerHTML: raw(w.empty('inbox', 'วันนี้ยังว่างอยู่', 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')) }),
+      : h('section', { key: 'ge', className: 'ev-card', dangerouslySetInnerHTML: raw(takeTodayFns().empty('inbox', 'วันนี้ยังว่างอยู่', 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')) }),
   ]);
 }
 window.EvarelPages = window.EvarelPages || {};
