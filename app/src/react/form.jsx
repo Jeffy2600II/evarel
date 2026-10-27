@@ -2,6 +2,7 @@
 // เทียบ template ใน 14-ui__form ทุกไบต์: ลำดับ attribute ตาม template เดิม, data-act เดิมสำหรับ event delegation ของ 25-actions
 // อินพุตใช้ defaultValue (uncontrolled) เหมือนพฤติกรรมเดิม: พิมพ์แล้ว document input listener (25-actions) เขียน ST.D ระหว่างพิมพ์ ไม่ re-render จนกว่าจะกดปุ่มแล้ว renderForm สั่ง mount ใหม่
 // ค่าสรุป (repSum/remSum/rangeSum) เรียกจาก window ตรงๆ เพราะเป็นฟังก์ชันบริสุทธิ์ที่ export ไว้แล้ว | อ่านสถานะจาก window ตอน render เหมือนหน้าอื่น
+import { takeFormConsts } from '../../data/form.tray.js';
 const { h } = window.EvarelReact;
 const W = () => window;
 const raw = (html) => ({ __html: html });
@@ -59,8 +60,8 @@ function Stepper(p) {
 function RepPanel() {
   const w = W(), D = w.ST.D;
   const els = [h(Seg, { key: 's', act: 'dunit', opts: [['none', 'ไม่ซ้ำ'], ['day', 'วัน'], ['week', 'สัปดาห์'], ['month', 'เดือน']], cur: D.unit })];
-  if (D.unit !== 'none') els.push(h(Stepper, { key: 'e', label: 'ทุก ๆ', act: 'devery', v: D.every, unit: h('span', {}, w.UNIT_TH[D.unit]) }));
-  if (D.unit === 'week') els.push(h(Chips, { key: 'd', act: 'dday', opts: w.WEEK_OPTS, active: D.days }));
+  if (D.unit !== 'none') els.push(h(Stepper, { key: 'e', label: 'ทุก ๆ', act: 'devery', v: D.every, unit: h('span', {}, takeFormConsts().UNIT_TH[D.unit]) }));
+  if (D.unit === 'week') els.push(h(Chips, { key: 'd', act: 'dday', opts: takeFormConsts().WEEK_OPTS, active: D.days }));
   return els;
 }
 function RangePanel(p) {
@@ -78,7 +79,7 @@ function RemPanel() {
   const w = W(), D = w.ST.D;
   const at = D.rem.filter(r => r.k === 'at');
   return [
-    h(Chips, { key: 'a', act: 'drem', opts: w.REM_PRESETS.map(m => [m, w.remText({ k: 'before', m })]), active: D.rem.filter(r => r.k === 'before').map(r => r.m) }),
+    h(Chips, { key: 'a', act: 'drem', opts: takeFormConsts().REM_PRESETS.map(m => [m, w.remText({ k: 'before', m })]), active: D.rem.filter(r => r.k === 'before').map(r => r.m) }),
     at.length ? h('div', { key: 'r', className: 'ev-rem' }, at.map(r =>
       h('span', { key: r.t, className: 'ev-rem-tag' }, `${r.t} น.`,
         h('button', { type: 'button', 'data-act': 'remdel', 'data-id': r.t, 'aria-label': `ลบการเตือน ${r.t}`, dangerouslySetInnerHTML: raw(w.icon('x')) }))))
@@ -123,7 +124,7 @@ function FormFields() {
   if (T === 'habit') {
     els.push(h('div', { key: 'b', className: 'ev-block' },
       h('span', { className: 'ev-cap' }, 'ติดตามผลแบบ'),
-      h(Seg, { act: 'dtrack', opts: w.TRACK_OPTS, cur: D.track }),
+      h(Seg, { act: 'dtrack', opts: takeFormConsts().TRACK_OPTS, cur: D.track }),
       multi ? h(Stepper, { label: 'เป้าหมายต่อวัน', act: 'dtarget', v: D.target,
         unit: h('input', { className: 'ev-unit', placeholder: D.track === 'timer' ? 'นาที' : 'หน่วย', maxLength: 12, 'aria-label': 'หน่วย', defaultValue: D.unitName ?? '', name: 'unitName' }) }) : null));
     els.push(SET(
@@ -155,7 +156,7 @@ function FormFields() {
   if (T === 'class') {
     els.push(h('div', { key: 'b', className: 'ev-block' },
       h('span', { className: 'ev-cap' }, 'วันที่เรียน'),
-      h(Chips, { act: 'dday', opts: w.WEEK_OPTS, active: D.days })));
+      h(Chips, { act: 'dday', opts: takeFormConsts().WEEK_OPTS, active: D.days })));
     els.push(SET(
       h(TR, { key: 'b', label: 'เริ่ม', name: 'time' }),
       h(TR, { key: 'e', label: 'จบ', name: 'timeEnd' }),
