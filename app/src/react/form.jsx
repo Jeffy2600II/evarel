@@ -2,7 +2,7 @@
 // เทียบ template ใน 14-ui__form ทุกไบต์: ลำดับ attribute ตาม template เดิม, data-act เดิมสำหรับ event delegation ของ 25-actions
 // อินพุตใช้ defaultValue (uncontrolled) เหมือนพฤติกรรมเดิม: พิมพ์แล้ว document input listener (25-actions) เขียน ST.D ระหว่างพิมพ์ ไม่ re-render จนกว่าจะกดปุ่มแล้ว renderForm สั่ง mount ใหม่
 // ค่าสรุป (repSum/remSum/rangeSum) เรียกจาก window ตรงๆ เพราะเป็นฟังก์ชันบริสุทธิ์ที่ export ไว้แล้ว | อ่านสถานะจาก window ตอน render เหมือนหน้าอื่น
-import { takeFormConsts } from '../../data/form.tray.js';
+import { takeFormConsts, takeFormFns } from '../../data/form.tray.js';
 const { h } = window.EvarelReact;
 const W = () => window;
 const raw = (html) => ({ __html: html });
@@ -95,8 +95,8 @@ function RemPanel() {
 function RemRow() {
   const w = W();
   /* notifyIssue ตามเดโม v24: เตือนเมื่อตั้งแจ้งก่อนถึงเวลาแต่ไม่มีเวลาทำรายการ พร้อมปุ่มปิดแจ้งเตือน */
-  const issue = w.notifyIssue ? w.notifyIssue() : '';
-  return [h(SR, { key: 'r', label: 'เตือน', val: w.remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel)),
+  const issue = takeFormFns().notifyIssue();
+  return [h(SR, { key: 'r', label: 'เตือน', val: takeFormFns().remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel)),
     issue ? h('div', { key: 'e', className: 'ev-field-err', 'data-tone': 'hint', style: { padding: '6px 14px 12px' },
       dangerouslySetInnerHTML: raw(w.icon('alert') + '<span>' + issue + '</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button>') }) : null];
 }
@@ -105,7 +105,7 @@ function SET() { return h('div', { className: 'ev-set' }, ...arguments); }
 /* == ขั้นที่ 1: เลือกประเภท (typeBody) == */
 function TypeBody() {
   const w = W();
-  return h('div', { className: 'ev-types' }, Object.entries(w.TYPE_INFO).map(([k, [ic, d]]) =>
+  return h('div', { className: 'ev-types' }, Object.entries(takeFormFns().TYPE_INFO).map(([k, [ic, d]]) =>
     h('button', { key: k, className: 'ev-type', 'data-act': 'dtype', 'data-id': k },
       h('span', { key: 'o', className: 'orb', dangerouslySetInnerHTML: raw(w.icon(ic)) }),
       h('b', { key: 'n' }, w.TYPES[k]),
@@ -129,9 +129,9 @@ function FormFields() {
         unit: h('input', { className: 'ev-unit', placeholder: D.track === 'timer' ? 'นาที' : 'หน่วย', maxLength: 12, 'aria-label': 'หน่วย', defaultValue: D.unitName ?? '', name: 'unitName' }) }) : null));
     els.push(SET(
       h(TR, { key: 'time', label: 'เวลา (ไม่บังคับ)', name: 'time' }),
-      h(SR, { key: 'rep', label: 'ทำซ้ำ', val: w.repSum(), k: 'rep' }),
+      h(SR, { key: 'rep', label: 'ทำซ้ำ', val: takeFormFns().repSum(), k: 'rep' }),
       h(PN, { key: 'rep', k: 'rep' }, h(RepPanel)),
-      h(SR, { key: 'range', label: 'ช่วงเวลา', val: w.rangeSum(), k: 'range' }),
+      h(SR, { key: 'range', label: 'ช่วงเวลา', val: takeFormFns().rangeSum(), k: 'range' }),
       h(PN, { key: 'range', k: 'range' }, h(RangePanel, { lab: 'เริ่มวันที่' }))));
     els.push(SET(h(RemRow, { key: 'rem' })));
   }
@@ -147,9 +147,9 @@ function FormFields() {
       h(IR, { key: 'd', label: 'วันที่', inner: h(RI, { name: 'start', type: 'date' }) }),
       h(TR, { key: 'b', label: 'เริ่ม', name: 'time' }),
       h(TR, { key: 'e', label: 'จบ', name: 'timeEnd' }),
-      h(SR, { key: 'rep', label: 'ทำซ้ำ', val: w.repSum(), k: 'rep' }),
+      h(SR, { key: 'rep', label: 'ทำซ้ำ', val: takeFormFns().repSum(), k: 'rep' }),
       h(PN, { key: 'rep', k: 'rep' }, h(RepPanel)),
-      D.unit !== 'none' ? h(SR, { key: 'range', label: 'ช่วงเวลา', val: w.rangeSum(), k: 'range' }) : null,
+      D.unit !== 'none' ? h(SR, { key: 'range', label: 'ช่วงเวลา', val: takeFormFns().rangeSum(), k: 'range' }) : null,
       D.unit !== 'none' ? h(PN, { key: 'range', k: 'range' }, h(RangePanel, { lab: 'เริ่มวันที่' })) : null));
     els.push(SET(h(RemRow, { key: 'rem' })));
   }
@@ -160,7 +160,7 @@ function FormFields() {
     els.push(SET(
       h(TR, { key: 'b', label: 'เริ่ม', name: 'time' }),
       h(TR, { key: 'e', label: 'จบ', name: 'timeEnd' }),
-      h(SR, { key: 'range', label: 'ภาคเรียน', val: w.rangeSum(), k: 'range' }),
+      h(SR, { key: 'range', label: 'ภาคเรียน', val: takeFormFns().rangeSum(), k: 'range' }),
       h(PN, { key: 'range', k: 'range' }, h(RangePanel, { lab: 'เปิดเทอม' }))));
     els.push(SET(h(RemRow, { key: 'rem' })));
   }
