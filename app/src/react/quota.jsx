@@ -2,6 +2,7 @@
 // mount ผ่าน Sheet component เดิม (react/sheet.jsx): caller ส่ง o.page='quotaBody' + props
 // เทียบ template เดิม quotaSheetHTML ใน 16-services__ai-quota ทุกไบต์: ลำดับ attribute ตาม template (className, role, aria-label, aria-valuemin, aria-valuemax, aria-valuenow)
 // style="--p:..." React เขียนผ่าน CSSOM (เติมช่องว่าง/; ท้าย) — parity test เทียบค่า semantic ของ style ตามแพทเทิร์น ai_equiv
+import { takeQuotaFns } from '../../data/quota.tray.js';
 const { h, Fragment } = window.EvarelReact;
 const W = () => window;
 
@@ -23,7 +24,7 @@ function QuotaBody(p) {
       h(QuotaBar, { u: q.tokens.used, l: q.tokens.limit, lb: 'ปริมาณการคิดที่ใช้วันนี้' })),
     '\n ',
     h('p', { key: 'n', className: 'ev-sub', style: { marginTop: '12px' } },
-      `${q.blocked ? 'ตอนนี้ใช้ครบแล้ว ' : ''}รีเซ็ตเวลา ${w.resetClock(q.resetAt)} น. (${w.resetIn(q.resetAt)})`),
+      `${q.blocked ? 'ตอนนี้ใช้ครบแล้ว ' : ''}รีเซ็ตเวลา ${takeQuotaFns().resetClock(q.resetAt)} น. (${takeQuotaFns().resetIn(q.resetAt)})`),
   ]);
 }
 
