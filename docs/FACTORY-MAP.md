@@ -16,6 +16,7 @@
 | ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
 |---|---|---|---|---|
 | [`dialog`](app/shared/dialog) | [`DialogPage.jsx`](app/shared/dialog/DialogPage.jsx) | [`parts/`](app/shared/dialog/parts) | [`dialog.tray.js`](app/shared/dialog/dialog.tray.js) [`dialog.style.css`](app/shared/dialog/dialog.style.css) | [`BOX.md`](app/shared/dialog/BOX.md) |
+| [`item-row`](app/shared/item-row) | [`ItemRowPage.jsx`](app/shared/item-row/ItemRowPage.jsx) | [`parts/`](app/shared/item-row/parts) | [`item-row.tray.js`](app/shared/item-row/item-row.tray.js) [`item-row.style.css`](app/shared/item-row/item-row.style.css) | [`BOX.md`](app/shared/item-row/BOX.md) |
 | [`nav`](app/shared/nav) | [`NavPage.jsx`](app/shared/nav/NavPage.jsx) | [`parts/`](app/shared/nav/parts) | [`nav.tray.js`](app/shared/nav/nav.tray.js) [`nav.style.css`](app/shared/nav/nav.style.css) | [`BOX.md`](app/shared/nav/BOX.md) |
 | [`sheet`](app/shared/sheet) | [`SheetPage.jsx`](app/shared/sheet/SheetPage.jsx) | [`parts/`](app/shared/sheet/parts) | [`sheet.tray.js`](app/shared/sheet/sheet.tray.js) [`sheet.style.css`](app/shared/sheet/sheet.style.css) | [`BOX.md`](app/shared/sheet/BOX.md) |
 
@@ -36,7 +37,6 @@
 - 📄 [`detail.tray.js`](app/data/detail.tray.js)
 - 📄 [`focus.tray.js`](app/data/focus.tray.js)
 - 📄 [`form.tray.js`](app/data/form.tray.js)
-- 📄 [`item-row.tray.js`](app/data/item-row.tray.js)
 - 📄 [`quota.tray.js`](app/data/quota.tray.js)
 - 📄 [`today.tray.js`](app/data/today.tray.js)
 

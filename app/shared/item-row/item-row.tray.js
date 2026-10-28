@@ -7,9 +7,9 @@
  * ส่วนที่ 3 (ย้ายจุดอ่านเข้าถาด ยังไม่ใช่การถอด window): ครอบสำเนาของชั้น m ตัวเดียว icon (ตัวผลิต SVG ที่หลายไฟล์ใช้ร่วม) UI (สถานะ pop ที่ผู้ใช้เพิ่งกด) TODAY
  * ไฟล์นี้เป็นที่เดียวที่อ่านจาก window (BOX-05) | อ่านตอนเรียก ไม่ใช่ตอน import เพื่อคงลำดับโหลด และ TODAY/UI ต้องสดทุกครั้ง (ไม่แคช)
  */
-import { tray, T } from '../shared/tray.js';
-import { fmtDate, esc } from '../src/core/dates';
-import { val, target, tracked, isDone, skipped, isFuture as coreIsFuture, timeText } from '../src/core/schedule';
+import { tray, T } from '../tray.js';
+import { fmtDate, esc } from '../../src/core/dates';
+import { val, target, tracked, isDone, skipped, isFuture as coreIsFuture, timeText } from '../../src/core/schedule';
 
 const fromCore = tray('item-row', {
   val: T.func, target: T.func, tracked: T.func, isDone: T.func, skipped: T.func, fmtDate: T.func, timeText: T.func, esc: T.func,
