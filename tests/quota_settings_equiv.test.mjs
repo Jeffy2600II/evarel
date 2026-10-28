@@ -1,4 +1,4 @@
-/* เทียบเนื้อ sheet โควตา + หน้าตั้งค่า: ฉบับ string เดิม (16/19) กับฉบับ React จริง (shared/quota/QuotaPage.jsx + settings.jsx SettingsPage)
+/* เทียบเนื้อ sheet โควตา + หน้าตั้งค่า: ฉบับ string เดิม (16/19) กับฉบับ React จริง (shared/quota/QuotaPage.jsx + shared/settings/SettingsPage.jsx)
    เกณฑ์: DOM จริงเท่ากัน (normalize style ตามแพทเทิร์น ai_equiv) + วงจรเปิดจริงบนหน้าเว็บ (mountAt ที่ #sheetBody/#page)
    รัน: node tests/quota_settings_equiv.test.mjs */
 import { chromium } from 'playwright'; import fs from 'fs';
