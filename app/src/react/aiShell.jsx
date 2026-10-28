@@ -4,7 +4,6 @@
 // พฤติกรรมผูก DOM (quotaPaint เขียนชิป, aiAutosize ปรับ textarea, aiRenderDrawer เขียนรายการ) ทำงานกับ DOM ของ React ได้เพราะอ้างด้วย id
 import { takeAi } from '../../data/ai.tray.js';
 const { h, Fragment } = window.EvarelReact;
-const W = () => window;
 
 function AiShellContent(p) {
   const D = takeAi();

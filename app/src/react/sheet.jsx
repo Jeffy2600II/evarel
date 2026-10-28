@@ -4,7 +4,6 @@
 // ไม่ส่ง page = html raw จาก caller (โควตา 16, ตั้งค่า 19) เหมือนเดิม
 import { takeSheet } from '../../data/sheet.tray.js';
 const { h } = window.EvarelReact;
-const W = () => window;
 const raw = (html) => ({ __html: html });
 
 function SheetBody(p) {

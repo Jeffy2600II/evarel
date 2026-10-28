@@ -5,7 +5,6 @@
 // เทียบ template เดิม aiBodyHTML/cardsHTML/cardHTML ใน 17-views__ai ทุกไบต์: ลำดับ attribute ตาม template, text node '\n ' คงเดิม
 import { takeAi } from '../../data/ai.tray.js';
 const { h } = window.EvarelReact;
-const W = () => window;
 
 function AiMark() {
   /* ลำดับ attribute ตาม AI_MARK เดิม (SSR พิมพ์ตามลำดับ prop) */

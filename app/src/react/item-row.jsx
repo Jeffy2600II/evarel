@@ -2,7 +2,6 @@
 // ตรง template เดิมใน 12-ui__primitives.itemRow ทุกไบต์ ยืนยันด้วย itemrow_equiv (เทียบผ่าน DOM จริงเพราะ browser normalize boolean attr เหมือนกันทั้งสองฝั่ง)
 import { takeItemRow } from '../../data/item-row.tray.js';
 const { h } = window.EvarelReact;
-const W = () => window;
 const raw = (html) => ({ __html: html });
 
 /* it = รายการ, ds = วันที่แสดง, i = ลำดับ (สไตล์ --i), late = ค้างล้างหลัง, next = รายการถัดไป */

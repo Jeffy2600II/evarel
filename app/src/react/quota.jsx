@@ -4,7 +4,6 @@
 // style="--p:..." React เขียนผ่าน CSSOM (เติมช่องว่าง/; ท้าย) — parity test เทียบค่า semantic ของ style ตามแพทเทิร์น ai_equiv
 import { takeQuotaFns } from '../../data/quota.tray.js';
 const { h, Fragment } = window.EvarelReact;
-const W = () => window;
 
 function QuotaBar({ u, l, lb }) {
   return h('div', { className: 'ev-qbar', role: 'progressbar', 'aria-label': lb, 'aria-valuemin': '0', 'aria-valuemax': String(l), 'aria-valuenow': String(Math.min(u, l || 0)) },
@@ -12,7 +11,6 @@ function QuotaBar({ u, l, lb }) {
 }
 
 function QuotaBody(p) {
-  const w = W();
   const q = p.quota;
   return h(Fragment, null, [
     h('div', { key: 'r1', className: 'ev-qrow' },

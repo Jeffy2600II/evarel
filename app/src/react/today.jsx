@@ -7,7 +7,6 @@ import { takeDates } from '../../data/dates.tray.js';
 import { takeTodayFns } from '../../data/today.tray.js';
 const { h, Fragment } = window.EvarelReact;
 const ItemRow = () => window.EvarelComponents.itemRow;
-const W = () => window;
 
 function TodayMain(p) {
   /* string path: ห่อ <main> ตาม template เดิม (mount path ไม่ใช้ตัวนี้) */

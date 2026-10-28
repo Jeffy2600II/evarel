@@ -4,7 +4,6 @@
 //   ระหว่างเทียบ parity ให้ส่ง noCal=true เพื่อข้าม side-effect นี้ (ฝั่ง classic string ไม่เคย mount ในตัวเทียบ)
 import { takeDetail } from '../../data/detail.tray.js';
 const { h } = window.EvarelReact; /* ปฏิทิน #fcHabit mount โดย openDetail/refreshDetail ใน 20/21 (จังหวะเดียวกับ classic) ไม่ใช้ effect ของ React */
-const W = () => window;
 const raw = (html) => ({ __html: html });
 
 function HabitCard({ it }) {

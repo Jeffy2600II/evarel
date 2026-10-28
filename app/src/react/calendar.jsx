@@ -4,7 +4,6 @@
 // agenda ฝังผล agendaHTML เดิมตรงๆ (dangerouslySetInnerHTML) เพื่อผลตรงเดิมทุกไบต์
 import { takeCalendarFns } from '../../data/calendar.tray.js';
 const { h, useEffect, Fragment } = window.EvarelReact;
-const W = () => window;
 
 function CalendarMain(p) {
   /* string path: ห่อ <main> ตาม template เดิม (mount path ไม่ใช้ตัวนี้) */

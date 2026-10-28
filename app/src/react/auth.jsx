@@ -4,7 +4,6 @@
 // อัปเกรดเป็น React ได้เพราะ: (1) renderAuthRoot เรียก mountAt เมื่อพร้อม (2) dynamic updates (paintCool/fieldErr/startCool) ทำงานบน DOM ของ React ได้เพราะ React ไม่ re-render กลาง auth flow (au-go เรียก renderAuthRoot ตรงๆ ไม่ผ่าน render())
 import { takeAuthConsts } from '../../data/auth.tray.js';
 const { h } = window.EvarelReact;
-const W = () => window;
 
 function AuthContent(p) {
   const sc = p.screen;

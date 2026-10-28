@@ -3,7 +3,6 @@
 // ไอคอนเป็น SVG string ของระบบเดิม — ฝังผ่าน dangerouslySetInnerHTML (แพทเทิร์น item-row) กันเขียน SVG ใหม่ไม่ตรงไบต์
 import { takeNavConsts } from '../../data/nav.tray.js';
 const { h, Fragment } = window.EvarelReact;
-const W = () => window;
 const raw = (html) => ({ __html: html });
 
 function NavTabs(p) {

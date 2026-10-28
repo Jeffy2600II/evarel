@@ -3,7 +3,6 @@
 // ConfirmCard: แปลงเนื้อ confirmDialog เต็มรูป (ทุกจุดเรียกใช้ 5 แห่งใน 25-actions)
 // เทียบ template เดิมใน 09-ui__layers ทุกไบต์: attribute order ตาม template และ data-act เดิมเพื่อ event delegation
 const { h } = window.EvarelReact;
-const W = () => window;
 const raw = (html) => ({ __html: html });
 
 function DialogCard(p) {
