@@ -65,11 +65,11 @@ export function generateFactoryMap(rootDir = '.') {
       continue;
     }
 
-    if (zone === 'app/pages') {
-      const boxes = items.filter(i => {
-        const full = path.join(absZoneDir, i);
-        return !i.startsWith('.') && !i.startsWith('_') && i !== 'README.md' && fs.statSync(full).isDirectory();
-      });
+    /* shared/ มีไฟล์เดี่ยว (tray.js) ปนกับกล่อง: แสดงเป็นตารางกล่องเฉพาะเมื่อมีโฟลเดอร์ที่มี BOX.md ไม่มี = รายการไฟล์แบบเดิม (แผนที่ที่ commit ไว้ไม่เปลี่ยน) */
+    const isBoxDir = (i) => { const full = path.join(absZoneDir, i); return !i.startsWith('.') && !i.startsWith('_') && i !== 'README.md' && fs.statSync(full).isDirectory(); };
+    const sharedHasBox = zone === 'app/shared' && items.some((i) => isBoxDir(i) && fs.existsSync(path.join(absZoneDir, i, 'BOX.md')));
+    if (zone === 'app/pages' || sharedHasBox) {
+      const boxes = items.filter((i) => isBoxDir(i) && (zone === 'app/pages' || fs.existsSync(path.join(absZoneDir, i, 'BOX.md'))));
 
       if (boxes.length === 0) {
         md += `*(ยังไม่มีกล่องหน้าใน pages/)*\n\n`;

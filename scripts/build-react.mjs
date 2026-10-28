@@ -13,6 +13,10 @@ const require = createRequire(join(root, 'package.json'));
 const esbuild = require('esbuild');
 const SRC = join(root, 'app/src/react'), OUT = join(root, 'app/web/js/react');
 const PAGES = join(root, 'app/pages'); /* F4-A: กล่อง 3 ชั้น (app/pages/<ชื่อ>/<Pascal>Page.jsx) */
+/* F6: โซนที่มีกล่อง = pages/ (หน้า) และ shared/ (ชิ้นร่วม: nav sheet dialog item-row) | กล่องหน้าตาเหมือนกันทุกโซน ผลบิลด์ชื่อ <ชื่อ>.js เหมือนเดิม
+   shared/ มีไฟล์เดี่ยว (tray.js, README.md) ที่ไม่ใช่กล่อง จึงนับเป็นกล่องเฉพาะโฟลเดอร์ที่มี BOX.md */
+const SHARED_DIR = join(root, 'app/shared');
+const BOX_ZONES = [{ name: 'pages', dir: PAGES, needCard: false }, { name: 'shared', dir: SHARED_DIR, needCard: true }];
 const check = process.argv.includes('--check');
 // platform: 'browser' จำเป็น: ไม่งั้น esbuild เลือก react-dom-server.node (ใช้ util/stream ของ Node) ที่รันในเบราว์เซอร์ไม่ได้
 const common = { absWorkingDir: root, bundle: true, format: 'iife', platform: 'browser', minify: true, target: 'es2020', write: false, logLevel: 'silent',
@@ -112,17 +116,22 @@ export function orderBoxes(boxes, baseNames) {
 }
 const boxJobs = [];
 const BASE_PAGES = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar', 'ai', 'nav', 'dialog', 'sheet', 'form', 'detail', 'auth', 'quota', 'aiShell', 'focus']; /* ลำดับโหลดเดิมของหน้าเดิม (ต้องตรง REACT_PAGES_BASE ใน 19-views__settings.ts: บิลด์ตรวจ) */
-if (existsSync(PAGES)) {
+const seenBoxZone = new Map(); /* ชื่อกล่อง -> โซน: ชื่อซ้ำข้ามโซนต้องล้ม (ผลบิลด์ชื่อเดียวกันเขียนทับกัน) */
+for (const zone of BOX_ZONES) if (existsSync(zone.dir)) {
   const legacy = new Set(readdirSync(SRC).filter((x) => x.endsWith('.jsx')).map((x) => x.replace(/\.jsx$/, '')));
-  for (const d of readdirSync(PAGES, { withFileTypes: true }).filter((x) => x.isDirectory()).map((x) => x.name).sort()) {
+  const dirs = readdirSync(zone.dir, { withFileTypes: true }).filter((x) => x.isDirectory() && !x.name.startsWith('.') && !x.name.startsWith('_')).map((x) => x.name).sort()
+    .filter((d) => !zone.needCard || existsSync(join(zone.dir, d, 'BOX.md')));
+  for (const d of dirs) {
+    if (seenBoxZone.has(d)) throw new Error('กล่อง ' + d + ' ซ้ำข้ามโซน: ' + seenBoxZone.get(d) + ' และ ' + zone.name);
+    seenBoxZone.set(d, zone.name);
     if (legacy.has(d)) throw new Error('กล่อง ' + d + ' ชื่อชนกับหน้าเดิม app/src/react/' + d + '.jsx (ห้ามค้างสองชุด)');
-    const page = join(PAGES, d, d.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase()) + 'Page.jsx');
+    const page = join(zone.dir, d, d.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase()) + 'Page.jsx');
     if (!existsSync(page)) throw new Error('กล่อง ' + d + ' ไม่มีไฟล์หน้า ' + page);
-    const reg = boxRegister(readBoxCard(join(PAGES, d), d), d);
+    const reg = boxRegister(readBoxCard(join(zone.dir, d), d), d);
     const mod = await esbuild.build({ absWorkingDir: root, entryPoints: [page], bundle: false, write: false, metafile: true, logLevel: 'silent', format: 'esm', loader: { '.jsx': 'jsx' } });
     const exps = Object.values(mod.metafile.outputs)[0].exports; /* export จริงของไฟล์หน้า (รวม default) */
     for (const x of [...reg.pages.map((p) => p.export), ...reg.components.map((c) => c.export)]) if (!exps.includes(x)) throw new Error('กล่อง ' + d + ': register อ้าง export "' + x + '" ที่ไฟล์หน้าไม่มี (มี: ' + exps.join(', ') + ')');
-    boxJobs.push({ name: d, entry: page, reg, exps });
+    boxJobs.push({ name: d, entry: page, reg, exps, zoneDir: zone.dir });
   }
 }
 const orderedBoxes = orderBoxes(boxJobs, BASE_PAGES);
@@ -146,7 +155,7 @@ for (const j of boxJobs) {
   /* stdin ให้ esbuild: ไฟล์ทางเข้าเสมือนฉีดบรรทัด window แทนกล่อง | JSX ของกล่องใช้ React ที่ import เอง จึงแปลงเป็น h ของ runtime ผ่าน jsxFactory */
   const r = await esbuild.build({ ...common, external: ['react', 'react-dom'], plugins: [trayShare, boxReactShim],
     jsx: 'transform', jsxFactory: 'window.EvarelReact.h', jsxFragment: 'window.EvarelReact.Fragment', inject: ['box-inject:h'],
-    stdin: { contents: boxEntry(j.name, './' + j.name + '/' + j.entry.split('/').pop(), j.reg, j.exps), resolveDir: PAGES, sourcefile: 'box-entry-' + j.name + '.js', loader: 'js' },
+    stdin: { contents: boxEntry(j.name, './' + j.name + '/' + j.entry.split('/').pop(), j.reg, j.exps), resolveDir: j.zoneDir, sourcefile: 'box-entry-' + j.name + '.js', loader: 'js' },
     entryPoints: undefined });
   const text = r.outputFiles[0].text, dest = join(OUT, j.name + '.js');
   if (check) { const same = existsSync(dest) && readFileSync(dest, 'utf8') === text; if (!same) { bad++; console.error('ต่างจากที่ commit: ' + dest); } }

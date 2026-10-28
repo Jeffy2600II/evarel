@@ -204,8 +204,16 @@ export function checkBox(boxDir) {
         if (importPath.startsWith('.')) {
           const target = path.resolve(path.dirname(filePath), importPath);
           const inThisBox = target === absBoxDir || target.startsWith(absBoxDir + path.sep);
+          /* ข้ามกล่อง = เข้าไปในโฟลเดอร์กล่องพี่น้อง (ชั้นแรกใต้รากโซนที่เป็นโฟลเดอร์) | ไฟล์เดี่ยวที่รากโซนไม่ใช่กล่อง
+             เช่น app/shared/tray.js (กลไกถาดกลางที่ทุกกล่องต้องใช้) จึงนำเข้าได้ | pages/ เดิมไม่มีไฟล์เดี่ยวที่ราก พฤติกรรมเท่าเดิม */
           const inPagesRoot = target.startsWith(pagesRoot + path.sep);
-          crosses = inPagesRoot && !inThisBox;
+          let siblingBox = false;
+          if (inPagesRoot && !inThisBox) {
+            const first = path.relative(pagesRoot, target).split(path.sep)[0];
+            const firstAbs = path.join(pagesRoot, first);
+            siblingBox = fs.existsSync(firstAbs) && fs.statSync(firstAbs).isDirectory();
+          }
+          crosses = siblingBox;
         } else if (importPath.includes('app/pages/') || importPath.includes('/pages/')) {
           crosses = true;
         }
@@ -227,7 +235,7 @@ export function checkBox(boxDir) {
 /**
  * ตรวจสอบทุกกล่องใน app/pages/
  */
-export function checkAllBoxes(pagesDir = 'app/pages') {
+export function checkAllBoxes(pagesDir = 'app/pages', { needCard = false } = {}) {
   const absPagesDir = path.resolve(pagesDir);
   if (!fs.existsSync(absPagesDir)) {
     return { passed: true, results: [] };
@@ -236,7 +244,9 @@ export function checkAllBoxes(pagesDir = 'app/pages') {
   const dirs = fs.readdirSync(absPagesDir).filter(f => {
     if (f.startsWith('.') || f.startsWith('_') || f === 'README.md') return false;
     const full = path.join(absPagesDir, f);
-    return fs.statSync(full).isDirectory();
+    if (!fs.statSync(full).isDirectory()) return false;
+    /* โซน shared/ มีโฟลเดอร์ที่ไม่ใช่กล่องปนได้ จึงนับเป็นกล่องเฉพาะที่มีบัตร BOX.md | pages/ นับทุกโฟลเดอร์เหมือนเดิม (กล่องที่ไม่มีบัตรต้องตกที่ BOX-02) */
+    return !needCard || fs.existsSync(path.join(full, 'BOX.md'));
   });
 
   const results = dirs.map(d => checkBox(path.join(absPagesDir, d)));
@@ -267,11 +277,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   let overallPassed = true;
 
   if (target === '--all') {
-    console.log('🔍 กำลังตรวจทุกกล่องใน app/pages/ ...');
-    const { passed, results } = checkAllBoxes();
+    console.log('🔍 กำลังตรวจทุกกล่องใน app/pages/ และ app/shared/ ...');
+    const a = checkAllBoxes('app/pages'), b = checkAllBoxes('app/shared', { needCard: true });
+    const passed = a.passed && b.passed, results = [...a.results, ...b.results];
     overallPassed = passed;
     if (results.length === 0) {
-      console.log('ℹ️ ยังไม่มีกล่องใน app/pages/ ให้ตรวจ');
+      console.log('ℹ️ ยังไม่มีกล่องใน app/pages/ หรือ app/shared/ ให้ตรวจ');
     } else {
       results.forEach(res => {
         if (res.passed) {

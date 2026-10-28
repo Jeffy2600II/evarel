@@ -59,6 +59,11 @@ export function createBox(boxNameInput, options = {}) {
   if (fs.existsSync(targetDir)) {
     throw new Error(`กล่อง '${boxName}' มีอยู่แล้วที่ตำแหน่ง: ${targetDir}`);
   }
+  /* ชื่อกล่องห้ามซ้ำข้ามโซน (ผลบิลด์ชื่อ <ชื่อ>.js เดียวกันจะเขียนทับกัน) | โซนกล่องคือ pages/ กับ shared/ */
+  for (const zone of ['app/pages', 'app/shared']) {
+    const other = path.resolve(process.cwd(), zone, boxName);
+    if (other !== targetDir && fs.existsSync(path.join(other, 'BOX.md'))) throw new Error(`กล่อง '${boxName}' มีอยู่แล้วในโซน ${zone} (ชื่อห้ามซ้ำข้ามโซน)`);
+  }
   
   const partsDir = path.join(targetDir, 'parts');
   fs.mkdirSync(partsDir, { recursive: true });

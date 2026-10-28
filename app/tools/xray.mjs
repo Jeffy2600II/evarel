@@ -14,8 +14,10 @@ export function xrayBox(targetBox) {
     boxDir = path.resolve(targetBox);
   } else if (fs.existsSync(path.join('app/pages', targetBox))) {
     boxDir = path.resolve('app/pages', targetBox);
+  } else if (fs.existsSync(path.join('app/shared', targetBox, 'BOX.md'))) {
+    boxDir = path.resolve('app/shared', targetBox);
   } else {
-    throw new Error(`ไม่พบโฟลเดอร์กล่อง: '${targetBox}' (ค้นหาที่ '${targetBox}' หรือ 'app/pages/${targetBox}')`);
+    throw new Error(`ไม่พบโฟลเดอร์กล่อง: '${targetBox}' (ค้นหาที่ '${targetBox}', 'app/pages/${targetBox}' หรือ 'app/shared/${targetBox}')`);
   }
 
   const checkResult = checkBox(boxDir);

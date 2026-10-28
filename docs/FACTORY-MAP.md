@@ -13,9 +13,9 @@
 
 ### โซน: [`app/shared`](app/shared)
 
-รายการไฟล์ในโซน:
-- 📄 [`README.md`](app/shared/README.md)
-- 📄 [`tray.js`](app/shared/tray.js)
+| ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
+|---|---|---|---|---|
+| [`nav`](app/shared/nav) | [`NavPage.jsx`](app/shared/nav/NavPage.jsx) | [`parts/`](app/shared/nav/parts) | [`nav.tray.js`](app/shared/nav/nav.tray.js) [`nav.style.css`](app/shared/nav/nav.style.css) | [`BOX.md`](app/shared/nav/BOX.md) |
 
 ### โซน: [`app/styles`](app/styles)
 
@@ -35,7 +35,6 @@
 - 📄 [`focus.tray.js`](app/data/focus.tray.js)
 - 📄 [`form.tray.js`](app/data/form.tray.js)
 - 📄 [`item-row.tray.js`](app/data/item-row.tray.js)
-- 📄 [`nav.tray.js`](app/data/nav.tray.js)
 - 📄 [`quota.tray.js`](app/data/quota.tray.js)
 - 📄 [`sheet.tray.js`](app/data/sheet.tray.js)
 - 📄 [`today.tray.js`](app/data/today.tray.js)
