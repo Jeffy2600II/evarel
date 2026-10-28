@@ -1,4 +1,4 @@
-/* เทียบเลเยอร์ sheet/dialog/confirm: ฉบับ string เดิม (09-ui__layers) กับฉบับ React จริง (react/sheet.jsx, react/dialog.jsx)
+/* เทียบเลเยอร์ sheet/dialog/confirm: ฉบับ string เดิม (09-ui__layers) กับฉบับ React จริง (shared/sheet/SheetPage.jsx, react/dialog.jsx)
    เกณฑ์: DOM จริงเท่ากันทุกไบต์ (browser-serialized innerHTML) + วงจรจริงบนแอป (เปิด confirm กดยืนยัน fn ทำงาน ปิดได้)
    ครอบกรณี: sheet (back มี/ไม่มี, foot มี/ไม่มี, title อักขระพิเศษ), dialog wrapper, confirm ทุกโทน
    รัน: node tests/layers_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ app/web) */

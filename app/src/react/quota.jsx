@@ -1,5 +1,5 @@
 // เนื้อ sheet โควตา AI เป็น React (S4 s4f-shell-layers-auth ไบต์ 5)
-// mount ผ่าน Sheet component เดิม (react/sheet.jsx): caller ส่ง o.page='quotaBody' + props
+// mount ผ่าน Sheet component เดิม (shared/sheet/SheetPage.jsx): caller ส่ง o.page='quotaBody' + props
 // เทียบ template เดิม quotaSheetHTML ใน 16-services__ai-quota ทุกไบต์: ลำดับ attribute ตาม template (className, role, aria-label, aria-valuemin, aria-valuemax, aria-valuenow)
 // style="--p:..." React เขียนผ่าน CSSOM (เติมช่องว่าง/; ท้าย) — parity test เทียบค่า semantic ของ style ตามแพทเทิร์น ai_equiv
 import { takeQuotaFns } from '../../data/quota.tray.js';

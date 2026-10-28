@@ -6,7 +6,7 @@
  *   เดิม p.page && w.EvarelComponents ? w.EvarelComponents[p.page] : null  คืน null เงียบ ๆ เมื่อยังไม่มีรีจิสทรีหรือยังไม่ลงทะเบียน
  *   ถาดนี้จึงไม่ตรวจรูปรีจิสทรี (ถ้าตรวจเข้มจะ throw ในกรณีที่เดิมคืน null)
  */
-import { tray, T } from '../shared/tray.js';
+import { tray, T } from '../tray.js';
 
 const sheetFns = tray('sheet', { icon: T.func });
 

@@ -16,6 +16,7 @@
 | ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
 |---|---|---|---|---|
 | [`nav`](app/shared/nav) | [`NavPage.jsx`](app/shared/nav/NavPage.jsx) | [`parts/`](app/shared/nav/parts) | [`nav.tray.js`](app/shared/nav/nav.tray.js) [`nav.style.css`](app/shared/nav/nav.style.css) | [`BOX.md`](app/shared/nav/BOX.md) |
+| [`sheet`](app/shared/sheet) | [`SheetPage.jsx`](app/shared/sheet/SheetPage.jsx) | [`parts/`](app/shared/sheet/parts) | [`sheet.tray.js`](app/shared/sheet/sheet.tray.js) [`sheet.style.css`](app/shared/sheet/sheet.style.css) | [`BOX.md`](app/shared/sheet/BOX.md) |
 
 ### โซน: [`app/styles`](app/styles)
 
@@ -36,7 +37,6 @@
 - 📄 [`form.tray.js`](app/data/form.tray.js)
 - 📄 [`item-row.tray.js`](app/data/item-row.tray.js)
 - 📄 [`quota.tray.js`](app/data/quota.tray.js)
-- 📄 [`sheet.tray.js`](app/data/sheet.tray.js)
 - 📄 [`today.tray.js`](app/data/today.tray.js)
 
 ### โซน: [`app/tools`](app/tools)
