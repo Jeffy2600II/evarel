@@ -16,9 +16,8 @@ function TodayMain(p) {
 /* เนื้อข้างใน main ล้วน — EvarelComponents.today ใช้ตัวนี้เพราะ mount target คือ <main> ที่ VIEWS สร้างแล้ว (กัน main ซ้อนสองชั้น) */
 function TodayContent(p) {
   const { items, ui, today, now } = p;
-  const w = W();
   const P = buildTodayProps(items, ui, today, now, {
-    fmtDate: takeDates().fmtDate, dayLab: w.dayLab, WD: takeDates().WD, TH_MONTH: takeDates().TH_MONTH, pad: takeDates().pad, hello: () => '',
+    fmtDate: takeDates().fmtDate, dayLab: takeDates().dayLabFor(today), WD: takeDates().WD, TH_MONTH: takeDates().TH_MONTH, pad: takeDates().pad, hello: () => '',
   });
   const raw = (html) => ({ __html: html });
   /* children ต้องตรง template เดิมทุกไบต์ รวม '\n  ' ระหว่าง section (ต้นฉบับจัด indent ใน template) React พิมพ์ text child ตรงๆ และข้าม null */
@@ -32,7 +31,7 @@ function TodayContent(p) {
         h('div', { key: 'r', className: 'ev-sum-lab' }, `${P.pct}%`),
       ]),
       h('div', { key: 'prog', className: 'ev-prog' }, h('i', { 'data-k': 'p-today', 'data-to': String(P.pct) })),
-      P.nextItem ? h('div', { key: 'nx', className: 'ev-next' }, h('span', { className: 'ev-chip' }, 'ถัดไป'), `${P.nextItem.time} · ${w.esc(P.nextItem.title)}`) : null,
+      P.nextItem ? h('div', { key: 'nx', className: 'ev-next' }, h('span', { className: 'ev-chip' }, 'ถัดไป'), `${P.nextItem.time} · ${takeDates().esc(P.nextItem.title)}`) : null,
     ]),
     '\n  ',
     P.overdue.length ? h('section', { key: 'od', className: 'ev-card', 'data-tone': 'warn' },

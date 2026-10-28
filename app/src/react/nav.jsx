@@ -7,13 +7,13 @@ const W = () => window;
 const raw = (html) => ({ __html: html });
 
 function NavTabs(p) {
-  const w = W();
+  const N = takeNavConsts();
   /* โครงเดิม: TABS.map -> li/button(data-tab + aria-current ถ้าแท็บปัจจุบัน, pill icon + label) แล้วแทรกปุ่ม + กลางลำดับ 2 */
   const items = [];
-  takeNavConsts().TABS.forEach(([id, l, ic], k) => {
-    if (k === 2) items.push(h('li', { key: 'add' }, h('button', { className: 'add', 'data-act': 'add', 'aria-label': 'เพิ่มรายการ', dangerouslySetInnerHTML: raw(w.icon('plus')) })));
+  N.TABS.forEach(([id, l, ic], k) => {
+    if (k === 2) items.push(h('li', { key: 'add' }, h('button', { className: 'add', 'data-act': 'add', 'aria-label': 'เพิ่มรายการ', dangerouslySetInnerHTML: raw(N.icon('plus')) })));
     items.push(h('li', { key: id }, h('button', { 'data-tab': id, ...(p.tab === id ? { 'aria-current': 'page' } : null) }, [
-      h('span', { key: 'pill', className: 'pill', dangerouslySetInnerHTML: raw(w.icon(ic)) }),
+      h('span', { key: 'pill', className: 'pill', dangerouslySetInnerHTML: raw(N.icon(ic)) }),
       l,
     ])));
   });
