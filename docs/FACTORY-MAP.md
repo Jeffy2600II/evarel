@@ -6,12 +6,16 @@
 
 ### โซน: [`app/pages`](app/pages)
 
-*(ยังไม่มีกล่องหน้าใน pages/)*
+| ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
+|---|---|---|---|---|
+| [`all`](app/pages/all) | [`AllPage.jsx`](app/pages/all/AllPage.jsx) | [`parts/`](app/pages/all/parts) | [`all.tray.js`](app/pages/all/all.tray.js) [`all.style.css`](app/pages/all/all.style.css) | [`BOX.md`](app/pages/all/BOX.md) |
+| [`stats`](app/pages/stats) | [`StatsPage.jsx`](app/pages/stats/StatsPage.jsx) | [`parts/`](app/pages/stats/parts) | [`stats.tray.js`](app/pages/stats/stats.tray.js) [`stats.style.css`](app/pages/stats/stats.style.css) | [`BOX.md`](app/pages/stats/BOX.md) |
 
 ### โซน: [`app/shared`](app/shared)
 
 รายการไฟล์ในโซน:
 - 📄 [`README.md`](app/shared/README.md)
+- 📄 [`tray.js`](app/shared/tray.js)
 
 ### โซน: [`app/styles`](app/styles)
 
@@ -23,6 +27,18 @@
 
 รายการไฟล์ในโซน:
 - 📄 [`README.md`](app/data/README.md)
+- 📄 [`ai.tray.js`](app/data/ai.tray.js)
+- 📄 [`auth.tray.js`](app/data/auth.tray.js)
+- 📄 [`calendar.tray.js`](app/data/calendar.tray.js)
+- 📄 [`dates.tray.js`](app/data/dates.tray.js)
+- 📄 [`detail.tray.js`](app/data/detail.tray.js)
+- 📄 [`focus.tray.js`](app/data/focus.tray.js)
+- 📄 [`form.tray.js`](app/data/form.tray.js)
+- 📄 [`item-row.tray.js`](app/data/item-row.tray.js)
+- 📄 [`nav.tray.js`](app/data/nav.tray.js)
+- 📄 [`quota.tray.js`](app/data/quota.tray.js)
+- 📄 [`sheet.tray.js`](app/data/sheet.tray.js)
+- 📄 [`today.tray.js`](app/data/today.tray.js)
 
 ### โซน: [`app/tools`](app/tools)
 

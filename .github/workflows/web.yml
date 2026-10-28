@@ -71,8 +71,47 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: web-build, path: build/web, retention-days: 3 }
 
+  # สายพานโรงงาน (F5): ตรวจกติกากล่อง + วาดแผนที่ใหม่ทุก push + X-ray รายหน้า
+  # เครื่องมือเป็น Node ล้วน ไม่ต้อง npm ci (รวมวัดจริง < 1 วินาที) | ไม่ commit อะไรกลับเข้ารีโป (กันวน CI) แผนที่ออกเป็น artifact
+  # ถอด job นี้ออกแล้วเครื่องตรวจยังรันมือได้: node app/tools/checker.mjs --all
+  factory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: ตรวจกติกากล่อง BOX-01..06 (ไม่ผ่าน = ไม่ปล่อย)
+        run: |
+          set -o pipefail
+          node app/tools/checker.mjs --all | tee factory-check.txt
+      - name: วาดแผนที่โรงงานใหม่จากโครงสร้างจริง
+        if: always()
+        run: |
+          mkdir -p factory-out
+          node app/tools/mapper.mjs factory-out/FACTORY-MAP.md
+          node app/tools/mapper.mjs factory-out/FACTORY-MAP.again.md
+          cmp factory-out/FACTORY-MAP.md factory-out/FACTORY-MAP.again.md && rm factory-out/FACTORY-MAP.again.md
+      - name: แผนที่ที่ commit ไว้ต้องไม่ล้าสมัย
+        run: |
+          if ! diff -q docs/FACTORY-MAP.md factory-out/FACTORY-MAP.md >/dev/null; then
+            echo "docs/FACTORY-MAP.md ล้าสมัย: รัน node app/tools/mapper.mjs แล้ว commit (ห้ามแก้มือ)"
+            diff docs/FACTORY-MAP.md factory-out/FACTORY-MAP.md | head -20
+            exit 1
+          fi
+      - name: X-ray รายหน้า (ทุกกล่องใน app/pages)
+        if: always()
+        run: |
+          for d in app/pages/*/; do n=$(basename "$d"); echo "=== $n ==="; node app/tools/xray.mjs "$n"; done | tee factory-out/xray.txt
+      - name: สรุปผลขึ้นหน้า run
+        if: always()
+        run: |
+          { echo "### สายพานโรงงาน"; echo '```'; cat factory-check.txt 2>/dev/null; echo '```'; echo "แผนที่และ X-ray อยู่ใน artifact \`factory-out\`"; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: factory-out, path: factory-out, retention-days: 14 }
+
   deploy-forge:
-    needs: check
+    needs: [check, factory]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: forge
