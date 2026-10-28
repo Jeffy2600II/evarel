@@ -119,6 +119,14 @@ export function generateFactoryMap(rootDir = '.') {
 // CLI handler
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
+  if (args.some((a) => a === '--help' || a === '-h')) {
+    console.log('ใช้งาน: node app/tools/mapper.mjs [ไฟล์ปลายทาง]  (ค่าเริ่มต้น docs/FACTORY-MAP.md)');
+    process.exit(0);
+  }
+  if (args[0] && args[0].startsWith('-')) {
+    console.error(`❌ ไม่รู้จักตัวเลือก ${args[0]} (อาร์กิวเมนต์แรกคือพาธไฟล์ปลายทาง ใช้ --help ดูวิธีใช้)`);
+    process.exit(2);
+  }
   const outputPath = args[0] || 'docs/FACTORY-MAP.md';
 
   try {
