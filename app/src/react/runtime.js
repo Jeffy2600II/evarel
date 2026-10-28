@@ -5,9 +5,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { createStore } from './store.js';
+import * as trayLib from '../../shared/tray.js';
 if (!window.EvarelReact) window.EvarelReact = { h: createElement, Fragment, renderToStaticMarkup, useSyncExternalStore, useEffect, createRoot, flushSync }; /* guard: execute ซ้ำจะสร้าง React ชุดสอง ทำ dispatcher ของชุดเดิมเป็น null */
 // store หนึ่งอินสแตนซ์ต่อแอป อยู่ใน runtime ที่โหลดครั้งเดียว ทุกหน้า React ใช้ร่วมกัน (ถ้าวางใน bundle ต่อหน้า จะได้ store คนละตัว)
 window.EvarelStore = window.EvarelStore || createStore();
+/* F3.3-g13: tray.js (รูปถาดมาตรฐาน) อยู่ใน runtime ครั้งเดียว แล้วเปิดเป็น window.EvarelTray ไฟล์หน้า/ถาดอ่านผ่านปลั๊กอินบิลด์ (scripts/build-react.mjs)
+   ก่อนนี้ทุกไฟล์หน้าที่ใช้ถาดแบกสำเนา tray.js ของตัวเอง (1,438 ไบต์ x 11 ไฟล์) และ TrayError คนละคลาส | guard: execute ซ้ำต้องไม่สร้างคลาสชุดสอง */
+if (!window.EvarelTray) window.EvarelTray = trayLib;
 window.EvarelPages = window.EvarelPages || {};
 /* โหมด mount จริง (S4): EvarelPages.<name> คืน string สำหรับเทียบ/ตรวจ ส่วน EvarelComponents.<name> คือ component ที่ mount จริงด้วย createRoot
    กระแสงาน: 13-views คืน <main ... data-react-mount="today"></main> เปล่าเมื่อพร้อม mount จริง แลวาง props ไว้ที่ EvarelMount.pending

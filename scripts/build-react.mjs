@@ -19,9 +19,17 @@ const common = { absWorkingDir: root, bundle: true, format: 'iife', platform: 'b
 // alias ต้องเป็นพาธสัมพัทธ์จากราก (ไม่ใช่สัมบูรณ์) ไม่งั้น esbuild ข้ามการเลือก exports ของ react-dom ไปใช้ server.node.js (ใช้ util/stream ของ Node รันในเบราว์เซอร์ไม่ได้)
 const alias = { react: './web-shell/node_modules/react', 'react-dom': './web-shell/node_modules/react-dom' };
 
+// F3.3-g13: ไฟล์หน้าไม่บันเดิล shared/tray.js ของตัวเอง ให้อ่านจาก window.EvarelTray ที่ runtime เปิดไว้ (รัน runtime ก่อนเสมอ)
+// ชื่อ export ต้องตรงกับ tray.js ทุกตัว ไม่งั้นบิลด์ล้มทันที (ไม่ปล่อยให้ undefined ไปพังตอนรัน)
+// ข้อความผิดพลาดตอนรันเป็นอังกฤษสั้นๆ โดยตั้งใจ: ไทยจะถูกฝังซ้ำทุกไฟล์หน้า (วัดแล้วโต ~2.2 KB) | ความหมาย: runtime.js ต้องโหลดก่อนไฟล์หน้า
+const TRAY_EXPORTS = ['TrayError', 'T', 'tray'];
+const trayShare = { name: 'tray-share', setup(b) {
+  b.onResolve({ filter: /shared\/tray\.js$/ }, (a) => ({ path: a.path, namespace: 'tray-share' }));
+  b.onLoad({ filter: /.*/, namespace: 'tray-share' }, () => ({ loader: 'js', contents: `const L = window.EvarelTray; if (!L) throw new Error('EvarelTray missing: load runtime.js first');\n` + TRAY_EXPORTS.map((n) => `export const ${n} = L.${n};`).join('\n') }));
+} };
 const jobs = [{ name: 'runtime', entry: join(SRC, 'runtime.js'), opts: { alias } }];
 for (const f of readdirSync(SRC).filter((x) => x.endsWith('.jsx')).sort())
-  jobs.push({ name: f.replace(/\.jsx$/, ''), entry: join(SRC, f), opts: { external: ['react', 'react-dom'] } });
+  jobs.push({ name: f.replace(/\.jsx$/, ''), entry: join(SRC, f), opts: { external: ['react', 'react-dom'], plugins: [trayShare] } });
 
 mkdirSync(OUT, { recursive: true });
 let bad = 0;
