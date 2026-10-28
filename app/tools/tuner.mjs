@@ -142,9 +142,12 @@ export function get${pascalName}Data() {
   "created_by": "tuner",
   "layers": {
     "page": "${pascalName}Page.jsx",
-    "parts": "parts/${pascalName}Part.jsx",
+    "parts": ["parts/${pascalName}Part.jsx"],
     "tray": "${boxName}.tray.js",
     "style": "${boxName}.style.css"
+  },
+  "register": {
+    "pages": [{ "name": "${boxName}" }]
   },
   "rules": {
     "max_file_lines": 300,
@@ -156,9 +159,11 @@ export function get${pascalName}Data() {
 <!-- MACHINE-READABLE-CARD-END -->
 
 ## แผ่นตรวจรับประจำกล่อง (Acceptance Checklist)
-- [x] ผ่านการตรวจกติกาจากเครื่องตรวจ (\`node app/tools/checker.mjs\`)
-- [x] บัตรประจำกล่องครบถ้วน
-- [x] ลงทะเบียนในระบบโกดังเรียบร้อย
+ติ๊ก [x] เฉพาะข้อที่พิสูจน์แล้วจริง พร้อมหลักฐานต่อท้ายข้อ (เบ้าจูนไม่ติ๊กให้ล่วงหน้า)
+- [ ] ผ่านการตรวจกติกาจากเครื่องตรวจ (\`node app/tools/checker.mjs\`)
+- [ ] บัตรประจำกล่องตรงไฟล์จริง (\`layers\` และ \`register\`)
+- [ ] ลงทะเบียนในแอปแล้ว (บิลด์เติมรายการหน้าและแคช sw.js ให้เอง ตรวจด้วย \`node scripts/build-react.mjs --check\`)
+- [ ] HTML ที่เรนเดอร์ตรงของเดิม และภาพตรงภาพอ้างอิง (ถ้าเป็นหน้าที่ย้ายมาจากของเดิม)
 
 ## สนามซ้อม (Sandbox)
 สามารถใช้ข้อมูลจำลองจาก \`${boxName}.tray.js\` เพื่อทดสอบการแสดงผลโดยไม่ต้องเชื่อมต่อของจริง

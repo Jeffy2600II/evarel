@@ -10,6 +10,40 @@ import path from 'path';
 const MAX_FILE_LINES = 300;
 const MAX_FILE_BYTES = 15 * 1024; // 15 KB
 
+/** อ่านส่วน JSON ในบัตร BOX.md (คืน null ถ้าไม่มี/อ่านไม่ได้) */
+export function parseBoxCard(md) {
+  const m = /<!-- MACHINE-READABLE-CARD-START -->\s*```json\s*([\s\S]*?)```\s*<!-- MACHINE-READABLE-CARD-END -->/.exec(md);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch { return null; }
+}
+
+/** ตรวจบัตรกับไฟล์จริง (BOX-02): layers ชี้ไฟล์ที่มีจริง, ไฟล์ใน parts/ ทุกไฟล์ถูกประกาศ, register รูปถูก */
+export function checkCardMatchesFiles(card, absBoxDir) {
+  const errs = [];
+  const exists = (rel) => fs.existsSync(path.join(absBoxDir, rel));
+  const L = card.layers || {};
+  for (const k of ['page', 'tray', 'style']) {
+    if (!L[k]) errs.push(`[BOX-02] บัตรขาด layers.${k}`);
+    else if (!exists(L[k])) errs.push(`[BOX-02] บัตรอ้าง layers.${k} = '${L[k]}' แต่ไม่พบไฟล์นี้ในกล่อง`);
+  }
+  const declared = [].concat(L.parts || []);
+  if (!declared.length) errs.push(`[BOX-02] บัตรขาด layers.parts (ต้องระบุไฟล์ชิ้นส่วนอย่างน้อย 1 ไฟล์)`);
+  for (const f of declared) if (!exists(f)) errs.push(`[BOX-02] บัตรอ้าง layers.parts = '${f}' แต่ไม่พบไฟล์นี้ในกล่อง`);
+  const partsDir = path.join(absBoxDir, 'parts');
+  if (fs.existsSync(partsDir)) {
+    for (const f of fs.readdirSync(partsDir).filter((x) => /\.(jsx?|tsx?)$/i.test(x))) {
+      if (!declared.includes('parts/' + f)) errs.push(`[BOX-02] ไฟล์ 'parts/${f}' ไม่ได้ประกาศในบัตร layers.parts (ไฟล์แอบ)`);
+    }
+  }
+  const R = card.register;
+  if (R !== undefined) {
+    const okArr = (v) => v === undefined || Array.isArray(v);
+    if (typeof R !== 'object' || R === null || !okArr(R.pages) || !okArr(R.components) || !okArr(R.after)) errs.push(`[BOX-02] register ต้องเป็น { pages?: [], components?: [], after?: [] }`);
+    else for (const x of [...(R.pages || []), ...(R.components || [])]) if (!x || typeof x.name !== 'string' || !/^[A-Za-z_$][\w$]*$/.test(x.name)) errs.push(`[BOX-02] register มีชื่อลงทะเบียนที่ไม่ถูกต้อง: ${JSON.stringify(x && x.name)}`);
+  }
+  return errs;
+}
+
 function toPascalCase(str) {
   return str
     .replace(/[-_]([a-z0-9])/gi, (_, g) => g.toUpperCase())
@@ -46,9 +80,14 @@ export function checkBox(boxDir) {
   if (boxMdFile) {
     try {
       boxMdContent = fs.readFileSync(path.join(absBoxDir, boxMdFile), 'utf8');
-      const match = boxMdContent.match(/"name"\s*:\s*"([^"]+)"/);
-      if (match && match[1]) {
-        boxName = match[1];
+      const cardJson = parseBoxCard(boxMdContent);
+      if (cardJson && typeof cardJson.name === 'string' && cardJson.name) {
+        boxName = cardJson.name;
+      } else {
+        const match = boxMdContent.match(/"name"\s*:\s*"([^"]+)"/);
+        if (match && match[1]) {
+          boxName = match[1];
+        }
       }
     } catch (e) {
       // ignore
@@ -95,6 +134,13 @@ export function checkBox(boxDir) {
     const hasAcceptanceChecklist = boxMdContent.includes('แผ่นตรวจรับ') || boxMdContent.includes('Acceptance Checklist');
     if (!hasAcceptanceChecklist) {
       errors.push(`[BOX-02] บัตรประจำกล่อง 'BOX.md' ขาดส่วนแผ่นตรวจรับประจำกล่อง (Acceptance Checklist)`);
+    }
+
+    /* บัตรต้อง parse เป็น JSON ได้ และตรงกับไฟล์จริง (เดิมตรวจแค่ว่ามีหัวข้อ จึงปล่อยบัตรผิดไฟล์ผ่านได้) */
+    if (hasMachineReadableCard && boxMdContent.includes('MACHINE-READABLE-CARD-START')) {
+      const card = parseBoxCard(boxMdContent);
+      if (!card) errors.push(`[BOX-02] ส่วน JSON ในบัตร 'BOX.md' อ่านไม่ได้ (JSON ผิดรูป)`);
+      else errors.push(...checkCardMatchesFiles(card, absBoxDir));
     }
   }
 

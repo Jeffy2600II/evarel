@@ -18,6 +18,9 @@
     "tray": "stats.tray.js",
     "style": "stats.style.css"
   },
+  "register": {
+    "pages": [{ "name": "stats" }]
+  },
   "rules": {
     "max_file_lines": 300,
     "max_file_kb": 15,
@@ -30,7 +33,7 @@
 ## แผ่นตรวจรับประจำกล่อง (Acceptance Checklist)
 - [x] ผ่านการตรวจกติกาจากเครื่องตรวจ (`node app/tools/checker.mjs`) กล่องไม่แตะ `window` (BOX-05)
 - [x] บัตรประจำกล่องครบถ้วน (ชั้นหน้า, parts 4 ชิ้น, ถาด, สไตล์)
-- [x] ลงทะเบียนในระบบโกดัง: ชื่อไฟล์ผลบิลด์ `stats.js` คงเดิม จึงอยู่ใน `REACT_PAGES` และแคช `sw.js` เดิมโดยไม่แก้
+- [x] ลงทะเบียนในแอป: ชื่อ `stats` อยู่ใน `REACT_PAGES_BASE` (หน้าเดิม คงลำดับเดิม) และ `sw.js` CORE เดิม บัตรประกาศ `register` ให้บิลด์ตรวจ ถ้าชื่อใหม่ บิลด์เติมรายการหน้าและแคชให้เอง (`tests/box_build_pipeline.test.mjs`)
 - [x] HTML ที่เรนเดอร์ตรงของเดิมทุกไบต์ (`tests/stats_html_equiv.test.mjs` 6 กรณี) และฉีดความผิดแล้วตัวเทียบตกจริง
 - [x] ภาพตรงภาพอ้างอิง F0 ที่ 0 พิกเซล (`tests/baseline_shots.mjs --compare` 30/30 ฉาก errs app 0)
 - [ ] ตัดสินเกณฑ์กล่องล้น (รอ Master) | สไตล์ `stats.style.css` ยังเป็นโครงว่าง ท่อบิลด์ยังไม่ต่อสไตล์กล่อง (ขั้น D)

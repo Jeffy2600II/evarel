@@ -144,7 +144,9 @@ function loadReactFile(name) {
 /* หน้าที่ย้ายเป็น React แล้ว (เพิ่มชื่อหน้าใหม่ที่นี่ที่เดียว) โหลด runtime ก่อนแล้วไล่ทีละหน้า พลาดไฟล์ใดใช้ของเดิมต่อ */
 /* today+calendar โหลดจาก index.html ก่อนบูต (render แรกเป็น mount ทันที) ที่เหลือยัง lazy */
 const REACT_LAZY = ['settings', 'stats', 'all'];
-const REACT_PAGES = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar', 'ai', 'nav', 'dialog', 'sheet', 'form', 'detail', 'auth', 'quota', 'aiShell', 'focus'];
+const REACT_PAGES_BASE = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar', 'ai', 'nav', 'dialog', 'sheet', 'form', 'detail', 'auth', 'quota', 'aiShell', 'focus']; /* BOXES:START (บิลด์เป็นเจ้าของ ห้ามแก้มือ: scripts/build-react.mjs เขียนช่วงนี้จากกล่องใน app/pages/) */
+const REACT_BOX_PAGES = []; /* BOXES:END */
+const REACT_PAGES = REACT_PAGES_BASE.concat(REACT_BOX_PAGES);
 function loadReactSettings() {
     const W = window;
     if (REACT_PAGES.every(n => W.EvarelPages?.[n]))

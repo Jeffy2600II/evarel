@@ -54,6 +54,8 @@ const CORE = [
   './js/react/settings.js',
   './js/react/stats.js',
   './js/react/all.js',
+  /* BOXES:START (บิลด์เป็นเจ้าของ ห้ามแก้มือ: scripts/build-react.mjs) */
+  /* BOXES:END */
   './js/route.js',
   './js/boot.js',
   './vendor/morphdom-umd.min.js',

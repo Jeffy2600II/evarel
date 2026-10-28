@@ -3,7 +3,7 @@
 //   app/src/react/<ชื่อ>.jsx        -> app/web/js/react/<ชื่อ>.js    (ไม่มี React ในไฟล์ ใช้ของ runtime ร่วม ลงทะเบียน window.EvarelPages.<ชื่อ>)
 // ผลลัพธ์ commit ไว้ใน app/web (เหมือน js/m) เพื่อให้ build ปกติและประตูเห็นไฟล์เดียวกัน | ทำซ้ำได้ไบต์เดิม
 // ใช้: node scripts/build-react.mjs         (สร้างทั้งหมด)   node scripts/build-react.mjs --check  (ไม่เขียน เทียบกับที่ commit ไว้ ต่างก็ exit 1)
-import { readdirSync, mkdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { readdirSync, mkdirSync, readFileSync, existsSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { createRequire } from 'node:module';
@@ -68,23 +68,72 @@ for (const f of readdirSync(SRC).filter((x) => x.endsWith('.jsx')).sort())
    สัญญากล่อง: export default = ฟังก์ชันหน้า, export const prepare = (raw) => props (ไม่บังคับ ไม่มี = ส่ง raw ตรง) | กล่องห้ามแตะ window (BOX-05)
    บิลด์ฉีดแทนกล่อง: (ก) รับ h/Fragment จาก window.EvarelReact (ข) ลงทะเบียน window.EvarelPages.<ชื่อ> ด้วยรูปเดียวกับ stats/all เดิม
    ชื่อหน้า = ชื่อโฟลเดอร์กล่อง ชื่อไฟล์ผลลัพธ์ = <ชื่อ>.js เหมือนเดิม (REACT_PAGES, sw.js และเทสต์อ้างชื่อนี้) | ชื่อชนกับหน้าเดิมใน app/src/react = บิลด์ล้ม กันสองชุดค้าง */
-export function boxEntry(name, pageRel, hasPrepare) {
-  const prep = hasPrepare ? 'P.prepare(raw)' : 'raw';
-  return `import * as P from ${JSON.stringify(pageRel)};\n` +
-    `window.EvarelPages = window.EvarelPages || {};\n` +
-    `window.EvarelPages[${JSON.stringify(name)}] = (raw) => window.EvarelReact.renderToStaticMarkup(window.EvarelReact.h(P.default, ${prep}));\n`;
+/* F4-ลงทะเบียนเอง: อ่านมานิเฟสต์ "register" จากส่วน JSON ของ BOX.md (บัตรเครื่องอ่านได้) แทนการเดาจากชื่อโฟลเดอร์
+   register = { pages: [{ name, export?, prepare? }], components: [{ name, export? }], after?: [ชื่อหน้าที่ต้องโหลดก่อน] }
+   ไม่ประกาศ register = pages [{ name: ชื่อโฟลเดอร์ }] (stats/all เดิมใช้ค่านี้) | components ไม่ประกาศ = ไม่ลงทะเบียน (บิลด์ไม่เดา) */
+const CARD_RE = /<!-- MACHINE-READABLE-CARD-START -->\s*```json\s*([\s\S]*?)```\s*<!-- MACHINE-READABLE-CARD-END -->/;
+export function readBoxCard(dir, name) {
+  const f = join(dir, 'BOX.md');
+  if (!existsSync(f)) throw new Error('กล่อง ' + name + ' ไม่มีบัตร BOX.md');
+  const m = CARD_RE.exec(readFileSync(f, 'utf8'));
+  if (!m) throw new Error('กล่อง ' + name + ': BOX.md ไม่มีส่วน JSON ที่เครื่องอ่านได้');
+  try { return JSON.parse(m[1]); } catch (e) { throw new Error('กล่อง ' + name + ': JSON ในบัตรอ่านไม่ได้ (' + e.message + ')'); }
+}
+export function boxRegister(card, name) {
+  const r = card.register || {};
+  const pages = (r.pages || [{ name }]).map((p) => ({ name: p.name, export: p.export || 'default', prepare: p.prepare || 'prepare' }));
+  const components = (r.components || []).map((c) => ({ name: c.name, export: c.export || 'default' }));
+  for (const x of [...pages, ...components]) if (!/^[A-Za-z_$][\w$]*$/.test(x.name || '')) throw new Error('กล่อง ' + name + ': ชื่อลงทะเบียนไม่ถูกต้อง ' + JSON.stringify(x.name));
+  return { pages, components, after: r.after || [] };
+}
+export function boxEntry(name, pageRel, reg, exportsOfPage) {
+  /* ทางเข้าเสมือน: นำเข้าครั้งเดียว แล้วลงทะเบียนตามมานิเฟสต์ | prepare ไม่ถูก export = ส่ง raw ตรง */
+  let s = `import * as P from ${JSON.stringify(pageRel)};\n`;
+  s += `window.EvarelPages = window.EvarelPages || {};\n`;
+  for (const p of reg.pages) {
+    const prep = exportsOfPage.includes(p.prepare) ? `P[${JSON.stringify(p.prepare)}](raw)` : 'raw';
+    s += `window.EvarelPages[${JSON.stringify(p.name)}] = (raw) => window.EvarelReact.renderToStaticMarkup(window.EvarelReact.h(P[${JSON.stringify(p.export)}], ${prep}));\n`;
+  }
+  if (reg.components.length) s += `window.EvarelComponents = window.EvarelComponents || {};\n`;
+  for (const c of reg.components) s += `window.EvarelComponents[${JSON.stringify(c.name)}] = P[${JSON.stringify(c.export)}];\n`;
+  return s;
+}
+/* เรียงลำดับโหลดของกล่อง: เรียงตามชื่อ แล้วเลื่อนให้กล่องที่มี after ตามหลังเป้าหมาย | after ชี้ชื่อที่ไม่มี (ไม่ใช่หน้าเดิมหรือกล่อง) หรือเป็นวงวน = ล้มพร้อมเหตุผล ไม่ปล่อยลำดับเงียบพัง */
+export function orderBoxes(boxes, baseNames) {
+  const known = new Set([...baseNames, ...boxes.map((b) => b.name)]);
+  for (const b of boxes) for (const a of b.reg.after) if (!known.has(a)) throw new Error('กล่อง ' + b.name + ': after ชี้ ' + a + ' ซึ่งไม่ใช่หน้าเดิมหรือกล่องใด');
+  const out = [], done = new Set(baseNames), left = [...boxes].sort((x, y) => x.name.localeCompare(y.name));
+  while (left.length) {
+    const i = left.findIndex((b) => b.reg.after.every((a) => done.has(a)));
+    if (i < 0) throw new Error('ลำดับโหลดของกล่องเป็นวงวน: ' + left.map((b) => b.name).join(', '));
+    const [b] = left.splice(i, 1); out.push(b); done.add(b.name);
+  }
+  return out;
 }
 const boxJobs = [];
+const BASE_PAGES = ['settings', 'stats', 'all', 'item-row', 'today', 'calendar', 'ai', 'nav', 'dialog', 'sheet', 'form', 'detail', 'auth', 'quota', 'aiShell', 'focus']; /* ลำดับโหลดเดิมของหน้าเดิม (ต้องตรง REACT_PAGES_BASE ใน 19-views__settings.ts: บิลด์ตรวจ) */
 if (existsSync(PAGES)) {
   const legacy = new Set(readdirSync(SRC).filter((x) => x.endsWith('.jsx')).map((x) => x.replace(/\.jsx$/, '')));
   for (const d of readdirSync(PAGES, { withFileTypes: true }).filter((x) => x.isDirectory()).map((x) => x.name).sort()) {
     if (legacy.has(d)) throw new Error('กล่อง ' + d + ' ชื่อชนกับหน้าเดิม app/src/react/' + d + '.jsx (ห้ามค้างสองชุด)');
     const page = join(PAGES, d, d.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase()) + 'Page.jsx');
     if (!existsSync(page)) throw new Error('กล่อง ' + d + ' ไม่มีไฟล์หน้า ' + page);
-    const src = readFileSync(page, 'utf8');
-    boxJobs.push({ name: d, entry: page, hasPrepare: /export\s+(const|function)\s+prepare\b/.test(src) });
+    const reg = boxRegister(readBoxCard(join(PAGES, d), d), d);
+    const mod = await esbuild.build({ absWorkingDir: root, entryPoints: [page], bundle: false, write: false, metafile: true, logLevel: 'silent', format: 'esm', loader: { '.jsx': 'jsx' } });
+    const exps = Object.values(mod.metafile.outputs)[0].exports; /* export จริงของไฟล์หน้า (รวม default) */
+    for (const x of [...reg.pages.map((p) => p.export), ...reg.components.map((c) => c.export)]) if (!exps.includes(x)) throw new Error('กล่อง ' + d + ': register อ้าง export "' + x + '" ที่ไฟล์หน้าไม่มี (มี: ' + exps.join(', ') + ')');
+    boxJobs.push({ name: d, entry: page, reg, exps });
   }
 }
+const orderedBoxes = orderBoxes(boxJobs, BASE_PAGES);
+{ /* ชื่อที่ลงทะเบียน (EvarelPages / EvarelComponents) ต้องไม่ซ้ำกันข้ามกล่อง: ซ้ำ = กล่องหลังทับกล่องก่อนเงียบๆ จึงล้มพร้อมบอกว่าชนกับใคร */
+  const seenP = new Map(), seenC = new Map();
+  for (const b of orderedBoxes) {
+    for (const p of b.reg.pages) { if (seenP.has(p.name)) throw new Error('ชื่อหน้า "' + p.name + '" ลงทะเบียนซ้ำ: กล่อง ' + seenP.get(p.name) + ' และ ' + b.name); seenP.set(p.name, b.name); }
+    for (const c of b.reg.components) { if (seenC.has(c.name)) throw new Error('ชื่อ component "' + c.name + '" ลงทะเบียนซ้ำ: กล่อง ' + seenC.get(c.name) + ' และ ' + b.name); seenC.set(c.name, b.name); }
+  }
+}
+/* ชื่อไฟล์ผลลัพธ์ต่อกล่อง: กล่องหนึ่งใบเขียนไฟล์เดียว ชื่อ = ชื่อโฟลเดอร์ (loadReactFile โหลดตามชื่อนี้) ไม่ชนชื่อหน้าเดิมอยู่แล้วจากข้างบน */
 mkdirSync(OUT, { recursive: true });
 let bad = 0;
 for (const j of jobs) {
@@ -97,10 +146,48 @@ for (const j of boxJobs) {
   /* stdin ให้ esbuild: ไฟล์ทางเข้าเสมือนฉีดบรรทัด window แทนกล่อง | JSX ของกล่องใช้ React ที่ import เอง จึงแปลงเป็น h ของ runtime ผ่าน jsxFactory */
   const r = await esbuild.build({ ...common, external: ['react', 'react-dom'], plugins: [trayShare, boxReactShim],
     jsx: 'transform', jsxFactory: 'window.EvarelReact.h', jsxFragment: 'window.EvarelReact.Fragment', inject: ['box-inject:h'],
-    stdin: { contents: boxEntry(j.name, './' + j.name + '/' + j.entry.split('/').pop(), j.hasPrepare), resolveDir: PAGES, sourcefile: 'box-entry-' + j.name + '.js', loader: 'js' },
+    stdin: { contents: boxEntry(j.name, './' + j.name + '/' + j.entry.split('/').pop(), j.reg, j.exps), resolveDir: PAGES, sourcefile: 'box-entry-' + j.name + '.js', loader: 'js' },
     entryPoints: undefined });
   const text = r.outputFiles[0].text, dest = join(OUT, j.name + '.js');
   if (check) { const same = existsSync(dest) && readFileSync(dest, 'utf8') === text; if (!same) { bad++; console.error('ต่างจากที่ commit: ' + dest); } }
   else { writeFileSync(dest, text); console.log('สร้างกล่อง ' + j.name + '.js (' + text.length + ' ไบต์)'); }
+}
+
+/* ===== F4-ลงทะเบียนเอง: บิลด์เป็นเจ้าของบล็อกลงทะเบียนใน 2 ไฟล์ (ห้ามแก้มือ) =====
+   (1) app/src/m/19-views__settings.ts  -> REACT_BOX_PAGES   (ลำดับโหลด: หน้าเดิมคงเดิมเป๊ะ แล้วตามด้วยกล่องที่เรียงตาม after)
+   (2) app/web/sw.js                    -> รายการแคชของกล่อง
+   ผลคอมไพล์ app/web/js/m/19-views__settings.js ถูก commit ด้วย จึงคอมไพล์คู่ด้วย tsc ตัวเดียวกับ evarel_gate_group.sh (ไม่ให้ผลล้าหลังเงียบๆ)
+   โหมด --check: เทียบอย่างเดียว ไม่เขียนอะไร */
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+const SETTINGS_TS = join(root, 'app/src/m/19-views__settings.ts'), SETTINGS_JS = join(root, 'app/web/js/m/19-views__settings.js'), SW = join(root, 'app/web/sw.js');
+const BLOCK = (file, txt) => { const m = /(\/\* BOXES:START[^*]*\*\/)([\s\S]*?)(\/\* BOXES:END \*\/)/.exec(txt); if (!m) throw new Error(file + ': ไม่มีเครื่องหมายบล็อก BOXES:START/END (ห้ามลบ)'); return m; };
+export function renderSettingsBlock(names) { return `const REACT_BOX_PAGES:string[]=${JSON.stringify(names)};`; }
+export function renderSwBlock(names) { return names.length ? '\n' + names.map((n) => `  './js/react/${n}.js',`).join('\n') + '\n  ' : '\n  '; }
+function compileSettings(tsText) {
+  const d = mkdtempSync(join(tmpdir(), 'reg-tsc-')); mkdirSync(join(d, 'in')); mkdirSync(join(d, 'out'));
+  writeFileSync(join(d, 'in/19-views__settings.ts'), tsText);
+  try { execFileSync(join(root, 'node_modules/.bin/tsc'), ['--ignoreConfig', '--target', 'ES2022', '--module', 'ESNext', '--skipLibCheck', '--strict', 'false', '--noImplicitAny', 'false', '--noEmitOnError', 'false', '--outDir', join(d, 'out'), join(d, 'in/19-views__settings.ts')], { stdio: 'ignore' }); } catch { /* tsc คืน exit 2 เมื่อมี error ของ global ที่ไม่ได้ประกาศ (โมดูล window เดิม) ซึ่งเป็นปกติของไฟล์นี้ ผลยังถูกเขียน (noEmitOnError=false) */ }
+  const out = readFileSync(join(d, 'out/19-views__settings.js'), 'utf8'); rmSync(d, { recursive: true, force: true }); return out;
+}
+{
+  /* กล่องที่ย้ายมาจากหน้าเดิม (stats, all) คงตำแหน่งเดิมใน REACT_PAGES_BASE ไม่ใส่ซ้ำในบล็อก (ไม่งั้นโหลดไฟล์เดียวกันสองรอบและแคชซ้ำ) | บล็อก = เฉพาะชื่อที่ยังไม่อยู่ใน BASE */
+  const names = orderedBoxes.map((b) => b.name).filter((n) => !BASE_PAGES.includes(n)); /* ชื่อไฟล์ = ชื่อโฟลเดอร์กล่อง (loadReactFile โหลด js/react/<ชื่อ>.js) ไม่ใช่ชื่อที่ลงทะเบียนใน EvarelPages */
+  /* ตรวจ BASE ในไฟล์ TS ตรงกับ BASE_PAGES ของบิลด์ (สองที่ต้องไม่เพี้ยนจากกัน) */
+  const tsText = readFileSync(SETTINGS_TS, 'utf8');
+  const bm = /const REACT_PAGES_BASE=\[([^\]]*)\]/.exec(tsText); if (!bm) throw new Error('19-views__settings.ts: ไม่พบ REACT_PAGES_BASE');
+  const baseInTs = bm[1].split(',').map((s) => s.trim().replace(/^'|'$/g, ''));
+  if (JSON.stringify(baseInTs) !== JSON.stringify(BASE_PAGES)) throw new Error('REACT_PAGES_BASE ใน 19-views__settings.ts ไม่ตรง BASE_PAGES ของบิลด์: ' + baseInTs.join(',') + ' != ' + BASE_PAGES.join(','));
+  const m1 = BLOCK('19-views__settings.ts', tsText);
+  const newTs = tsText.replace(m1[0], m1[1] + renderSettingsBlock(names) + m1[3]);
+  const swText = readFileSync(SW, 'utf8'); const m2 = BLOCK('sw.js', swText);
+  const newSw = swText.replace(m2[0], m2[1] + renderSwBlock(names) + m2[3]);
+  const newJs = compileSettings(newTs);
+  const cur = [[SETTINGS_TS, tsText, newTs], [SW, swText, newSw], [SETTINGS_JS, existsSync(SETTINGS_JS) ? readFileSync(SETTINGS_JS, 'utf8') : '', newJs]];
+  for (const [f, a, b] of cur) {
+    if (a === b) continue;
+    if (check) { bad++; console.error('บล็อกลงทะเบียนไม่ตรงกับกล่อง: ' + f + ' (รัน node scripts/build-react.mjs)'); }
+    else { writeFileSync(f, b); console.log('อัปเดตบล็อกลงทะเบียน ' + f.replace(root + '/', '')); }
+  }
 }
 if (check) { console.log(bad ? 'ไม่ตรง ' + bad + ' ไฟล์' : 'ตรงทุกไฟล์ (' + (jobs.length + boxJobs.length) + ')'); process.exit(bad ? 1 : 0); }
