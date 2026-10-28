@@ -4,7 +4,7 @@
  * ค่าอ้างอิงเดียวกับชั้น m (ไม่คัดลอก): AUTH_VIEWS เป็นอ็อบเจ็กต์ของฟังก์ชันที่อ่านสถานะฟอร์มตอนเรียก จึงคัดลอกไม่ได้
  * อ่านตอนเรียก ไม่ใช่ตอน import เพื่อคงลำดับโหลด
  */
-import { tray, T } from '../shared/tray.js';
+import { tray, T } from '../tray.js';
 
 const authConsts = tray('auth', {
   AUTH_SPLASH: T.string,

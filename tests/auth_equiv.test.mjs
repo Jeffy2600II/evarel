@@ -1,4 +1,4 @@
-/* เทียบหน้าล็อกอิน: ฉบับ string เดิม (22-views__auth AUTH_VIEWS) กับฉบับ React จริง (react/auth.jsx AuthContent)
+/* เทียบหน้าล็อกอิน: ฉบับ string เดิม (22-views__auth AUTH_VIEWS) กับฉบับ React จริง (shared/auth/AuthPage.jsx)
    เกณฑ์: DOM จริงเท่ากันทุกไบต์ (browser-serialized innerHTML) ทั้งสองฝั่ง
    ครอบกรณี: ทุก auth screen (welcome, login, signup, forgot, sent, code, newpw) + loading splash
    รัน: node tests/auth_equiv.test.mjs */

@@ -15,6 +15,7 @@
 
 | ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
 |---|---|---|---|---|
+| [`auth`](app/shared/auth) | [`AuthPage.jsx`](app/shared/auth/AuthPage.jsx) | [`parts/`](app/shared/auth/parts) | [`auth.tray.js`](app/shared/auth/auth.tray.js) [`auth.style.css`](app/shared/auth/auth.style.css) | [`BOX.md`](app/shared/auth/BOX.md) |
 | [`dialog`](app/shared/dialog) | [`DialogPage.jsx`](app/shared/dialog/DialogPage.jsx) | [`parts/`](app/shared/dialog/parts) | [`dialog.tray.js`](app/shared/dialog/dialog.tray.js) [`dialog.style.css`](app/shared/dialog/dialog.style.css) | [`BOX.md`](app/shared/dialog/BOX.md) |
 | [`item-row`](app/shared/item-row) | [`ItemRowPage.jsx`](app/shared/item-row/ItemRowPage.jsx) | [`parts/`](app/shared/item-row/parts) | [`item-row.tray.js`](app/shared/item-row/item-row.tray.js) [`item-row.style.css`](app/shared/item-row/item-row.style.css) | [`BOX.md`](app/shared/item-row/BOX.md) |
 | [`nav`](app/shared/nav) | [`NavPage.jsx`](app/shared/nav/NavPage.jsx) | [`parts/`](app/shared/nav/parts) | [`nav.tray.js`](app/shared/nav/nav.tray.js) [`nav.style.css`](app/shared/nav/nav.style.css) | [`BOX.md`](app/shared/nav/BOX.md) |
@@ -31,7 +32,6 @@
 รายการไฟล์ในโซน:
 - 📄 [`README.md`](app/data/README.md)
 - 📄 [`ai.tray.js`](app/data/ai.tray.js)
-- 📄 [`auth.tray.js`](app/data/auth.tray.js)
 - 📄 [`calendar.tray.js`](app/data/calendar.tray.js)
 - 📄 [`dates.tray.js`](app/data/dates.tray.js)
 - 📄 [`detail.tray.js`](app/data/detail.tray.js)
