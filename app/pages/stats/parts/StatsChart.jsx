@@ -13,3 +13,5 @@ export function StatsChart({ isM, period, cols }) {
             h('span', { className: 'ev-col-l' }, c.label)))))
   );
 }
+
+export const probe = window.EvarelProbe;
