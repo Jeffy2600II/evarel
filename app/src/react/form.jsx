@@ -1,12 +1,11 @@
 // เนื้อฟอร์มเพิ่ม/แก้ไขของ Evarel เป็น React (S4 s4f-shell-layers-auth ไบต์ฟอร์ม): typeBody (ขั้นเลือกประเภท) + formBody (ฟอร์ม 4 ประเภท)
 // เทียบ template ใน 14-ui__form ทุกไบต์: ลำดับ attribute ตาม template เดิม, data-act เดิมสำหรับ event delegation ของ 25-actions
 // อินพุตใช้ defaultValue (uncontrolled) เหมือนพฤติกรรมเดิม: พิมพ์แล้ว document input listener (25-actions) เขียน ST.D ระหว่างพิมพ์ ไม่ re-render จนกว่าจะกดปุ่มแล้ว renderForm สั่ง mount ใหม่
-// ค่าสรุป (repSum/remSum/rangeSum) เรียกจาก window ตรงๆ เพราะเป็นฟังก์ชันบริสุทธิ์ที่ export ไว้แล้ว | อ่านสถานะจาก window ตอน render เหมือนหน้าอื่น
-import { takeFormConsts, takeFormFns, takeFormIcon } from '../../data/form.tray.js';
+// ค่าสรุป (repSum/remSum/rangeSum) และไอคอนรับผ่าน form.tray.js | ร่างฟอร์ม (ST.D) อ่านสดจาก takeFormDraft ทุกครั้งที่เรนเดอร์ | ไฟล์นี้เหลือแค่ลงทะเบียนตัวเองที่ EvarelPages/EvarelComponents
+import { takeFormConsts, takeFormFns, takeFormIcon, takeFormDraft } from '../../data/form.tray.js';
 import { esc } from '../core/dates.ts';
 import { TYPES, remText } from '../core/schedule.ts';
 const { h } = window.EvarelReact;
-const W = () => window;
 const raw = (html) => ({ __html: html });
 const icon = (n) => takeFormIcon().icon(n);
 
@@ -20,13 +19,13 @@ function Seg(p) {
     h('button', { key: k, type: 'button', 'aria-pressed': String(p.cur === k), 'data-act': p.act, 'data-id': String(k) }, l)));
 }
 function SR(p) {
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   return h('button', { type: 'button', className: 'ev-set-row', 'data-act': 'dopen', 'data-id': p.k, 'aria-expanded': String(D.open === p.k) },
     h('span', {}, p.label),
     h('small', { dangerouslySetInnerHTML: raw(esc(p.val) + icon('chev')) }));
 }
 function PN(p) {
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   return h('div', { className: 'ev-panel', 'data-key': p.k, 'data-open': String(D.open === p.k) },
     h('div', {}, h('div', { className: 'ev-panel-in' }, p.children)));
 }
@@ -35,7 +34,7 @@ function IR(p) {
 }
 function TR(p) {
   /* TR (เดโม v20/v24): แถวเวลาแบบ tbox — DOM ตรงฉบับ string เป๊ะ */
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   const v = D[p.name] || '';
   return h('div', { className: 'ev-set-row' }, h('span', {}, p.label),
     h('span', { className: 'ev-tbox-w' },
@@ -46,7 +45,7 @@ function TR(p) {
         : h('small', { className: 'ev-tbox-h' }, 'ยังไม่ได้ตั้ง')));
 }
 function RI(p) {
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   return h('input', { className: 'ev-row-input', 'aria-label': p.name, type: p.type, defaultValue: D[p.name] ?? '', name: p.name }); /* prop order = React DOM: regular ก่อน แล้ว type,value,name ท้าย (SSR พิมพ์ตาม insertion order ตรงกัน) */
 }
 function Stepper(p) {
@@ -61,14 +60,14 @@ function Stepper(p) {
 
 /* == พาเนลขั้นสูง (rep/range/rem) ตาม repPanel/rangePanel/remPanel == */
 function RepPanel() {
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   const els = [h(Seg, { key: 's', act: 'dunit', opts: [['none', 'ไม่ซ้ำ'], ['day', 'วัน'], ['week', 'สัปดาห์'], ['month', 'เดือน']], cur: D.unit })];
   if (D.unit !== 'none') els.push(h(Stepper, { key: 'e', label: 'ทุก ๆ', act: 'devery', v: D.every, unit: h('span', {}, takeFormConsts().UNIT_TH[D.unit]) }));
   if (D.unit === 'week') els.push(h(Chips, { key: 'd', act: 'dday', opts: takeFormConsts().WEEK_OPTS, active: D.days }));
   return els;
 }
 function RangePanel(p) {
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   const els = [
     h('div', { key: 's', className: 'ev-stepper' }, h('span', {}, p.lab), h(RI, { name: 'start', type: 'date' })),
     h('div', { key: 'e', className: 'ev-stepper' }, h('span', {}, 'มีวันสิ้นสุด'),
@@ -79,7 +78,7 @@ function RangePanel(p) {
 }
 function RemPanel() {
   /* ตามเดโม v24 จริง: ไม่มีสวิตช์ตรงเวลา ใช้ชิป m=0 รวมในพรีเซ็ตเดียวกัน + empty-note + tbox */
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   const at = D.rem.filter(r => r.k === 'at');
   return [
     h(Chips, { key: 'a', act: 'drem', opts: takeFormConsts().REM_PRESETS.map(m => [m, remText({ k: 'before', m })]), active: D.rem.filter(r => r.k === 'before').map(r => r.m) }),
@@ -96,7 +95,6 @@ function RemPanel() {
   ];
 }
 function RemRow() {
-  const w = W();
   /* notifyIssue ตามเดโม v24: เตือนเมื่อตั้งแจ้งก่อนถึงเวลาแต่ไม่มีเวลาทำรายการ พร้อมปุ่มปิดแจ้งเตือน */
   const issue = takeFormFns().notifyIssue();
   return [h(SR, { key: 'r', label: 'เตือน', val: takeFormFns().remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel)),
@@ -107,7 +105,6 @@ function SET() { return h('div', { className: 'ev-set' }, ...arguments); }
 
 /* == ขั้นที่ 1: เลือกประเภท (typeBody) == */
 function TypeBody() {
-  const w = W();
   return h('div', { className: 'ev-types' }, Object.entries(takeFormFns().TYPE_INFO).map(([k, [ic, d]]) =>
     h('button', { key: k, className: 'ev-type', 'data-act': 'dtype', 'data-id': k },
       h('span', { key: 'o', className: 'orb', dangerouslySetInnerHTML: raw(icon(ic)) }),
@@ -117,7 +114,7 @@ function TypeBody() {
 
 /* == ขั้นที่ 2: ฟอร์มตามประเภท (formBody) == */
 function FormFields() {
-  const w = W(), D = w.ST.D;
+  const D = takeFormDraft();
   const T = D.type, multi = D.track !== 'check';
   const ph = { habit: 'เช่น ดื่มน้ำ', task: 'เช่น การบ้านคณิต', event: 'เช่น ประชุมชมรม', class: 'ชื่อวิชา' }[T];
   const els = [

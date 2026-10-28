@@ -41,3 +41,15 @@ const formIcon = tray('form', { icon: T.func });
 export function takeFormIcon(src = (typeof window !== 'undefined' ? window : {})) {
   return formIcon.take({ icon: src.icon });
 }
+
+const formDraft = tray('form', { ST: T.any });
+
+/**
+ * F3.3-g15: ฟอร์มที่กำลังกรอก (ST.D ของชั้น m) | อ่านสดทุกครั้งที่เรียก ห้ามเก็บค่าไว้
+ * เหตุผล: ชั้น m กำหนด ST.D ใหม่ได้ (openForm, dtype ทำ ST.D = ...) การจำค่าไว้ครั้งเดียวจะอ่านร่างเก่า
+ * คืนค่าอ้างอิงเดิมของ ST.D (ไม่คัดลอก) เพื่อให้ผู้เรียกเห็นการแก้ภายในอ็อบเจ็กต์เหมือนเดิม
+ * เดิมไม่มี guard (w.ST.D ถูกอ่านตรง ๆ แล้วพังถ้า ST ยังไม่มี) ถาดตรวจแค่ว่า ST มีอยู่
+ */
+export function takeFormDraft(src = (typeof window !== 'undefined' ? window : {})) {
+  return formDraft.take({ ST: src.ST }).ST.D;
+}
