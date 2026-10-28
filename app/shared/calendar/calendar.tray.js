@@ -4,7 +4,7 @@
  * ครอบสำเนาของชั้น m ตัวเดียว ไม่คัดลอกโค้ด: agendaHTML อ่านรายการจริงของผู้ใช้ผ่าน onDate/itemRow/dayLab ย้ายเข้า core/ ไม่ได้
  * อ่านตอนเรียก ไม่ใช่ตอน import เพื่อคงลำดับโหลด
  */
-import { tray, T } from '../shared/tray.js';
+import { tray, T } from '../tray.js';
 
 const calendarFns = tray('calendar', {
   agendaHTML: T.func,
@@ -27,4 +27,14 @@ export function takeCalendarLifecycle(src = (typeof window !== 'undefined' ? win
     mount() { if (typeof src.mountMain !== 'function') return false; src.mountMain(); return true; },
     destroy(key) { if (typeof src.destroyCal === 'function') src.destroyCal(key); },
   };
+}
+
+/**
+ * F6: useEffect ของ React ส่งมาจากถาด เพราะบิลด์ฉีดให้กล่องแค่ h/Fragment และกล่องห้ามอ่าน window เอง (BOX-05)
+ * ค่าอ้างอิงเดียวกับ window.EvarelReact.useEffect (ไม่คัดลอก) อ่านตอนเรียก ไม่ใช่ตอน import เพื่อคงลำดับโหลด
+ */
+export function takeReactEffect(src = (typeof window !== 'undefined' ? window : {})) {
+  const R = src.EvarelReact;
+  if (!R || typeof R.useEffect !== 'function') throw new Error('[tray:calendar] EvarelReact.useEffect ต้องเป็นฟังก์ชัน');
+  return R.useEffect;
 }
