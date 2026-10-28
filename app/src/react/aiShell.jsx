@@ -2,15 +2,16 @@
 // Fragment ระดับบนสุด (ไม่มี wrapper) เพราะ #page เป็น flex column และ .ev-page-scroll ใช้ flex:1 — ใส่ wrapper จะบั๊กเลย์เอาต์ทันที
 // เทียบ template เดิม aiShellHTML ใน 17-views__ai ทุกไบต์: ลำดับ attribute ตาม template, text node '\n ' ระหว่างบล็อกคงเดิม, data-flat/hidden เป็นค่าว่าง
 // พฤติกรรมผูก DOM (quotaPaint เขียนชิป, aiAutosize ปรับ textarea, aiRenderDrawer เขียนรายการ) ทำงานกับ DOM ของ React ได้เพราะอ้างด้วย id
+import { takeAi } from '../../data/ai.tray.js';
 const { h, Fragment } = window.EvarelReact;
 const W = () => window;
 
 function AiShellContent(p) {
-  const w = W();
-  const ic = (n) => ({ dangerouslySetInnerHTML: { __html: w.icon(n) } });
+  const D = takeAi();
+  const ic = (n) => ({ dangerouslySetInnerHTML: { __html: D.icon(n) } });
   return h(Fragment, null, [
     h('div', { key: 'bar', className: 'ev-aibar' }, [
-      h('button', { key: 'bk', className: 'ev-backpill', 'data-act': 'close', 'aria-label': 'กลับหน้าหลัก', dangerouslySetInnerHTML: { __html: w.icon('back') + 'กลับ' } }),
+      h('button', { key: 'bk', className: 'ev-backpill', 'data-act': 'close', 'aria-label': 'กลับหน้าหลัก', dangerouslySetInnerHTML: { __html: D.icon('back') + 'กลับ' } }),
       h('button', { key: 'h', className: 'ev-roundbtn', 'data-act': 'ai-hist', 'aria-label': 'เมนูแชท', ...ic('list') }),
       h('h2', { key: 't', id: 'aiTitle', className: 'ev-aititle' }, 'AI'),
       h('div', { key: 'cap', className: 'ev-capsule' }, [
@@ -39,14 +40,14 @@ function AiShellContent(p) {
           h('h2', { key: 'h2' }, 'Evarel AI'),
           h('button', { key: 'x', className: 'ev-icon-btn', 'data-flat': '', 'data-act': 'ai-hist', 'aria-label': 'ปิดเมนูแชท', ...ic('x') }),
         ]),
-        h('button', { key: 'nw', className: 'ev-navrow', 'data-tone': 'primary', 'data-act': 'ai-new', dangerouslySetInnerHTML: { __html: w.icon('edit') + '<span>แชทใหม่</span>' } }),
-        h('button', { key: 'sr', className: 'ev-navrow', 'data-act': 'ai-search', dangerouslySetInnerHTML: { __html: w.icon('search') + '<span>ค้นหาแชท</span>' } }),
-        h('label', { key: 's', className: 'ev-search', id: 'dSearchWrap', hidden: true, dangerouslySetInnerHTML: { __html: w.icon('search') + '<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท">' } }),
+        h('button', { key: 'nw', className: 'ev-navrow', 'data-tone': 'primary', 'data-act': 'ai-new', dangerouslySetInnerHTML: { __html: D.icon('edit') + '<span>แชทใหม่</span>' } }),
+        h('button', { key: 'sr', className: 'ev-navrow', 'data-act': 'ai-search', dangerouslySetInnerHTML: { __html: D.icon('search') + '<span>ค้นหาแชท</span>' } }),
+        h('label', { key: 's', className: 'ev-search', id: 'dSearchWrap', hidden: true, dangerouslySetInnerHTML: { __html: D.icon('search') + '<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท">' } }),
       ]),
       h('div', { key: 'dl', className: 'ev-drawer-list', id: 'drawerList' }),
       h('div', { key: 'df', className: 'ev-drawer-foot' }, [
         h('button', { key: 'av', className: 'ev-avatar', type: 'button', 'data-act': 'settings', 'aria-label': 'ตั้งค่า', style: { '--av': p.avatarBg, '--sz': '38px' } }, p.avatarText),
-        h('span', { key: 'nm', className: 'ev-foot-name' }, p.userName || (w.profileOf ? (w.profileOf().name || '') : '')),
+        h('span', { key: 'nm', className: 'ev-foot-name' }, p.userName || (D.profileOf ? (D.profileOf().name || '') : '')),
         h('button', { key: 'gr', className: 'ev-icon-btn', 'data-flat': '', 'data-act': 'settings', 'aria-label': 'ตั้งค่า', ...ic('gear') }),
       ]),
     ]),
