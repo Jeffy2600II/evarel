@@ -8,22 +8,24 @@ let fails = 0; const t = (n, ok, extra = '') => { console.log(`${ok ? 'PASS' : '
 const run = (cwd, args) => { try { return { ok: true, out: execFileSync(process.execPath, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }) }; } catch (e) { return { ok: false, out: (e.stdout || '') + (e.stderr || '') }; } };
 /* (1) ใช้รีโปจริงตรวจว่าไม่มีกล่อง = เดิมทุกไบต์ */
 const real = run(root, ['scripts/build-react.mjs', '--check']);
-t('app/pages ว่าง: ผลบิลด์เดิมตรงทุกไบต์', real.ok && /ตรงทุกไฟล์/.test(real.out), real.out.slice(-120));
+t('ผลบิลด์ที่ commit ตรงทุกไบต์ (หน้าเดิมและกล่องจริงใน app/pages)', real.ok && /ตรงทุกไฟล์/.test(real.out), real.out.slice(-120));
 /* สำเนาชั่วคราว: คัดลอกเฉพาะที่บิลด์ต้องใช้ (ไม่ใช้ git worktree เพื่อไม่แตะประวัติ) */
 const tmp = fs.mkdtempSync(path.join(process.env.TMPDIR || os.tmpdir(), 'boxpipe-'));
 const cp = (rel) => fs.cpSync(path.join(root, rel), path.join(tmp, rel), { recursive: true });
 for (const r of ['scripts/build-react.mjs', 'app/src', 'app/shared', 'app/data', 'app/tools', 'app/web/js/react', 'package.json']) cp(r);
-fs.mkdirSync(path.join(tmp, 'app/pages'), { recursive: true });
+fs.rmSync(path.join(tmp, 'app/pages'), { recursive: true, force: true }); fs.mkdirSync(path.join(tmp, 'app/pages'), { recursive: true }); /* สำเนาเริ่มจาก pages ว่าง: ทดสอบเฉพาะกล่องของตัวทดสอบเอง */
 fs.mkdirSync(path.join(tmp, 'web-shell/node_modules'), { recursive: true });
 for (const m of ['react', 'react-dom', 'scheduler']) fs.cpSync(path.join(root, 'web-shell/node_modules', m), path.join(tmp, 'web-shell/node_modules', m), { recursive: true });
 fs.symlinkSync(path.join(root, 'node_modules'), path.join(tmp, 'node_modules'));
 try {
   /* (2) ชื่อชน */
-  fs.mkdirSync(path.join(tmp, 'app/pages/stats'));
-  fs.writeFileSync(path.join(tmp, 'app/pages/stats/StatsPage.jsx'), 'export default function StatsPage(){ return null; }\n');
+  const legacyName = fs.readdirSync(path.join(tmp, 'app/src/react')).find((x) => x.endsWith('.jsx')).replace(/\.jsx$/, ''); /* หน้าเดิมที่ยังอยู่ใน src/react ตอนนี้ (เลือกตอนรัน ไม่ฮาร์ดโค้ด) */
+  const Pas = legacyName.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase());
+  fs.mkdirSync(path.join(tmp, 'app/pages/' + legacyName), { recursive: true });
+  fs.writeFileSync(path.join(tmp, 'app/pages/' + legacyName + '/' + Pas + 'Page.jsx'), 'export default function P(){ return null; }\n');
   const clash = run(tmp, ['scripts/build-react.mjs']);
-  t('กล่องชื่อชนหน้าเดิม: บิลด์ล้มพร้อมเหตุผล', !clash.ok && /ชื่อชนกับหน้าเดิม/.test(clash.out), clash.out.slice(-160));
-  fs.rmSync(path.join(tmp, 'app/pages/stats'), { recursive: true });
+  t('กล่องชื่อชนหน้าเดิม (' + legacyName + '): บิลด์ล้มพร้อมเหตุผล', !clash.ok && /ชื่อชนกับหน้าเดิม/.test(clash.out), clash.out.slice(-160));
+  fs.rmSync(path.join(tmp, 'app/pages/' + legacyName), { recursive: true });
   /* (3) กล่องรูปเบ้าจูน */
   const tun = run(tmp, ['app/tools/tuner.mjs', 'demobox']);
   t('เบ้าจูนสร้างกล่อง', tun.ok, tun.out.slice(-120));

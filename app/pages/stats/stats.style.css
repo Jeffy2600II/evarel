@@ -1,0 +1,5 @@
+/* สีและสไตล์เฉพาะหน้าของกล่อง stats */
+.box-stats {
+  padding: var(--sp-4, 16px);
+  color: var(--c-ink-a, #333);
+}
