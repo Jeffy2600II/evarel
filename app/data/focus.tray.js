@@ -13,3 +13,15 @@ const focusFns = tray('focus', { icon: T.func, find: T.func, dayLab: T.func });
 export function takeFocusFns(src = (typeof window !== 'undefined' ? window : {})) {
   return focusFns.take({ icon: src.icon, find: src.find, dayLab: src.dayLab });
 }
+
+const focusLive = tray('focus', { ST: T.any, UI: T.any, tmMs: T.func });
+
+/**
+ * F3.3-g18: สภาพจับเวลาสดของชั้น m (ST.TM, UI.fdate, tmMs) | อ่านสดทุกครั้งที่เรียก ห้ามเก็บผลข้ามการเรียก
+ * เหตุผล: ST.TM ถูกกำหนดใหม่ได้ 5 จุดในชั้น m (จบ ยกเลิก ออกจากระบบ นำเข้า เริ่ม) และ UI.fdate ถูกกำหนดใหม่ 2 จุด (เปลี่ยนวัน) tmMs อ่าน Date.now ตอนเรียก
+ * จึงคืน getter ที่อ่านจาก ST/UI ของจริงทุกครั้ง (ไม่คัดลอกค่า) และ tmMs ของชั้น m ตัวเดียว (ไม่คัดลอกสูตร) | ถ้า ST ยังไม่มี ถาดตรวจพบและโยนข้อผิดพลาดชัดเจน
+ */
+export function takeFocusLive(src = (typeof window !== 'undefined' ? window : {})) {
+  const g = focusLive.take({ ST: src.ST, UI: src.UI, tmMs: src.tmMs });
+  return { tm: () => g.ST.TM, fdate: () => g.UI.fdate, tmMs: g.tmMs };
+}

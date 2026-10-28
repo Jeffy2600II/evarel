@@ -3,9 +3,8 @@
 // เทียบ template เดิม focusBody ใน 15-core__timer ทุกไบต์ (style --p เทียบค่า semantic ตามแพทเทิร์น ai_equiv)
 import { fmtClock } from '../core/dates.ts';
 import { val } from '../core/schedule.ts';
-import { takeFocusFns } from '../../data/focus.tray.js';
+import { takeFocusFns, takeFocusLive } from '../../data/focus.tray.js';
 const { h, Fragment } = window.EvarelReact;
-const W = () => window;
 
 function FocusBtn({ a, ic, l, big, id }) {
   const F = takeFocusFns();
@@ -16,12 +15,13 @@ function FocusBtn({ a, ic, l, big, id }) {
 }
 
 function FocusContent(p) {
-  const w = W();
   const F = takeFocusFns();
+  const L = takeFocusLive();
   const it = F.find(p.id);
   if (!it) return null;
-  const mine = w.ST.TM && w.ST.TM.id == it.id, run = mine && !!w.ST.TM.startedAt, ms = mine ? w.tmMs() : 0;
-  const goal = it.target * 60000, base = val(it, mine ? w.ST.TM.date : w.UI.fdate) * 60000, pct = Math.min(100, (base + ms) / goal * 100);
+  const tm = L.tm(), fdate = L.fdate();
+  const mine = tm && tm.id == it.id, run = mine && !!tm.startedAt, ms = mine ? L.tmMs() : 0;
+  const goal = it.target * 60000, base = val(it, mine ? tm.date : fdate) * 60000, pct = Math.min(100, (base + ms) / goal * 100);
   const acts = !mine
     ? h(FocusBtn, { key: 's', a: 'tstart', ic: 'play', l: 'เริ่ม', big: true, id: it.id })
     : run
@@ -37,7 +37,7 @@ function FocusContent(p) {
     h('div', { key: 'scroll', className: 'ev-page-scroll', style: { textAlign: 'center' } }, [
       h('div', { key: 'h1' }, [
         h('p', { key: 't', className: 'ev-title', role: 'heading', 'aria-level': 3, style: { padding: '0' } }, it.title),
-        h('p', { key: 'p', className: 'ev-sub' }, `เป้าหมาย ${it.target} ${it.unitName || 'นาที'} · ${F.dayLab(w.UI.fdate)}ทำแล้ว ${val(it, w.UI.fdate)}`),
+        h('p', { key: 'p', className: 'ev-sub' }, `เป้าหมาย ${it.target} ${it.unitName || 'นาที'} · ${F.dayLab(fdate)}ทำแล้ว ${val(it, fdate)}`),
       ]),
       '\n ',
       h('div', { key: 'dial', className: 'ev-dial', id: 'dial', 'data-run': String(run), style: { '--p': String(pct) } },
