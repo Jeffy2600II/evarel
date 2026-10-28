@@ -19,14 +19,38 @@ const common = { absWorkingDir: root, bundle: true, format: 'iife', platform: 'b
 // alias ต้องเป็นพาธสัมพัทธ์จากราก (ไม่ใช่สัมบูรณ์) ไม่งั้น esbuild ข้ามการเลือก exports ของ react-dom ไปใช้ server.node.js (ใช้ util/stream ของ Node รันในเบราว์เซอร์ไม่ได้)
 const alias = { react: './web-shell/node_modules/react', 'react-dom': './web-shell/node_modules/react-dom' };
 
-// F3.3-g13: ไฟล์หน้าไม่บันเดิล shared/tray.js ของตัวเอง ให้อ่านจาก window.EvarelTray ที่ runtime เปิดไว้ (รัน runtime ก่อนเสมอ)
-// ชื่อ export ต้องตรงกับ tray.js ทุกตัว ไม่งั้นบิลด์ล้มทันที (ไม่ปล่อยให้ undefined ไปพังตอนรัน)
-// ข้อความผิดพลาดตอนรันเป็นอังกฤษสั้นๆ โดยตั้งใจ: ไทยจะถูกฝังซ้ำทุกไฟล์หน้า (วัดแล้วโต ~2.2 KB) | ความหมาย: runtime.js ต้องโหลดก่อนไฟล์หน้า
-const TRAY_EXPORTS = ['TrayError', 'T', 'tray'];
-const trayShare = { name: 'tray-share', setup(b) {
-  b.onResolve({ filter: /shared\/tray\.js$/ }, (a) => ({ path: a.path, namespace: 'tray-share' }));
-  b.onLoad({ filter: /.*/, namespace: 'tray-share' }, () => ({ loader: 'js', contents: `const L = window.EvarelTray; if (!L) throw new Error('EvarelTray missing: load runtime.js first');\n` + TRAY_EXPORTS.map((n) => `export const ${n} = L.${n};`).join('\n') }));
+// F3.3-g13/g14: โมดูลร่วมที่ไฟล์หน้าไม่บันเดิลสำเนาของตัวเอง แต่อ่านจาก global ที่ runtime เปิดไว้ (runtime โหลดก่อนไฟล์หน้าเสมอ)
+//   shared/tray.js -> window.EvarelTray | core/dates + core/schedule -> window.EvarelCore (g14)
+// รายชื่อ export อ่านจากไฟล์ต้นทางเองด้วย esbuild (ไม่ฮาร์ดโค้ด) กันตกหล่นเงียบ ๆ เมื่อมีคนเพิ่มฟังก์ชัน | อ่านไม่ได้หรือว่าง = บิลด์ล้มทันที
+// ข้อความผิดพลาดตอนรันเป็นอังกฤษสั้น ๆ โดยตั้งใจ: ไทยจะถูกฝังซ้ำทุกไฟล์หน้า | ความหมาย: runtime.js ต้องโหลดก่อนไฟล์หน้า
+const SHARED = [
+  { re: /shared\/tray\.js$/, file: 'app/shared/tray.js', global: 'EvarelTray', ns: 'tray-share' },
+  { re: /src\/core\/dates(\.ts)?$/, file: 'app/src/core/dates.ts', global: 'EvarelCore', ns: 'core-share-dates', key: 'dates' },
+  { re: /src\/core\/schedule(\.ts)?$/, file: 'app/src/core/schedule.ts', global: 'EvarelCore', ns: 'core-share-schedule', key: 'schedule' },
+];
+export async function exportsOf(rel) {
+  const r = await esbuild.build({ absWorkingDir: root, entryPoints: [rel], bundle: false, write: false, metafile: true, logLevel: 'silent', format: 'esm' });
+  const out = Object.values(r.metafile.outputs)[0].exports.filter((n) => n !== 'default');
+  if (!out.length) throw new Error('อ่านรายชื่อ export ของ ' + rel + ' ไม่ได้ (ว่าง)');
+  return out;
+}
+const sharedNames = Object.fromEntries(await Promise.all(SHARED.map(async (x) => [x.file, await exportsOf(x.file)])));
+const sharePlugin = { name: 'shared-via-runtime', setup(b) {
+  for (const x of SHARED) {
+    // จับด้วยพาธที่ resolve แล้ว ไม่ใช่ข้อความ import: core/*.ts import กันเองเป็น './dates' ซึ่งไม่ตรง regex พาธ จึงต้อง resolve ก่อนแล้วค่อยเทียบ (ไม่งั้นสำเนาหลุดเข้าไฟล์หน้าอีกชุด)
+    b.onResolve({ filter: /^\.{0,2}\/?[\w./-]*$/ }, async (a) => {
+      if (a.pluginData && a.pluginData.sharedProbe) return null;
+      const r = await b.resolve(a.path, { resolveDir: a.resolveDir, kind: a.kind, importer: a.importer, pluginData: { sharedProbe: true } });
+      if (r.errors.length || !x.re.test(r.path)) return null;
+      return { path: r.path, namespace: x.ns };
+    });
+    b.onLoad({ filter: /.*/, namespace: x.ns }, () => {
+      const L = x.key ? `window.${x.global}.${x.key}` : `window.${x.global}`;
+      return { loader: 'js', contents: `const L = ${L}; if (!L) throw new Error('${x.global} missing: load runtime.js first');\n` + sharedNames[x.file].map((n) => `export const ${n} = L.${n};`).join('\n') };
+    });
+  }
 } };
+const trayShare = sharePlugin;
 const jobs = [{ name: 'runtime', entry: join(SRC, 'runtime.js'), opts: { alias } }];
 for (const f of readdirSync(SRC).filter((x) => x.endsWith('.jsx')).sort())
   jobs.push({ name: f.replace(/\.jsx$/, ''), entry: join(SRC, f), opts: { external: ['react', 'react-dom'], plugins: [trayShare] } });

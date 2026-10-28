@@ -31,3 +31,13 @@ const formFns = tray('form', {
 export function takeFormFns(src = (typeof window !== 'undefined' ? window : {})) {
   return formFns.take({ TYPE_INFO: src.TYPE_INFO, remSum: src.remSum, repSum: src.repSum, rangeSum: src.rangeSum, notifyIssue: src.notifyIssue });
 }
+
+const formIcon = tray('form', { icon: T.func });
+
+/**
+ * F3.3-g13a: icon (ตัวผลิต SVG ของชั้น m) ที่ฟอร์มเรียก 4 จุด | ไม่มีใน core/ จึงผ่านถาด | อ่านตอนเรียก ไม่ใช่ตอน import
+ * เดิมไม่มี guard (w.icon ถูกเรียกตรง ๆ) ถาดตรวจแค่ว่าเป็นฟังก์ชัน
+ */
+export function takeFormIcon(src = (typeof window !== 'undefined' ? window : {})) {
+  return formIcon.take({ icon: src.icon });
+}

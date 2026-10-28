@@ -2,10 +2,13 @@
 // เทียบ template ใน 14-ui__form ทุกไบต์: ลำดับ attribute ตาม template เดิม, data-act เดิมสำหรับ event delegation ของ 25-actions
 // อินพุตใช้ defaultValue (uncontrolled) เหมือนพฤติกรรมเดิม: พิมพ์แล้ว document input listener (25-actions) เขียน ST.D ระหว่างพิมพ์ ไม่ re-render จนกว่าจะกดปุ่มแล้ว renderForm สั่ง mount ใหม่
 // ค่าสรุป (repSum/remSum/rangeSum) เรียกจาก window ตรงๆ เพราะเป็นฟังก์ชันบริสุทธิ์ที่ export ไว้แล้ว | อ่านสถานะจาก window ตอน render เหมือนหน้าอื่น
-import { takeFormConsts, takeFormFns } from '../../data/form.tray.js';
+import { takeFormConsts, takeFormFns, takeFormIcon } from '../../data/form.tray.js';
+import { esc } from '../core/dates.ts';
+import { TYPES, remText } from '../core/schedule.ts';
 const { h } = window.EvarelReact;
 const W = () => window;
 const raw = (html) => ({ __html: html });
+const icon = (n) => takeFormIcon().icon(n);
 
 /* == ชิ้นเล็กตาม template 14-ui__form (chips/seg/SR/PN/IR/ri/stepper) == */
 function Chips(p) {
@@ -20,7 +23,7 @@ function SR(p) {
   const w = W(), D = w.ST.D;
   return h('button', { type: 'button', className: 'ev-set-row', 'data-act': 'dopen', 'data-id': p.k, 'aria-expanded': String(D.open === p.k) },
     h('span', {}, p.label),
-    h('small', { dangerouslySetInnerHTML: raw(w.esc(p.val) + w.icon('chev')) }));
+    h('small', { dangerouslySetInnerHTML: raw(esc(p.val) + icon('chev')) }));
 }
 function PN(p) {
   const w = W(), D = w.ST.D;
@@ -79,10 +82,10 @@ function RemPanel() {
   const w = W(), D = w.ST.D;
   const at = D.rem.filter(r => r.k === 'at');
   return [
-    h(Chips, { key: 'a', act: 'drem', opts: takeFormConsts().REM_PRESETS.map(m => [m, w.remText({ k: 'before', m })]), active: D.rem.filter(r => r.k === 'before').map(r => r.m) }),
+    h(Chips, { key: 'a', act: 'drem', opts: takeFormConsts().REM_PRESETS.map(m => [m, remText({ k: 'before', m })]), active: D.rem.filter(r => r.k === 'before').map(r => r.m) }),
     at.length ? h('div', { key: 'r', className: 'ev-rem' }, at.map(r =>
       h('span', { key: r.t, className: 'ev-rem-tag' }, `${r.t} น.`,
-        h('button', { type: 'button', 'data-act': 'remdel', 'data-id': r.t, 'aria-label': `ลบการเตือน ${r.t}`, dangerouslySetInnerHTML: raw(w.icon('x')) }))))
+        h('button', { type: 'button', 'data-act': 'remdel', 'data-id': r.t, 'aria-label': `ลบการเตือน ${r.t}`, dangerouslySetInnerHTML: raw(icon('x')) }))))
       : h('div', { key: 'r0', className: 'ev-empty-note' }, 'ยังไม่มีการเตือนตามเวลา เลือกเวลาด้านล่างแล้วกดเพิ่ม'),
     h('div', { key: 'n', className: 'ev-stepper' }, h('span', {}, 'เตือนตามเวลา'),
       h('div', { className: 'ev-row', style: { gap: '8px' } },
@@ -98,7 +101,7 @@ function RemRow() {
   const issue = takeFormFns().notifyIssue();
   return [h(SR, { key: 'r', label: 'เตือน', val: takeFormFns().remSum(), k: 'rem' }), h(PN, { key: 'p', k: 'rem' }, h(RemPanel)),
     issue ? h('div', { key: 'e', className: 'ev-field-err', 'data-tone': 'hint', style: { padding: '6px 14px 12px' },
-      dangerouslySetInnerHTML: raw(w.icon('alert') + '<span>' + issue + '</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button>') }) : null];
+      dangerouslySetInnerHTML: raw(icon('alert') + '<span>' + issue + '</span><button type="button" data-act="rem-off">ปิดแจ้งเตือน</button>') }) : null];
 }
 function SET() { return h('div', { className: 'ev-set' }, ...arguments); }
 
@@ -107,8 +110,8 @@ function TypeBody() {
   const w = W();
   return h('div', { className: 'ev-types' }, Object.entries(takeFormFns().TYPE_INFO).map(([k, [ic, d]]) =>
     h('button', { key: k, className: 'ev-type', 'data-act': 'dtype', 'data-id': k },
-      h('span', { key: 'o', className: 'orb', dangerouslySetInnerHTML: raw(w.icon(ic)) }),
-      h('b', { key: 'n' }, w.TYPES[k]),
+      h('span', { key: 'o', className: 'orb', dangerouslySetInnerHTML: raw(icon(ic)) }),
+      h('b', { key: 'n' }, TYPES[k]),
       h('span', { key: 'd', className: 'd' }, d))));
 }
 
