@@ -17,6 +17,7 @@
 |---|---|---|---|---|
 | [`auth`](app/shared/auth) | [`AuthPage.jsx`](app/shared/auth/AuthPage.jsx) | [`parts/`](app/shared/auth/parts) | [`auth.tray.js`](app/shared/auth/auth.tray.js) [`auth.style.css`](app/shared/auth/auth.style.css) | [`BOX.md`](app/shared/auth/BOX.md) |
 | [`calendar`](app/shared/calendar) | [`CalendarPage.jsx`](app/shared/calendar/CalendarPage.jsx) | [`parts/`](app/shared/calendar/parts) | [`calendar.tray.js`](app/shared/calendar/calendar.tray.js) [`calendar.style.css`](app/shared/calendar/calendar.style.css) | [`BOX.md`](app/shared/calendar/BOX.md) |
+| [`detail`](app/shared/detail) | [`DetailPage.jsx`](app/shared/detail/DetailPage.jsx) | [`parts/`](app/shared/detail/parts) | [`detail.tray.js`](app/shared/detail/detail.tray.js) [`detail.style.css`](app/shared/detail/detail.style.css) | [`BOX.md`](app/shared/detail/BOX.md) |
 | [`dialog`](app/shared/dialog) | [`DialogPage.jsx`](app/shared/dialog/DialogPage.jsx) | [`parts/`](app/shared/dialog/parts) | [`dialog.tray.js`](app/shared/dialog/dialog.tray.js) [`dialog.style.css`](app/shared/dialog/dialog.style.css) | [`BOX.md`](app/shared/dialog/BOX.md) |
 | [`item-row`](app/shared/item-row) | [`ItemRowPage.jsx`](app/shared/item-row/ItemRowPage.jsx) | [`parts/`](app/shared/item-row/parts) | [`item-row.tray.js`](app/shared/item-row/item-row.tray.js) [`item-row.style.css`](app/shared/item-row/item-row.style.css) | [`BOX.md`](app/shared/item-row/BOX.md) |
 | [`nav`](app/shared/nav) | [`NavPage.jsx`](app/shared/nav/NavPage.jsx) | [`parts/`](app/shared/nav/parts) | [`nav.tray.js`](app/shared/nav/nav.tray.js) [`nav.style.css`](app/shared/nav/nav.style.css) | [`BOX.md`](app/shared/nav/BOX.md) |
@@ -37,7 +38,6 @@
 - 📄 [`README.md`](app/data/README.md)
 - 📄 [`ai.tray.js`](app/data/ai.tray.js)
 - 📄 [`dates.tray.js`](app/data/dates.tray.js)
-- 📄 [`detail.tray.js`](app/data/detail.tray.js)
 - 📄 [`focus.tray.js`](app/data/focus.tray.js)
 - 📄 [`form.tray.js`](app/data/form.tray.js)
 

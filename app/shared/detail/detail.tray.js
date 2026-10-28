@@ -7,10 +7,10 @@
  *   icon seg (ผลิต HTML ที่หลายไฟล์ใช้ร่วม) dayLab (ลายเซ็นต่างจาก core) find (ค้นรายการจริง) UI (สถานะปฏิทินที่ผู้ใช้กด) TODAY (ผูกเวลาโหลด)
  * ไฟล์นี้เป็นที่เดียวที่อ่านจาก window (BOX-05) | ส่วนที่ 2 อ่านตอนเรียก ไม่ใช่ตอน import เพื่อคงลำดับโหลด
  */
-import { tray, T } from '../shared/tray.js';
-import { ymd, addDays, fmtDate, TH_MONTH } from '../src/core/dates';
-import { occursOn, isDone, skipped, scheduled, streak, remText, repeatText, timeText, TYPES } from '../src/core/schedule';
-import { totalDone } from '../src/core/stats';
+import { tray, T } from '../tray.js';
+import { ymd, addDays, fmtDate, TH_MONTH } from '../../src/core/dates';
+import { occursOn, isDone, skipped, scheduled, streak, remText, repeatText, timeText, TYPES } from '../../src/core/schedule';
+import { totalDone } from '../../src/core/stats';
 
 const fromCore = tray('detail', {
   ymd: T.func, addDays: T.func, fmtDate: T.func, TH_MONTH: T.arrayOf(T.string),
