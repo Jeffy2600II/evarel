@@ -1,6 +1,8 @@
 // หน้าจับเวลา (focus) เป็น React จริง (S4 ไบต์ 6) — Fragment ระดับบน (ไม่มี wrapper กันบั๊กเลย์เอาต์ flex ของ #page)
 // รับ {id} อ่านสถานะจาก ST ตอน render ทุกครั้ง: rerender ทุก tick ผ่าน EvarelMount.rerender (root เดิม) ตัวเลข/สถานะใหม่
 // เทียบ template เดิม focusBody ใน 15-core__timer ทุกไบต์ (style --p เทียบค่า semantic ตามแพทเทิร์น ai_equiv)
+import { fmtClock } from '../core/dates.ts';
+import { val } from '../core/schedule.ts';
 const { h, Fragment } = window.EvarelReact;
 const W = () => window;
 
@@ -17,7 +19,7 @@ function FocusContent(p) {
   const it = w.find(p.id);
   if (!it) return null;
   const mine = w.ST.TM && w.ST.TM.id == it.id, run = mine && !!w.ST.TM.startedAt, ms = mine ? w.tmMs() : 0;
-  const goal = it.target * 60000, base = w.val(it, mine ? w.ST.TM.date : w.UI.fdate) * 60000, pct = Math.min(100, (base + ms) / goal * 100);
+  const goal = it.target * 60000, base = val(it, mine ? w.ST.TM.date : w.UI.fdate) * 60000, pct = Math.min(100, (base + ms) / goal * 100);
   const acts = !mine
     ? h(FocusBtn, { key: 's', a: 'tstart', ic: 'play', l: 'เริ่ม', big: true, id: it.id })
     : run
@@ -33,12 +35,12 @@ function FocusContent(p) {
     h('div', { key: 'scroll', className: 'ev-page-scroll', style: { textAlign: 'center' } }, [
       h('div', { key: 'h1' }, [
         h('p', { key: 't', className: 'ev-title', role: 'heading', 'aria-level': 3, style: { padding: '0' } }, it.title),
-        h('p', { key: 'p', className: 'ev-sub' }, `เป้าหมาย ${it.target} ${it.unitName || 'นาที'} · ${w.dayLab(w.UI.fdate)}ทำแล้ว ${w.val(it, w.UI.fdate)}`),
+        h('p', { key: 'p', className: 'ev-sub' }, `เป้าหมาย ${it.target} ${it.unitName || 'นาที'} · ${w.dayLab(w.UI.fdate)}ทำแล้ว ${val(it, w.UI.fdate)}`),
       ]),
       '\n ',
       h('div', { key: 'dial', className: 'ev-dial', id: 'dial', 'data-run': String(run), style: { '--p': String(pct) } },
         h('div', { key: 'face', className: 'ev-dial-face' }, [
-          h('div', { key: 'dg', className: 'ev-digits', id: 'digits' }, w.fmtClock(ms)),
+          h('div', { key: 'dg', className: 'ev-digits', id: 'digits' }, fmtClock(ms)),
           h('span', { key: 'st', className: 'ev-sub' }, !mine ? 'พร้อมเริ่ม' : run ? 'กำลังจับเวลา' : 'หยุดชั่วคราว'),
         ])),
       h('div', { key: 'act', className: 'ev-focus-actions' }, acts),
