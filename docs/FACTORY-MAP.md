@@ -20,6 +20,7 @@
 | [`dialog`](app/shared/dialog) | [`DialogPage.jsx`](app/shared/dialog/DialogPage.jsx) | [`parts/`](app/shared/dialog/parts) | [`dialog.tray.js`](app/shared/dialog/dialog.tray.js) [`dialog.style.css`](app/shared/dialog/dialog.style.css) | [`BOX.md`](app/shared/dialog/BOX.md) |
 | [`item-row`](app/shared/item-row) | [`ItemRowPage.jsx`](app/shared/item-row/ItemRowPage.jsx) | [`parts/`](app/shared/item-row/parts) | [`item-row.tray.js`](app/shared/item-row/item-row.tray.js) [`item-row.style.css`](app/shared/item-row/item-row.style.css) | [`BOX.md`](app/shared/item-row/BOX.md) |
 | [`nav`](app/shared/nav) | [`NavPage.jsx`](app/shared/nav/NavPage.jsx) | [`parts/`](app/shared/nav/parts) | [`nav.tray.js`](app/shared/nav/nav.tray.js) [`nav.style.css`](app/shared/nav/nav.style.css) | [`BOX.md`](app/shared/nav/BOX.md) |
+| [`quota`](app/shared/quota) | [`QuotaPage.jsx`](app/shared/quota/QuotaPage.jsx) | [`parts/`](app/shared/quota/parts) | [`quota.tray.js`](app/shared/quota/quota.tray.js) [`quota.style.css`](app/shared/quota/quota.style.css) | [`BOX.md`](app/shared/quota/BOX.md) |
 | [`sheet`](app/shared/sheet) | [`SheetPage.jsx`](app/shared/sheet/SheetPage.jsx) | [`parts/`](app/shared/sheet/parts) | [`sheet.tray.js`](app/shared/sheet/sheet.tray.js) [`sheet.style.css`](app/shared/sheet/sheet.style.css) | [`BOX.md`](app/shared/sheet/BOX.md) |
 
 ### โซน: [`app/styles`](app/styles)
@@ -37,7 +38,6 @@
 - 📄 [`detail.tray.js`](app/data/detail.tray.js)
 - 📄 [`focus.tray.js`](app/data/focus.tray.js)
 - 📄 [`form.tray.js`](app/data/form.tray.js)
-- 📄 [`quota.tray.js`](app/data/quota.tray.js)
 - 📄 [`today.tray.js`](app/data/today.tray.js)
 
 ### โซน: [`app/tools`](app/tools)

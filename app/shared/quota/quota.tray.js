@@ -4,7 +4,7 @@
  * ครอบสำเนาของชั้น m ตัวเดียว ไม่คัดลอกโค้ด: resetIn อ่าน Date.now() และเรียก resetMs ของชั้น m ย้ายเข้า core/ ไม่ได้
  * โดยไม่เปลี่ยนสัญญา (core ตั้งใจเป็นฟังก์ชันบริสุทธิ์ไม่อ่านเวลา) | อ่านตอนเรียก ไม่ใช่ตอน import เพื่อคงลำดับโหลด
  */
-import { tray, T } from '../shared/tray.js';
+import { tray, T } from '../tray.js';
 
 const quotaFns = tray('quota', {
   resetClock: T.func,
