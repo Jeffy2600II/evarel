@@ -2,7 +2,7 @@
 // ผลิตเฉพาะ <main> ให้ VIEWS.calendar ส่งกลับเป็น string (แพทเทิร์นเดียวกับ today/stats: header กับ ev-cal-top/seg โค้ดเดิมต่อ string เอง)
 // FullCalendar ยัง mount โดย render() หลัง innerHTML แบบเดิม (mount ใน useEffect คือหน่วยถัดไป) — React แค่ผลิต div#fcMain เปล่าเหมือนเดิม
 // agenda ฝังผล agendaHTML เดิมตรงๆ (dangerouslySetInnerHTML) เพื่อผลตรงเดิมทุกไบต์
-import { takeCalendarFns } from '../../data/calendar.tray.js';
+import { takeCalendarFns, takeCalendarLifecycle } from '../../data/calendar.tray.js';
 const { h, useEffect, Fragment } = window.EvarelReact;
 
 function CalendarMain(p) {
@@ -21,9 +21,9 @@ window.EvarelPages = window.EvarelPages || {};
 /* FullCalendar mount ใน effect และ destroy ตอนออก (เป้าหมายของ task): mountMain อ่าน UI ทุกค่าเอง เรียกผ่าน window */
 function CalendarLive(p) {
   useEffect(() => {
-    if (typeof window.mountMain !== 'function') return;
-    window.mountMain();
-    return () => { if (typeof window.destroyCal === 'function') window.destroyCal('main'); };
+    const L = takeCalendarLifecycle();
+    if (!L.mount()) return;
+    return () => L.destroy('main');
   }, []);
   return h(CalendarContent, p); /* mount target คือ main ที่ VIEWS สร้าง คืนเนื้อล้วนกันซ้อน */
 }
