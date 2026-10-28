@@ -23,6 +23,7 @@
 | [`quota`](app/shared/quota) | [`QuotaPage.jsx`](app/shared/quota/QuotaPage.jsx) | [`parts/`](app/shared/quota/parts) | [`quota.tray.js`](app/shared/quota/quota.tray.js) [`quota.style.css`](app/shared/quota/quota.style.css) | [`BOX.md`](app/shared/quota/BOX.md) |
 | [`settings`](app/shared/settings) | [`SettingsPage.jsx`](app/shared/settings/SettingsPage.jsx) | [`parts/`](app/shared/settings/parts) | [`settings.tray.js`](app/shared/settings/settings.tray.js) [`settings.style.css`](app/shared/settings/settings.style.css) | [`BOX.md`](app/shared/settings/BOX.md) |
 | [`sheet`](app/shared/sheet) | [`SheetPage.jsx`](app/shared/sheet/SheetPage.jsx) | [`parts/`](app/shared/sheet/parts) | [`sheet.tray.js`](app/shared/sheet/sheet.tray.js) [`sheet.style.css`](app/shared/sheet/sheet.style.css) | [`BOX.md`](app/shared/sheet/BOX.md) |
+| [`today`](app/shared/today) | [`TodayPage.jsx`](app/shared/today/TodayPage.jsx) | [`parts/`](app/shared/today/parts) | [`today.tray.js`](app/shared/today/today.tray.js) [`today.style.css`](app/shared/today/today.style.css) | [`BOX.md`](app/shared/today/BOX.md) |
 
 ### โซน: [`app/styles`](app/styles)
 
@@ -39,7 +40,6 @@
 - 📄 [`detail.tray.js`](app/data/detail.tray.js)
 - 📄 [`focus.tray.js`](app/data/focus.tray.js)
 - 📄 [`form.tray.js`](app/data/form.tray.js)
-- 📄 [`today.tray.js`](app/data/today.tray.js)
 
 ### โซน: [`app/tools`](app/tools)
 
