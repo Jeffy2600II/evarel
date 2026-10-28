@@ -12,6 +12,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(root, 'package.json'));
 const esbuild = require('esbuild');
 const SRC = join(root, 'app/src/react'), OUT = join(root, 'app/web/js/react');
+const PAGES = join(root, 'app/pages'); /* F4-A: กล่อง 3 ชั้น (app/pages/<ชื่อ>/<Pascal>Page.jsx) */
 const check = process.argv.includes('--check');
 // platform: 'browser' จำเป็น: ไม่งั้น esbuild เลือก react-dom-server.node (ใช้ util/stream ของ Node) ที่รันในเบราว์เซอร์ไม่ได้
 const common = { absWorkingDir: root, bundle: true, format: 'iife', platform: 'browser', minify: true, target: 'es2020', write: false, logLevel: 'silent',
@@ -51,10 +52,39 @@ const sharePlugin = { name: 'shared-via-runtime', setup(b) {
   }
 } };
 const trayShare = sharePlugin;
+/* กล่องจากเบ้าจูนเขียน import React from 'react' (ตามแม่พิมพ์) | ไม่บันเดิล React ชุดสอง: 'react' ในกล่องคือ shim บางๆ ที่ชี้ไป window.EvarelReact ของ runtime | ฉีดโดยบิลด์ ไม่ใช่โค้ดของกล่อง */
+const boxReactShim = { name: 'box-react-shim', setup(b) {
+  b.onResolve({ filter: /^react$/ }, () => ({ path: 'react', namespace: 'box-react' }));
+  b.onLoad({ filter: /.*/, namespace: 'box-react' }, () => ({ loader: 'js', contents: 'const R = window.EvarelReact; export default { createElement: R.h, Fragment: R.Fragment }; export const createElement = R.h, Fragment = R.Fragment;' }));
+  /* h/Fragment ให้ทุกไฟล์ในกล่อง: กล่องเขียน h(...) ตรงๆ ได้โดยไม่ต้องรับจาก window เอง (BOX-05) | ฉีดผ่าน inject ของ esbuild ชื่อไม่ชนถ้ากล่องประกาศ h เอง */
+  b.onResolve({ filter: /^box-inject:h$/ }, () => ({ path: 'box-inject-h', namespace: 'box-inject' }));
+  b.onLoad({ filter: /.*/, namespace: 'box-inject' }, () => ({ loader: 'js', contents: 'const R = window.EvarelReact; export const h = R.h; export const Fragment = R.Fragment;' }));
+} };
 const jobs = [{ name: 'runtime', entry: join(SRC, 'runtime.js'), opts: { alias } }];
 for (const f of readdirSync(SRC).filter((x) => x.endsWith('.jsx')).sort())
   jobs.push({ name: f.replace(/\.jsx$/, ''), entry: join(SRC, f), opts: { external: ['react', 'react-dom'], plugins: [trayShare] } });
 
+/* F4-A/B: งานบิลด์ของกล่องใน app/pages/ | แยกจากลูปเดิมของ app/src/react (ไม่แตะ) | app/pages/ ว่าง = ไม่มีงานเพิ่ม ผลบิลด์เดิมเท่าเดิมทุกไบต์
+   สัญญากล่อง: export default = ฟังก์ชันหน้า, export const prepare = (raw) => props (ไม่บังคับ ไม่มี = ส่ง raw ตรง) | กล่องห้ามแตะ window (BOX-05)
+   บิลด์ฉีดแทนกล่อง: (ก) รับ h/Fragment จาก window.EvarelReact (ข) ลงทะเบียน window.EvarelPages.<ชื่อ> ด้วยรูปเดียวกับ stats/all เดิม
+   ชื่อหน้า = ชื่อโฟลเดอร์กล่อง ชื่อไฟล์ผลลัพธ์ = <ชื่อ>.js เหมือนเดิม (REACT_PAGES, sw.js และเทสต์อ้างชื่อนี้) | ชื่อชนกับหน้าเดิมใน app/src/react = บิลด์ล้ม กันสองชุดค้าง */
+export function boxEntry(name, pageRel, hasPrepare) {
+  const prep = hasPrepare ? 'P.prepare(raw)' : 'raw';
+  return `import * as P from ${JSON.stringify(pageRel)};\n` +
+    `window.EvarelPages = window.EvarelPages || {};\n` +
+    `window.EvarelPages[${JSON.stringify(name)}] = (raw) => window.EvarelReact.renderToStaticMarkup(window.EvarelReact.h(P.default, ${prep}));\n`;
+}
+const boxJobs = [];
+if (existsSync(PAGES)) {
+  const legacy = new Set(readdirSync(SRC).filter((x) => x.endsWith('.jsx')).map((x) => x.replace(/\.jsx$/, '')));
+  for (const d of readdirSync(PAGES, { withFileTypes: true }).filter((x) => x.isDirectory()).map((x) => x.name).sort()) {
+    if (legacy.has(d)) throw new Error('กล่อง ' + d + ' ชื่อชนกับหน้าเดิม app/src/react/' + d + '.jsx (ห้ามค้างสองชุด)');
+    const page = join(PAGES, d, d.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase()) + 'Page.jsx');
+    if (!existsSync(page)) throw new Error('กล่อง ' + d + ' ไม่มีไฟล์หน้า ' + page);
+    const src = readFileSync(page, 'utf8');
+    boxJobs.push({ name: d, entry: page, hasPrepare: /export\s+(const|function)\s+prepare\b/.test(src) });
+  }
+}
 mkdirSync(OUT, { recursive: true });
 let bad = 0;
 for (const j of jobs) {
@@ -63,4 +93,14 @@ for (const j of jobs) {
   if (check) { const same = existsSync(dest) && readFileSync(dest, 'utf8') === text; if (!same) { bad++; console.error('ต่างจากที่ commit: ' + dest); } }
   else { writeFileSync(dest, text); console.log('สร้าง ' + j.name + '.js (' + text.length + ' ไบต์)'); }
 }
-if (check) { console.log(bad ? 'ไม่ตรง ' + bad + ' ไฟล์' : 'ตรงทุกไฟล์ (' + jobs.length + ')'); process.exit(bad ? 1 : 0); }
+for (const j of boxJobs) {
+  /* stdin ให้ esbuild: ไฟล์ทางเข้าเสมือนฉีดบรรทัด window แทนกล่อง | JSX ของกล่องใช้ React ที่ import เอง จึงแปลงเป็น h ของ runtime ผ่าน jsxFactory */
+  const r = await esbuild.build({ ...common, external: ['react', 'react-dom'], plugins: [trayShare, boxReactShim],
+    jsx: 'transform', jsxFactory: 'window.EvarelReact.h', jsxFragment: 'window.EvarelReact.Fragment', inject: ['box-inject:h'],
+    stdin: { contents: boxEntry(j.name, './' + j.name + '/' + j.entry.split('/').pop(), j.hasPrepare), resolveDir: PAGES, sourcefile: 'box-entry-' + j.name + '.js', loader: 'js' },
+    entryPoints: undefined });
+  const text = r.outputFiles[0].text, dest = join(OUT, j.name + '.js');
+  if (check) { const same = existsSync(dest) && readFileSync(dest, 'utf8') === text; if (!same) { bad++; console.error('ต่างจากที่ commit: ' + dest); } }
+  else { writeFileSync(dest, text); console.log('สร้างกล่อง ' + j.name + '.js (' + text.length + ' ไบต์)'); }
+}
+if (check) { console.log(bad ? 'ไม่ตรง ' + bad + ' ไฟล์' : 'ตรงทุกไฟล์ (' + (jobs.length + boxJobs.length) + ')'); process.exit(bad ? 1 : 0); }
