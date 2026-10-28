@@ -3,20 +3,22 @@
 // เทียบ template เดิม focusBody ใน 15-core__timer ทุกไบต์ (style --p เทียบค่า semantic ตามแพทเทิร์น ai_equiv)
 import { fmtClock } from '../core/dates.ts';
 import { val } from '../core/schedule.ts';
+import { takeFocusFns } from '../../data/focus.tray.js';
 const { h, Fragment } = window.EvarelReact;
 const W = () => window;
 
 function FocusBtn({ a, ic, l, big, id }) {
-  const w = W();
+  const F = takeFocusFns();
   return h('div', { style: { display: 'grid', gap: '6px', justifyItems: 'center' } }, [
-    h('button', { key: 'b', className: 'ev-round', ...(big ? { 'data-big': 'true' } : {}), 'data-act': a, 'data-id': String(id), 'aria-label': l, dangerouslySetInnerHTML: { __html: w.icon(ic) } }),
+    h('button', { key: 'b', className: 'ev-round', ...(big ? { 'data-big': 'true' } : {}), 'data-act': a, 'data-id': String(id), 'aria-label': l, dangerouslySetInnerHTML: { __html: F.icon(ic) } }),
     h('span', { key: 'l', className: 'ev-sub' }, l),
   ]);
 }
 
 function FocusContent(p) {
   const w = W();
-  const it = w.find(p.id);
+  const F = takeFocusFns();
+  const it = F.find(p.id);
   if (!it) return null;
   const mine = w.ST.TM && w.ST.TM.id == it.id, run = mine && !!w.ST.TM.startedAt, ms = mine ? w.tmMs() : 0;
   const goal = it.target * 60000, base = val(it, mine ? w.ST.TM.date : w.UI.fdate) * 60000, pct = Math.min(100, (base + ms) / goal * 100);
@@ -27,7 +29,7 @@ function FocusContent(p) {
       : [h(FocusBtn, { key: 'r', a: 'tresume', ic: 'play', l: 'ต่อ', big: true, id: it.id }), h(FocusBtn, { key: 'f', a: 'tfinish', ic: 'stop', l: 'จบและบันทึก', id: it.id })];
   return h(Fragment, null, [
     h('div', { key: 'bar', className: 'ev-page-bar' }, [
-      h('button', { key: 'bk', className: 'ev-icon-btn', 'data-flat': '', 'data-act': 'close', 'aria-label': 'กลับ', dangerouslySetInnerHTML: { __html: w.icon('back') } }),
+      h('button', { key: 'bk', className: 'ev-icon-btn', 'data-flat': '', 'data-act': 'close', 'aria-label': 'กลับ', dangerouslySetInnerHTML: { __html: F.icon('back') } }),
       h('h2', { key: 'h' }, 'จับเวลา'),
       ...(mine ? [h('button', { key: 'cx', className: 'ev-btn-danger ev-btn-sm', 'data-act': 'tcancel' }, 'ยกเลิก')] : []),
     ]),
@@ -35,7 +37,7 @@ function FocusContent(p) {
     h('div', { key: 'scroll', className: 'ev-page-scroll', style: { textAlign: 'center' } }, [
       h('div', { key: 'h1' }, [
         h('p', { key: 't', className: 'ev-title', role: 'heading', 'aria-level': 3, style: { padding: '0' } }, it.title),
-        h('p', { key: 'p', className: 'ev-sub' }, `เป้าหมาย ${it.target} ${it.unitName || 'นาที'} · ${w.dayLab(w.UI.fdate)}ทำแล้ว ${val(it, w.UI.fdate)}`),
+        h('p', { key: 'p', className: 'ev-sub' }, `เป้าหมาย ${it.target} ${it.unitName || 'นาที'} · ${F.dayLab(w.UI.fdate)}ทำแล้ว ${val(it, w.UI.fdate)}`),
       ]),
       '\n ',
       h('div', { key: 'dial', className: 'ev-dial', id: 'dial', 'data-run': String(run), style: { '--p': String(pct) } },
