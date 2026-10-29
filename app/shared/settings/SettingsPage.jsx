@@ -5,6 +5,7 @@
  * h/Fragment บิลด์ฉีดให้ (scripts/build-react.mjs)
  */
 import { SettingsBar, SettingsUser, SettingsAccount, html } from './parts/SettingsParts.jsx';
+import { prepareSettings } from './settings.tray.js';
 
 export default function SettingsPage(p) {
   const { user, notif, total, themeSegHTML, perfSegHTML, backIconHTML, avatarText, avatarBg, avatarName, showNotifyBtn, notifyBtnLabel } = p;
@@ -24,3 +25,8 @@ export default function SettingsPage(p) {
     ]),
   ]);
 }
+
+/** บิลด์ห่อ prepare ให้เฉพาะเส้นทางสตริง window.EvarelPages.settings (ใช้โดย settingsHTML ที่มี try/catch ถอยไปเทมเพลต Classic)
+ *  เส้นทาง mountAt (settingsOpen/settingsRepaint) สร้าง component ตรงๆ ไม่ผ่าน prepare จึงไม่ถูกตรวจรูปที่ถาด และจงใจไม่ตรวจในตัวหน้า
+ *  เพราะเส้นทางนั้นไม่มี try หรือ error boundary: ข้อมูลผิดรูปจะโยนใน React render แล้วหน้าค้าง (แย่กว่าพฤติกรรมเดิม) */
+export const prepare = prepareSettings;
