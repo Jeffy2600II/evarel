@@ -5,7 +5,7 @@
  * ค่าอ้างอิงเดียวกับชั้น m (ไม่คัดลอก) เพื่อไม่ให้ค่าเพี้ยนกันสองสำเนา | อ่านครั้งแรกที่เรียก ไม่ใช่ตอน import
  * (ไฟล์หน้าถูกโหลดก่อนชั้น m ตั้ง window ครบไหมไม่แน่ จึงอ่านล่าช้าเพื่อไม่เปลี่ยนลำดับโหลด)
  */
-import { tray, T } from '../shared/tray.js';
+import { tray, T } from '../tray.js';
 
 const formConsts = tray('form', {
   UNIT_TH: T.shape({ day: T.string, week: T.string, month: T.string }),
