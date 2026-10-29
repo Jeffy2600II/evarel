@@ -22,7 +22,7 @@
 /* ============ BASE / LAYOUT ============ */
 *{box-sizing:border-box;margin:0}
 html{-webkit-text-size-adjust:100%}
-body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-tap-highlight-color:transparent;line-height:1.45;font-size:15px;font-synthesis:none;font-kerning:normal;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-tap-highlight-color:transparent;line-height:1.45;font-size:15px}
 button,input,select{font-family:inherit;color:inherit}
 button{padding:0}
 button{cursor:pointer;touch-action:manipulation}

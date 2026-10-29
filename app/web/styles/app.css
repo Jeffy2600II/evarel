@@ -546,11 +546,7 @@ body{
   color:var(--c-text);
   -webkit-tap-highlight-color:transparent;
   line-height:1.45;
-  font-size:15px;
-  font-synthesis:none;
-  font-kerning:normal;
-  -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility
+  font-size:15px
 }
 
 button,input,select{
