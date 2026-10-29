@@ -35,13 +35,14 @@ async function run(url,cs,file,step,logged,name){
   if(isApp&&logged){ await p.evaluate(()=>{ if(window.ST?.USER){ window.ST.USER.id='u_test'; window.render?.(); } }); await p.waitForTimeout(400); }
 
   await step(p); await p.waitForTimeout(500);
-  if(name==='ai-empty'){ try{ AI_STRUCT[isApp?'app':'demo']=await p.evaluate(()=>{ /* แอปมี .ev-page 2 ตัว (หน้าหลักขนาด 0 + หน้า AI) เดโมมีตัวเดียว: เลือกตัวที่มีขนาดจริง */
+  if(name==='ai-empty'||name==='ai-drawer'){ try{ AI_STRUCT[isApp?'app':'demo']=await p.evaluate(()=>{ /* แอปมี .ev-page 2 ตัว (หน้าหลักขนาด 0 + หน้า AI) เดโมมีตัวเดียว: เลือกตัวที่มีขนาดจริง */
       const pg=[...document.querySelectorAll('.ev-page')].find(e=>e.getBoundingClientRect().width>0); if(!pg) return null;
       const vis=e=>{const r=e.getBoundingClientRect(),c=getComputedStyle(e);return r.width>0&&r.height>0&&c.visibility!=='hidden'&&c.display!=='none'&&r.right>0&&r.left<412&&r.bottom>0&&r.top<915};
       const texts=[]; const w=document.createTreeWalker(pg,NodeFilter.SHOW_TEXT); let n; while((n=w.nextNode())){ const t=n.textContent.trim(); if(t&&n.parentElement&&vis(n.parentElement)) texts.push(t) }
       const btns=[...pg.querySelectorAll('button,a,[role=button],input,textarea,[data-act]')].filter(vis).map(e=>e.tagName+'|'+(e.getAttribute('data-act')||'')+'|'+(e.getAttribute('aria-label')||'')+'|'+(e.textContent||'').trim().slice(0,30));
-      const sz=[...pg.querySelectorAll('.ev-ai-mark,.ev-ai-hello h3,.ev-sub,.ev-sugg,.ev-sugg button,.ev-aibar,.ev-composer,textarea')].filter(vis).map(e=>{const r=e.getBoundingClientRect();return (String(e.className?.baseVal??e.className).split(' ')[0]||e.tagName)+':'+Math.round(r.width)+'x'+Math.round(r.height)});
-      return {texts,btns,sz}; }); }catch(e){} }
+      const sz=[...pg.querySelectorAll('.ev-ai-mark,.ev-ai-hello h3,.ev-sub,.ev-sugg,.ev-sugg button,.ev-aibar,.ev-composer,textarea,.ev-drawer,.ev-drawer-head,.ev-drawer-list')].filter(vis).map(e=>{const r=e.getBoundingClientRect();return (String(e.className?.baseVal??e.className).split(' ')[0]||e.tagName)+':'+Math.round(r.width)+'x'+Math.round(r.height)});
+      const dr=document.querySelector('.ev-drawer'); const dtx=[]; if(dr){ const w2=document.createTreeWalker(dr,NodeFilter.SHOW_TEXT); let m2; while((m2=w2.nextNode())){ const t=m2.textContent.trim(); if(t) dtx.push(t) } }
+      return {texts,btns,sz,dtx}; }); }catch(e){} }
   if(name==='app-settings'){ try{ SET_TITLES[isApp?'app':'demo']=await p.evaluate(()=>{const pg=document.querySelector('[data-page="settings"]'); return pg? pg.innerText.split('\n').map(l=>l.trim()).filter(l=>l):[];}); }catch(e){} }
   /* เงื่อนไขทดสอบ: การ์ดโควตาในตั้งค่า เดโมใช้ข้อมูลตัวอย่าง แอปได้ค่าจริงของผู้ใช้ทดสอบ ตั้ง ST.QUOTA ให้เท่ากันเฉพาะฉากตั้งค่า */
   if(isApp&&logged){ await p.evaluate(()=>{ const n=new Date(Date.now()+7*3600000); n.setUTCHours(0,0,0,0); n.setUTCDate(n.getUTCDate()+1); window.ST.QUOTA={resetAt:n.getTime(),blocked:false,calls:{used:6,limit:40,remaining:34},tokens:{used:7200,limit:60000,remaining:52800}}; const e=document.getElementById('usageWrap'); if(e){ e.innerHTML=window.usageCardHTML(); window.growBars?.(e); } }); await p.waitForTimeout(300); }
@@ -105,6 +106,20 @@ d=np.abs(a-b).max(axis=2);bad=d>8;out=int((bad&~m).sum());ins=bad&m;lt=ins&((b.s
     const [outside,inside,offtext,big]=j;
     if(outside===0&&offtext===0&&big===0&&inside>0){ ok=true; verdictTag=` INTENDED-TEXT-EDGE (ขอบตัวอักษร ${inside} จุด ในกล่องเฉพาะจุด ติดข้อความเดโมทั้งหมด ต่างไม่เกิน 40)`; }
     else verdictTag=` text-edge-check: นอกกล่อง ${outside} | ในกล่องไม่ติดข้อความ ${offtext} | ต่างเกิน40 ${big} | ในกล่อง ${inside}`;
+  }
+  if(n==='ai-drawer'&&!pixelOk&&r.startsWith('True')){
+    /* ลิ้นชักประวัติ AI: ปุ่มแนะนำ (แคปซูล 250x40) เลื่อนลง 8px จากเดโมตามดีไซน์หน้า AI 22 ต.ค. 2026 (commit a127d75) ปลายโค้งขวาของมัน (x=331) เฉียดขอบลิ้นชักที่อยู่กับที่ (x=330)
+       จึงต่างเฉพาะ 2px ที่ขอบ วัดจริง 30 ต.ค. 2026: เลื่อนภาพแอปขึ้น 8px แล้วต่าง = 0 ทั้งสว่างและมืด | สไตล์ .ev-drawer/.scrim เหมือนเดโมทุกค่า
+       ตรวจ 2 ชั้นพร้อมกัน: (1) โครงสร้างต้องเท่ากันเป๊ะ: ข้อความ ปุ่ม ขนาดบล็อก ข้อความในลิ้นชัก (2) พิกเซลที่ต่างต้องอยู่ในกล่องแคบรอบขอบลิ้นชักเท่านั้น (x 326-336, y 470-535) และไม่เกิน 40 จุด */
+    const D=AI_STRUCT.demo, A=AI_STRUCT.app, reasons=[];
+    if(!D||!A) reasons.push('เก็บโครงสร้างไม่ได้');
+    else { for(const k of ['texts','btns','sz','dtx']){ if(JSON.stringify(D[k])!==JSON.stringify(A[k])) reasons.push(k+' ต่าง: เดโม '+D[k].length+' แอป '+A[k].length+' | '+D[k].filter(x=>!A[k].includes(x)).slice(0,2).join(',')+' <> '+A[k].filter(x=>!D[k].includes(x)).slice(0,2).join(',')); }
+      if(D.texts.length<8||D.btns.length<10||D.dtx.length<4) reasons.push('เดโมเก็บได้น้อยผิดปกติ (ไม่ใช่ลิ้นชักที่เปิด)'); }
+    const j=execSync(`python3 -W ignore -c "import numpy as np;from PIL import Image,ImageChops;g=np.array(ImageChops.difference(Image.open('o.png').convert('RGB'),Image.open('n.png').convert('RGB')).convert('L'));bad=g>8;box=np.zeros(bad.shape,bool);box[470:536,326:337]=True;print(int((bad&~box).sum()),int((bad&box).sum()))"`).toString().trim().split(' ').map(Number);
+    const [outside,inside]=j;
+    if(outside>0) reasons.push('พิกเซลต่างนอกกล่องขอบลิ้นชัก '+outside+' จุด'); if(inside>40) reasons.push('พิกเซลต่างในกล่องเกิน 40: '+inside);
+    ok=reasons.length===0;
+    verdictTag=ok?` INTENDED-AI-DRAWER-EDGE (โครงสร้างเท่ากันเป๊ะ ข้อความ ${D.texts.length} ปุ่ม ${D.btns.length} ลิ้นชัก ${D.dtx.length} ต่างเฉพาะขอบ ${inside} จุด ในกล่องแคบ)`:' ai-drawer ผิด: '+reasons.join('; ');
   }
   if(n==='ai-empty'&&!pixelOk){
     /* หน้า AI: แถบบน/ช่องพิมพ์ล่างลอยทับเนื้อแชทและ hero อยู่กึ่งกลางพื้นที่ที่เห็น (Master สั่ง 22 ต.ค. 2026 commit a127d75 กฎ .ev-page[data-page="ai"] ใน design.css ที่เดโมไม่มี)
