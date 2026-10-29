@@ -44,6 +44,8 @@ async function run(url,cs,file,step,logged,name){
   /* ปฏิทินข้าม rebuild: display-toggle ปลุก resize handler ของ FullCalendar ทำให้ชิปจุดคำนวณใหม่ไม่นิ่ง (วัดจริง: flaky 46px ทั้งสองโหมดในชุดเต็ม) ฉากอื่น rebuild เพื่อล้าง AA มุมโค้ง */
   await p.evaluate(async()=>{ const rb=async e=>{ if(!e) return; e.style.display='none'; await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); e.style.display=''; await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); }; await rb(document.querySelector('.ev-nav')); if(name!=='app-calendar') await rb(document.querySelector('.ev-app')); });
   { let prev=null; for(let i=0;i<8;i++){ const cur=await p.screenshot(); if(prev && cur.equals(prev)) break; prev=cur; await p.waitForTimeout(250); } }
+  { const rc=await p.evaluate(()=>[...document.querySelectorAll('.ev-card[data-tone="ink"]')].filter(e=>e.offsetParent!==null).map(e=>{const r=e.getBoundingClientRect();return [Math.floor(r.left),Math.floor(r.top),Math.ceil(r.right),Math.ceil(r.bottom)]}));
+    fs.writeFileSync(file.replace('.png','.ink.json'),JSON.stringify(rc)); }
   await p.screenshot({path:file,animations:'disabled'}); await p.close(); if(ctx) await ctx.close(); return errs;
 }
 const click=s=>async p=>{await p.click(s)};
@@ -74,8 +76,18 @@ for y in rows:
 print(g)"`).toString().trim();
   if(bands!=='[]')console.log('   ย่านต่าง(แนวตั้ง y):',bands);
   const r=execSync(`python3 -W ignore -c "from PIL import Image,ImageChops;a=Image.open('o.png').convert('RGB');b=Image.open('n.png').convert('RGB');print(a.size==b.size);d=ImageChops.difference(a,b);print(d.getbbox(), sum(1 for v in d.convert('L').getdata() if v>8))"`).toString().trim().replace(/\n/g,' ');
-  total++; const pixelOk=r.endsWith(' 0')&&r.startsWith('True');
-  let ok=pixelOk, verdictTag='';
+  total++; let pixelOk=r.endsWith(' 0')&&r.startsWith('True'); let inkTag='';
+  if(!pixelOk&&r.startsWith('True')){
+    /* ไล่เฉดการ์ดม่วง (.ev-card[data-tone="ink"]): ปลายไล่เฉดเดโม #6D50FF แอป #5836FF ตามคอมมิต 13b2644 (23 ต.ค. 2026) Master อนุญาต เพื่อ WCAG 1.4.3 (3.73 -> 4.70)
+       ยอมเฉพาะ: พิกเซลที่ต่างอยู่ในกรอบการ์ดม่วง + แอปเข้มกว่าเดโม + ต่างไม่เกิน 45 ระดับ | นอกกรอบต้อง 0 เหมือนเดิม | ไม่มีการ์ดม่วงในฉาก = ไม่ยกเว้นอะไรเลย */
+    const j=execSync(`python3 -W ignore -c "import json;from PIL import Image;import numpy as np;a=np.array(Image.open('o.png').convert('RGB')).astype(int);b=np.array(Image.open('n.png').convert('RGB')).astype(int);R=json.load(open('o.ink.json'))+json.load(open('n.ink.json'));m=np.zeros(a.shape[:2],bool)
+for l,t,rr,bb in R: m[max(t,0):bb,max(l,0):rr]=True
+d=np.abs(a-b).max(axis=2);bad=d>8;out=int((bad&~m).sum());ins=bad&m;lighter=int((ins&((b.sum(axis=2)-a.sum(axis=2))>0)).sum());big=int((ins&(d>45)).sum());print(out,int(ins.sum()),lighter,big,len(R))"`).toString().trim().split(' ').map(Number);
+    const [outside,inside,lighter,big,nrect]=j;
+    if(nrect>0&&outside===0&&lighter===0&&big===0){ pixelOk=true; inkTag=` INTENDED-INK-GRADIENT (ต่างเฉพาะในการ์ดม่วง ${inside} จุด แอปเข้มกว่า ไม่เกิน 45 ระดับ)`; }
+    else if(nrect>0) inkTag=` ink-check: นอกกรอบ ${outside} | ในกรอบ ${inside} | แอปสว่างกว่า ${lighter} | ต่างเกิน45 ${big}`;
+  }
+  let ok=pixelOk, verdictTag=inkTag;
   if(n==='app-settings'&&!pixelOk){
     /* หน้าตั้งค่า: ต่างจากเดโมจริงได้ตามที่เจ้าของกำหนด (ลบการ์ด ข้อมูลของคุณ + จำลองสถานะ/ข้อความเดโม ใช้ของจริง) — ตรวจเชิงโครงสร้างแทน: หัวข้อแอปต้องเท่ากับเดโมเมินสองส่วนที่ตั้งใจลบเท่านั้น */
     const D=SET_TITLES.demo, A=SET_TITLES.app;
