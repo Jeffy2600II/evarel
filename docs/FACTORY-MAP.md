@@ -15,6 +15,7 @@
 
 | ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
 |---|---|---|---|---|
+| [`aiShell`](app/shared/aiShell) | [`AiShellPage.jsx`](app/shared/aiShell/AiShellPage.jsx) | [`parts/`](app/shared/aiShell/parts) | [`aiShell.tray.js`](app/shared/aiShell/aiShell.tray.js) [`aiShell.style.css`](app/shared/aiShell/aiShell.style.css) | [`BOX.md`](app/shared/aiShell/BOX.md) |
 | [`auth`](app/shared/auth) | [`AuthPage.jsx`](app/shared/auth/AuthPage.jsx) | [`parts/`](app/shared/auth/parts) | [`auth.tray.js`](app/shared/auth/auth.tray.js) [`auth.style.css`](app/shared/auth/auth.style.css) | [`BOX.md`](app/shared/auth/BOX.md) |
 | [`calendar`](app/shared/calendar) | [`CalendarPage.jsx`](app/shared/calendar/CalendarPage.jsx) | [`parts/`](app/shared/calendar/parts) | [`calendar.tray.js`](app/shared/calendar/calendar.tray.js) [`calendar.style.css`](app/shared/calendar/calendar.style.css) | [`BOX.md`](app/shared/calendar/BOX.md) |
 | [`detail`](app/shared/detail) | [`DetailPage.jsx`](app/shared/detail/DetailPage.jsx) | [`parts/`](app/shared/detail/parts) | [`detail.tray.js`](app/shared/detail/detail.tray.js) [`detail.style.css`](app/shared/detail/detail.style.css) | [`BOX.md`](app/shared/detail/BOX.md) |
