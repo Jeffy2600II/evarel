@@ -14,6 +14,6 @@ const authConsts = tray('auth', {
 /** อ่านสองค่าจากชั้น m ตรวจรูปที่ถาด แล้วคืนค่าอ้างอิงเดิม (ไม่คัดลอก) */
 export function takeAuthConsts(src = (typeof window !== 'undefined' ? window : {})) {
   const r = authConsts.take({ AUTH_SPLASH: src.AUTH_SPLASH, AUTH_VIEWS: src.AUTH_VIEWS });
-  if (r.AUTH_VIEWS === null || typeof r.AUTH_VIEWS !== 'object') throw new Error('[tray:auth] AUTH_VIEWS ต้องเป็นอ็อบเจ็กต์ของฟังก์ชัน');
+  if (r.AUTH_VIEWS === null || typeof r.AUTH_VIEWS !== 'object') throw new Error('tray(auth): AUTH_VIEWS ต้องเป็นอ็อบเจ็กต์ของฟังก์ชัน');
   return r;
 }

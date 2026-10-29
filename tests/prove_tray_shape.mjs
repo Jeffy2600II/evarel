@@ -31,7 +31,7 @@ t('optional ผิดชนิดเมื่อมีค่า', throwsAt(() =>
 
 // ชื่อกล่องแยกกัน: ถาดสองใบไม่ปนกัน
 const all = tray('all', { q: T.string });
-t('ชื่อกล่องในข้อความ', (() => { try { all.take({ q: 1 }); } catch (e) { return e.message.includes('[tray:all]') && !e.message.includes('stats'); } })());
+t('ชื่อกล่องในข้อความ', (() => { try { all.take({ q: 1 }); } catch (e) { return e.message.includes('tray(all):') && !e.message.includes('stats'); } })());
 t('ถาดสองใบอิสระ', all.take({ q: 'x' }).q === 'x' && stats.take(good) === good);
 // ต้องระบุชื่อกล่อง
 t('ไม่ใส่ชื่อกล่องโยน', (() => { try { tray('', {}); return false; } catch { return true; } })());

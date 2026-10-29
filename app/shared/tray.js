@@ -13,7 +13,7 @@
  */
 export class TrayError extends Error {
   constructor(box, path, expected, got) {
-    super(`[tray:${box}] ข้อมูลผิดรูปที่ '${path}' คาดว่า ${expected} ได้ ${got}`);
+    super(`tray(${box}): ข้อมูลผิดรูปที่ '${path}' คาดว่า ${expected} ได้ ${got}`);
     this.name = 'TrayError'; this.box = box; this.path = path; this.expected = expected; this.got = got;
   }
 }

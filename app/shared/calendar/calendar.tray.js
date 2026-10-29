@@ -35,6 +35,6 @@ export function takeCalendarLifecycle(src = (typeof window !== 'undefined' ? win
  */
 export function takeReactEffect(src = (typeof window !== 'undefined' ? window : {})) {
   const R = src.EvarelReact;
-  if (!R || typeof R.useEffect !== 'function') throw new Error('[tray:calendar] EvarelReact.useEffect ต้องเป็นฟังก์ชัน');
+  if (!R || typeof R.useEffect !== 'function') throw new Error('tray(calendar): EvarelReact.useEffect ต้องเป็นฟังก์ชัน');
   return R.useEffect;
 }

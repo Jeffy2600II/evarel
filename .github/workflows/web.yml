@@ -51,6 +51,8 @@ jobs:
           fi
       - name: build forge (พิสูจน์ว่า build ผ่าน)
         run: node scripts/build-web.mjs forge
+      - name: ตรวจความสมบูรณ์ของผลบิลด์ (ไฟล์ที่อ้างมีจริง สคริปต์ parse ได้ ไม่มี js/m กล่องครบ แคช sw ไม่อ้างไฟล์ผี) | สถิต ไม่เปิดเบราว์เซอร์ ไม่ใช้ความลับ
+        run: node tests/build_integrity.test.mjs
       - name: ตรวจ release.json ตรงกับ service worker
         run: |
           node -e "
