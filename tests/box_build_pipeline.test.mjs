@@ -23,13 +23,20 @@ try {
   /* บัตรขั้นต่ำของกล่องทดสอบ: บิลด์อ่านมานิเฟสต์จากบัตร จึงทุกกล่องต้องมี BOX.md (ตรงกติกา BOX-02) */
   const miniCard = (name, reg) => '# บัตร\n\n<!-- MACHINE-READABLE-CARD-START -->\n```json\n' + JSON.stringify({ name, layers: { page: 'x', parts: [], tray: 'x', style: 'x' }, register: reg, rules: {} }, null, 2) + '\n```\n<!-- MACHINE-READABLE-CARD-END -->\n\n## แผ่นตรวจรับประจำกล่อง (Acceptance Checklist)\n- [ ] x\n';
   /* (2) ชื่อชน */
-  const legacyName = fs.readdirSync(path.join(tmp, 'app/src/react')).find((x) => x.endsWith('.jsx')).replace(/\.jsx$/, ''); /* หน้าเดิมที่ยังอยู่ใน src/react ตอนนี้ (เลือกตอนรัน ไม่ฮาร์ดโค้ด) */
-  const Pas = legacyName.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase());
-  fs.mkdirSync(path.join(tmp, 'app/pages/' + legacyName), { recursive: true });
-  fs.writeFileSync(path.join(tmp, 'app/pages/' + legacyName + '/' + Pas + 'Page.jsx'), 'export default function P(){ return null; }\n');
-  const clash = run(tmp, ['scripts/build-react.mjs']);
-  t('กล่องชื่อชนหน้าเดิม (' + legacyName + '): บิลด์ล้มพร้อมเหตุผล', !clash.ok && /ชื่อชนกับหน้าเดิม/.test(clash.out), clash.out.slice(-160));
-  fs.rmSync(path.join(tmp, 'app/pages/' + legacyName), { recursive: true });
+  /* กฎ "ชื่อชนกับหน้าเดิม" (build-react.mjs) ตรวจกับ app/src/react/*.jsx | F6 ย้ายหน้าเดิมออกครบแล้ว (เหลือแค่ runtime.js/store.js) จึงไม่มีหน้าเดิมให้ชน
+     ข้อนี้ทดสอบเมื่อยังมีหน้าเดิมเหลืออยู่เท่านั้น และถ้าไม่เหลือจะแสดงว่าข้าม (ไม่นับเป็นผ่าน ไม่นับเป็นตก) เพื่อไม่ปลอมผล */
+  const legacyFiles = fs.readdirSync(path.join(tmp, 'app/src/react')).filter((x) => x.endsWith('.jsx'));
+  if (!legacyFiles.length) {
+    console.log('SKIP กล่องชื่อชนหน้าเดิม: ไม่มีหน้าเดิมเหลือใน app/src/react แล้ว (F6 ย้ายครบ) กฎนี้หมดหน้าที่');
+  } else {
+    const legacyName = legacyFiles[0].replace(/\.jsx$/, ''); /* หน้าเดิมที่ยังอยู่ใน src/react ตอนนี้ (เลือกตอนรัน ไม่ฮาร์ดโค้ด) */
+    const Pas = legacyName.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase());
+    fs.mkdirSync(path.join(tmp, 'app/pages/' + legacyName), { recursive: true });
+    fs.writeFileSync(path.join(tmp, 'app/pages/' + legacyName + '/' + Pas + 'Page.jsx'), 'export default function P(){ return null; }\n');
+    const clash = run(tmp, ['scripts/build-react.mjs']);
+    t('กล่องชื่อชนหน้าเดิม (' + legacyName + '): บิลด์ล้มพร้อมเหตุผล', !clash.ok && /ชื่อชนกับหน้าเดิม/.test(clash.out), clash.out.slice(-160));
+    fs.rmSync(path.join(tmp, 'app/pages/' + legacyName), { recursive: true });
+  }
   /* (3) กล่องรูปเบ้าจูน */
   const tun = run(tmp, ['app/tools/tuner.mjs', 'demobox']);
   t('เบ้าจูนสร้างกล่อง', tun.ok, tun.out.slice(-120));
