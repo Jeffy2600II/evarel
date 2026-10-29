@@ -19,13 +19,30 @@ for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { sweep().finally
 process.on('uncaughtException', (e) => { console.error(e); sweep().finally(() => process.exit(1)); });
 process.on('unhandledRejection', (e) => { console.error(e); sweep().finally(() => process.exit(1)); });
 
+/* forge มี rate limit (429 {"code":"too_many_requests","retry_after":วินาที}) และบางครั้งตัดการเชื่อมต่อเมื่อถูกยิงถี่ (วัดจริง 29 ต.ค. 2026)
+   ลองซ้ำ 2 กรณีเท่านั้น: (ก) fetch โยนข้อผิดพลาดเครือข่าย (ข) ตอบ 429 -> รอตาม retry_after จริง (สูงสุด 150 วินาที) ไม่ยิงรัวซ้ำ
+   ไม่ลองซ้ำเมื่อตอบ 4xx/5xx อื่น เพื่อไม่ซ่อนบั๊กจริง ใช้กับคำขอที่ซ้ำได้ปลอดภัยเท่านั้น (login, PUT id เดิม) */
+export async function fetchRetry(url, init, tries = 6) {
+  let err, last;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(url, init); last = r;
+      if (r.status !== 429) return r;
+      let wait = 5; try { wait = Math.min(Math.max(Number((await r.clone().json()).retry_after) || 5, 1), 150); } catch {}
+      await new Promise(res => setTimeout(res, (wait + 1) * 1000));
+    } catch (e) { err = e; await new Promise(res => setTimeout(res, 1500 * (i + 1))); }
+  }
+  if (last) return last;
+  throw err;
+}
+
 export async function makeTestUser(tag = 'gate') {
   const rnd = Math.random().toString(36).slice(2, 8);
   const email = `gate-${tag}-${rnd}@example.com`, password = 'Passw0rd!' + Math.random().toString(36).slice(2, 8);
   const c = await fetch(SB + '/auth/v1/admin/users', { method: 'POST', headers: H, body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { name: 'Nontakorn' } }) });
   if (!c.ok) throw new Error('สร้างผู้ใช้ทดสอบไม่สำเร็จ ' + c.status);
   const user = await c.json();
-  const l = await fetch(API + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+  const l = await fetchRetry(API + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
   if (!l.ok) { await fetch(SB + '/auth/v1/admin/users/' + user.id, { method: 'DELETE', headers: H }); throw new Error('ล็อกอินผ่าน API ไม่สำเร็จ ' + l.status); }
   const session = await l.json();
   /* เส้นล็อกอินคืนแค่ {id,email} (ไม่มีชื่อ) ส่วนแอปจริงได้ชื่อจากตอนสมัคร จึงเติมชื่อให้ session ทดสอบเหมือนกัน */
@@ -52,7 +69,7 @@ export async function serveLocalAs(ctx, webDir = process.env.EVAREL_WEB_DIR || '
 /* ใส่รายการเริ่มต้นให้ผู้ใช้ทดสอบผ่าน API จริง (PUT /api/items/:id) ตรวจรูปแบบโดยเซิร์ฟเวอร์เอง */
 export async function seedItems(session, items) {
   for (const it of items) {
-    const r = await fetch(API + '/api/items/' + it.id, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify(it) });
+    const r = await fetchRetry(API + '/api/items/' + it.id, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify(it) });
     if (!r.ok) throw new Error('seed รายการไม่สำเร็จ id=' + it.id + ' ' + r.status + ' ' + (await r.text()).slice(0, 120));
   }
 }

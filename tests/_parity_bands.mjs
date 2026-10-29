@@ -79,10 +79,10 @@ print(g)"`).toString().trim();
   total++; let pixelOk=r.endsWith(' 0')&&r.startsWith('True'); let inkTag='';
   if(!pixelOk&&r.startsWith('True')){
     /* ไล่เฉดการ์ดม่วง (.ev-card[data-tone="ink"]): ปลายไล่เฉดเดโม #6D50FF แอป #5836FF ตามคอมมิต 13b2644 (23 ต.ค. 2026) Master อนุญาต เพื่อ WCAG 1.4.3 (3.73 -> 4.70)
-       ยอมเฉพาะ: พิกเซลที่ต่างอยู่ในกรอบการ์ดม่วง + แอปเข้มกว่าเดโม + ต่างไม่เกิน 45 ระดับ | นอกกรอบต้อง 0 เหมือนเดิม | ไม่มีการ์ดม่วงในฉาก = ไม่ยกเว้นอะไรเลย */
+       ยอมเฉพาะ: พิกเซลที่ต่างอยู่ในกรอบการ์ดม่วง + แอปเข้มกว่าเดโม (ยกเว้นขอบตัวอักษร: จุดติดพิกเซลข้อความสว่างของเดโมรัศมี 2px สว่างกว่าได้เพราะ anti-aliasing บนพื้นที่เข้มขึ้น) + ต่างไม่เกิน 45 ระดับ | นอกกรอบต้อง 0 เหมือนเดิม | ไม่มีการ์ดม่วงในฉาก = ไม่ยกเว้นอะไรเลย */
     const j=execSync(`python3 -W ignore -c "import json;from PIL import Image;import numpy as np;a=np.array(Image.open('o.png').convert('RGB')).astype(int);b=np.array(Image.open('n.png').convert('RGB')).astype(int);R=json.load(open('o.ink.json'))+json.load(open('n.ink.json'));m=np.zeros(a.shape[:2],bool)
 for l,t,rr,bb in R: m[max(t,0):bb,max(l,0):rr]=True
-d=np.abs(a-b).max(axis=2);bad=d>8;out=int((bad&~m).sum());ins=bad&m;lighter=int((ins&((b.sum(axis=2)-a.sum(axis=2))>0)).sum());big=int((ins&(d>45)).sum());print(out,int(ins.sum()),lighter,big,len(R))"`).toString().trim().split(' ').map(Number);
+d=np.abs(a-b).max(axis=2);bad=d>8;out=int((bad&~m).sum());ins=bad&m;lt=ins&((b.sum(axis=2)-a.sum(axis=2))>0);tx=(a.sum(axis=2)>600).astype(int);P=np.pad(tx,2);near=sum(np.roll(np.roll(P,dy,0),dx,1) for dy in range(-2,3) for dx in range(-2,3))[2:-2,2:-2]>0;lighter=int((lt&~near).sum());big=int((ins&(d>45)).sum());print(out,int(ins.sum()),lighter,big,len(R))"`).toString().trim().split(' ').map(Number);
     const [outside,inside,lighter,big,nrect]=j;
     if(nrect>0&&outside===0&&lighter===0&&big===0){ pixelOk=true; inkTag=` INTENDED-INK-GRADIENT (ต่างเฉพาะในการ์ดม่วง ${inside} จุด แอปเข้มกว่า ไม่เกิน 45 ระดับ)`; }
     else if(nrect>0) inkTag=` ink-check: นอกกรอบ ${outside} | ในกรอบ ${inside} | แอปสว่างกว่า ${lighter} | ต่างเกิน45 ${big}`;
