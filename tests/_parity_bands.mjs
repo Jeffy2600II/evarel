@@ -96,6 +96,16 @@ d=np.abs(a-b).max(axis=2);bad=d>8;out=int((bad&~m).sum());ins=bad&m;lt=ins&((b.s
     else if(nrect>0) inkTag=` ink-check: นอกกรอบ ${outside} | ในกรอบ ${inside} | แอปสว่างกว่า ${lighter} | ต่างเกิน45 ${big}`;
   }
   let ok=pixelOk, verdictTag=inkTag;
+  if((n==='app-all'||n==='app-calendar')&&!pixelOk&&r.startsWith('True')){
+    /* ขอบตัวอักษรไทยตัวเล็ก (12.5px) ต่างจากเดโมเล็กน้อย: วัดจริง 30 ต.ค. 2026 ตำแหน่งไม่เลื่อน (ชดเชย +-1px ไม่ช่วย) ทุกจุดติดพิกเซลข้อความเดโม 100% ต่างสูงสุด 30/255
+       ยอมเฉพาะ: กล่องเฉพาะจุดของฉากนี้ (all = คอลัมน์ซ้าย หัวกลุ่ม/ชื่อรายการ | calendar = หัวข้อวันที่ท้ายหน้า) + พิกเซลติดข้อความเดโมรัศมี 2px + ต่างไม่เกิน 40 (เกรย์)
+       นอกกล่องต้อง 0 | ในกล่องแต่ไม่ติดข้อความต้อง 0 | ฉากอื่นไม่ได้รับข้อยกเว้นนี้ */
+    const BX=n==='app-all'?[70,205,108,656]:[72,672,155,694];
+    const j=execSync(`python3 -W ignore -c "import numpy as np;from PIL import Image,ImageChops;A=Image.open('o.png').convert('RGB');B=Image.open('n.png').convert('RGB');g=np.array(ImageChops.difference(A,B).convert('L'));bad=g>8;a=np.array(A).astype(int);x0,y0,x1,y1=${BX.join(',')};box=np.zeros(bad.shape,bool);box[y0:y1+1,x0:x1+1]=True;S=a.sum(axis=2);bg=np.median(S[y0:y1+1,x0:x1+1]);tx=(np.abs(S-bg)>60).astype(int);P=np.pad(tx,2);near=sum(np.roll(np.roll(P,dy,0),dx,1) for dy in range(-2,3) for dx in range(-2,3))[2:-2,2:-2]>0;ins=bad&box;print(int((bad&~box).sum()),int(ins.sum()),int((ins&~near).sum()),int((ins&(g>40)).sum()))"`).toString().trim().split(' ').map(Number);
+    const [outside,inside,offtext,big]=j;
+    if(outside===0&&offtext===0&&big===0&&inside>0){ ok=true; verdictTag=` INTENDED-TEXT-EDGE (ขอบตัวอักษร ${inside} จุด ในกล่องเฉพาะจุด ติดข้อความเดโมทั้งหมด ต่างไม่เกิน 40)`; }
+    else verdictTag=` text-edge-check: นอกกล่อง ${outside} | ในกล่องไม่ติดข้อความ ${offtext} | ต่างเกิน40 ${big} | ในกล่อง ${inside}`;
+  }
   if(n==='ai-empty'&&!pixelOk){
     /* หน้า AI: แถบบน/ช่องพิมพ์ล่างลอยทับเนื้อแชทและ hero อยู่กึ่งกลางพื้นที่ที่เห็น (Master สั่ง 22 ต.ค. 2026 commit a127d75 กฎ .ev-page[data-page="ai"] ใน design.css ที่เดโมไม่มี)
        เลย์เอาต์ทั้งหน้าจึงเลื่อนแนวตั้งโดยตั้งใจ ตรวจเชิงโครงสร้างแทนพิกเซล: ข้อความทุกชิ้น+ลำดับ, ปุ่มทุกตัว (ชนิด/data-act/aria/ข้อความ), ขนาดทุกบล็อกหลัก ต้องเท่ากันเป๊ะ ต่างได้เฉพาะตำแหน่งแนวตั้ง */
