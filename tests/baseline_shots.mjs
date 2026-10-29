@@ -7,9 +7,10 @@ const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
 const b=await chromium.launch({executablePath:exe,args:['--disable-gpu','--disable-lcd-text','--font-render-hinting=none']});
 /* ฟอนต์เดียวกับแอป ฉีดเข้าเดโมโดยตรง: ชีต https ที่ fulfill มาอ้าง file:// ไม่ได้ (Chrome ไม่ลงทะเบียนเลย) จึง addStyleTag ในเอกสาร file:// ที่อ้าง file:// ได้ */
-const FONT_CSS=(()=>{ const css=fs.readFileSync('/tmp/evarel-repo/app/web/styles/app.css','utf8')+'\n'+fs.readFileSync('/tmp/evarel-repo/app/web/styles/extra.css','utf8');
-  const blocks=(css.match(/@font-face\s*\{[^}]*\}/g)||[]).filter(b=>/font-family:\s*['"]?(Anuphan|Noto Sans Thai)['"]?/.test(b));
-  return blocks.join('\n').replace(/url\(\s*['"]?\.\.\/fonts\//g,'url(\'http://localhost:8779/fonts/'); })();
+const FONT_CSS=(()=>{ /* ฟอนต์ของแอป = ฟอนต์ระบบ (Master เลือก 23 ต.ค. 2026) จึงไม่มี @font-face ให้คัดลอก: อ่านค่า --font จริงจาก app.css แล้วทับ :root ฝั่งเดโม
+     เดโมต้นฉบับประกาศ --font เป็น Anuphan จาก Google Fonts (โหลดไม่ได้ในเครื่องทดสอบ) ถ้าไม่พบ --font ต้องล้มดัง ไม่ใช่ได้ CSS ว่างเงียบๆ (ต้นเหตุที่ประตูตกทุกฉากโดยไม่มีใครรู้) */
+  const css=fs.readFileSync('/tmp/evarel-repo/app/web/styles/app.css','utf8'); const m=/--font:\s*([^;}]+)[;}]/.exec(css);
+  if(!m) throw new Error('ไม่พบ --font ใน app.css: ประตูภาพฉีดฟอนต์ให้เดโมไม่ได้'); return ':root{--font:'+m[1].trim()+'!important}'; })();
 /* ฝั่งแอป = ผู้ใช้จริงผ่าน API forge (สร้างครั้งเดียว ลบท้ายสุด) | ฝั่งเดโม = mock ของไฟล์ต้นฉบับเอง ไม่แตะ | ชื่อและอีเมลที่แสดงผลตั้งให้ตรงเดโม (ไม่กระทบการยืนยันตัวตน เพราะเซิร์ฟเวอร์ตรวจ JWT) */
 const user=await makeTestUser('parity'); user.session.user={...user.session.user,name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}; await seedItems(user.session,SEED_ITEMS);
 /* ฐานเทียบ = เดโมจริงทั้งไฟล์ Evarel v24.html ไม่ใช่ไฟล์ intended | ต่างได้เฉพาะที่ Master อนุญาต: หน้าตั้งค่าที่ลบจุดออก, ข้อความ/ส่วนที่บอกว่าเป็นเดโมหรือจำลอง | ที่เหลือทุกพิกเซลต้อง 0 */
