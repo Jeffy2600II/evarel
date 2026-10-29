@@ -35,6 +35,13 @@ async function run(url,cs,file,step,logged,name){
   if(isApp&&logged){ await p.evaluate(()=>{ if(window.ST?.USER){ window.ST.USER.id='u_test'; window.render?.(); } }); await p.waitForTimeout(400); }
 
   await step(p); await p.waitForTimeout(500);
+  if(name==='ai-empty'){ try{ AI_STRUCT[isApp?'app':'demo']=await p.evaluate(()=>{ /* แอปมี .ev-page 2 ตัว (หน้าหลักขนาด 0 + หน้า AI) เดโมมีตัวเดียว: เลือกตัวที่มีขนาดจริง */
+      const pg=[...document.querySelectorAll('.ev-page')].find(e=>e.getBoundingClientRect().width>0); if(!pg) return null;
+      const vis=e=>{const r=e.getBoundingClientRect(),c=getComputedStyle(e);return r.width>0&&r.height>0&&c.visibility!=='hidden'&&c.display!=='none'&&r.right>0&&r.left<412&&r.bottom>0&&r.top<915};
+      const texts=[]; const w=document.createTreeWalker(pg,NodeFilter.SHOW_TEXT); let n; while((n=w.nextNode())){ const t=n.textContent.trim(); if(t&&n.parentElement&&vis(n.parentElement)) texts.push(t) }
+      const btns=[...pg.querySelectorAll('button,a,[role=button],input,textarea,[data-act]')].filter(vis).map(e=>e.tagName+'|'+(e.getAttribute('data-act')||'')+'|'+(e.getAttribute('aria-label')||'')+'|'+(e.textContent||'').trim().slice(0,30));
+      const sz=[...pg.querySelectorAll('.ev-ai-mark,.ev-ai-hello h3,.ev-sub,.ev-sugg,.ev-sugg button,.ev-aibar,.ev-composer,textarea')].filter(vis).map(e=>{const r=e.getBoundingClientRect();return (String(e.className?.baseVal??e.className).split(' ')[0]||e.tagName)+':'+Math.round(r.width)+'x'+Math.round(r.height)});
+      return {texts,btns,sz}; }); }catch(e){} }
   if(name==='app-settings'){ try{ SET_TITLES[isApp?'app':'demo']=await p.evaluate(()=>{const pg=document.querySelector('[data-page="settings"]'); return pg? pg.innerText.split('\n').map(l=>l.trim()).filter(l=>l):[];}); }catch(e){} }
   /* เงื่อนไขทดสอบ: การ์ดโควตาในตั้งค่า เดโมใช้ข้อมูลตัวอย่าง แอปได้ค่าจริงของผู้ใช้ทดสอบ ตั้ง ST.QUOTA ให้เท่ากันเฉพาะฉากตั้งค่า */
   if(isApp&&logged){ await p.evaluate(()=>{ const n=new Date(Date.now()+7*3600000); n.setUTCHours(0,0,0,0); n.setUTCDate(n.getUTCDate()+1); window.ST.QUOTA={resetAt:n.getTime(),blocked:false,calls:{used:6,limit:40,remaining:34},tokens:{used:7200,limit:60000,remaining:52800}}; const e=document.getElementById('usageWrap'); if(e){ e.innerHTML=window.usageCardHTML(); window.growBars?.(e); } }); await p.waitForTimeout(300); }
@@ -67,6 +74,7 @@ const steps={
  'auth-forgot':[false,async p=>{await p.click('[data-act="au-go"][data-id="login"]');await p.waitForTimeout(300);await p.click('[data-act="au-go"][data-id="forgot"]')}],
 };
 const SET_TITLES={demo:[],app:[]};
+const AI_STRUCT={demo:null,app:null};
 let bad=0,total=0;
 for(const cs of (process.env.PB_CS||'light,dark').split(',')) for(const [n,[lg,st]] of Object.entries(steps).filter(([k])=>!process.env.PB_ONLY||process.env.PB_ONLY.split(',').includes(k))){
   const e1=await run(DEMO,cs,'o.png',st,lg,n), e2=await run(APP,cs,'n.png',st,lg,n);
@@ -88,6 +96,16 @@ d=np.abs(a-b).max(axis=2);bad=d>8;out=int((bad&~m).sum());ins=bad&m;lt=ins&((b.s
     else if(nrect>0) inkTag=` ink-check: นอกกรอบ ${outside} | ในกรอบ ${inside} | แอปสว่างกว่า ${lighter} | ต่างเกิน45 ${big}`;
   }
   let ok=pixelOk, verdictTag=inkTag;
+  if(n==='ai-empty'&&!pixelOk){
+    /* หน้า AI: แถบบน/ช่องพิมพ์ล่างลอยทับเนื้อแชทและ hero อยู่กึ่งกลางพื้นที่ที่เห็น (Master สั่ง 22 ต.ค. 2026 commit a127d75 กฎ .ev-page[data-page="ai"] ใน design.css ที่เดโมไม่มี)
+       เลย์เอาต์ทั้งหน้าจึงเลื่อนแนวตั้งโดยตั้งใจ ตรวจเชิงโครงสร้างแทนพิกเซล: ข้อความทุกชิ้น+ลำดับ, ปุ่มทุกตัว (ชนิด/data-act/aria/ข้อความ), ขนาดทุกบล็อกหลัก ต้องเท่ากันเป๊ะ ต่างได้เฉพาะตำแหน่งแนวตั้ง */
+    const D=AI_STRUCT.demo, A=AI_STRUCT.app, reasons=[];
+    if(!D) reasons.push('เก็บโครงสร้างเดโมไม่ได้'); if(!A) reasons.push('เก็บโครงสร้างแอปไม่ได้');
+    if(D&&A){ for(const k of ['texts','btns','sz']){ if(JSON.stringify(D[k])!==JSON.stringify(A[k])) reasons.push(k+' ต่าง: เดโม '+D[k].length+' แอป '+A[k].length+' | '+D[k].filter(x=>!A[k].includes(x)).slice(0,2).join(',')+' <> '+A[k].filter(x=>!D[k].includes(x)).slice(0,2).join(',')); }
+      if(D.texts.length<5||D.btns.length<8||D.sz.length<8) reasons.push('เดโมเก็บได้น้อยผิดปกติ (ไม่ใช่หน้า AI ว่าง)'); }
+    ok=reasons.length===0;
+    verdictTag=ok?` INTENDED-AI-LAYOUT (ข้อความ ${D.texts.length} ปุ่ม ${D.btns.length} ขนาดบล็อก ${D.sz.length} เท่ากันเป๊ะ ต่างแค่ตำแหน่งแนวตั้งตามดีไซน์ 22 ต.ค.)`:' โครงสร้างผิด: '+reasons.join('; ');
+  }
   if(n==='app-settings'&&!pixelOk){
     /* หน้าตั้งค่า: ต่างจากเดโมจริงได้ตามที่เจ้าของกำหนด (ลบการ์ด ข้อมูลของคุณ + จำลองสถานะ/ข้อความเดโม ใช้ของจริง) — ตรวจเชิงโครงสร้างแทน: หัวข้อแอปต้องเท่ากับเดโมเมินสองส่วนที่ตั้งใจลบเท่านั้น */
     const D=SET_TITLES.demo, A=SET_TITLES.app;
