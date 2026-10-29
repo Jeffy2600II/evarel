@@ -1,4 +1,4 @@
-/* เทียบเนื้อหน้าผู้ช่วย AI: ฉบับ string เดิม (17-views__ai aiBodyHTML) กับฉบับ React จริง (react/ai.jsx AiContent)
+/* เทียบเนื้อหน้าผู้ช่วย AI: ฉบับ string เดิม (17-views__ai aiBodyHTML) กับฉบับ React จริง (shared/ai/AiPage.jsx AiContent)
    เกณฑ์: DOM จริงเท่ากันทุกไบต์ (browser-serialized innerHTML) ทั้งสองฝั่ง กันความต่างที่เป็นแค่รูปเขียน attribute/style
    ครอบกรณี: หน้าทักทาย (ไม่มีแชท/แชทเปล่า), บับเบิลผู้ใช้, การ์ดเดี่ยว pending/added/cancelled,
    การ์ดเครื่องมือทุกสถานะ (pending ปุ่ม mem/ปกติ/danger, saving, added ทั้ง mem สองเครื่องมือและปกติ, failed, cancelled, sensitive)
