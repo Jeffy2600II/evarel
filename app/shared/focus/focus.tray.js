@@ -5,7 +5,7 @@
  * คืนค่าอ้างอิงเดิมของชั้น m (ไม่คัดลอก): find อ่าน S.items ของจริงทุกครั้ง ห้ามเก็บผลไว้เพราะรายการเปลี่ยนได้ระหว่างจับเวลา
  * ทำไมไม่ใช้ takeDetail: มี core 14 ชื่อและ seg UI ที่โฟกัสไม่ใช้ ถ้านำมาใช้ focus.js จะบวมตาม (เป้าคือลดขนาด)
  */
-import { tray, T } from '../shared/tray.js';
+import { tray, T } from '../tray.js';
 
 const focusFns = tray('focus', { icon: T.func, find: T.func, dayLab: T.func });
 
