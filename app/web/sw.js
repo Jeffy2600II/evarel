@@ -38,6 +38,7 @@ const CORE = [
   './js/m/24-services__legacy-import.js',
   './js/m/25-actions.js',
   './js/m/core/dates.js',
+  './js/m/core/schedule.js',
   './js/m/core/popover.js',
   './js/react/runtime.js',
   './js/react/item-row.js',

@@ -1,27 +1,15 @@
-import { DAY_MS, STAT_DAYS, STREAK_LOOKBACK, UNIT_TH, WD, icon } from './01-core__constants.js';
-import { TODAY, addDays, esc, fmtDate, parse, ymd } from './02-core__dates.js';
+import { TODAY, esc } from './02-core__dates.js';
 import { S } from './05-data__auth.js';
+import { occursOn, val, target, tracked, isDone, skipped, streak, rate, remText, repeatText, timeText, periodOf, PERIODS, scheduled } from './core/schedule.js';
 /* ===== MODULE: services/schedule ===== */
-export function occursOn(it,ds){const d0=parse(it.start),d=parse(ds),r=it.repeat;if(d<d0||(it.end&&d>parse(it.end)))return false;
- if(r.unit==='none')return ds===it.start;
- if(r.unit==='day')return Math.round((d.getTime()-d0.getTime())/DAY_MS)%r.every===0;
- if(r.unit==='week')return r.days.includes(d.getDay())&&Math.floor(Math.round((d.getTime()-addDays(d0,-d0.getDay()).getTime())/DAY_MS)/7)%r.every===0;
- return d.getDate()===d0.getDate()&&((d.getFullYear()-d0.getFullYear())*12+d.getMonth()-d0.getMonth())%r.every===0}
-export const val=(it,ds)=>it.log[ds]||0,target=it=>it.track==='count'||it.track==='timer'?it.target:1,tracked=it=>it.track!=='none';
-export const isDone=(it,ds)=>val(it,ds)>=target(it),skipped=(it,ds)=>!!it.skip[ds],isFuture=ds=>ds>TODAY;
+/* ตรรกะบริสุทธิ์ 14 ตัว (occursOn val target tracked isDone skipped streak rate remText repeatText timeText periodOf PERIODS scheduled) อยู่ที่ core/schedule.ts แล้ว ที่นี่ส่งออกชื่อเดิมต่อ
+   ที่ยังอยู่ใน m/ เพราะอ่านสถานะกลาง S.items หรือ TODAY ที่คำนวณตอนโหลด: isFuture onDate overdue dayState dayMenu */
+export { occursOn, val, target, tracked, isDone, skipped, streak, rate, remText, repeatText, timeText, periodOf, PERIODS, scheduled };
+export const isFuture=ds=>ds>TODAY;
 export const onDate=ds=>S.items.filter(it=>occursOn(it,ds)).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
 export const overdue=()=>S.items.filter(it=>it.type==='task'&&it.start<TODAY&&!isDone(it,it.start)).sort((a,b)=>a.start.localeCompare(b.start));
-export function streak(it){let n=0;for(let i=0;i<STREAK_LOOKBACK;i++){const ds=ymd(addDays(new Date(),-i));if(!occursOn(it,ds)||skipped(it,ds))continue;if(isDone(it,ds))n++;else if(i>0)break}return n}
-export function rate(it){let t=0,ok=0;for(let i=0;i<STAT_DAYS;i++){const ds=ymd(addDays(new Date(),-i));if(ds<it.start||!occursOn(it,ds)||skipped(it,ds))continue;t++;if(isDone(it,ds))ok++}return t?Math.round(100*ok/t):0}
-export const remText=r=>r.k==='at'?`เวลา ${r.t} น.`:r.m===0?'ตรงเวลา':r.m%1440===0?`ก่อน ${r.m/1440} วัน`:r.m%60===0?`ก่อน ${r.m/60} ชม.`:`ก่อน ${r.m} นาที`;
-export function repeatText(it){const r=it.repeat,tail=it.end?` · ถึง ${fmtDate(it.end)}`:'';if(r.unit==='none')return `ครั้งเดียว · ${fmtDate(it.start)}`;
- const one=r.every===1,u=UNIT_TH[r.unit];return (r.unit==='week'?(one?'ทุกสัปดาห์':`ทุก ${r.every} สัปดาห์`)+` · ${[...r.days].sort().map(d=>WD[d]).join(' ')}`:one?`ทุก${u}`:`ทุก ${r.every} ${u}`)+tail}
-export const timeText=it=>it.time?it.time+(it.timeEnd?`–${it.timeEnd}`:''):'';
-export function periodOf(it){if(!it.time)return 0;const h=+it.time.slice(0,2);return h<12?1:h<17?2:3}
-export const PERIODS=['ทั้งวัน','ช่วงเช้า','ช่วงบ่าย','ช่วงเย็น–ค่ำ'];
 
 /* moved by move_defs (evarel-ts-1f) */
-export const scheduled=(it,ds)=>ds>=it.start&&occursOn(it,ds);
 export function dayState(it,ds){if(!scheduled(it,ds))return 'off';if(skipped(it,ds))return 'skip';if(isDone(it,ds))return 'done';if(val(it,ds)>0)return 'part';if(ds>TODAY)return 'future';return ds===TODAY?'today':'miss'}
 export function dayMenu(it,ds){const sk=skipped(it,ds),v=val(it,ds),tg=target(it),multi=it.track!=='check',done=isDone(it,ds),out=[];
  if(sk)return [{act:'dm-skip',id:`0|${ds}`,icon:'x',label:'เลิกข้าม'}];
