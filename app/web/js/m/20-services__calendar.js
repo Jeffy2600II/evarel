@@ -1,35 +1,14 @@
-"use strict";
+import { addMin, occurrenceEventsOf, dotsForOf } from './core/calendar.js';
 /* ===== MODULE: services/calendar (FullCalendar · จุดต่อ backend: ฟังก์ชัน events ด้านล่างเปลี่ยนเป็น fetch ตามช่วงวันได้) ===== */
 const FCS = { main: null, habit: null };
+const occurrenceEvents = (start, end) => occurrenceEventsOf(S.items, start, end);
+const dotsFor = ds => dotsForOf(S.items, ds);
 function destroyCal(k) { try {
     FCS[k]?.destroy();
 }
 catch (err) {
     console.warn('calendar destroy', err);
 } FCS[k] = null; }
-const addMin = (t, m) => { const [h, mi] = t.split(':').map(Number), x = Math.min(h * 60 + mi + m, 1439); return `${pad(Math.floor(x / 60))}:${pad(x % 60)}`; };
-function occurrenceEvents(start, end) {
-    const out = [];
-    for (let d = new Date(start); d < end; d = addDays(d, 1)) {
-        const ds = ymd(d);
-        S.items.forEach(it => {
-            if (!scheduled(it, ds) || skipped(it, ds) || (it.type === 'habit' && !it.time))
-                return;
-            const done = tracked(it) && isDone(it, ds), ev = { id: `${it.id}_${ds}`, title: it.title, classNames: [`ev-fc-${it.type}`, ...(done ? ['is-done'] : [])], extendedProps: { itemId: it.id } };
-            if (it.time) {
-                ev.start = `${ds}T${it.time}:00`;
-                ev.end = `${ds}T${it.timeEnd || addMin(it.time, it.type === 'habit' ? 30 : 60)}:00`;
-            }
-            else {
-                ev.start = ds;
-                ev.allDay = true;
-            }
-            out.push(ev);
-        });
-    }
-    return out;
-}
-const dotsFor = ds => { const ts = [...new Set(S.items.filter(it => scheduled(it, ds) && !skipped(it, ds)).map(it => it.type))].slice(0, 4); return ts.map(t => `<i data-t="${t}"></i>`).join(''); };
 function mountCal(key, el, opts) {
     destroyCal(key);
     if (typeof FullCalendar === 'undefined') {
