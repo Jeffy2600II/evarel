@@ -12,17 +12,17 @@ const J = (x) => JSON.parse(JSON.stringify(x));
 const deq = (a, b, m) => assert.deepEqual(J(a), J(b), m);
 const here = dirname(fileURLToPath(import.meta.url));
 const mdir = join(here, '../app/web/js/m');
-/* ไม่ผูกเลขลำดับ: หาชื่อจริงจาก _order.json (เลขเปลี่ยนเมื่อย้ายลำดับโมดูล) */
-const notifyFile = JSON.parse(readFileSync(join(mdir, '_order.json'), 'utf8')).order.map((o) => o.file).find((f) => f.endsWith('services__notify.js'));
-const file = join(mdir, notifyFile);
+/* ตรรกะความหมายของ rem ย้ายไป core/notify (ES module ที่ build สร้าง) ไฟล์ services__notify.js เหลือแต่ส่วน Web Push + import จึงโหลดใน vm เป็นสคริปต์ไม่ได้
+   ที่นี่โหลด core/notify.js แทน (ตรรกะชุดเดียวกัน) โดยตัดคำว่า export ออกให้ vm รันเป็นสคริปต์ได้ | ค่าคาดหวังทุกข้อด้านล่างไม่เปลี่ยน */
+const file = join(mdir, 'core', 'notify.js');
 let pass = 0, fail = 0;
 const t = (name, fn) => { try { fn(); pass++; console.log('PASS ' + name); } catch (e) { fail++; console.log('FAIL ' + name + ' :: ' + String(e.message || e).slice(0, 230)); } };
 let N = null;
 try {
-  const src = readFileSync(file, 'utf8').replace(/Object\.assign\(window,[^;]*\);?/g, '');
+  const src = readFileSync(file, 'utf8').replace(/^export\s+/gm, '');
   const sb = { out: null }; vm.createContext(sb);
   vm.runInContext(src + '\nout={notifyState,checkNotify,defaultRem,toggleOnTime,toggleAhead,AHEAD_PRESETS,countNotifiable};', sb); N = sb.out;
-} catch (e) { t('N0 โหลดโมดูล services__notify.js', () => { throw new Error('ยังไม่มีโมดูล (red ตามที่คาด): ' + String(e.message).slice(0, 80)); }); }
+} catch (e) { t('N0 โหลดโมดูล core/notify.js', () => { throw new Error('โหลดไม่ได้: ' + String(e.message).slice(0, 80)); }); }
 
 if (N) {
   const ON = { k: 'before', m: 0 };
