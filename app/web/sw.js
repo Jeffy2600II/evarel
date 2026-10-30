@@ -34,6 +34,7 @@ const CORE = [
   './js/m/20-services__calendar.js',
   './js/m/21-views__detail.js',
   './js/m/22-views__auth.js',
+  './js/m/22-views__live-sync.js',
   './js/m/23-render.js',
   './js/m/24-services__legacy-import.js',
   './js/m/25-actions.js',
