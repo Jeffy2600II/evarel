@@ -2,12 +2,13 @@
 // ใช้: node tests/markdown_equiv.test.mjs <12-ui__primitives.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
 const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/12-ui__primitives.js', 'utf8'), CORE = fs.readFileSync('app/web/js/m/core/markdown.js', 'utf8');
+const UIHTML = fs.readFileSync('app/web/js/m/core/uihtml.js', 'utf8'); /* 12-ui__primitives import pills/skeleton จาก core/uihtml ด้วย (ตัวสร้าง HTML ย้ายแล้ว) ต้องแทน URL ให้โหลดได้ ไม่เกี่ยวกับค่าคาดหวัง */
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
 const p = await b.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message.slice(0, 120)));
 await p.setContent('<!doctype html><body></body>');
-const r = await p.evaluate(async ({ OLD, NEW, CORE }) => {
+const r = await p.evaluate(async ({ OLD, NEW, CORE, UIHTML }) => {
   const mk = s => URL.createObjectURL(new Blob([s], { type: 'text/javascript' }));
   const coreU = mk(CORE); const out = {};
   const cases = {
@@ -33,7 +34,7 @@ const r = await p.evaluate(async ({ OLD, NEW, CORE }) => {
   for (const [name, src] of [['old', OLD], ['new', NEW]]) {
     for (const k of ['mdToHtml', 'empty', 'skeleton', 'header', 'pills', 'itemRow', 'agendaHTML', 'patch']) delete window[k];   // ล้างทุกชื่อที่ไฟล์ส่งออก ไม่ให้ค่าจากรอบ old ค้างไปปนรอบ new
     globalThis.S = { items: [] }; globalThis.render = () => { };
-    const code = src.replace(/\.\/core\/markdown\.js/g, coreU) + '\n//' + name + Math.random();
+    const code = src.replace(/\.\/core\/markdown\.js/g, coreU).replace(/\.\/core\/uihtml\.js/g, mk(UIHTML)) + '\n//' + name + Math.random();
     const m = await import(mk(code)); const res = {};
     res.exports = Object.keys(m).sort(); res.win = typeof window.mdToHtml; res.winOthers = ['empty', 'skeleton', 'header', 'pills', 'itemRow', 'agendaHTML', 'patch'].map(k => typeof window[k]);
     res.md = Object.fromEntries(Object.entries(cases).map(([k, v]) => [k, String(window.mdToHtml(v))]));
@@ -50,7 +51,7 @@ const r = await p.evaluate(async ({ OLD, NEW, CORE }) => {
     out[name] = res;
   }
   return out;
-}, { OLD, NEW, CORE });
+}, { OLD, NEW, CORE, UIHTML });
 const o = r.old, n = r.new; let diff = 0, total = 0;
 const cmp = (label, x, y) => { total++; const a = JSON.stringify(x), c = JSON.stringify(y); if (a !== c) { diff++; let i = 0; while (i < a.length && a[i] === c[i]) i++; console.log('ต่าง', label, '| ต่างที่ตำแหน่ง', i, '| เดิม:', a.slice(Math.max(0, i - 25), i + 60), '| ใหม่:', c.slice(Math.max(0, i - 25), i + 60)); } };
 for (const k of Object.keys(o)) { if (k === 'md' || k === 'xss') for (const c of Object.keys(o[k])) cmp(k + ':' + c, o[k][c], n[k][c]); else cmp(k, o[k], n[k]); }

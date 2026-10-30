@@ -50,6 +50,7 @@ const CORE = [
   './js/m/core/calendar.js',
   './js/m/core/authform.js',
   './js/m/core/notify.js',
+  './js/m/core/uihtml.js',
   './js/react/runtime.js',
   './js/react/item-row.js',
   './js/react/ai.js',

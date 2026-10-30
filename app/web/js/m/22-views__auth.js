@@ -1,4 +1,5 @@
 import { EMAIL_RE, PW_MIN, MAIL_TYPO, authValidate } from './core/authform.js';
+import { fld } from './core/uihtml.js';
 /* ===== MODULE: views/auth (เข้าสู่ระบบ / สร้างบัญชี / ลืมรหัสผ่าน) ===== */
 const AU_MSG = { invalid_credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', email_taken: 'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน', network: 'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่', unknown: 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง', needs_link: 'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบด้วยบัญชีเดิมก่อน', code_invalid: 'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง', code_expired: 'รหัสหมดอายุแล้ว กดส่งรหัสใหม่', too_many_requests: 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่', unverified: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' };
 const RESEND_SEC = 30;
@@ -9,7 +10,6 @@ const authBack = to => `<div class="ev-auth-top"><button class="ev-icon-btn" dat
 const gBtn = t => `<button type="button" class="ev-btn-auth" data-kind="google" data-act="au-google">${GLOGO}<span>${t}</span></button>`;
 const legal = '<p class="ev-legal">การดำเนินการต่อ ถือว่าคุณยอมรับ <button type="button" data-act="au-terms" data-id="terms">ข้อกำหนด</button> และ <button type="button" data-act="au-terms" data-id="privacy">นโยบายความเป็นส่วนตัว</button></p>';
 const eyeBtn = id => `<button type="button" class="ev-icon-btn" data-flat data-act="au-eye" data-id="${id}" aria-label="แสดงรหัสผ่าน" aria-pressed="false">${icon('eye')}</button>`;
-const fld = (label, name, type, extra = '', after = '') => `<div class="ev-ifield"><label for="f-${name}">${label}</label><div class="ev-pw"><input class="ev-input" id="f-${name}" name="${name}" type="${type}" ${extra}>${after}</div><div class="ev-field-err" id="e-${name}" hidden></div></div>`;
 const EMAIL_X = 'autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="name@gmail.com"';
 const submitBtn = l => `<button class="ev-btn-auth" data-kind="accent" type="submit" data-label="${l}"><span>${l}</span></button>`;
 const heroS = to => `<div class="ev-hero ev-hero-s">${RINGS}<div class="ev-brand">${EV_MARK}<b>Evarel</b></div><button class="ev-icon-btn" data-flat data-act="au-go" data-id="${to}" aria-label="ย้อนกลับ">${icon('back')}</button></div>`;
