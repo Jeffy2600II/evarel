@@ -4,7 +4,7 @@ import { chromium } from 'playwright'; import fs from 'fs';
 const [, , P_OLD, F_OLD, A_OLD] = process.argv;
 const rd = (p) => fs.readFileSync(p, 'utf8'); const W = 'app/web/js/m/';
 const SRC = { old: [rd(P_OLD), rd(F_OLD), rd(A_OLD)], new: [rd(W + '12-ui__primitives.js'), rd(W + '14-ui__form.js'), rd(W + '22-views__auth.js')] };
-const CORE = { uihtml: rd(W + 'core/uihtml.js'), markdown: rd(W + 'core/markdown.js'), authform: rd(W + 'core/authform.js') };
+const CORE = { uihtml: rd(W + 'core/uihtml.js'), markdown: rd(W + 'core/markdown.js'), authform: rd(W + 'core/authform.js'), authviews: rd(W + 'core/authviews.js'), constants: rd(W + 'core/constants.js'), dates: rd(W + 'core/dates.js') };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
@@ -14,6 +14,8 @@ const NAMES = ['pills', 'chips', 'skeleton', 'stepper', 'fld'];
 const r = await p.evaluate(async ({ SRC, CORE, NAMES }) => {
   const mk = s => URL.createObjectURL(new Blob([s], { type: 'text/javascript' }));
   const urls = { './core/uihtml.js': mk(CORE.uihtml), './core/markdown.js': mk(CORE.markdown), './core/authform.js': mk(CORE.authform) };
+  /* auth import authviews (ตัวสร้าง HTML ย้ายแล้ว) และ authviews import ลูก 4 ตัว ต้องแทน URL ให้ครบ ไม่เกี่ยวกับค่าคาดหวัง */
+  { const c = mk(CORE.constants), dt = mk(CORE.dates); urls['./core/authviews.js'] = mk(CORE.authviews.replace(/\.\/constants\.js/g, c).replace(/\.\/dates\.js/g, dt).replace(/\.\/uihtml\.js/g, urls['./core/uihtml.js']).replace(/\.\/authform\.js/g, urls['./core/authform.js'])); }
   const OPTS = {
     normal: [['a', 'A'], ['b', 'B']], empty: [], one: [['x', 'X']], html: [['<i>', '<b>&"\'']], thai: [['ก', 'ไทย ✓']], numKey: [[1, 2], [0, 0]], nullLabel: [['k', null], ['u', undefined]], dupKeys: [['a', 'A'], ['a', 'B']], many: Array.from({ length: 30 }, (_, i) => [String(i), 'L' + i]),
   };

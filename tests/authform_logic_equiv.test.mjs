@@ -6,6 +6,7 @@ const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app
 const NEWSYNC = fs.existsSync('app/web/js/m/22-views__live-sync.js') ? fs.readFileSync('app/web/js/m/22-views__live-sync.js', 'utf8') : '';
 const CORE = fs.readFileSync('app/web/js/m/core/authform.js', 'utf8');
 const UIHTML = fs.readFileSync('app/web/js/m/core/uihtml.js', 'utf8'); /* 22-views__auth import fld จาก core/uihtml ด้วย (ตัวสร้าง HTML ย้ายแล้ว) ต้องแทน URL ให้โหลดได้ ไม่เกี่ยวกับค่าคาดหวัง */
+const AUTHVIEWS = fs.readFileSync('app/web/js/m/core/authviews.js', 'utf8'), CONSTANTS = fs.readFileSync('app/web/js/m/core/constants.js', 'utf8'), DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8'); /* auth import authviews (ตัวสร้าง HTML ย้ายแล้ว) และ authviews import constants/dates/uihtml/authform ต้องแทน URL ให้ครบ ไม่เกี่ยวกับค่าคาดหวัง */
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
@@ -15,9 +16,9 @@ const ALLNAMES = ['AU_MSG', 'EMAIL_RE', 'PW_MIN', 'RESEND_SEC', 'MAIL_TYPO', 'GL
 /* PR #16 ย้ายบล็อกซิงก์เรียลไทม์ไป 22-views__live-sync: 20 ชื่อนี้ไม่อยู่ใน 22-views__auth อีก (ไฟล์เดิมที่เทียบก็เป็นรุ่นหลังแยกแล้ว) จึงแยกตรวจ: ชื่อ auth ต้องตรงทั้งสองฝั่ง | ชื่อ sync ต้องครบในฝั่งใหม่ผ่านไฟล์ sync */
 const SYNCN = ['liveBusy', 'sigOf', 'typingNow', 'liveRefresh', 'SUPA_PK', 'rtWs', 'rtOn', 'rtRef', 'rtHb', 'rtRetry', 'rtTimer', 'rtDeb', 'rtTokT', 'rtSend', 'rtKick', 'rtConnect', 'rtSchedule', 'startLiveSync', 'stopLiveSync', 'rtResume'];
 const NAMES = ALLNAMES.filter(k => !SYNCN.includes(k));
-const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES, SYNCN }) => {
+const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, AUTHVIEWS, CONSTANTS, DATES, NAMES, SYNCN }) => {
   const mk = s => URL.createObjectURL(new Blob([s], { type: 'text/javascript' }));
-  const coreU = mk(CORE); const out = {};
+  const coreU = mk(CORE); const uihtmlU = mk(UIHTML); const out = {};
   const emails = ['', ' ', '   ', 'a@b.cc', 'a@b.c', 'a@b', 'a b@c.dd', 'name@gmail.com', ' name@gmail.com ', 'NAME@GMAIL.COM', 'x@y.zz.ww', '@b.cc', 'a@.cc', 'a@b..cc', 'ก@ข.คค', 'a@b.cc ', undefined, null, 'a@@b.cc', 'a@b.12'];
   const pws = ['', undefined, '1234567', '12345678', '123456789', 'x'.repeat(100), ' '.repeat(8), 'ก'.repeat(8), 'ก'.repeat(7)];
   const kinds = ['login', 'signup', 'forgot', 'code', 'newpw', 'sent', 'welcome', '', undefined, 'SIGNUP'];
@@ -34,7 +35,7 @@ const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES, SYNC
     for (const k of ['icon', 'esc', '$', 'ST', 'UI', 'S', 'Auth', 'toast', 'render', 'SUPA_API', 'haptic', 'TODAY']) if (!(k in globalThis)) globalThis[k] = k === 'ST' || k === 'UI' || k === 'S' ? { auth: {}, USER: null } : (() => '');
     document.addEventListener = () => {};   // ไฟล์ 22 ผูก input/focusout ตอนโหลด ไม่ต้องการในเทสต์นี้ (ทดสอบแยกด้านล่าง)
     try {
-      const code = src.replace(/\.\/core\/authform\.js/g, coreU).replace(/\.\/core\/uihtml\.js/g, mk(UIHTML)) + '\n//' + name + Math.random();
+      const code = src.replace(/\.\/core\/authform\.js/g, coreU).replace(/\.\/core\/uihtml\.js/g, uihtmlU).replace(/\.\/core\/authviews\.js/g, mk(AUTHVIEWS.replace(/\.\/constants\.js/g, mk(CONSTANTS)).replace(/\.\/dates\.js/g, mk(DATES)).replace(/\.\/uihtml\.js/g, uihtmlU).replace(/\.\/authform\.js/g, coreU))) + '\n//' + name + Math.random();
       const m = await import(mk(code)); const res = {};
       if (name === 'new' && NEWSYNC) { const m2 = await import(mk(NEWSYNC + '\n//sync' + Math.random())); res.syncExports = Object.keys(m2).sort(); res.syncWin = SYNCN.map(k => typeof window[k]).join(','); }
       res.exports = Object.keys(m).sort(); res.winTypes = NAMES.map(k => typeof window[k]).join(',');
@@ -47,7 +48,7 @@ const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES, SYNC
     } finally { /* ไม่ต้องคืนค่า */ }
   }
   return out;
-}, { OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES, SYNCN });
+}, { OLD, NEW, NEWSYNC, CORE, UIHTML, AUTHVIEWS, CONSTANTS, DATES, NAMES, SYNCN });
 const o = r.old, n = r.new; let diff = 0, total = 0;
 const cmp = (label, x, y) => { total++; const a = JSON.stringify(x), c = JSON.stringify(y); if (a !== c) { diff++; let i = 0; while (i < a.length && a[i] === c[i]) i++; console.log('ต่าง', label, '| ที่', i, '| เดิม:', a.slice(Math.max(0, i - 25), i + 60), '| ใหม่:', c.slice(Math.max(0, i - 25), i + 60)); } };
 cmp('exports', o.exports, n.exports); cmp('winTypes', o.winTypes, n.winTypes); cmp('reSrc', o.reSrc, n.reSrc); cmp('pw', o.pw, n.pw); cmp('resend', o.resend, n.resend); cmp('typo', o.typo, n.typo);
