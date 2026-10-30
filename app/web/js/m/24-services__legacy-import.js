@@ -1,4 +1,4 @@
-"use strict";
+import { planImport } from './core/repo.js';
 /* ===== MODULE: services/legacy-import (เฟส C) =====
    ข้อมูลเก่าในมือถือ (evarel-demo-v3 หรือ evarel-demo-v3:<uid>) -> Supabase หนึ่งครั้งต่อบัญชี
    บัญชีว่าง = นำเข้าเงียบ | เซิร์ฟเวอร์มีของ = ถามเลือก | จดผลที่ evarel-imported:<uid> */
@@ -22,18 +22,7 @@ function readLegacyItems() {
     return out;
 }
 async function importLegacy(list, serverItems, mode) {
-    let nextId = Math.max(0, ...serverItems.map(x => Number(x.id) || 0)) + 1;
-    const taken = new Set(serverItems.map(x => Number(x.id)));
-    const upserts = list.map(it => {
-        const c = JSON.parse(JSON.stringify(it));
-        if (mode === 'append' && taken.has(Number(c.id))) {
-            c.id = nextId++;
-        }
-        else if (mode === 'append') {
-            taken.add(Number(c.id));
-        }
-        return c;
-    });
+    const upserts = planImport(list, serverItems, mode);
     await ST.Repo.apply({ upserts, removes: [] });
     return upserts.length;
 }
