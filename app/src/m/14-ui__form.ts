@@ -1,3 +1,4 @@
+import { chips, stepper } from './core/uihtml.js';
 /* ===== MODULE: ui/form (เพิ่ม/แก้ไข) — ขั้นที่ 1 เลือกประเภท, ขั้นที่ 2 กรอกเฉพาะที่จำเป็น ตัวเลือกขั้นสูงพับเก็บ ===== */
 
 const TYPE_INFO={habit:['clock','ทำซ้ำเป็นประจำ เช่น ดื่มน้ำ อ่านหนังสือ'],task:['tasks','มีวันส่ง เช่น การบ้าน รายงาน'],event:['bell','นัดหมายที่มีเวลาเริ่มและจบ'],class:['cal','คาบเรียนประจำสัปดาห์']};
@@ -5,14 +6,12 @@ const startBase=()=>{const d=UI.tab==='calendar'?UI.calSel:UI.date;return d>=TOD
 const newDraft=t=>({id:null,step:'form',open:'',type:t,title:'',subject:'',start:startBase(),end:'',endMode:'never',time:'',timeEnd:'',unit:t==='habit'?'day':'none',every:1,days:[],track:'check',target:1,unitName:'',rem:[{k:'before',m:0}],err:''});
 const draftFrom=it=>({id:it.id,step:'form',open:'',type:it.type,title:it.title,subject:it.subject,start:it.start,end:it.end,endMode:it.end?'date':'never',time:it.time,timeEnd:it.timeEnd,unit:it.repeat.unit,every:it.repeat.every,days:[...it.repeat.days],track:it.track==='none'?'check':it.track,target:it.target,unitName:it.unitName,rem:it.rem.map(r=>({...r})),err:''});
 
-const chips=(act,o,arr)=>`<div class="ev-filters ev-wrap">${o.map(([k,l])=>`<button type="button" aria-pressed="${arr.includes(k)}" data-act="${act}" data-id="${k}">${l}</button>`).join('')}</div>`;
 const SR=(l,v,k)=>`<button type="button" class="ev-set-row" data-act="dopen" data-id="${k}" aria-expanded="${ST.D.open===k}"><span>${l}</span><small>${v}${icon('chev')}</small></button>`;
 const PN=(k,h)=>`<div class="ev-panel" data-key="${k}" data-open="${ST.D.open===k}"><div><div class="ev-panel-in">${h}</div></div></div>`;
 const IR=(l,h)=>`<div class="ev-set-row"><span>${l}</span>${h}</div>`;
 const ri=(n,t)=>`<input class="ev-row-input" aria-label="${n}" type="${t}" value="${esc(ST.D[n]??'')}" name="${n}">`;
 /* TR (เดโม v20/v24): แถวเวลาแบบ tbox — ตั้งแล้วโชว์ HH:MM น. + ปุ่มล้าง ✕, ยังไม่ตั้งโชว์ ＋ เพิ่มเวลา + คำใบ้ ลำดับ attribute ตรง React DOM */
 const TR=(l,n)=>{const v=ST.D[n]||'';return `<div class="ev-set-row"><span>${l}</span><span class="ev-tbox-w"><label class="ev-tbox" data-empty="${!v}"><span class="ev-tbox-t">${v?v+' น.':'＋ เพิ่มเวลา'}</span><input aria-label="${l}" type="time" value="${esc(v)}" name="${n}"></label>${v?`<button type="button" class="ev-tx" data-tclear="${n}" aria-label="ล้าง${l}">✕</button>`:'<small class="ev-tbox-h">ยังไม่ได้ตั้ง</small>'}</span></div>`}; /* S4: ลำดับ attribute ตรง React DOM (type,value,name ท้าย) */
-const stepper=(l,act,v,u)=>`<div class="ev-stepper"><span>${l}</span><div class="ev-step"><button type="button" data-act="${act}" data-id="-1" aria-label="ลด" ${v<=1?'disabled':''}>−</button><b>${v}</b><button type="button" data-act="${act}" data-id="1" aria-label="เพิ่ม">+</button></div>${u}</div>`;
 const everyTxt=()=>ST.D.every>1?`ทุก ${ST.D.every} `:'ทุก';
 const repSum=()=>ST.D.unit==='none'?'ไม่ซ้ำ':ST.D.unit==='week'?`${everyTxt()}สัปดาห์${ST.D.days.length?` · ${[...ST.D.days].sort().map(d=>WD[d]).join(' ')}`:''}`:`${everyTxt()}${UNIT_TH[ST.D.unit]}`;
 const remSum=()=>ST.D.rem.length?ST.D.rem.slice(0,2).map(remText).join(', ')+(ST.D.rem.length>2?` +${ST.D.rem.length-2}`:''):'ปิดแจ้งเตือน';

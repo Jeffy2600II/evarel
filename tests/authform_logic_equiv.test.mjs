@@ -5,13 +5,14 @@ const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app
 // หลังแยกซิงก์ (F6 ไฟล์ 22): ชื่อบน window 20 ตัวของซิงก์ย้ายไป 22-views__live-sync.js | ฝั่งใหม่โหลดสองไฟล์ต่อกัน (เหมือน index.html) แล้วนับ 49 ชื่อรวม ฝั่งเก่าไฟล์เดียว
 const NEWSYNC = fs.existsSync('app/web/js/m/22-views__live-sync.js') ? fs.readFileSync('app/web/js/m/22-views__live-sync.js', 'utf8') : '';
 const CORE = fs.readFileSync('app/web/js/m/core/authform.js', 'utf8');
+const UIHTML = fs.readFileSync('app/web/js/m/core/uihtml.js', 'utf8'); /* 22-views__auth import fld จาก core/uihtml ด้วย (ตัวสร้าง HTML ย้ายแล้ว) ต้องแทน URL ให้โหลดได้ ไม่เกี่ยวกับค่าคาดหวัง */
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
 const p = await b.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message.slice(0, 120)));
 await p.setContent('<!doctype html><body></body>');
 const NAMES = ['AU_MSG', 'EMAIL_RE', 'PW_MIN', 'RESEND_SEC', 'MAIL_TYPO', 'GLOGO', 'EV_MARK', 'RINGS', 'authBack', 'gBtn', 'legal', 'eyeBtn', 'fld', 'EMAIL_X', 'submitBtn', 'AUTH_VIEWS', 'AUTH_SPLASH', 'renderAuthRoot', 'coolT', 'paintCool', 'startCool', 'stopCool', 'resendReset', 'fieldErr', 'clearErrs', 'setBusy', 'authValidate', 'liveBusy', 'sigOf', 'typingNow', 'liveRefresh', 'SUPA_PK', 'rtWs', 'rtOn', 'rtRef', 'rtHb', 'rtRetry', 'rtTimer', 'rtDeb', 'rtTokT', 'rtSend', 'rtKick', 'rtConnect', 'rtSchedule', 'startLiveSync', 'stopLiveSync', 'rtResume', 'doSignOut', 'errorView'];
-const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, NAMES }) => {
+const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES }) => {
   const mk = s => URL.createObjectURL(new Blob([s], { type: 'text/javascript' }));
   const coreU = mk(CORE); const out = {};
   const emails = ['', ' ', '   ', 'a@b.cc', 'a@b.c', 'a@b', 'a b@c.dd', 'name@gmail.com', ' name@gmail.com ', 'NAME@GMAIL.COM', 'x@y.zz.ww', '@b.cc', 'a@.cc', 'a@b..cc', 'ก@ข.คค', 'a@b.cc ', undefined, null, 'a@@b.cc', 'a@b.12'];
@@ -30,7 +31,7 @@ const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, NAMES }) => {
     for (const k of ['icon', 'esc', '$', 'ST', 'UI', 'S', 'Auth', 'toast', 'render', 'SUPA_API', 'haptic', 'TODAY']) if (!(k in globalThis)) globalThis[k] = k === 'ST' || k === 'UI' || k === 'S' ? { auth: {}, USER: null } : (() => '');
     document.addEventListener = () => {};   // ไฟล์ 22 ผูก input/focusout ตอนโหลด ไม่ต้องการในเทสต์นี้ (ทดสอบแยกด้านล่าง)
     try {
-      const code = src.replace(/\.\/core\/authform\.js/g, coreU) + '\n//' + name + Math.random();
+      const code = src.replace(/\.\/core\/authform\.js/g, coreU).replace(/\.\/core\/uihtml\.js/g, mk(UIHTML)) + '\n//' + name + Math.random();
       const m = await import(mk(code)); const res = {};
       if (name === 'new' && NEWSYNC) { const m2 = await import(mk(NEWSYNC + '\n//sync' + Math.random())); res.syncExports = Object.keys(m2).sort(); }
       res.exports = Object.keys(m).sort(); res.winTypes = NAMES.map(k => typeof window[k]).join(',');
@@ -43,7 +44,7 @@ const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, NAMES }) => {
     } finally { /* ไม่ต้องคืนค่า */ }
   }
   return out;
-}, { OLD, NEW, NEWSYNC, CORE, NAMES });
+}, { OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES });
 const o = r.old, n = r.new; let diff = 0, total = 0;
 const cmp = (label, x, y) => { total++; const a = JSON.stringify(x), c = JSON.stringify(y); if (a !== c) { diff++; let i = 0; while (i < a.length && a[i] === c[i]) i++; console.log('ต่าง', label, '| ที่', i, '| เดิม:', a.slice(Math.max(0, i - 25), i + 60), '| ใหม่:', c.slice(Math.max(0, i - 25), i + 60)); } };
 cmp('exports', o.exports, n.exports); cmp('winTypes', o.winTypes, n.winTypes); cmp('reSrc', o.reSrc, n.reSrc); cmp('pw', o.pw, n.pw); cmp('resend', o.resend, n.resend); cmp('typo', o.typo, n.typo);
