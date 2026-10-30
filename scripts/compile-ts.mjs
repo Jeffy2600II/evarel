@@ -30,7 +30,7 @@ for (const f of coreFiles) {
 }
 const coreMissing = coreFiles.filter((f) => !existsSync(join(coreOutDir, f.replace(/\.ts$/, '.js'))) || !existsSync(join(coreDeclDir, f.replace(/\.ts$/, '.d.ts'))));
 if (coreMissing.length) { console.error('ไฟล์ผลของ core หาย: ' + coreMissing.join(', ')); process.exit(1); }
-const srcs = readdirSync(join(root, 'app/src/m')).filter((f) => f.endsWith('.ts'));
+const srcs = readdirSync(join(root, 'app/src/m')).filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts')); /* .d.ts (globals.d.ts จาก gen-m-globals.mjs) ไม่ผลิต .js */
 const r = spawnSync(process.execPath, [tsc, '-p', join(root, 'tsconfig.json')], { cwd: root, encoding: 'utf8' });
 const out = (r.stdout || '') + (r.stderr || '');
 const syntax = out.split('\n').filter((l) => /error TS1\d{3}:/.test(l));

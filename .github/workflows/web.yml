@@ -43,6 +43,7 @@ jobs:
       - name: ตรวจไฟล์คอมไพล์ตรงกับซอร์ส (กัน commit src แต่ลืมไฟล์ที่คอมไพล์แล้ว)
         run: |
           node scripts/build-react.mjs --check
+          node scripts/gen-m-globals.mjs --check
           node scripts/compile-ts.mjs > /dev/null
           if ! git diff --quiet -- app/web/js; then
             echo "ไฟล์ใน app/web/js ไม่ตรงกับ app/src: รัน npm run build:ts และ npm run build:react แล้ว commit ไฟล์ที่เปลี่ยน"
