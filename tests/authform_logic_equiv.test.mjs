@@ -11,8 +11,11 @@ const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-h
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
 const p = await b.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message.slice(0, 120)));
 await p.setContent('<!doctype html><body></body>');
-const NAMES = ['AU_MSG', 'EMAIL_RE', 'PW_MIN', 'RESEND_SEC', 'MAIL_TYPO', 'GLOGO', 'EV_MARK', 'RINGS', 'authBack', 'gBtn', 'legal', 'eyeBtn', 'fld', 'EMAIL_X', 'submitBtn', 'AUTH_VIEWS', 'AUTH_SPLASH', 'renderAuthRoot', 'coolT', 'paintCool', 'startCool', 'stopCool', 'resendReset', 'fieldErr', 'clearErrs', 'setBusy', 'authValidate', 'liveBusy', 'sigOf', 'typingNow', 'liveRefresh', 'SUPA_PK', 'rtWs', 'rtOn', 'rtRef', 'rtHb', 'rtRetry', 'rtTimer', 'rtDeb', 'rtTokT', 'rtSend', 'rtKick', 'rtConnect', 'rtSchedule', 'startLiveSync', 'stopLiveSync', 'rtResume', 'doSignOut', 'errorView'];
-const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES }) => {
+const ALLNAMES = ['AU_MSG', 'EMAIL_RE', 'PW_MIN', 'RESEND_SEC', 'MAIL_TYPO', 'GLOGO', 'EV_MARK', 'RINGS', 'authBack', 'gBtn', 'legal', 'eyeBtn', 'fld', 'EMAIL_X', 'submitBtn', 'AUTH_VIEWS', 'AUTH_SPLASH', 'renderAuthRoot', 'coolT', 'paintCool', 'startCool', 'stopCool', 'resendReset', 'fieldErr', 'clearErrs', 'setBusy', 'authValidate', 'liveBusy', 'sigOf', 'typingNow', 'liveRefresh', 'SUPA_PK', 'rtWs', 'rtOn', 'rtRef', 'rtHb', 'rtRetry', 'rtTimer', 'rtDeb', 'rtTokT', 'rtSend', 'rtKick', 'rtConnect', 'rtSchedule', 'startLiveSync', 'stopLiveSync', 'rtResume', 'doSignOut', 'errorView'];
+/* PR #16 ย้ายบล็อกซิงก์เรียลไทม์ไป 22-views__live-sync: 20 ชื่อนี้ไม่อยู่ใน 22-views__auth อีก (ไฟล์เดิมที่เทียบก็เป็นรุ่นหลังแยกแล้ว) จึงแยกตรวจ: ชื่อ auth ต้องตรงทั้งสองฝั่ง | ชื่อ sync ต้องครบในฝั่งใหม่ผ่านไฟล์ sync */
+const SYNCN = ['liveBusy', 'sigOf', 'typingNow', 'liveRefresh', 'SUPA_PK', 'rtWs', 'rtOn', 'rtRef', 'rtHb', 'rtRetry', 'rtTimer', 'rtDeb', 'rtTokT', 'rtSend', 'rtKick', 'rtConnect', 'rtSchedule', 'startLiveSync', 'stopLiveSync', 'rtResume'];
+const NAMES = ALLNAMES.filter(k => !SYNCN.includes(k));
+const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES, SYNCN }) => {
   const mk = s => URL.createObjectURL(new Blob([s], { type: 'text/javascript' }));
   const coreU = mk(CORE); const out = {};
   const emails = ['', ' ', '   ', 'a@b.cc', 'a@b.c', 'a@b', 'a b@c.dd', 'name@gmail.com', ' name@gmail.com ', 'NAME@GMAIL.COM', 'x@y.zz.ww', '@b.cc', 'a@.cc', 'a@b..cc', 'ก@ข.คค', 'a@b.cc ', undefined, null, 'a@@b.cc', 'a@b.12'];
@@ -33,7 +36,7 @@ const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES }) =>
     try {
       const code = src.replace(/\.\/core\/authform\.js/g, coreU).replace(/\.\/core\/uihtml\.js/g, mk(UIHTML)) + '\n//' + name + Math.random();
       const m = await import(mk(code)); const res = {};
-      if (name === 'new' && NEWSYNC) { const m2 = await import(mk(NEWSYNC + '\n//sync' + Math.random())); res.syncExports = Object.keys(m2).sort(); }
+      if (name === 'new' && NEWSYNC) { const m2 = await import(mk(NEWSYNC + '\n//sync' + Math.random())); res.syncExports = Object.keys(m2).sort(); res.syncWin = SYNCN.map(k => typeof window[k]).join(','); }
       res.exports = Object.keys(m).sort(); res.winTypes = NAMES.map(k => typeof window[k]).join(',');
       res.val = cases.map(([k, v]) => { try { return JSON.stringify(window.authValidate(k, v)) } catch (e) { return 'THROW:' + e.constructor.name } });
       res.re = emails.map(e => { try { return String(window.EMAIL_RE.test(e)) } catch (e2) { return 'THROW' } }); res.reSrc = window.EMAIL_RE.source + '/' + window.EMAIL_RE.flags;
@@ -44,11 +47,12 @@ const r = await p.evaluate(async ({ OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES }) =>
     } finally { /* ไม่ต้องคืนค่า */ }
   }
   return out;
-}, { OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES });
+}, { OLD, NEW, NEWSYNC, CORE, UIHTML, NAMES, SYNCN });
 const o = r.old, n = r.new; let diff = 0, total = 0;
 const cmp = (label, x, y) => { total++; const a = JSON.stringify(x), c = JSON.stringify(y); if (a !== c) { diff++; let i = 0; while (i < a.length && a[i] === c[i]) i++; console.log('ต่าง', label, '| ที่', i, '| เดิม:', a.slice(Math.max(0, i - 25), i + 60), '| ใหม่:', c.slice(Math.max(0, i - 25), i + 60)); } };
 cmp('exports', o.exports, n.exports); cmp('winTypes', o.winTypes, n.winTypes); cmp('reSrc', o.reSrc, n.reSrc); cmp('pw', o.pw, n.pw); cmp('resend', o.resend, n.resend); cmp('typo', o.typo, n.typo);
 o.val.forEach((v, i) => cmp('val#' + i, v, n.val[i])); o.re.forEach((v, i) => cmp('re#' + i, v, n.re[i])); cmp('winSame', o.winSame, n.winSame);
 console.log(`เทียบ ${total} หมวด | ตรง ${total - diff} | ต่าง ${diff} | กรณี authValidate ${n.val.length} (ผลไม่ว่าง ${n.valNonEmpty}, ผลต่างกัน ${n.valKinds} แบบ) | EMAIL_RE ${n.re.filter(x => x === 'true').length}/${n.re.length} ผ่าน | PW_MIN ${n.pw} RESEND_SEC ${n.resend} MAIL_TYPO ${n.typoKeys} คีย์ | window ${n.winTypes.split(',').filter(t => t !== 'undefined').length}/${NAMES.length} ชื่อ | ชื่อต่างจากโมดูล ${JSON.stringify(n.winSame)} | pageerror ${errs.length}`);
 await b.close();
-process.exit(diff || errs.length || n.val.length < 400 || n.valKinds < 20 || n.valNonEmpty < 100 || n.pw !== 8 || n.resend !== 30 || n.typoKeys !== 8 || n.winTypes.split(',').filter(t => t !== 'undefined').length !== NAMES.length || n.winSame.length || JSON.stringify(o.exports) !== JSON.stringify(n.exports) || n.re.filter(x => x === 'true').length < 3 ? 1 : 0);
+const syncOk = (n.syncWin || '').split(',').filter(t => t !== 'undefined').length; console.log(`sync window ${syncOk}/${SYNCN.length} ชื่อ (ไฟล์ 22-views__live-sync)`);
+process.exit(syncOk !== SYNCN.length || diff || errs.length || n.val.length < 400 || n.valKinds < 20 || n.valNonEmpty < 100 || n.pw !== 8 || n.resend !== 30 || n.typoKeys !== 8 || n.winTypes.split(',').filter(t => t !== 'undefined').length !== NAMES.length || n.winSame.length || JSON.stringify(o.exports) !== JSON.stringify(n.exports) || n.re.filter(x => x === 'true').length < 3 ? 1 : 0);
