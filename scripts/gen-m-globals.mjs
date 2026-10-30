@@ -11,9 +11,9 @@ const tsc = join(root, 'node_modules/typescript/bin/tsc'); /* พาธตรง
 const M = join(root, 'app/src/m'), OUT = join(M, 'globals.d.ts'), check = process.argv.includes('--check');
 const exported = new Set();
 for (const f of readdirSync(M).filter((x) => x.endsWith('.ts') && !x.endsWith('.d.ts'))) {
-  const m = readFileSync(join(M, f), 'utf8').match(/Object\.assign\(window,\s*\{([^}]*)\}/);
-  if (!m) continue;
-  for (const raw of m[1].split(',')) { const n = raw.trim().split(':')[0].trim(); if (/^[A-Za-z_$][\w$]*$/.test(n)) exported.add(n); }
+  /* ไฟล์หนึ่งมี Object.assign(window,{...}) ได้หลายก้อน (เช่น 12-ui__primitives) ต้องอ่านทุกก้อน ไม่ใช่ก้อนแรก */
+  for (const m of readFileSync(join(M, f), 'utf8').matchAll(/Object\.assign\(window,\s*\{([^}]*)\}/g))
+    for (const raw of m[1].split(',')) { const n = raw.trim().split(':')[0].trim(); if (/^[A-Za-z_$][\w$]*$/.test(n)) exported.add(n); }
 }
 const HEAD = '/* สร้างโดย scripts/gen-m-globals.mjs ห้ามแก้มือ | ชื่อ global ที่ m/ ส่งออกผ่าน window (ชนิด any: ประกาศให้ tsc รู้จักชื่อ ยังไม่ระบุชนิดจริง) */\n';
 const render = (skip) => HEAD + [...exported].filter((n) => !skip.has(n)).sort().map((n) => `declare var ${n}: any;`).join('\n') + '\n';
