@@ -11,7 +11,7 @@ const got = [...html.matchAll(/<script (?:type="module" )?src="js\/m\/([^"]+)"/g
 const want = JSON.parse(fs.readFileSync(DIR + '/js/m/_order.json', 'utf8')).order.map(o => o.file);
 const orderOk = JSON.stringify(got) === JSON.stringify(want);
 // ลำดับรายการแคชใน sw.js ต้องตรง _order.json ด้วย (evarel-ts-1i): ไม่งั้นผู้ใช้ที่มีแคชเก่าโหลดไม่ครบหรือค้างไฟล์ชื่อเดิม
-const swTxt = fs.readFileSync(DIR + '/sw.js', 'utf8'); const swGot = [...swTxt.matchAll(/'\.\/js\/m\/([^']+)'/g)].map(m => m[1]); const swOk = JSON.stringify(swGot) === JSON.stringify(want);
+const swTxt = fs.readFileSync(DIR + '/sw.js', 'utf8'); const swGot = [...swTxt.matchAll(/'\.\/js\/m\/([^'\/]+)'/g)].map(m => m[1]); /* [^'/] = เฉพาะโมดูล m/ ตรงๆ ไม่นับ js/m/core/*.js (ชั้นฐานที่ไม่อยู่ใน _order) ก่อนแก้ regex จับ core/ ด้วยทำให้ประตูตกมาตั้งแต่ย้าย core รอบแรก */ const swOk = JSON.stringify(swGot) === JSON.stringify(want);
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe });
