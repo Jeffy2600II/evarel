@@ -1,6 +1,11 @@
-"use strict";
+import { TODAY } from './02-core__dates.js';
+import { remFrom, applyProposalTo } from './core/aiproposal.js';
 /* ===== MODULE: services/ai-live (AI จริง: เฉพาะโหมด Supabase) =====
    เซิร์ฟเวอร์คืน "ข้อเสนอ" ไม่เขียนฐานข้อมูล -> แอปแสดงการ์ดยืนยัน -> กดยืนยันแล้วเขียนผ่าน commit() เดิม (undo + sync + realtime ฟรี) */
+/* ตรรกะแปลงข้อเสนอ AI เป็นการเปลี่ยนรายการอยู่ที่ core/aiproposal.ts แล้ว (รับ items/today/id เป็นอาร์กิวเมนต์ แก้ items ในที่เหมือนเดิม)
+   ที่นี่เหลือตัวห่อบางที่ส่ง S.items, TODAY และ id สุ่ม (Date.now()+random) เข้าไป คงลายเซ็นเดิม: remFrom applyProposal */
+export { remFrom };
+const applyProposal = (c) => applyProposalTo(S.items, c, { today: TODAY, id: Date.now() + Math.floor(Math.random() * 1000) });
 async function aiAsk(text, history) {
     const t = await ST.Repo.token(), ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000);
     try {
@@ -30,8 +35,6 @@ async function aiAsk(text, history) {
         clearTimeout(tm);
     }
 }
-/* รูปแบบ rem ของแอปคือ [{k:'before',m:นาที}] ส่วนเซิร์ฟเวอร์ส่งเป็นตัวเลขนาที -> แปลงที่นี่ที่เดียว */
-const remFrom = a => (Array.isArray(a) ? a : []).map(Number).filter(m => m >= 0).map(m => ({ k: 'before', m }));
 /* ความจำระยะยาว (MemoryLake ผ่าน Worker): ไม่ใช่ข้อมูลใน S.items จึงไม่ผ่าน commit() — เรียกเครือข่ายหลังผู้ใช้กดยืนยันเท่านั้น */
 async function memCall(c) {
     const t = await ST.Repo.token(), ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
@@ -51,62 +54,5 @@ async function memCall(c) {
     finally {
         clearTimeout(tm);
     }
-}
-function applyProposal(c) {
-    const a = c.args || {};
-    switch (c.tool) {
-        case 'item_create': {
-            const o = { ...a, id: Date.now() + Math.floor(Math.random() * 1000) };
-            if (a.rem)
-                o.rem = remFrom(a.rem);
-            if (!o.start)
-                o.start = TODAY;
-            if (!o.track)
-                o.track = (o.type === 'habit' || o.type === 'task') ? 'check' : 'none';
-            if (o.type === 'habit' && !a.repeat)
-                o.repeat = daily();
-            S.items.push(mk(o));
-            return true;
-        }
-        case 'item_update': {
-            const it = find(a.id);
-            if (!it)
-                return false;
-            const { id, rem, ...rest } = a;
-            Object.assign(it, rest);
-            if (rem)
-                it.rem = remFrom(rem);
-            return true;
-        }
-        case 'item_delete': {
-            const i = S.items.findIndex(x => x.id == a.id);
-            if (i < 0)
-                return false;
-            S.items.splice(i, 1);
-            return true;
-        }
-        case 'log_set': {
-            const it = find(a.id);
-            if (!it)
-                return false;
-            it.log[a.date] = a.value;
-            return true;
-        }
-        case 'skip_set': {
-            const it = find(a.id);
-            if (!it)
-                return false;
-            it.skip[a.date] = true;
-            return true;
-        }
-        case 'reminder_set': {
-            const it = find(a.id);
-            if (!it)
-                return false;
-            it.rem = remFrom(a.rem);
-            return true;
-        }
-    }
-    return false;
 }
 Object.assign(window, { aiAsk, remFrom, memCall, applyProposal });

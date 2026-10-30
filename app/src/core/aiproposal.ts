@@ -1,0 +1,19 @@
+/* ชั้นฐาน (ES module จริง): แปลง "ข้อเสนอจาก AI" เป็นการเปลี่ยนรายการ ไม่แตะ DOM, เครือข่าย และไม่อ่านสถานะกลาง S
+   ตัดวางจาก m/18-services__ai-live ตรงตัวอักษร ต่างแค่ export, ชนิด (ให้ tsc ออกไฟล์ประกาศได้) และสามจุดที่เปลี่ยนจาก global เป็นอาร์กิวเมนต์:
+   S.items -> items, TODAY -> ctx.today, Date.now()+random -> ctx.id (ผู้เรียกส่งมา เทสต์จึงกำหนดค่าได้)
+   แก้ items "ในที่" เหมือนต้นฉบับทุกประการ เพราะ commit() ของแอปถ่ายภาพก่อน/หลังเพื่อทำ undo และ sync จากอาร์เรย์เดียวกัน
+   ตรรกะชุดเดียวไม่มีสองสำเนา: โมดูลเดิมห่อ applyProposal(c) = applyProposalTo(S.items,c,{today:TODAY,id:สุ่ม}) */
+import { mk, daily } from './store.js';
+
+/* รูปแบบ rem ของแอปคือ [{k:'before',m:นาที}] ส่วนเซิร์ฟเวอร์ส่งเป็นตัวเลขนาที -> แปลงที่นี่ที่เดียว */
+export const remFrom=(a:any)=>(Array.isArray(a)?a:[]).map(Number).filter((m:number)=>m>=0).map((m:number)=>({k:'before',m}));
+
+export function applyProposalTo(items:any[],c:any,ctx:{today:string,id:number}){const a=c.args||{};const find=(id:any)=>items.find((x:any)=>x.id==id);
+ switch(c.tool){
+  case 'item_create':{const o:any={...a,id:ctx.id};if(a.rem)o.rem=remFrom(a.rem);if(!o.start)o.start=ctx.today;if(!o.track)o.track=(o.type==='habit'||o.type==='task')?'check':'none';if(o.type==='habit'&&!a.repeat)o.repeat=daily();items.push(mk(ctx.today,o));return true}
+  case 'item_update':{const it=find(a.id);if(!it)return false;const {id,rem,...rest}=a;Object.assign(it,rest);if(rem)it.rem=remFrom(rem);return true}
+  case 'item_delete':{const i=items.findIndex((x:any)=>x.id==a.id);if(i<0)return false;items.splice(i,1);return true}
+  case 'log_set':{const it=find(a.id);if(!it)return false;it.log[a.date]=a.value;return true}
+  case 'skip_set':{const it=find(a.id);if(!it)return false;it.skip[a.date]=true;return true}
+  case 'reminder_set':{const it=find(a.id);if(!it)return false;it.rem=remFrom(a.rem);return true}}
+ return false}
