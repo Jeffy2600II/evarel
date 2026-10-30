@@ -24,3 +24,6 @@ node_modules/
 /web-shell/node_modules/
 /web-shell/next-env.d.ts
 /web-shell/tsconfig.tsbuildinfo
+
+# F6: .d.ts ของ core ที่ compile-ts.mjs สร้างตอนบิลด์ให้ tsc ของ m/ รู้ชนิด (ไม่ commit กันสองสำเนา)
+/app/src/m/core/
