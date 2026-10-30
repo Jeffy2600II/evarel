@@ -45,6 +45,7 @@ const CORE = [
   './js/m/core/repo.js',
   './js/m/core/popover.js',
   './js/m/core/markdown.js',
+  './js/m/core/quota.js',
   './js/react/runtime.js',
   './js/react/item-row.js',
   './js/react/ai.js',

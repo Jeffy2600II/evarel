@@ -1,29 +1,14 @@
-"use strict";
+import { QUOTA_LOW, resetMs, quotaState as quotaStateOf, quotaShort as quotaShortOf, resetClock as resetClockOf, resetInAt } from './core/quota.js';
 /* ===== MODULE: services/ai-quota (ชิปโควตา + ล็อกช่องพิมพ์ : evarel-quota-ui) =====
    - ล็อกฝั่งแอปเป็นแค่ UX: ด่านจริงคือ 429 ที่ Worker (ห้ามถอด) | อ่านไม่ได้ = fail-open (ไม่ล็อก ซ่อนชิป)
    - สถานะ: ok (เหลือมาก) | low (<=20%) | out (หมด) | null (ไม่ทราบ/โหมด Mock -> ไม่มีชิป) */
-const QUOTA_LOW = 0.2, QUOTA_POLL_MAX = 600000;
+const QUOTA_POLL_MAX = 600000;
+const quotaState = quotaStateOf, quotaShort = quotaShortOf, resetClock = resetClockOf;
+function resetIn(iso) { return resetInAt(iso, Date.now()); }
 /* ค่า "อ่านโควตาไม่ได้" ใช้ร่วมทุกจุด fail-open (ห้ามล็อกผู้ใช้เพราะเราอ่านพลาด) */
 const QUOTA_UNKNOWN = Object.freeze({ unknown: true, blocked: false });
 const quotaEnabled = () => AI_LIVE();
-function quotaState(q) { if (!q || q.unknown || !q.calls || !q.tokens || !(q.calls.limit > 0) || !(q.tokens.limit > 0))
-    return null; if (q.blocked || q.calls.remaining <= 0 || q.tokens.remaining <= 0)
-    return 'out'; const r = Math.min(q.calls.remaining / q.calls.limit, q.tokens.remaining / q.tokens.limit); return r <= QUOTA_LOW ? 'low' : 'ok'; }
 /* ชิปพูดเป็น "ครั้ง" เสมอ (หน่วยที่ผู้ใช้เข้าใจ) ถ้า "โทเคน" ใกล้หมดก่อนจะเตือนตรงๆ ไม่ใช่โชว์เลขครั้งที่ดูเหมือนเหลือเยอะ */
-function quotaShort(q) {
-    const st = quotaState(q);
-    if (st === 'out')
-        return 'โควตาหมด';
-    const cr = q.calls.remaining / q.calls.limit, tr = q.tokens.remaining / q.tokens.limit;
-    if (tr <= QUOTA_LOW && tr < cr)
-        return 'ใกล้ถึงขีดจำกัดวันนี้';
-    return `เหลือ ${q.calls.remaining} จาก ${q.calls.limit} ครั้ง`;
-}
-const resetMs = iso => { const v = +new Date(iso); return Number.isFinite(v) ? v : NaN; };
-function resetClock(iso) { const d = new Date(iso); if (isNaN(d.getTime()))
-    return ''; const b = new Date(+d + 7 * 3600000); return `${pad(b.getUTCHours())}:${pad(b.getUTCMinutes())}`; }
-function resetIn(iso) { const ms = resetMs(iso) - Date.now(); if (!(ms > 0))
-    return 'ในอีกสักครู่'; const m = Math.ceil(ms / 60000), h = Math.floor(m / 60); return h >= 1 ? `อีก ${h} ชม. ${m % 60} นาที` : `อีก ${m} นาที`; }
 async function quotaFetch() {
     if (!quotaEnabled())
         return null;
