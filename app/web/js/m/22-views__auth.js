@@ -1,4 +1,4 @@
-import { EMAIL_RE, PW_MIN, MAIL_TYPO, authValidate } from './core/authform.js';
+import { EMAIL_RE, PW_MIN, MAIL_TYPO, authValidate, pwStrength, coolView, mailHint, resendToast } from './core/authform.js';
 import { fld } from './core/uihtml.js';
 /* ===== MODULE: views/auth (เข้าสู่ระบบ / สร้างบัญชี / ลืมรหัสผ่าน) ===== */
 const AU_MSG = { invalid_credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', email_taken: 'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน', network: 'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่', unknown: 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง', needs_link: 'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบด้วยบัญชีเดิมก่อน', code_invalid: 'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง', code_expired: 'รหัสหมดอายุแล้ว กดส่งรหัสใหม่', too_many_requests: 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่', unverified: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' };
@@ -29,7 +29,7 @@ function renderAuthRoot() {
 }
 let coolT = null;
 function paintCool() { const b = $('resendBtn'); if (!b)
-    return; const n = UI.auth.cool; b.disabled = n > 0; b.innerHTML = n > 0 ? `<span>ส่งอีกครั้งได้ใน ${n} วินาที</span>` : `<span>${UI.auth.screen === 'code' ? 'ส่งรหัสอีกครั้ง' : 'ส่งลิงก์อีกครั้ง'}</span>`; }
+    return; const v = coolView(UI.auth.cool, UI.auth.screen); b.disabled = v.disabled; b.innerHTML = v.html; }
 function startCool() { stopCool(); UI.auth.cool = RESEND_SEC; paintCool(); coolT = setInterval(() => { UI.auth.cool = Math.max(0, UI.auth.cool - 1); paintCool(); if (!UI.auth.cool)
     stopCool(); }, 1000); }
 function stopCool() { clearInterval(coolT); coolT = null; }
@@ -39,7 +39,7 @@ async function resendReset() { if (UI.auth.cool > 0)
         await Auth.resend(UI.auth.email, UI.auth.codeType);
     else
         await Auth.sendReset(UI.auth.email);
-    toast(UI.auth.screen === 'code' ? 'ส่งรหัสอีกครั้งแล้ว' : 'ส่งลิงก์อีกครั้งแล้ว');
+    toast(resendToast(UI.auth.screen));
 }
 catch (err) {
     toast(AU_MSG[err.code] || AU_MSG.unknown);
@@ -58,9 +58,9 @@ function setBusy(form, on) { const b = form.querySelector('button[type="submit"]
 document.addEventListener('input', e => {
     const t = e.target;
     if (t.id === 'f-password' && t.closest('[data-kind="signup"]')) {
-        const p = t.value, s = [p.length >= PW_MIN, p.length >= 12, /[a-z]/.test(p) && /[A-Z]/.test(p), /\d/.test(p), /[^\w]/.test(p)].filter(Boolean).length, lv = p.length < PW_MIN ? (p ? 1 : 0) : Math.min(4, Math.max(1, s - 1));
-        $('pwMeter').dataset.lv = String(lv);
-        $('pwLabel').textContent = p ? (p.length < PW_MIN ? `อีก ${PW_MIN - p.length} ตัวอักษรจึงจะใช้ได้` : ['', 'อ่อน', 'พอใช้', 'ดี', 'แข็งแรง'][lv]) : 'ใช้ตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ผสมกันจะปลอดภัยขึ้น';
+        const m = pwStrength(t.value);
+        $('pwMeter').dataset.lv = String(m.lv);
+        $('pwLabel').textContent = m.label;
     }
     if (t.closest('.ev-authform') && t.getAttribute('aria-invalid') === 'true') {
         t.setAttribute('aria-invalid', 'false');
@@ -75,8 +75,9 @@ document.addEventListener('focusout', e => {
     const t = e.target;
     if (t.name !== 'email' || !t.closest?.('.ev-authform'))
         return;
-    const [u, dom] = t.value.trim().split('@'), fix = dom && MAIL_TYPO[dom.toLowerCase()], b = $('e-email');
-    if (fix && b) {
+    const h = mailHint(t.value), b = $('e-email');
+    if (h && b) {
+        const u = h.u, fix = h.fix;
         b.hidden = false;
         b.dataset.tone = 'hint';
         b.innerHTML = `<span>หมายถึง ${esc(u)}@${fix} หรือเปล่า?</span><button type="button" data-act="au-fixmail" data-id="${esc(u)}@${fix}">ใช้อันนี้</button>`;
