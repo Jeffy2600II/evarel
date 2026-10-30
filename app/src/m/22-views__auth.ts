@@ -1,7 +1,7 @@
+import { EMAIL_RE, PW_MIN, MAIL_TYPO, authValidate } from './core/authform.js';
 /* ===== MODULE: views/auth (เข้าสู่ระบบ / สร้างบัญชี / ลืมรหัสผ่าน) ===== */
 const AU_MSG={invalid_credentials:'อีเมลหรือรหัสผ่านไม่ถูกต้อง',email_taken:'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน',network:'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',unknown:'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง',needs_link:'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบด้วยบัญชีเดิมก่อน',code_invalid:'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง',code_expired:'รหัสหมดอายุแล้ว กดส่งรหัสใหม่',too_many_requests:'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่',unverified:'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'};
-const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,PW_MIN=8,RESEND_SEC=30;
-const MAIL_TYPO={'gmial.com':'gmail.com','gmai.com':'gmail.com','gamil.com':'gmail.com','gmail.co':'gmail.com','gmail.con':'gmail.com','gmil.com':'gmail.com','hotmial.com':'hotmail.com','yaho.com':'yahoo.com'};
+const RESEND_SEC=30;
 const GLOGO='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
 const EV_MARK='<svg class="mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><path d="M16.5 24.5l5.5 5.5 10-11.5"/></svg>';
 const RINGS=`<svg class="ev-rings" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${[46,86,126,166,206,246].map((r,i)=>`<circle cx="200" cy="130" r="${r}" stroke-width="1" stroke-opacity="${(.34-i*.05).toFixed(2)}" style="animation-delay:${i*90}ms"/>`).join('')}</svg>`;
@@ -49,13 +49,6 @@ async function resendReset(){if(UI.auth.cool>0)return;const b=$('resendBtn');b.d
 const fieldErr=(form,name,msg)=>{const inp=form.querySelector(`[name="${name}"]`),box=form.querySelector(`#e-${name}`);if(inp&&inp.type!=='checkbox')inp.setAttribute('aria-invalid',String(!!msg));if(box){box.hidden=!msg;box.removeAttribute('data-tone');box.innerHTML=msg?`${icon('alert')}<span>${esc(msg)}</span>`:''}};
 function clearErrs(form){form.querySelectorAll('.ev-input').forEach(i=>i.setAttribute('aria-invalid','false'));form.querySelectorAll('.ev-field-err').forEach(b=>{b.hidden=true;b.innerHTML=''});const fe=form.querySelector('#form-err');if(fe){fe.hidden=true;fe.textContent=''}}
 function setBusy(form,on){const b=form.querySelector('button[type="submit"]');b.disabled=on;b.innerHTML=on?'<span class="ev-spin"></span>':`<span>${b.dataset.label}</span>`;form.querySelectorAll('input').forEach(i=>{i.readOnly=on})}
-function authValidate(kind,v){const e={},em=(v.email||'').trim();if(!em)e.email='กรุณากรอกอีเมล';else if(!EMAIL_RE.test(em))e.email='รูปแบบอีเมลไม่ถูกต้อง (เช่น name@gmail.com)';
- if(kind==='signup'){if(!(v.name||'').trim())e.name='กรุณากรอกชื่อ';if((v.password||'').length<PW_MIN)e.password=`รหัสผ่านอย่างน้อย ${PW_MIN} ตัวอักษร`;if(!v.terms)e.terms='ต้องยอมรับข้อกำหนดก่อนสร้างบัญชี'}
- if(kind==='login'&&!v.password)e.password='กรุณากรอกรหัสผ่าน';
- if(kind==='code'){delete e.email;if(!/^\d{6}$/.test((v.code||'').trim()))e.code='ใส่ตัวเลข 6 หลัก'}
- if(kind==='newpw'){delete e.email;if((v.password||'').length<PW_MIN)e.password=`รหัสผ่านอย่างน้อย ${PW_MIN} ตัวอักษร`}return e}
-
-
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t.closest('[data-kind="signup"]')){const p=t.value,s=[p.length>=PW_MIN,p.length>=12,/[a-z]/.test(p)&&/[A-Z]/.test(p),/\d/.test(p),/[^\w]/.test(p)].filter(Boolean).length,lv=p.length<PW_MIN?(p?1:0):Math.min(4,Math.max(1,s-1));
  $('pwMeter').dataset.lv=String(lv);$('pwLabel').textContent=p?(p.length<PW_MIN?`อีก ${PW_MIN-p.length} ตัวอักษรจึงจะใช้ได้`:['','อ่อน','พอใช้','ดี','แข็งแรง'][lv]):'ใช้ตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ผสมกันจะปลอดภัยขึ้น'}
  if(t.closest('.ev-authform')&&t.getAttribute('aria-invalid')==='true'){t.setAttribute('aria-invalid','false');const b=$('e-'+t.name);if(b){b.hidden=true;b.innerHTML=''}}});

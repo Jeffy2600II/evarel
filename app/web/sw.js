@@ -47,6 +47,7 @@ const CORE = [
   './js/m/core/markdown.js',
   './js/m/core/quota.js',
   './js/m/core/calendar.js',
+  './js/m/core/authform.js',
   './js/react/runtime.js',
   './js/react/item-row.js',
   './js/react/ai.js',
