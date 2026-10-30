@@ -41,6 +41,7 @@ const CORE = [
   './js/m/core/schedule.js',
   './js/m/core/stats.js',
   './js/m/core/store.js',
+  './js/m/core/constants.js',
   './js/m/core/popover.js',
   './js/react/runtime.js',
   './js/react/item-row.js',

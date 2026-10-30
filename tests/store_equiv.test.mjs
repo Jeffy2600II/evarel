@@ -1,9 +1,10 @@
 // พิสูจน์ F6 (03-core__store): โมดูลใหม่ (ตรรกะมาจาก core/store) ให้ผลเหมือนโมดูลเดิมทุกชื่อที่ส่งออก รวมลำดับคีย์ของออบเจ็กต์ (diffItems เทียบด้วย JSON.stringify)
 // ใช้: node tests/store_equiv.test.mjs <03-core__store.js เดิม>  (ใหม่อ่านจาก app/web/js/m/03-core__store.js)
 import { chromium } from 'playwright'; import fs from 'fs';
+import { constantsInlined } from './_constants_inline.mjs';
 const R = p => fs.readFileSync(p, 'utf8');
 const OLD = R(process.argv[2]), NEW = R('app/web/js/m/03-core__store.js');
-const SRC = { dates: R('app/web/js/m/02-core__dates.js'), cdates: R('app/web/js/m/core/dates.js'), cstore: R('app/web/js/m/core/store.js'), constants: R('app/web/js/m/01-core__constants.js') };
+const SRC = { dates: R('app/web/js/m/02-core__dates.js'), cdates: R('app/web/js/m/core/dates.js'), cstore: R('app/web/js/m/core/store.js'), constants: constantsInlined('.') };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

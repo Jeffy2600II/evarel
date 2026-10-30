@@ -2,8 +2,9 @@
 // ใช้: node tests/dates_equiv.test.mjs <02-core__dates.js เดิม>   (ใหม่อ่านจาก app/web/js/m/02-core__dates.js)
 // ล็อกนาฬิกา (TODAY/nowHM/dayLab ผูกเวลา) โหลดแต่ละเวอร์ชันเป็นโมดูลแยกในเบราว์เซอร์จริง จำลอง 01-core__constants และ core/dates ด้วย blob
 import { chromium } from 'playwright'; import fs from 'fs';
+import { constantsInlined } from './_constants_inline.mjs';
 const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/02-core__dates.js', 'utf8');
-const CORE = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8'), CONST = fs.readFileSync('app/web/js/m/01-core__constants.js', 'utf8');
+const CORE = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8'), CONST = constantsInlined('.');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
