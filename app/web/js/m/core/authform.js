@@ -20,9 +20,25 @@ function authValidate(kind, v) {
   }
   return e;
 }
+function pwStrength(p) {
+  const s = [p.length >= PW_MIN, p.length >= 12, /[a-z]/.test(p) && /[A-Z]/.test(p), /\d/.test(p), /[^\w]/.test(p)].filter(Boolean).length, lv = p.length < PW_MIN ? p ? 1 : 0 : Math.min(4, Math.max(1, s - 1));
+  return { lv, label: p ? p.length < PW_MIN ? `\u0E2D\u0E35\u0E01 ${PW_MIN - p.length} \u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E36\u0E07\u0E08\u0E30\u0E43\u0E0A\u0E49\u0E44\u0E14\u0E49` : ["", "\u0E2D\u0E48\u0E2D\u0E19", "\u0E1E\u0E2D\u0E43\u0E0A\u0E49", "\u0E14\u0E35", "\u0E41\u0E02\u0E47\u0E07\u0E41\u0E23\u0E07"][lv] : "\u0E43\u0E0A\u0E49\u0E15\u0E31\u0E27\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E40\u0E25\u0E47\u0E01-\u0E43\u0E2B\u0E0D\u0E48 \u0E15\u0E31\u0E27\u0E40\u0E25\u0E02 \u0E41\u0E25\u0E30\u0E2A\u0E31\u0E0D\u0E25\u0E31\u0E01\u0E29\u0E13\u0E4C\u0E1C\u0E2A\u0E21\u0E01\u0E31\u0E19\u0E08\u0E30\u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22\u0E02\u0E36\u0E49\u0E19" };
+}
+function coolView(n, screen) {
+  return { disabled: n > 0, html: n > 0 ? `<span>\u0E2A\u0E48\u0E07\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07\u0E44\u0E14\u0E49\u0E43\u0E19 ${n} \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35</span>` : `<span>${screen === "code" ? "\u0E2A\u0E48\u0E07\u0E23\u0E2B\u0E31\u0E2A\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07" : "\u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07"}</span>` };
+}
+function mailHint(value) {
+  const [u, dom] = value.trim().split("@"), fix = dom && MAIL_TYPO[dom.toLowerCase()];
+  return fix ? { u, fix } : null;
+}
+const resendToast = (screen) => screen === "code" ? "\u0E2A\u0E48\u0E07\u0E23\u0E2B\u0E31\u0E2A\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07\u0E41\u0E25\u0E49\u0E27" : "\u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07\u0E41\u0E25\u0E49\u0E27";
 export {
   EMAIL_RE,
   MAIL_TYPO,
   PW_MIN,
-  authValidate
+  authValidate,
+  coolView,
+  mailHint,
+  pwStrength,
+  resendToast
 };
