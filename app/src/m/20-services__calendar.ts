@@ -1,4 +1,4 @@
-import { addMin, occurrenceEventsOf, dotsForOf } from './core/calendar.js';
+import { addMin, occurrenceEventsOf, dotsForOf, monthStatsOf, nextOccurrencesOf } from './core/calendar.js';
 /* ===== MODULE: services/calendar (FullCalendar · จุดต่อ backend: ฟังก์ชัน events ด้านล่างเปลี่ยนเป็น fetch ตามช่วงวันได้) ===== */
 const FCS={main:null,habit:null};
 const occurrenceEvents=(start,end)=>occurrenceEventsOf(S.items,start,end);
@@ -28,14 +28,14 @@ function calDayTap(ds,el){if(LP.fired){LP.fired=false;return}const it=find(ST.DE
  if(it.track==='check'&&!skipped(it,ds)){const done=isDone(it,ds);commit(`${fmtDate(ds)}: ${done?'ยังไม่ทำ':'ทำแล้ว'}`,()=>{it.log[ds]=done?0:1});haptic()}else openPop(el,dayMenu(it,ds),{align:'center'})}
 
 /* moved by move_defs (evarel-ts-1f) */
-function detailHabit(it){const {y,m}=UI.cal,pad0=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),now=new Date(),isNow=y===now.getFullYear()&&m===now.getMonth();
- let t=0,ok=0;
- for(let d=1;d<=dim;d++){const ds=ymd(new Date(y,m,d)),st=dayState(it,ds);if(ds<=TODAY&&scheduled(it,ds)&&!skipped(it,ds)){t++;if(isDone(it,ds))ok++}}
+function detailHabit(it){const {y,m}=UI.cal,pad0=new Date(y,m,1).getDay(),now=new Date(),isNow=y===now.getFullYear()&&m===now.getMonth();
+ /* สถิติเดือน (นับวันที่มีกำหนดและไม่ข้าม จนถึงวันนี้ + จำนวนที่ทำเสร็จ) คำนวณที่ core/calendar แล้ว */
+ const {t,ok}=monthStatsOf(it,y,m,TODAY);
  /* S4: ยุบวรรค/จัด style ให้ตรงผลลัพธ์ DOM ของ React (react/detail.jsx) ทุกไบต์ */
  return `<section class="ev-card"><div class="ev-stats3"><div><b>${streak(it)}</b><span>วันต่อเนื่อง</span></div><div><b>${totalDone(it)}</b><span>ทำแล้วทั้งหมด (ครั้ง)</span></div><div><b>${t?Math.round(100*ok/t):0}%</b><span>เดือนนี้ (${ok}/${t})</span></div></div></section><section class="ev-card"><div class="ev-cal-head"><button class="ev-icon-btn" data-flat data-act="cal-prev" aria-label="เดือนก่อน">${icon('back')}</button><b>${TH_MONTH[m]} ${y+543}</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-next" aria-label="เดือนถัดไป" ${isNow?'disabled':''}>${icon('back')}</button></div><div id="fcHabit"></div><div class="ev-legend"><span><i data-state="done"></i>ทำแล้ว</span><span><i data-state="part"></i>ทำบางส่วน</span><span><i></i>ยังไม่ทำ</span><span><i data-state="off"></i>ไม่มีกำหนด</span></div><p class="ev-sub" style="margin-top: 12px;">${it.track==='check'?'แตะวันที่เพื่อติ๊ก/เลิกติ๊ก':'แตะวันที่เพื่อปรับจำนวน'} · กดค้างเพื่อตัวเลือกอื่น (ข้ามวัน)</p></section>`}
 function detailTask(it){const done=isDone(it,it.start),late=!done&&it.start<TODAY;
  return `<section class="ev-card"><span class="ev-cap">สถานะ</span><div style="margin: 10px 0px 14px;">${seg('h-task',[['0','ยังไม่เสร็จ'],['1','เสร็จแล้ว']],done?'1':'0')}</div><div class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>กำหนดส่ง ${fmtDate(it.start)}</b><span class="ev-sub">${it.time||'ไม่ระบุเวลา'}${it.subject?` · ${esc(it.subject)}`:''}</span></div>${late?'<span class="ev-chip" data-state="late">เลยกำหนด</span>':done?'<span class="ev-chip" data-state="done">เสร็จแล้ว</span>':''}</div></section>`}
-function detailSchedule(it){const next=[];for(let i=0;i<90&&next.length<5;i++){const ds=ymd(addDays(new Date(),i));if(occursOn(it,ds))next.push(ds)}
+function detailSchedule(it){const next=nextOccurrencesOf(it,TODAY); /* กวาด 90 วัน เก็บ 5 ครั้งที่ occursOn — ลูปอยู่ที่ core/calendar */
  return `<section class="ev-card"><h3 class="ev-group" style="padding-top: 0px;">ครั้งถัดไป</h3>${next.length?`<ul>${next.map(ds=>`<li class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>${dayLab(ds)}</b><span class="ev-sub">${fmtDate(ds)} · ${it.time?timeText(it):'ไม่ระบุเวลา'}</span></div></li>`).join('')}</ul>`:empty('cal','ไม่มีครั้งถัดไป','รายการนี้สิ้นสุดแล้ว')}</section>`}
 const DETAIL_BY_TYPE={habit:detailHabit,task:detailTask,event:detailSchedule,class:detailSchedule};
 const metaCard=it=>`<section class="ev-card"><h3 class="ev-group" style="padding-top: 0px;">การตั้งค่า</h3><div class="ev-meta"><span class="ev-chip">${TYPES[it.type]}</span><span class="ev-chip">${repeatText(it)}</span><span class="ev-chip">${it.time?timeText(it):'ไม่ระบุเวลา'}</span>${it.rem.length?it.rem.map(r=>`<span class="ev-chip">เตือน ${remText(r)}</span>`).join(''):'<span class="ev-chip">ไม่มีการเตือน</span>'}</div><button class="ev-btn-ghost ev-btn-block" data-act="m-edit" data-id="${it.id}" style="margin-top: 14px;">แก้ไขการตั้งค่า</button></section>`;

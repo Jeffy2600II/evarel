@@ -1,5 +1,5 @@
 import { pad, ymd, addDays } from "./dates.js";
-import { scheduled, skipped, tracked, isDone } from "./schedule.js";
+import { occursOn, scheduled, skipped, tracked, isDone } from "./schedule.js";
 const addMin = (t, m) => {
   const [h, mi] = t.split(":").map(Number), x = Math.min(h * 60 + mi + m, 1439);
   return `${pad(Math.floor(x / 60))}:${pad(x % 60)}`;
@@ -27,8 +27,30 @@ const dotsForOf = (items, ds) => {
   const ts = [...new Set(items.filter((it) => scheduled(it, ds) && !skipped(it, ds)).map((it) => it.type))].slice(0, 4);
   return ts.map((t) => `<i data-t="${t}"></i>`).join("");
 };
+function monthStatsOf(it, y, m, today) {
+  let t = 0, ok = 0;
+  const dim = new Date(y, m + 1, 0).getDate();
+  for (let d = 1; d <= dim; d++) {
+    const ds = ymd(new Date(y, m, d));
+    if (ds <= today && scheduled(it, ds) && !skipped(it, ds)) {
+      t++;
+      if (isDone(it, ds)) ok++;
+    }
+  }
+  return { t, ok };
+}
+function nextOccurrencesOf(it, today, maxDays = 90, maxCount = 5) {
+  const next = [];
+  for (let i = 0; i < maxDays && next.length < maxCount; i++) {
+    const ds = ymd(addDays(/* @__PURE__ */ new Date(today + "T00:00:00"), i));
+    if (occursOn(it, ds)) next.push(ds);
+  }
+  return next;
+}
 export {
   addMin,
   dotsForOf,
+  monthStatsOf,
+  nextOccurrencesOf,
   occurrenceEventsOf
 };
