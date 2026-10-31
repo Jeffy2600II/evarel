@@ -36,3 +36,47 @@ export function countNotifiable(items:any) {
   }
   return n;
 }
+
+/* ===== Web Push (ตัดวางจาก m/10-services__notify ตรงตัวอักษร 31 ต.ค. 2026) =====
+   ตรรกะสมัครรับ push ชุดเดียว: โมดูลเดิมเรียกใช้ที่นี่ผ่านตัวห่อที่ส่ง deps เข้ามา (supported api permission requestPermission token swReady save)
+   คงพฤติกรรมตรงตัวทุกจุด: ลำดับตรวจเงื่อนไข รหัส why การเทียบกุญแจ VAPID และการบันทึกสถานะหลังสมัครสำเร็จ
+   fetch ยังเป็น global เหมือนเดิม (core/ailive ใช้วิธีเดียวกัน) | สิ่งที่ผูกเบราว์เซอร์โดยตรง (Notification navigator localStorage) อยู่ฝั่งตัวห่อ */
+export const PUSH_WHY = { unsupported: 'เบราว์เซอร์นี้ไม่รองรับ Push', denied: 'ถูกปิดไว้ ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์', 'no-backend': 'โหมดนี้ยังไม่เชื่อมระบบหลังบ้าน', 'not-asked': 'ยังไม่ได้อนุญาต', auth: 'ต้องเข้าสู่ระบบก่อน', 'no-key': 'ระบบยังไม่พร้อมรับสมัคร ลองใหม่ภายหลัง', subscribe: 'เครื่องนี้สมัครไม่สำเร็จ ลองใหม่อีกครั้ง', server: 'ระบบหลังบ้านไม่รับการสมัคร ลองใหม่ภายหลัง', limit: 'สมัครครบ 5 เครื่องแล้ว' };
+export const pushWhyTextOf = (w: any) => (PUSH_WHY as any)[w] || 'สมัครไม่สำเร็จ';
+/* ถอดรหัส base64url เป็นไบต์ (กุญแจ VAPID จาก /push/key) — บริสุทธิ์ ใช้ atob global เหมือนเดิม */
+export function urlB64ToU8(b64: any) {
+  if (typeof b64 !== 'string' || !b64) throw new Error('empty key');
+  const pad = '='.repeat((4 - b64.length % 4) % 4), raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/')), out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+export type PushDeps = { supported: () => boolean; api: () => string; permission: () => string; requestPermission: () => Promise<string>; token: () => Promise<string>; swReady: () => Promise<any>; save: (v: any) => void };
+/** คืน {ok:true} หรือ {ok:false,why:'unsupported|denied|no-backend|no-key|sw|subscribe|server|limit|auth'} (ลำดับตรวจเงื่อนไขตรงตัวเดิม) */
+export function pushSubscribeOf(deps: PushDeps) {
+  return async (askPermission: any) => {
+    if (!deps.supported()) return { ok: false, why: 'unsupported' };
+    if (!deps.api()) return { ok: false, why: 'no-backend' };
+    if (deps.permission() === 'denied') return { ok: false, why: 'denied' };
+    if (deps.permission() !== 'granted') {
+      if (!askPermission) return { ok: false, why: 'not-asked' };
+      const p = await deps.requestPermission();
+      if (p !== 'granted') return { ok: false, why: p === 'denied' ? 'denied' : 'not-asked' } }
+    let t: any; try { t = await deps.token() } catch (e) { return { ok: false, why: 'auth' } }
+    let key: any; try { const r = await fetch(`${deps.api()}/push/key`); if (!r.ok) return { ok: false, why: 'no-key' }; key = (await r.json()).publicKey } catch (e) { return { ok: false, why: 'no-key' } }
+    let sub: any; try {
+      const reg = await deps.swReady();
+      sub = await reg.pushManager.getSubscription();
+      /* กุญแจ VAPID เปลี่ยน (เช่น เปลี่ยนชุด forge) -> สมัครเก่าใช้ไม่ได้ ต้องยกเลิกแล้วสมัครใหม่ */
+      const want = urlB64ToU8(key);
+      if (sub && sub.options && sub.options.applicationServerKey) { const have = new Uint8Array(sub.options.applicationServerKey); if (have.length !== want.length || have.some((v: any, i: number) => v !== want[i])) { await sub.unsubscribe(); sub = null } }
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: want })
+    } catch (e) { return { ok: false, why: 'subscribe' } }
+    try {
+      const r = await fetch(`${deps.api()}/push/subscribe`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify(sub.toJSON()) });
+      if (r.status === 403) return { ok: false, why: 'limit' };
+      if (r.status === 401) return { ok: false, why: 'auth' };
+      if (!r.ok) return { ok: false, why: 'server' };
+    } catch (e) { return { ok: false, why: 'server' } }
+    deps.save({ at: Date.now(), endpoint: sub.endpoint });
+    return { ok: true } };
+}
