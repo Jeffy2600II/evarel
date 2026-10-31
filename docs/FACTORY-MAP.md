@@ -57,6 +57,7 @@
 - 📄 [`m_progress.mjs`](app/tools/m_progress.mjs)
 - 📄 [`mapper.mjs`](app/tools/mapper.mjs)
 - 📄 [`rollback.mjs`](app/tools/rollback.mjs)
+- 📁 [`scorecard/`](app/tools/scorecard)
 - 📄 [`tuner.mjs`](app/tools/tuner.mjs)
 - 📄 [`xray.mjs`](app/tools/xray.mjs)
 

@@ -1,0 +1,193 @@
+{
+ "boxes": {
+  "zones": {
+   "app/pages": 2,
+   "app/shared": 14
+  },
+  "total_boxes": 16,
+  "full_3layer": 16,
+  "with_style": 16,
+  "with_boxmd": 16,
+  "with_card_json": 16,
+  "with_checklist": 16,
+  "window_outside_tray_total": 0,
+  "names_with_version_digits": [],
+  "code_files": 87,
+  "max_lines_file": [
+   "app/shared/form/parts/FormFields.jsx",
+   63,
+   4407
+  ],
+  "over_300_lines": [],
+  "over_15kb": [],
+  "window_outside_tray_files": []
+ },
+ "engine_app": {
+  "files": 28,
+  "total_bytes": 174211,
+  "max_file": [
+   "25-actions.ts",
+   20023,
+   142
+  ],
+  "over_15kb": [
+   "09-ui__layers.ts",
+   "17-views__ai.ts",
+   "25-actions.ts"
+  ],
+  "numbered_prefixes": 26
+ },
+ "core": {
+  "files": 23,
+  "total_bytes": 106556,
+  "max_file": [
+   "authviews.ts",
+   10360,
+   40
+  ],
+  "over_15kb": []
+ },
+ "react_layer": {
+  "files": 2,
+  "total_bytes": 9996,
+  "max_file": [
+   "runtime.js",
+   8221,
+   65
+  ],
+  "jsx_files": 0
+ },
+ "css": {
+  "app.css": {
+   "vars_declared": 306,
+   "var_uses": 738,
+   "hex_in_vars": 129,
+   "hex_outside_vars": 14,
+   "px_outside_vars": 973
+  },
+  "design.css": {
+   "vars_declared": 176,
+   "var_uses": 608,
+   "hex_in_vars": 37,
+   "hex_outside_vars": 82,
+   "px_outside_vars": 936
+  },
+  "extra.css": {
+   "vars_declared": 6,
+   "var_uses": 22,
+   "hex_in_vars": 0,
+   "hex_outside_vars": 6,
+   "px_outside_vars": 33
+  }
+ },
+ "mold_table": {
+  "exists": true,
+  "vars_rows": 137
+ },
+ "tools_factory": {
+  "app/tools/audit_css_values.py": 30,
+  "app/tools/checker.mjs": 309,
+  "app/tools/dep_matrix.mjs": 157,
+  "app/tools/m_progress.mjs": 131,
+  "app/tools/mapper.mjs": 142,
+  "app/tools/rollback.mjs": 80,
+  "app/tools/scorecard/measure_factory.py": 242,
+  "app/tools/scorecard/score_factory.py": 171,
+  "app/tools/tuner.mjs": 233,
+  "app/tools/xray.mjs": 96
+ },
+ "tools_root": {
+  "tools/dep_manifest.mjs": 91,
+  "tools/dep_symbols.mjs": 119,
+  "tools/docs_drift.mjs": 29,
+  "tools/hook_calls.mjs": 18,
+  "tools/move_defs.mjs": 27,
+  "tools/plan_check.py": 41,
+  "tools/reorder_modules.mjs": 28,
+  "tools/sim_move.mjs": 27,
+  "tools/state_centralize.mjs": 59,
+  "tools/state_centralize_verify.mjs": 57,
+  "tools/state_wrap.mjs": 56,
+  "tools/state_wrap_verify.mjs": 39,
+  "tools/typecheck.mjs": 27,
+  "tools/undef_names.mjs": 29
+ },
+ "scripts_root": [
+  "build-next.mjs",
+  "check-release-notes.mjs",
+  "version-rules.mjs",
+  "run_shots_gate.sh",
+  "gen-m-globals.mjs",
+  "build-web.mjs",
+  "build-react.mjs",
+  "compile-ts.mjs",
+  "test-api.mjs",
+  "deploy.mjs",
+  "build-css.mjs"
+ ],
+ "ci": {
+  "workflow": "web.yml",
+  "jobs": [
+   "push",
+   "pull_request",
+   "workflow_dispatch",
+   "check",
+   "factory",
+   "deploy-forge"
+  ],
+  "named_steps_per_job": {},
+  "factory_gates": [
+   "ตรวจกติกากล่อง BOX-01..06 (ไม่ผ่าน = ไม่ปล่อย)",
+   "วาดแผนที่โรงงานใหม่จากโครงสร้างจริง",
+   "แผนที่ที่ commit ไว้ต้องไม่ล้าสมัย",
+   "X-ray รายหน้า (ทุกกล่องใน app/pages)",
+   "ความคืบหน้าทำให้ m/ ว่าง (F6) รายงานอย่างเดียว ไม่บล็อก แต่ผลต้องแน่นอนสองรอบ",
+   "สรุปผลขึ้นหน้า run"
+  ]
+ },
+ "tests": {
+  "files": 172,
+  "equiv_suites": 49
+ },
+ "docs": {
+  "md_files": 43,
+  "adr": 2,
+  "factory_step_docs": 8
+ },
+ "git": {
+  "commits": "74",
+  "first": "2026-10-29",
+  "last": "2026-10-31",
+  "branch": "develop"
+ },
+ "release": {
+  "version": "2026.2.60",
+  "date": "2026-10-31",
+  "title": "จัดระเบียบภายใน: ปิดงาน F6 — ชั้นโมดูลเดิมย้ายออกจาก m/ หมด (หน้าตาและการทำงานเหมือนเดิมทุ"
+ },
+ "live_checker": {
+  "pass_boxes": 16,
+  "fail_boxes": 0,
+  "exit": 0
+ },
+ "live_map": {
+  "regenerated_ok": true,
+  "committed_map_fresh": true
+ },
+ "live_m_progress": "F6 จบแล้ว: ไม่มี app/src/m แล้ว (ย้ายเป็น app/src/app ทั้งหมด 31 ต.ค. 2026) | โมดูลใน app/ ปัจจุบัน: 27 ไฟล์ | 166666 ไบต์ | ชั้นพึ่งพา 11 | วงจรจริง 0",
+ "live_xray_example": {
+  "ok": true
+ },
+ "other_zones": {
+  "app/api": 43,
+  "app/db": 10,
+  "app/edge": 5,
+  "web-next/src": 3,
+  "web-shell/src": 2,
+  "app/data": 3
+ },
+ "shared_root_files": [
+  "README.md",
+  "tray.js"
+ ]
+}
