@@ -1,5 +1,5 @@
 // พิสูจน์ F3.2: ถาดมาตรฐานจับข้อมูลผิดรูปและชี้ชื่อกล่อง/ฟิลด์ได้ถูก ข้อมูลถูกรูปคืนค่าเดิมเป๊ะ
-import { tray, T, TrayError } from '../app/shared/tray.js';
+import { tray, T, TrayError } from '../web/shared/tray.js';
 let ok = 0; const bad = [];
 const t = (n, c) => (c ? ok++ : bad.push(n));
 const throwsAt = (fn, box, path) => { try { fn(); return false; } catch (e) { return e instanceof TrayError && e.box === box && e.path === path; } };
@@ -36,6 +36,6 @@ t('ถาดสองใบอิสระ', all.take({ q: 'x' }).q === 'x' && s
 // ต้องระบุชื่อกล่อง
 t('ไม่ใส่ชื่อกล่องโยน', (() => { try { tray('', {}); return false; } catch { return true; } })());
 // ไม่แตะ window ตอน import
-t('ไม่อ้าง window', !/\bwindow\b/.test(await (await import('node:fs/promises')).readFile(new URL('../app/shared/tray.js', import.meta.url), 'utf8').then(s => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, ''))));
+t('ไม่อ้าง window', !/\bwindow\b/.test(await (await import('node:fs/promises')).readFile(new URL('../web/shared/tray.js', import.meta.url), 'utf8').then(s => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, ''))));
 console.log(`ผ่าน ${ok} ตก ${bad.length}`, bad.length ? bad : '');
 process.exit(bad.length ? 1 : 0);

@@ -1,5 +1,5 @@
 // สร้าง build/web จาก Next จริง (S4 next-pages ไบต์ N4 — สลับจากโหมดปล่อยผ่านของ S3)
-// หน้าสร้างโดย Next (web-next/src/app: layout.tsx+page.tsx) เครื่องยนต์ 26 โมดูลอยู่ในบันเดิลของ Next
+// หน้าสร้างโดย Next (web/next/src/app: layout.tsx+page.tsx) เครื่องยนต์ 26 โมดูลอยู่ในบันเดิลของ Next
 // ผลลัพธ์ไม่มี js/m ในเส้นทางเสิร์ฟอีกต่อไป (ตัวตรวจในสคริปต์นี้) และ EVAREL_API อบตอน build ผ่าน NEXT_PUBLIC_EVAREL_API
 // ใช้: node scripts/build-web.mjs <forge|production>
 import { cpSync, rmSync, existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -19,7 +19,7 @@ const env = process.argv[2];
 if (!Object.hasOwn(API, env)) { console.error('ระบุสภาพแวดล้อม: forge หรือ production'); process.exit(2); }
 
 const OUT = join(root, 'build/web');
-const NEXT_OUT = join(root, 'web-next/out');
+const NEXT_OUT = join(root, 'web/next/out');
 
 execFileSync(process.execPath, [join(root, 'scripts/build-next.mjs'), env], { cwd: root, stdio: 'inherit' });
 if (!existsSync(join(NEXT_OUT, 'index.html'))) { console.error('next build ไม่สร้าง out/index.html'); process.exit(1); }

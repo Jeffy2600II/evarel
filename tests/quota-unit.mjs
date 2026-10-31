@@ -1,7 +1,7 @@
 /* หน่วยทดสอบโมดูล services/ai-quota ของแอป (evarel-quota-ui): ดึงโค้ดจริงจาก app.js มารันใน node
    ครอบคลุมบั๊กที่ผู้รีวิวอิสระเจอและผมยืนยันกับโค้ดจริงแล้ว: NaN loop, ค้างข้ามผู้ใช้, race, limit=0 */
 import fs from 'node:fs'; import assert from 'node:assert/strict';
-const src = fs.readFileSync(new URL('../app-v13/js/app.js', import.meta.url), 'utf8');
+const src = fs.readFileSync(new URL('../archive/app-v13/js/app.js', import.meta.url), 'utf8');
 const i = src.indexOf('const QUOTA_LOW'), j = src.indexOf('function aiSend(');
 const code = src.slice(i, j);
 let pass = 0, fail = 0; const t = async (n, f) => { try { await f(); pass++; console.log('PASS', n); } catch (e) { fail++; console.log('FAIL', n, '::', String(e.message).slice(0, 200)); } };

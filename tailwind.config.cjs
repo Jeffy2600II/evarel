@@ -1,4 +1,4 @@
-/** Tailwind config ของแอปจริง — คัดจาก tailwind.config ใน design/master-demo-v29.html ตรงทั้งหมด
+/** Tailwind config ของแอปจริง — คัดจาก tailwind.config ใน archive/design/master-demo-v29.html ตรงทั้งหมด
  *  (colors ชี้ CSS vars / radius card, sheet / maxWidth col / fontFamily / timing)
  *  ห้ามแก้ค่าตรงนี้เอง ต้องสั่งจาก Master — ถ้าเดโมเปลี่ยน ให้คัดใหม่จากเดโม
  *  preflight ปิดตาม config จริงของเดโม (วัดจากหน้าเดโมสด: tailwind.config={corePlugins:{preflight:false}})
@@ -9,9 +9,9 @@
 module.exports = {
   corePlugins: { preflight: false },
   content: [
-    'app/src/**/*.{ts,tsx,js,jsx}',
-    'app/web/js/react/*.js',
-    'web-next/src/**/*.{ts,tsx}',
+    'web/src/**/*.{ts,tsx,js,jsx}',
+    'web/classic/js/react/*.js',
+    'web/next/src/**/*.{ts,tsx}',
   ],
   theme: {
     extend: {

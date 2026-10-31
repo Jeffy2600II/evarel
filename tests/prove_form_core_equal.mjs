@@ -3,7 +3,7 @@
 import { build } from 'esbuild'; import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 const bundle = async (entry, name) => (await build({ entryPoints: [entry], bundle: true, write: false, format: 'iife', globalName: name, platform: 'browser', logLevel: 'silent' })).outputFiles[0].text;
-const DAT = await bundle('app/src/core/dates.ts', 'CoreDates'), SCH = await bundle('app/src/core/schedule.ts', 'CoreSchedule');
+const DAT = await bundle('core/dates.ts', 'CoreDates'), SCH = await bundle('core/schedule.ts', 'CoreSchedule');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

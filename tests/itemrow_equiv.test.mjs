@@ -1,7 +1,7 @@
 /* เทียบแถวรายการ itemRow: ฉบับ string เดิม (12-ui__primitives) กับฉบับ React จริง (shared/item-row/ItemRowPage.jsx)
    เกณฑ์: DOM จริงเท่ากันทุกไบต์ (browser-serialized innerHTML) ทั้งสองฝั่ง กันความต่างที่เป็นแค่รูปเขียน attribute
    ครอบกรณี: ชนิด track ทั้งหมด, done/todo, late, next, skipped, future(disabled), data-pop, ประเภท event/task/class
-   รัน: node tests/itemrow_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ app/web) */
+   รัน: node tests/itemrow_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/classic) */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };

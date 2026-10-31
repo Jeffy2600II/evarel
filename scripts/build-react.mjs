@@ -1,7 +1,7 @@
 // สร้าง React bundle ของ Evarel ด้วย esbuild (ชั้น 4): runtime ร่วม 1 ไฟล์ + หน้าละ 1 ไฟล์เล็ก
-//   app/src/react/runtime.js        -> app/web/js/react/runtime.js   (มี React ทั้งก้อน เปิดเป็น window.EvarelReact)
-//   app/src/react/<ชื่อ>.jsx        -> app/web/js/react/<ชื่อ>.js    (ไม่มี React ในไฟล์ ใช้ของ runtime ร่วม ลงทะเบียน window.EvarelPages.<ชื่อ>)
-// ผลลัพธ์ commit ไว้ใน app/web (เหมือน js/m) เพื่อให้ build ปกติและประตูเห็นไฟล์เดียวกัน | ทำซ้ำได้ไบต์เดิม
+//   web/src/react/runtime.js        -> web/classic/js/react/runtime.js   (มี React ทั้งก้อน เปิดเป็น window.EvarelReact)
+//   web/src/react/<ชื่อ>.jsx        -> web/classic/js/react/<ชื่อ>.js    (ไม่มี React ในไฟล์ ใช้ของ runtime ร่วม ลงทะเบียน window.EvarelPages.<ชื่อ>)
+// ผลลัพธ์ commit ไว้ใน web/classic (เหมือน js/m) เพื่อให้ build ปกติและประตูเห็นไฟล์เดียวกัน | ทำซ้ำได้ไบต์เดิม
 // ใช้: node scripts/build-react.mjs         (สร้างทั้งหมด)   node scripts/build-react.mjs --check  (ไม่เขียน เทียบกับที่ commit ไว้ ต่างก็ exit 1)
 import { readdirSync, mkdirSync, readFileSync, existsSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -11,27 +11,27 @@ import { createRequire } from 'node:module';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(root, 'package.json'));
 const esbuild = require('esbuild');
-const SRC = join(root, 'app/src/react'), OUT = join(root, 'app/web/js/react');
-const PAGES = join(root, 'app/pages'); /* F4-A: กล่อง 3 ชั้น (app/pages/<ชื่อ>/<Pascal>Page.jsx) */
+const SRC = join(root, 'web/src/react'), OUT = join(root, 'web/classic/js/react');
+const PAGES = join(root, 'web/pages'); /* F4-A: กล่อง 3 ชั้น (web/pages/<ชื่อ>/<Pascal>Page.jsx) */
 /* F6: โซนที่มีกล่อง = pages/ (หน้า) และ shared/ (ชิ้นร่วม: nav sheet dialog item-row) | กล่องหน้าตาเหมือนกันทุกโซน ผลบิลด์ชื่อ <ชื่อ>.js เหมือนเดิม
    shared/ มีไฟล์เดี่ยว (tray.js, README.md) ที่ไม่ใช่กล่อง จึงนับเป็นกล่องเฉพาะโฟลเดอร์ที่มี BOX.md */
-const SHARED_DIR = join(root, 'app/shared');
+const SHARED_DIR = join(root, 'web/shared');
 const BOX_ZONES = [{ name: 'pages', dir: PAGES, needCard: false }, { name: 'shared', dir: SHARED_DIR, needCard: true }];
 const check = process.argv.includes('--check');
 // platform: 'browser' จำเป็น: ไม่งั้น esbuild เลือก react-dom-server.node (ใช้ util/stream ของ Node) ที่รันในเบราว์เซอร์ไม่ได้
 const common = { absWorkingDir: root, bundle: true, format: 'iife', platform: 'browser', minify: true, target: 'es2020', write: false, logLevel: 'silent',
   define: { 'process.env.NODE_ENV': '"production"' } };
 // alias ต้องเป็นพาธสัมพัทธ์จากราก (ไม่ใช่สัมบูรณ์) ไม่งั้น esbuild ข้ามการเลือก exports ของ react-dom ไปใช้ server.node.js (ใช้ util/stream ของ Node รันในเบราว์เซอร์ไม่ได้)
-const alias = { react: './web-shell/node_modules/react', 'react-dom': './web-shell/node_modules/react-dom' };
+const alias = { react: './web/shell/node_modules/react', 'react-dom': './web/shell/node_modules/react-dom' };
 
 // F3.3-g13/g14: โมดูลร่วมที่ไฟล์หน้าไม่บันเดิลสำเนาของตัวเอง แต่อ่านจาก global ที่ runtime เปิดไว้ (runtime โหลดก่อนไฟล์หน้าเสมอ)
 //   shared/tray.js -> window.EvarelTray | core/dates + core/schedule -> window.EvarelCore (g14)
 // รายชื่อ export อ่านจากไฟล์ต้นทางเองด้วย esbuild (ไม่ฮาร์ดโค้ด) กันตกหล่นเงียบ ๆ เมื่อมีคนเพิ่มฟังก์ชัน | อ่านไม่ได้หรือว่าง = บิลด์ล้มทันที
 // ข้อความผิดพลาดตอนรันเป็นอังกฤษสั้น ๆ โดยตั้งใจ: ไทยจะถูกฝังซ้ำทุกไฟล์หน้า | ความหมาย: runtime.js ต้องโหลดก่อนไฟล์หน้า
 const SHARED = [
-  { re: /shared\/tray\.js$/, file: 'app/shared/tray.js', global: 'EvarelTray', ns: 'tray-share' },
-  { re: /src\/core\/dates(\.ts)?$/, file: 'app/src/core/dates.ts', global: 'EvarelCore', ns: 'core-share-dates', key: 'dates' },
-  { re: /src\/core\/schedule(\.ts)?$/, file: 'app/src/core/schedule.ts', global: 'EvarelCore', ns: 'core-share-schedule', key: 'schedule' },
+  { re: /shared\/tray\.js$/, file: 'web/shared/tray.js', global: 'EvarelTray', ns: 'tray-share' },
+  { re: /(^|\/)core\/dates(\.ts)?$/, file: 'core/dates.ts', global: 'EvarelCore', ns: 'core-share-dates', key: 'dates' },
+  { re: /(^|\/)core\/schedule(\.ts)?$/, file: 'core/schedule.ts', global: 'EvarelCore', ns: 'core-share-schedule', key: 'schedule' },
 ];
 export async function exportsOf(rel) {
   const r = await esbuild.build({ absWorkingDir: root, entryPoints: [rel], bundle: false, write: false, metafile: true, logLevel: 'silent', format: 'esm' });
@@ -68,10 +68,10 @@ const jobs = [{ name: 'runtime', entry: join(SRC, 'runtime.js'), opts: { alias }
 for (const f of readdirSync(SRC).filter((x) => x.endsWith('.jsx')).sort())
   jobs.push({ name: f.replace(/\.jsx$/, ''), entry: join(SRC, f), opts: { external: ['react', 'react-dom'], plugins: [trayShare] } });
 
-/* F4-A/B: งานบิลด์ของกล่องใน app/pages/ | แยกจากลูปเดิมของ app/src/react (ไม่แตะ) | app/pages/ ว่าง = ไม่มีงานเพิ่ม ผลบิลด์เดิมเท่าเดิมทุกไบต์
+/* F4-A/B: งานบิลด์ของกล่องใน web/pages/ | แยกจากลูปเดิมของ web/src/react (ไม่แตะ) | web/pages/ ว่าง = ไม่มีงานเพิ่ม ผลบิลด์เดิมเท่าเดิมทุกไบต์
    สัญญากล่อง: export default = ฟังก์ชันหน้า, export const prepare = (raw) => props (ไม่บังคับ ไม่มี = ส่ง raw ตรง) | กล่องห้ามแตะ window (BOX-05)
    บิลด์ฉีดแทนกล่อง: (ก) รับ h/Fragment จาก window.EvarelReact (ข) ลงทะเบียน window.EvarelPages.<ชื่อ> ด้วยรูปเดียวกับ stats/all เดิม
-   ชื่อหน้า = ชื่อโฟลเดอร์กล่อง ชื่อไฟล์ผลลัพธ์ = <ชื่อ>.js เหมือนเดิม (REACT_PAGES, sw.js และเทสต์อ้างชื่อนี้) | ชื่อชนกับหน้าเดิมใน app/src/react = บิลด์ล้ม กันสองชุดค้าง */
+   ชื่อหน้า = ชื่อโฟลเดอร์กล่อง ชื่อไฟล์ผลลัพธ์ = <ชื่อ>.js เหมือนเดิม (REACT_PAGES, sw.js และเทสต์อ้างชื่อนี้) | ชื่อชนกับหน้าเดิมใน web/src/react = บิลด์ล้ม กันสองชุดค้าง */
 /* F4-ลงทะเบียนเอง: อ่านมานิเฟสต์ "register" จากส่วน JSON ของ BOX.md (บัตรเครื่องอ่านได้) แทนการเดาจากชื่อโฟลเดอร์
    register = { pages: [{ name, export?, prepare? }], components: [{ name, export? }], after?: [ชื่อหน้าที่ต้องโหลดก่อน] }
    ไม่ประกาศ register = pages [{ name: ชื่อโฟลเดอร์ }] (stats/all เดิมใช้ค่านี้) | components ไม่ประกาศ = ไม่ลงทะเบียน (บิลด์ไม่เดา) */
@@ -124,7 +124,7 @@ for (const zone of BOX_ZONES) if (existsSync(zone.dir)) {
   for (const d of dirs) {
     if (seenBoxZone.has(d)) throw new Error('กล่อง ' + d + ' ซ้ำข้ามโซน: ' + seenBoxZone.get(d) + ' และ ' + zone.name);
     seenBoxZone.set(d, zone.name);
-    if (legacy.has(d)) throw new Error('กล่อง ' + d + ' ชื่อชนกับหน้าเดิม app/src/react/' + d + '.jsx (ห้ามค้างสองชุด)');
+    if (legacy.has(d)) throw new Error('กล่อง ' + d + ' ชื่อชนกับหน้าเดิม web/src/react/' + d + '.jsx (ห้ามค้างสองชุด)');
     const page = join(zone.dir, d, d.replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => c.toUpperCase()) + 'Page.jsx');
     if (!existsSync(page)) throw new Error('กล่อง ' + d + ' ไม่มีไฟล์หน้า ' + page);
     const reg = boxRegister(readBoxCard(join(zone.dir, d), d), d);
@@ -163,13 +163,13 @@ for (const j of boxJobs) {
 }
 
 /* ===== F4-ลงทะเบียนเอง: บิลด์เป็นเจ้าของบล็อกลงทะเบียนใน 2 ไฟล์ (ห้ามแก้มือ) =====
-   (1) app/src/app/19-views__settings.ts  -> REACT_BOX_PAGES   (ลำดับโหลด: หน้าเดิมคงเดิมเป๊ะ แล้วตามด้วยกล่องที่เรียงตาม after)
-   (2) app/web/sw.js                    -> รายการแคชของกล่อง
-   ผลคอมไพล์ app/web/js/app/19-views__settings.js ถูก commit ด้วย จึงคอมไพล์คู่ด้วย tsc ตัวเดียวกับ evarel_gate_group.sh (ไม่ให้ผลล้าหลังเงียบๆ)
+   (1) web/src/engine/19-views__settings.ts  -> REACT_BOX_PAGES   (ลำดับโหลด: หน้าเดิมคงเดิมเป๊ะ แล้วตามด้วยกล่องที่เรียงตาม after)
+   (2) web/classic/sw.js                    -> รายการแคชของกล่อง
+   ผลคอมไพล์ web/classic/js/engine/19-views__settings.js ถูก commit ด้วย จึงคอมไพล์คู่ด้วย tsc ตัวเดียวกับ evarel_gate_group.sh (ไม่ให้ผลล้าหลังเงียบๆ)
    โหมด --check: เทียบอย่างเดียว ไม่เขียนอะไร */
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-const SETTINGS_TS = join(root, 'app/src/app/19-views__settings.ts'), SETTINGS_JS = join(root, 'app/web/js/app/19-views__settings.js'), SW = join(root, 'app/web/sw.js');
+const SETTINGS_TS = join(root, 'web/src/engine/19-views__settings.ts'), SETTINGS_JS = join(root, 'web/classic/js/engine/19-views__settings.js'), SW = join(root, 'web/classic/sw.js');
 const BLOCK = (file, txt) => { const m = /(\/\* BOXES:START[^*]*\*\/)([\s\S]*?)(\/\* BOXES:END \*\/)/.exec(txt); if (!m) throw new Error(file + ': ไม่มีเครื่องหมายบล็อก BOXES:START/END (ห้ามลบ)'); return m; };
 export function renderSettingsBlock(names) { return `const REACT_BOX_PAGES:string[]=${JSON.stringify(names)};`; }
 export function renderSwBlock(names) { return names.length ? '\n' + names.map((n) => `  './js/react/${n}.js',`).join('\n') + '\n  ' : '\n  '; }

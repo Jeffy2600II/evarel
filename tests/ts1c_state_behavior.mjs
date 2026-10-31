@@ -9,8 +9,8 @@ const NAMES = ['sheetMode','drag','popBtn','D','TM','focusId','CH','DETAIL','DV'
 async function run(url, isNew) {
   const p = await b.newPage({ viewport: { width: 412, height: 915 }, hasTouch: true }); const errs = [];
   p.on('pageerror', e => errs.push(e.message.slice(0, 90)));
-  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('/tmp/evarel-repo/app-v13/vendor/fullcalendar.min.js') }));
-  const SEED = (0, eval)(fs.readFileSync('/tmp/evarel-repo/tests/_seed_items.json.js', 'utf8'));
+  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('./archive/app-v13/vendor/fullcalendar.min.js') }));
+  const SEED = (0, eval)(fs.readFileSync('./tests/_seed_items.json.js', 'utf8'));
   await p.goto(url); await p.waitForTimeout(500); await p.evaluate(() => localStorage.clear());
   await p.evaluate((SEED) => { const u = { id: 'u_test', name: 'N', email: 'a@b.c', provider: 'google' }; localStorage.setItem('evarel-demo-users', JSON.stringify([u])); localStorage.setItem('evarel-demo-session', 'u_test'); localStorage.setItem('evarel-demo-v3:u_test', JSON.stringify({ items: SEED })); }, SEED);
   await p.reload(); await p.waitForTimeout(1800);

@@ -29,25 +29,25 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            web-shell/package-lock.json
+            web/shell/package-lock.json
       - name: ตรวจโน้ตรุ่น (ทุกอัปเดตที่ส่งถึงผู้ใช้ต้องมีโน้ตใหม่)
         run: |
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
           if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then BASE="HEAD~1"; fi
           node scripts/check-release-notes.mjs "$BASE"
-      - name: ติดตั้งแพ็กเกจ (ราก = tailwind/esbuild/wrangler | web-shell = next/react แล้วทำ symlink เหมือนเครื่องพัฒนา)
+      - name: ติดตั้งแพ็กเกจ (ราก = tailwind/esbuild/wrangler | web/shell = next/react แล้วทำ symlink เหมือนเครื่องพัฒนา)
         run: |
           npm ci
-          npm ci --prefix web-shell
-          ln -sfn ../web-shell/node_modules web-next/node_modules
+          npm ci --prefix web/shell
+          ln -sfn ../shell/node_modules web/next/node_modules
       - name: ตรวจไฟล์คอมไพล์ตรงกับซอร์ส (กัน commit src แต่ลืมไฟล์ที่คอมไพล์แล้ว)
         run: |
           node scripts/build-react.mjs --check
           node scripts/gen-m-globals.mjs --check
           node scripts/compile-ts.mjs > /dev/null
-          if ! git diff --quiet -- app/web/js; then
-            echo "ไฟล์ใน app/web/js ไม่ตรงกับ app/src: รัน npm run build:ts และ npm run build:react แล้ว commit ไฟล์ที่เปลี่ยน"
-            git diff --stat -- app/web/js
+          if ! git diff --quiet -- web/classic/js; then
+            echo "ไฟล์ใน web/classic/js ไม่ตรงกับ web/src: รัน npm run build:ts และ npm run build:react แล้ว commit ไฟล์ที่เปลี่ยน"
+            git diff --stat -- web/classic/js
             exit 1
           fi
       - name: build forge (พิสูจน์ว่า build ผ่าน)
@@ -76,7 +76,7 @@ jobs:
 
   # สายพานโรงงาน (F5): ตรวจกติกากล่อง + วาดแผนที่ใหม่ทุก push + X-ray รายหน้า
   # เครื่องมือเป็น Node ล้วน ไม่ต้อง npm ci (รวมวัดจริง < 1 วินาที) | ไม่ commit อะไรกลับเข้ารีโป (กันวน CI) แผนที่ออกเป็น artifact
-  # ถอด job นี้ออกแล้วเครื่องตรวจยังรันมือได้: node app/tools/checker.mjs --all
+  # ถอด job นี้ออกแล้วเครื่องตรวจยังรันมือได้: node tools/factory/checker.mjs --all
   factory:
     runs-on: ubuntu-latest
     steps:
@@ -86,30 +86,30 @@ jobs:
       - name: ตรวจกติกากล่อง BOX-01..06 (ไม่ผ่าน = ไม่ปล่อย)
         run: |
           set -o pipefail
-          node app/tools/checker.mjs --all | tee factory-check.txt
+          node tools/factory/checker.mjs --all | tee factory-check.txt
       - name: วาดแผนที่โรงงานใหม่จากโครงสร้างจริง
         if: always()
         run: |
           mkdir -p factory-out
-          node app/tools/mapper.mjs factory-out/FACTORY-MAP.md
-          node app/tools/mapper.mjs factory-out/FACTORY-MAP.again.md
+          node tools/factory/mapper.mjs factory-out/FACTORY-MAP.md
+          node tools/factory/mapper.mjs factory-out/FACTORY-MAP.again.md
           cmp factory-out/FACTORY-MAP.md factory-out/FACTORY-MAP.again.md && rm factory-out/FACTORY-MAP.again.md
       - name: แผนที่ที่ commit ไว้ต้องไม่ล้าสมัย
         run: |
           if ! diff -q docs/FACTORY-MAP.md factory-out/FACTORY-MAP.md >/dev/null; then
-            echo "docs/FACTORY-MAP.md ล้าสมัย: รัน node app/tools/mapper.mjs แล้ว commit (ห้ามแก้มือ)"
+            echo "docs/FACTORY-MAP.md ล้าสมัย: รัน node tools/factory/mapper.mjs แล้ว commit (ห้ามแก้มือ)"
             diff docs/FACTORY-MAP.md factory-out/FACTORY-MAP.md | head -20
             exit 1
           fi
-      - name: X-ray รายหน้า (ทุกกล่องใน app/pages)
+      - name: X-ray รายหน้า (ทุกกล่องใน web/pages)
         if: always()
         run: |
-          for d in app/pages/*/; do n=$(basename "$d"); echo "=== $n ==="; node app/tools/xray.mjs "$n"; done | tee factory-out/xray.txt
+          for d in web/pages/*/; do n=$(basename "$d"); echo "=== $n ==="; node tools/factory/xray.mjs "$n"; done | tee factory-out/xray.txt
       - name: ความคืบหน้าทำให้ m/ ว่าง (F6) รายงานอย่างเดียว ไม่บล็อก แต่ผลต้องแน่นอนสองรอบ
         run: |
           mkdir -p factory-out
-          node app/tools/m_progress.mjs | tee factory-out/m-progress.txt
-          node app/tools/m_progress.mjs > factory-out/m-progress.again.txt
+          node tools/factory/m_progress.mjs | tee factory-out/m-progress.txt
+          node tools/factory/m_progress.mjs > factory-out/m-progress.again.txt
           cmp factory-out/m-progress.txt factory-out/m-progress.again.txt && rm factory-out/m-progress.again.txt
       - name: สรุปผลขึ้นหน้า run
         if: always()

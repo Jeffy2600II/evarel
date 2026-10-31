@@ -56,7 +56,7 @@ export async function makeTestUser(tag = 'gate') {
 /* เสิร์ฟโค้ดในเครื่องภายใต้โดเมน forge จริง เพื่อให้ผ่าน CORS ของ API โดยไม่ต้องเปิดช่องให้ localhost
    (ทดสอบโค้ดที่แก้อยู่ แต่เบราว์เซอร์เห็น origin = evarel-app-forge) */
 export const APP_ORIGIN = 'https://evarel-app-forge.nontakorn2600.workers.dev';
-export async function serveLocalAs(ctx, webDir = process.env.EVAREL_WEB_DIR || '/tmp/evarel-repo/app/web') {
+export async function serveLocalAs(ctx, webDir = process.env.EVAREL_WEB_DIR || './web/classic') {
   const mime = { html: 'text/html; charset=utf-8', js: 'application/javascript', css: 'text/css', json: 'application/json', webmanifest: 'application/manifest+json', png: 'image/png', svg: 'image/svg+xml', ico: 'image/x-icon' };
   await ctx.route(APP_ORIGIN + '/**', async route => {
     let p = decodeURIComponent(new URL(route.request().url()).pathname); if (p.endsWith('/')) p += 'index.html';

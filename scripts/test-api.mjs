@@ -1,11 +1,11 @@
-// รันชุดทดสอบของ Worker (app/api/src) ทั้งหมดในที่เดียว ไม่ผูกกับเครื่องใดเครื่องหนึ่ง
+// รันชุดทดสอบของ Worker (backend/api/src) ทั้งหมดในที่เดียว ไม่ผูกกับเครื่องใดเครื่องหนึ่ง
 // ออกด้วยรหัส 1 ถ้ามีไฟล์ใดตก หรือไม่พบไฟล์ทดสอบที่ควรมี
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'app/api/src');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'backend/api/src');
 const files = [
   'shared/auth.test.mjs', 'shared/ratelimit.test.mjs',
   'systems/ai/memory.test.mjs', 'systems/ai/quota-read.test.mjs', 'systems/ai/quota-wire.test.mjs',

@@ -7,18 +7,31 @@ PWA ส่วนตัวสำหรับจัดการชีวิต (�
 
 ## โครงสร้าง
 
+จัดใหม่ตามคำสั่ง Master 31 ต.ค. 2026 (F7): เว็บคือเว็บ แอปคือแอป ตรรกะแชร์อยู่ที่เดียว ของเก่าเก็บใน archive
+
 ```
-app/
-  web/        ส่วนหน้า PWA (JavaScript ES Modules) เสิร์ฟเป็น Static Assets
-  api/        Worker (TypeScript) บัญชี งาน/กิจวัตร AI โควตา ป้องกันการใช้ผิด
-    src/        โค้ดและชุดทดสอบของ Worker
-    prototype/  ต้นแบบ Push รอบแรก เก็บไว้เป็นต้นแบบอ้างอิงจนกว่า S2 จะย้ายเข้า src
-  db/         สคริปต์ฐานข้อมูล Supabase (schema และ migrations ตามลำดับเลข)
-docs/         แผนหลัก (docs/plan/MASTER-PLAN.md) แผนรายขั้น และ ADR
-design/       เดโมต้นฉบับของเจ้าของ ห้ามแก้
-tests/        เทสต์ฝั่งแอปและเครื่องมือตรวจ (ดูหัวข้อสถานะเทสต์)
-tools/        เครื่องมือตรวจถาวรของโครงการ
-scripts/      สคริปต์ build และรันชุดทดสอบ
+web/                ทุกอย่างของฝั่งเว็บ (PWA)
+  classic/          แอปเว็บคลาสสิก + ผลคอมไพล์ที่ commit ไว้ (index.html, sw.js, js/, styles/, vendor/)
+                    ให้ web/next บันเดิลและชุดทดสอบอ่าน ไม่ใช่ของตาย
+  next/             Next.js (TypeScript + React) เส้นทางเสิร์ฟจริง บิลด์ออก build/web
+  shell/            เปลือก Next ขั้น S3 และที่อยู่ node_modules ของ react/react-dom ที่สคริปต์บิลด์อ้าง
+  src/              ซอร์สของเว็บ: engine/ (เครื่องยนต์ 27 โมดูล) และ react/ (รันไทม์)
+  pages/ shared/ data/ styles/   โซนโรงงาน: กล่องหน้า ชิ้นร่วม ถาดข้อมูล แม่พิมพ์กลาง
+app/                สงวนไว้สำหรับแอปมือถือ (React Native ตามขั้น S7) ยังไม่มีโค้ด มีแต่ README
+core/               ตรรกะบริสุทธิ์ที่เว็บและแอปใช้ร่วม (TypeScript 23 ไฟล์)
+backend/            หลังบ้านใช้ร่วมทุกแพลตฟอร์ม
+  api/              Cloudflare Worker (TypeScript) บัญชี งาน/กิจวัตร AI โควตา ป้องกันการใช้ผิด
+    src/              โค้ดและชุดทดสอบของ Worker
+    prototype/        ต้นแบบ Push รอบแรก เก็บไว้เป็นต้นแบบอ้างอิงจนกว่า S2 จะย้ายเข้า src
+  db/               สคริปต์ฐานข้อมูล Supabase (schema และ migrations ตามลำดับเลข)
+  edge/             Edge Function แจ้งเตือน (pg_cron ยิงทุกนาที)
+archive/            ของเก่าที่ย้ายเก็บไม่ลบ: app-v13/ (เดโมฐาน S0) design/ (เดโมออกแบบของเจ้าของ)
+tools/              เครื่องมือ: factory/ (เครื่องมือโรงงาน checker mapper xray scorecard) และเครื่องมือรีแฟกเตอร์
+docs/               แผนหลัก (docs/plan/MASTER-PLAN.md) แผนรายขั้น และ ADR
+tests/              เทสต์ฝั่งแอปและเครื่องมือตรวจ
+scripts/            สคริปต์ build และรันชุดทดสอบ
+releases/           ข้อมูลรุ่นปัจจุบัน (current.json เป็นแหล่งความจริงเดียว)
+types/              ชนิด TS กลาง (dom, globals, st)
 ```
 
 ## ชุดสภาพแวดล้อม
@@ -28,7 +41,7 @@ scripts/      สคริปต์ build และรันชุดทดส�
 | forge | evarel-app-forge | evarel-api-forge | พัฒนาและทดลอง (สาขา develop) |
 | production | evarel-app | evarel-api | ชุดทางการ (สาขา main) |
 
-ไฟล์ตั้งค่าอยู่ที่ `app/api/wrangler.toml` และ `app/web/wrangler.toml` แยกชุดด้วย `--env forge` หรือ `--env production`
+ไฟล์ตั้งค่าอยู่ที่ `backend/api/wrangler.toml` และ `web/classic/wrangler.toml` แยกชุดด้วย `--env forge` หรือ `--env production`
 
 ## คำสั่ง
 
@@ -48,13 +61,13 @@ python3 tools/plan_check.py        ตรวจโครงสร้างแผ
 
 SUPABASE_URL, SUPABASE_SERVICE_KEY, SMTP_USER, SMTP_PASS, SMTP_FROM, GROQ_API_KEY, OPENROUTER_API_KEY, MEMORYLAKE_API_KEY
 
-ตัวแปรที่ไม่ใช่ความลับ (ALLOWED_ORIGIN, REQUIRE_EMAIL_VERIFICATION) อยู่ใน `app/api/wrangler.toml`
+ตัวแปรที่ไม่ใช่ความลับ (ALLOWED_ORIGIN, REQUIRE_EMAIL_VERIFICATION) อยู่ใน `backend/api/wrangler.toml`
 
 ## สถานะเทสต์ (บอกตามจริง)
 
-- ชุดทดสอบ Worker (`app/api/src`) ผ่าน 225 ข้อ ไม่ผูกกับเครื่องใด
-- เทสต์ใน `tests/` ฝั่งแอปยังฝัง path เต็มของเครื่องผู้พัฒนาเดิมและยังชี้แอปรุ่นเก่า ไม่ใช่ `app/web` จึงยังใช้ตรวจแอปปัจจุบันไม่ได้ รอเขียนชุดใหม่ที่ชี้ `app/web`
-- ยังไม่ได้ deploy Worker ชุด forge และชุดทางการ ไฟล์ตั้งค่าผ่านการจำลอง deploy แล้วเท่านั้น
+- ชุดทดสอบ Worker (`backend/api/src`) ผ่าน 225 ข้อ ไม่ผูกกับเครื่องใด (F7 แก้การผูก esbuild กับ /tmp/evarel-deploy ของเครื่องเก่า จึงรันได้ทุกเครื่อง)
+- เทสต์ฝั่งแอปใน `tests/` อ่านแอปจาก `web/classic` ทั้งชุดแล้ว (F7 ตัดการผูกกับ /tmp/evarel-repo) ประตูภาพ 32 ฉากใช้ .agents/.env (SUPABASE_SERVICE_KEY) และ chromium ที่ pin ไว้ (ดู tests/README และหัวไฟล์ทดสอบ)
+- ยังไม่ได้ deploy Worker ชุดทางการ ไฟล์ตั้งค่าผ่านการจำลอง deploy แล้วเท่านั้น ส่วนเว็บและ Worker ชุด forge deploy อัตโนมัติทุก push ที่ develop
 
 ## ลำดับพัฒนา
 

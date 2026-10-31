@@ -1,14 +1,14 @@
 /* ทดสอบพฤติกรรมท่าทางนิ้วของ sheet ด้วย touch events จริง เทียบเดโมจริง กับแอปจริง ด้วยสถานการณ์ชุดเดียวกัน
    กฎจาก v24: ปิดเมื่อลากเกิน 35% ของความสูง หรือเร็วเกิน .55 px/ms | ขยับต่ำกว่า SLOP 8px ไม่นับ | แนวนอนมากกว่าแนวตั้งไม่นับ
    กฎเลื่อนซ้อน: ถ้าเนื้อหาข้างในยังเลื่อนกลับได้ตอนเริ่มแตะ จะเลื่อนเนื้อหาและไม่ปิด | ลากที่ด้ามจับ (.ev-grab,h2) ปิดได้เสมอ
-   รัน: node tests/gesture_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ app/web) ผล: exit 1 ถ้ามีสถานการณ์ใดสองฝั่งไม่ตรงกัน */
+   รัน: node tests/gesture_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/classic) ผล: exit 1 ถ้ามีสถานการณ์ใดสองฝั่งไม่ตรงกัน */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe });
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };
-const DEMO = 'file:///tmp/evarel-repo/design/master-demo-v24.html';
+const DEMO = 'file://./archive/design/master-demo-v24.html';
 const BODY = '<div id="gbody" style="height:1400px">' + Array.from({ length: 40 }, (_, i) => `<p>บรรทัด ${i}</p>`).join('') + '</div>';
 
 /* ส่ง touch จริงผ่าน CDP: เริ่มที่ (x,y0) ลากไปทีละขั้นถึง y1 ใช้เวลา ms แล้วปล่อย */
@@ -53,7 +53,7 @@ try {
   /* ฝั่งเดโม */
   const cd = await b.newContext(mk); const pd = await cd.newPage(); const errD = []; pd.on('pageerror', e => errD.push(String(e)));
   await pd.route(/fonts\.(googleapis|gstatic)/, r => r.abort());
-  await pd.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('/tmp/evarel-repo/app/web/vendor/fullcalendar.min.js') }));
+  await pd.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('./web/classic/vendor/fullcalendar.min.js') }));
   await pd.goto(DEMO); await pd.waitForTimeout(500);
   await pd.evaluate(() => { const u = { id: 'u_test', name: 'Nontakorn', email: 'demo.user@gmail.com', provider: 'google' }; localStorage.setItem('evarel-demo-users', JSON.stringify([u])); localStorage.setItem('evarel-demo-session', 'u_test'); });
   await pd.reload(); await pd.waitForTimeout(1800);

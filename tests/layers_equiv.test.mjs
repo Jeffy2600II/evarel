@@ -1,7 +1,7 @@
 /* เทียบเลเยอร์ sheet/dialog/confirm: ฉบับ string เดิม (09-ui__layers) กับฉบับ React จริง (shared/sheet/SheetPage.jsx, shared/dialog/DialogPage.jsx)
    เกณฑ์: DOM จริงเท่ากันทุกไบต์ (browser-serialized innerHTML) + วงจรจริงบนแอป (เปิด confirm กดยืนยัน fn ทำงาน ปิดได้)
    ครอบกรณี: sheet (back มี/ไม่มี, foot มี/ไม่มี, title อักขระพิเศษ), dialog wrapper, confirm ทุกโทน
-   รัน: node tests/layers_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ app/web) */
+   รัน: node tests/layers_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/classic) */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };

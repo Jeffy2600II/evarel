@@ -1,15 +1,15 @@
-// เทียบภาพ 0 พิกเซล: เดโม v12 ต้นฉบับ (design/master-demo-v12.html) กับ app-v13 | สถานะเดียวกัน (MockAuth ของเดโม)
+// เทียบภาพ 0 พิกเซล: เดโม v12 ต้นฉบับ (archive/design/master-demo-v12.html) กับ archive/app-v13 | สถานะเดียวกัน (MockAuth ของเดโม)
 import { chromium } from 'playwright'; import fs from 'fs'; import { execSync } from 'child_process';
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
 const b=await chromium.launch({executablePath:exe});
-const DEMO='file:///tmp/evarel-repo/design/master-demo-v12.html', APP=process.argv[2]||'http://localhost:8779/index.html';
+const DEMO='file://./archive/design/master-demo-v12.html', APP=process.argv[2]||'http://localhost:8779/index.html';
 async function run(url,cs,file,step,logged){
   const p=await b.newPage({viewport:{width:412,height:915},colorScheme:cs,timezoneId:'Asia/Bangkok'});
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
   await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());
   /* เดโมโหลด FullCalendar จาก CDN: ป้อนไฟล์เดียวกับที่แอปเก็บเองไว้ เพื่อเทียบเงื่อนไขเท่ากัน */
-  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/,r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('/tmp/evarel-repo/app-v13/vendor/fullcalendar.min.js')}));
+  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/,r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('./archive/app-v13/vendor/fullcalendar.min.js')}));
   await p.addInitScript(()=>{Math.random=()=>0.5; const D=Date, fixed=new D('2026-10-09T10:00:00+07:00').getTime(); class F extends D{constructor(...a){a.length?super(...a):super(fixed)} static now(){return fixed}} globalThis.Date=F;
     const st=document.createElement('style'); st.textContent='*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}'; document.addEventListener('DOMContentLoaded',()=>document.head.appendChild(st))});
   await p.goto(url); await p.waitForTimeout(800); await p.evaluate(()=>localStorage.clear());

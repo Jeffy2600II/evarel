@@ -1,4 +1,4 @@
-/* ประตูพฤติกรรมฟอร์มแจ้งเตือน ตามเดโม v24 (หมวดเตือนตรงเวลา) — login จริงผ่าน live_user.mjs ค่าคาดหวังมาจากเดโม design/master-demo-v24.html ไม่ใช่สเปกเดิม (สวิตช์+ชิป4) ที่เดโมเปลี่ยนแล้ว
+/* ประตูพฤติกรรมฟอร์มแจ้งเตือน ตามเดโม v24 (หมวดเตือนตรงเวลา) — login จริงผ่าน live_user.mjs ค่าคาดหวังมาจากเดโม archive/design/master-demo-v24.html ไม่ใช่สเปกเดิม (สวิตช์+ชิป4) ที่เดโมเปลี่ยนแล้ว
    รัน: node tests/notify_form.test.mjs */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, seedItems, API, APP_ORIGIN } from './live_user.mjs';

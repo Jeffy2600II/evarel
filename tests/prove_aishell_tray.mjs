@@ -2,7 +2,7 @@
 // รวมทางที่ guard เดิมทำงาน (profileOf ไม่มี) และทางที่ถาด AI ต้องไม่พังแม้ชั้น m ยังไม่ตั้งค่าบางตัว | ใช้: node tests/prove_aishell_tray.mjs <aiShell.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/react/aiShell.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/classic/js/react/aiShell.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

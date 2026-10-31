@@ -1,6 +1,6 @@
 /* พิสูจน์ค่าสำรอง auth.js: เมื่อไม่ตั้ง window.EVAREL_API ล็อกอินต้องยิงไป Worker ที่ยังมีอยู่ (evarel-api-b-test) ไม่ใช่ตัวที่ถูกลบ */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http'; import path from 'path';
-const root=process.argv[2]||'/tmp/evarel-repo/app-v13';
+const root=process.argv[2]||'./archive/app-v13';
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png'};
 const srv=http.createServer((q,r)=>{let p=decodeURIComponent(q.url.split('?')[0]);if(p.endsWith('/'))p+='index.html';const f=path.join(root,p);fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}r.writeHead(200,{'Content-Type':mime[path.extname(f)]||'application/octet-stream'});r.end(d)})}).listen(0);
 const port=srv.address().port;

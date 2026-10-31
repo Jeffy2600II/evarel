@@ -1,63 +1,62 @@
 # แผนที่โรงงาน Frontend Evarel (Factory Map)
 
-> สร้างอัตโนมัติด้วย `node app/tools/mapper.mjs` เมื่อโค้ดเปลี่ยน ห้ามแก้มือ
+> สร้างอัตโนมัติด้วย `node tools/factory/mapper.mjs` เมื่อโค้ดเปลี่ยน ห้ามแก้มือ
 
 ## โครงสร้างภาพรวม 5 โซน
 
-### โซน: [`app/pages`](app/pages)
+### โซน: [`web/pages`](web/pages)
 
 | ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
 |---|---|---|---|---|
-| [`all`](app/pages/all) | [`AllPage.jsx`](app/pages/all/AllPage.jsx) | [`parts/`](app/pages/all/parts) | [`all.tray.js`](app/pages/all/all.tray.js) [`all.style.css`](app/pages/all/all.style.css) | [`BOX.md`](app/pages/all/BOX.md) |
-| [`stats`](app/pages/stats) | [`StatsPage.jsx`](app/pages/stats/StatsPage.jsx) | [`parts/`](app/pages/stats/parts) | [`stats.tray.js`](app/pages/stats/stats.tray.js) [`stats.style.css`](app/pages/stats/stats.style.css) | [`BOX.md`](app/pages/stats/BOX.md) |
+| [`all`](web/pages/all) | [`AllPage.jsx`](web/pages/all/AllPage.jsx) | [`parts/`](web/pages/all/parts) | [`all.tray.js`](web/pages/all/all.tray.js) [`all.style.css`](web/pages/all/all.style.css) | [`BOX.md`](web/pages/all/BOX.md) |
+| [`stats`](web/pages/stats) | [`StatsPage.jsx`](web/pages/stats/StatsPage.jsx) | [`parts/`](web/pages/stats/parts) | [`stats.tray.js`](web/pages/stats/stats.tray.js) [`stats.style.css`](web/pages/stats/stats.style.css) | [`BOX.md`](web/pages/stats/BOX.md) |
 
-### โซน: [`app/shared`](app/shared)
+### โซน: [`web/shared`](web/shared)
 
 | ชื่อกล่อง | โครงหน้า (Layer 1) | ชิ้นส่วนย่อย (Layer 2) | ถาดข้อมูล/สไตล์ (Layer 3) | บัตรประจำกล่อง |
 |---|---|---|---|---|
-| [`ai`](app/shared/ai) | [`AiPage.jsx`](app/shared/ai/AiPage.jsx) | [`parts/`](app/shared/ai/parts) | [`ai.tray.js`](app/shared/ai/ai.tray.js) [`ai.style.css`](app/shared/ai/ai.style.css) | [`BOX.md`](app/shared/ai/BOX.md) |
-| [`aiShell`](app/shared/aiShell) | [`AiShellPage.jsx`](app/shared/aiShell/AiShellPage.jsx) | [`parts/`](app/shared/aiShell/parts) | [`aiShell.tray.js`](app/shared/aiShell/aiShell.tray.js) [`aiShell.style.css`](app/shared/aiShell/aiShell.style.css) | [`BOX.md`](app/shared/aiShell/BOX.md) |
-| [`auth`](app/shared/auth) | [`AuthPage.jsx`](app/shared/auth/AuthPage.jsx) | [`parts/`](app/shared/auth/parts) | [`auth.tray.js`](app/shared/auth/auth.tray.js) [`auth.style.css`](app/shared/auth/auth.style.css) | [`BOX.md`](app/shared/auth/BOX.md) |
-| [`calendar`](app/shared/calendar) | [`CalendarPage.jsx`](app/shared/calendar/CalendarPage.jsx) | [`parts/`](app/shared/calendar/parts) | [`calendar.tray.js`](app/shared/calendar/calendar.tray.js) [`calendar.style.css`](app/shared/calendar/calendar.style.css) | [`BOX.md`](app/shared/calendar/BOX.md) |
-| [`detail`](app/shared/detail) | [`DetailPage.jsx`](app/shared/detail/DetailPage.jsx) | [`parts/`](app/shared/detail/parts) | [`detail.tray.js`](app/shared/detail/detail.tray.js) [`detail.style.css`](app/shared/detail/detail.style.css) | [`BOX.md`](app/shared/detail/BOX.md) |
-| [`dialog`](app/shared/dialog) | [`DialogPage.jsx`](app/shared/dialog/DialogPage.jsx) | [`parts/`](app/shared/dialog/parts) | [`dialog.tray.js`](app/shared/dialog/dialog.tray.js) [`dialog.style.css`](app/shared/dialog/dialog.style.css) | [`BOX.md`](app/shared/dialog/BOX.md) |
-| [`focus`](app/shared/focus) | [`FocusPage.jsx`](app/shared/focus/FocusPage.jsx) | [`parts/`](app/shared/focus/parts) | [`focus.tray.js`](app/shared/focus/focus.tray.js) [`focus.style.css`](app/shared/focus/focus.style.css) | [`BOX.md`](app/shared/focus/BOX.md) |
-| [`form`](app/shared/form) | [`FormPage.jsx`](app/shared/form/FormPage.jsx) | [`parts/`](app/shared/form/parts) | [`form.tray.js`](app/shared/form/form.tray.js) [`form.style.css`](app/shared/form/form.style.css) | [`BOX.md`](app/shared/form/BOX.md) |
-| [`item-row`](app/shared/item-row) | [`ItemRowPage.jsx`](app/shared/item-row/ItemRowPage.jsx) | [`parts/`](app/shared/item-row/parts) | [`item-row.tray.js`](app/shared/item-row/item-row.tray.js) [`item-row.style.css`](app/shared/item-row/item-row.style.css) | [`BOX.md`](app/shared/item-row/BOX.md) |
-| [`nav`](app/shared/nav) | [`NavPage.jsx`](app/shared/nav/NavPage.jsx) | [`parts/`](app/shared/nav/parts) | [`nav.tray.js`](app/shared/nav/nav.tray.js) [`nav.style.css`](app/shared/nav/nav.style.css) | [`BOX.md`](app/shared/nav/BOX.md) |
-| [`quota`](app/shared/quota) | [`QuotaPage.jsx`](app/shared/quota/QuotaPage.jsx) | [`parts/`](app/shared/quota/parts) | [`quota.tray.js`](app/shared/quota/quota.tray.js) [`quota.style.css`](app/shared/quota/quota.style.css) | [`BOX.md`](app/shared/quota/BOX.md) |
-| [`settings`](app/shared/settings) | [`SettingsPage.jsx`](app/shared/settings/SettingsPage.jsx) | [`parts/`](app/shared/settings/parts) | [`settings.tray.js`](app/shared/settings/settings.tray.js) [`settings.style.css`](app/shared/settings/settings.style.css) | [`BOX.md`](app/shared/settings/BOX.md) |
-| [`sheet`](app/shared/sheet) | [`SheetPage.jsx`](app/shared/sheet/SheetPage.jsx) | [`parts/`](app/shared/sheet/parts) | [`sheet.tray.js`](app/shared/sheet/sheet.tray.js) [`sheet.style.css`](app/shared/sheet/sheet.style.css) | [`BOX.md`](app/shared/sheet/BOX.md) |
-| [`today`](app/shared/today) | [`TodayPage.jsx`](app/shared/today/TodayPage.jsx) | [`parts/`](app/shared/today/parts) | [`today.tray.js`](app/shared/today/today.tray.js) [`today.style.css`](app/shared/today/today.style.css) | [`BOX.md`](app/shared/today/BOX.md) |
+| [`ai`](web/shared/ai) | [`AiPage.jsx`](web/shared/ai/AiPage.jsx) | [`parts/`](web/shared/ai/parts) | [`ai.tray.js`](web/shared/ai/ai.tray.js) [`ai.style.css`](web/shared/ai/ai.style.css) | [`BOX.md`](web/shared/ai/BOX.md) |
+| [`aiShell`](web/shared/aiShell) | [`AiShellPage.jsx`](web/shared/aiShell/AiShellPage.jsx) | [`parts/`](web/shared/aiShell/parts) | [`aiShell.tray.js`](web/shared/aiShell/aiShell.tray.js) [`aiShell.style.css`](web/shared/aiShell/aiShell.style.css) | [`BOX.md`](web/shared/aiShell/BOX.md) |
+| [`auth`](web/shared/auth) | [`AuthPage.jsx`](web/shared/auth/AuthPage.jsx) | [`parts/`](web/shared/auth/parts) | [`auth.tray.js`](web/shared/auth/auth.tray.js) [`auth.style.css`](web/shared/auth/auth.style.css) | [`BOX.md`](web/shared/auth/BOX.md) |
+| [`calendar`](web/shared/calendar) | [`CalendarPage.jsx`](web/shared/calendar/CalendarPage.jsx) | [`parts/`](web/shared/calendar/parts) | [`calendar.tray.js`](web/shared/calendar/calendar.tray.js) [`calendar.style.css`](web/shared/calendar/calendar.style.css) | [`BOX.md`](web/shared/calendar/BOX.md) |
+| [`detail`](web/shared/detail) | [`DetailPage.jsx`](web/shared/detail/DetailPage.jsx) | [`parts/`](web/shared/detail/parts) | [`detail.tray.js`](web/shared/detail/detail.tray.js) [`detail.style.css`](web/shared/detail/detail.style.css) | [`BOX.md`](web/shared/detail/BOX.md) |
+| [`dialog`](web/shared/dialog) | [`DialogPage.jsx`](web/shared/dialog/DialogPage.jsx) | [`parts/`](web/shared/dialog/parts) | [`dialog.tray.js`](web/shared/dialog/dialog.tray.js) [`dialog.style.css`](web/shared/dialog/dialog.style.css) | [`BOX.md`](web/shared/dialog/BOX.md) |
+| [`focus`](web/shared/focus) | [`FocusPage.jsx`](web/shared/focus/FocusPage.jsx) | [`parts/`](web/shared/focus/parts) | [`focus.tray.js`](web/shared/focus/focus.tray.js) [`focus.style.css`](web/shared/focus/focus.style.css) | [`BOX.md`](web/shared/focus/BOX.md) |
+| [`form`](web/shared/form) | [`FormPage.jsx`](web/shared/form/FormPage.jsx) | [`parts/`](web/shared/form/parts) | [`form.tray.js`](web/shared/form/form.tray.js) [`form.style.css`](web/shared/form/form.style.css) | [`BOX.md`](web/shared/form/BOX.md) |
+| [`item-row`](web/shared/item-row) | [`ItemRowPage.jsx`](web/shared/item-row/ItemRowPage.jsx) | [`parts/`](web/shared/item-row/parts) | [`item-row.tray.js`](web/shared/item-row/item-row.tray.js) [`item-row.style.css`](web/shared/item-row/item-row.style.css) | [`BOX.md`](web/shared/item-row/BOX.md) |
+| [`nav`](web/shared/nav) | [`NavPage.jsx`](web/shared/nav/NavPage.jsx) | [`parts/`](web/shared/nav/parts) | [`nav.tray.js`](web/shared/nav/nav.tray.js) [`nav.style.css`](web/shared/nav/nav.style.css) | [`BOX.md`](web/shared/nav/BOX.md) |
+| [`quota`](web/shared/quota) | [`QuotaPage.jsx`](web/shared/quota/QuotaPage.jsx) | [`parts/`](web/shared/quota/parts) | [`quota.tray.js`](web/shared/quota/quota.tray.js) [`quota.style.css`](web/shared/quota/quota.style.css) | [`BOX.md`](web/shared/quota/BOX.md) |
+| [`settings`](web/shared/settings) | [`SettingsPage.jsx`](web/shared/settings/SettingsPage.jsx) | [`parts/`](web/shared/settings/parts) | [`settings.tray.js`](web/shared/settings/settings.tray.js) [`settings.style.css`](web/shared/settings/settings.style.css) | [`BOX.md`](web/shared/settings/BOX.md) |
+| [`sheet`](web/shared/sheet) | [`SheetPage.jsx`](web/shared/sheet/SheetPage.jsx) | [`parts/`](web/shared/sheet/parts) | [`sheet.tray.js`](web/shared/sheet/sheet.tray.js) [`sheet.style.css`](web/shared/sheet/sheet.style.css) | [`BOX.md`](web/shared/sheet/BOX.md) |
+| [`today`](web/shared/today) | [`TodayPage.jsx`](web/shared/today/TodayPage.jsx) | [`parts/`](web/shared/today/parts) | [`today.tray.js`](web/shared/today/today.tray.js) [`today.style.css`](web/shared/today/today.style.css) | [`BOX.md`](web/shared/today/BOX.md) |
 
-### โซน: [`app/styles`](app/styles)
-
-รายการไฟล์ในโซน:
-- 📄 [`MOLD-TABLE.md`](app/styles/MOLD-TABLE.md)
-- 📄 [`README.md`](app/styles/README.md)
-
-### โซน: [`app/data`](app/data)
+### โซน: [`web/styles`](web/styles)
 
 รายการไฟล์ในโซน:
-- 📄 [`README.md`](app/data/README.md)
-- 📄 [`ai.tray.js`](app/data/ai.tray.js)
-- 📄 [`dates.tray.js`](app/data/dates.tray.js)
+- 📄 [`MOLD-TABLE.md`](web/styles/MOLD-TABLE.md)
+- 📄 [`README.md`](web/styles/README.md)
 
-### โซน: [`app/tools`](app/tools)
+### โซน: [`web/data`](web/data)
 
 รายการไฟล์ในโซน:
-- 📄 [`HOUSE-RULES.md`](app/tools/HOUSE-RULES.md)
-- 📄 [`QA-GUIDE.md`](app/tools/QA-GUIDE.md)
-- 📄 [`README.md`](app/tools/README.md)
-- 📄 [`audit_css_values.py`](app/tools/audit_css_values.py)
-- 📄 [`checker.mjs`](app/tools/checker.mjs)
-- 📄 [`dep_matrix.mjs`](app/tools/dep_matrix.mjs)
-- 📁 [`docs/`](app/tools/docs)
-- 📁 [`example_box/`](app/tools/example_box)
-- 📄 [`m_progress.mjs`](app/tools/m_progress.mjs)
-- 📄 [`mapper.mjs`](app/tools/mapper.mjs)
-- 📄 [`rollback.mjs`](app/tools/rollback.mjs)
-- 📁 [`scorecard/`](app/tools/scorecard)
-- 📄 [`tuner.mjs`](app/tools/tuner.mjs)
-- 📄 [`xray.mjs`](app/tools/xray.mjs)
+- 📄 [`README.md`](web/data/README.md)
+- 📄 [`ai.tray.js`](web/data/ai.tray.js)
+- 📄 [`dates.tray.js`](web/data/dates.tray.js)
+
+### โซน: [`tools/factory`](tools/factory)
+
+รายการไฟล์ในโซน:
+- 📄 [`HOUSE-RULES.md`](tools/factory/HOUSE-RULES.md)
+- 📄 [`QA-GUIDE.md`](tools/factory/QA-GUIDE.md)
+- 📄 [`README.md`](tools/factory/README.md)
+- 📄 [`audit_css_values.py`](tools/factory/audit_css_values.py)
+- 📄 [`checker.mjs`](tools/factory/checker.mjs)
+- 📄 [`dep_matrix.mjs`](tools/factory/dep_matrix.mjs)
+- 📁 [`example_box/`](tools/factory/example_box)
+- 📄 [`m_progress.mjs`](tools/factory/m_progress.mjs)
+- 📄 [`mapper.mjs`](tools/factory/mapper.mjs)
+- 📄 [`rollback.mjs`](tools/factory/rollback.mjs)
+- 📁 [`scorecard/`](tools/factory/scorecard)
+- 📄 [`tuner.mjs`](tools/factory/tuner.mjs)
+- 📄 [`xray.mjs`](tools/factory/xray.mjs)
 

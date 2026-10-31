@@ -14,9 +14,9 @@ async function run(url,cs,file,logged){
   else{ p=await b.newPage({viewport:{width:412,height:915},colorScheme:cs,timezoneId:'Asia/Bangkok'}); }
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
   await p.route(/fonts\.(googleapis|gstatic)/,async r=>{ const u=r.request().url();
-    if(/fonts\.googleapis\.com\/css/.test(u)){ const css=fs.readFileSync('/tmp/evarel-repo/app/web/styles/app.css','utf8'); const m=css.match(/@font-face\{font-family:'Anuphan'[^\n]*\n(?:@font-face[^\n]*\n)*/); return r.fulfill({contentType:'text/css',body:(m?m[0]:'').replace(/url\(\.\.\/fonts\//g,'url(file:///tmp/evarel-repo/app/web/fonts/')}); }
+    if(/fonts\.googleapis\.com\/css/.test(u)){ const css=fs.readFileSync('./web/classic/styles/app.css','utf8'); const m=css.match(/@font-face\{font-family:'Anuphan'[^\n]*\n(?:@font-face[^\n]*\n)*/); return r.fulfill({contentType:'text/css',body:(m?m[0]:'').replace(/url\(\.\.\/fonts\//g,'url(file://./web/classic/fonts/')}); }
     return r.abort(); });
-  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/,r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('/tmp/evarel-repo/app-v13/vendor/fullcalendar.min.js')}));
+  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/,r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('./archive/app-v13/vendor/fullcalendar.min.js')}));
   await p.addInitScript(()=>{Math.random=()=>0.5; const D=Date, fixed=new D('2026-10-09T10:00:00+07:00').getTime(); class F extends D{constructor(...a){a.length?super(...a):super(fixed)} static now(){return fixed}} globalThis.Date=F;
     const st=document.createElement('style'); st.textContent='*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}'; document.addEventListener('DOMContentLoaded',()=>document.head.appendChild(st))});
   if(isApp){ await p.goto(APP_ORIGIN+'/index.html'); await p.waitForTimeout(2600);
@@ -49,7 +49,7 @@ async function runStage(stage,url,cs,file,logged){
   else{ p=await b.newPage({viewport:{width:412,height:915},colorScheme:cs,timezoneId:'Asia/Bangkok'}); }
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
   await p.route(/fonts\.(googleapis|gstatic)/,async r=>{ const u=r.request().url();
-    if(/fonts\.googleapis\.com\/css/.test(u)){ const css=fs.readFileSync('/tmp/evarel-repo/app/web/styles/app.css','utf8'); const m=css.match(/@font-face\{font-family:'Anuphan'[^\n]*\n(?:@font-face[^\n]*\n)*/); return r.fulfill({contentType:'text/css',body:(m?m[0]:'').replace(/url\(\.\.\/fonts\//g,'url(file:///tmp/evarel-repo/app/web/fonts/')}); }
+    if(/fonts\.googleapis\.com\/css/.test(u)){ const css=fs.readFileSync('./web/classic/styles/app.css','utf8'); const m=css.match(/@font-face\{font-family:'Anuphan'[^\n]*\n(?:@font-face[^\n]*\n)*/); return r.fulfill({contentType:'text/css',body:(m?m[0]:'').replace(/url\(\.\.\/fonts\//g,'url(file://./web/classic/fonts/')}); }
     return r.abort(); });
   await p.addInitScript(()=>{Math.random=()=>0.5; const D=Date, fixed=new D('2026-10-09T10:00:00+07:00').getTime(); class F extends D{constructor(...a){a.length?super(...a):super(fixed)} static now(){return fixed}} globalThis.Date=F;
     const st=document.createElement('style'); st.textContent='*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}'; document.addEventListener('DOMContentLoaded',()=>document.head.appendChild(st))});
@@ -67,7 +67,7 @@ async function runStage(stage,url,cs,file,logged){
 }
 let bad=0;
 for(const cs of ['light','dark']){
-  const e1=await run('file:///tmp/evarel-repo/design/master-demo-v24.html',cs,'/tmp/rem_demo_'+cs+'.png',true);
+  const e1=await run('file://./archive/design/master-demo-v24.html',cs,'/tmp/rem_demo_'+cs+'.png',true);
   const e2=await run(APP,cs,'/tmp/rem_app_'+cs+'.png',true);
   for(const suf of ['','_added']){
     const a=(await import('child_process')).execSync(`python3 - <<'PY'
@@ -89,7 +89,7 @@ PY`).toString().trim();
 import { execSync } from 'child_process';
 for(const stage of ['event','class']){
   for(const cs of ['light','dark']){
-    const e1=await runStage(stage,'file:///tmp/evarel-repo/design/master-demo-v24.html',cs,`/tmp/rem_demo_${stage}_${cs}.png`,true);
+    const e1=await runStage(stage,'file://./archive/design/master-demo-v24.html',cs,`/tmp/rem_demo_${stage}_${cs}.png`,true);
     const e2=await runStage(stage,APP,cs,`/tmp/rem_app_${stage}_${cs}.png`,true);
     const out=execSync(`python3 - <<'PY'
 from PIL import Image, ImageChops

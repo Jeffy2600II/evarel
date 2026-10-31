@@ -1,4 +1,4 @@
-// เทียบ app-ts กับ app-v13 ตรงๆ (ไม่ผ่านเดโม) ภาพเดียวกัน สถานะเดียวกัน รันซ้ำหลายรอบเพื่อวัดความนิ่ง
+// เทียบ app-ts กับ archive/app-v13 ตรงๆ (ไม่ผ่านเดโม) ภาพเดียวกัน สถานะเดียวกัน รันซ้ำหลายรอบเพื่อวัดความนิ่ง
 import { chromium } from 'playwright'; import fs from 'fs'; import crypto from 'crypto';
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';

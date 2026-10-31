@@ -1,9 +1,9 @@
 // เสริม prove_aishell_tray (ซึ่งครอบเฉพาะเส้นทางสตริง Pages.aiShell): ตัวนี้ครอบ Components.aiShell (เส้นทาง mount) และ avatarBg ที่ prove_aishell_tray ไม่ส่ง
 // เรนเดอร์ HTML เท่า bundle เดิมทุกไบต์ ทุกทางของ userName (ส่งมา/โปรไฟล์/ไม่มีผู้ใช้/profileOf ไม่มี) ทั้งสองเส้นทาง
-// ใช้: node tests/aishell_bundle_equiv.test.mjs <aiShell.js เดิม>   (ไฟล์ใหม่อ่านจาก app/web/js/react/aiShell.js)
+// ใช้: node tests/aishell_bundle_equiv.test.mjs <aiShell.js เดิม>   (ไฟล์ใหม่อ่านจาก web/classic/js/react/aiShell.js)
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/react/aiShell.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/classic/js/react/aiShell.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

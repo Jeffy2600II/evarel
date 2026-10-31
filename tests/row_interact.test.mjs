@@ -1,6 +1,6 @@
 /* ตัวทดสอบการโต้ตอบของแถวรายการ (itemRow): กดปุ่มจริงบน DOM แล้วอ่านผลจากสถานะ S และ DOM หลังกด
    ประตู 7 ชุดไม่กดปุ่มในแถวเลย จึงใช้ตัวนี้จับกรณีที่ markup ถูกต้องแต่ปุ่มทำงานผิด
-   ใช้: node tests/row_interact.test.mjs  (ต้องมี http.server พอร์ต 8779 เสิร์ฟ app/web ตอบ 200)
+   ใช้: node tests/row_interact.test.mjs  (ต้องมี http.server พอร์ต 8779 เสิร์ฟ web/classic ตอบ 200)
    ผล: JSON ต่อสถานการณ์ { name, ok, detail } และสรุปผ่าน/ตก exit 1 ถ้ามีข้อใดตก */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, seedItems, APP_ORIGIN, todayBangkok } from './live_user.mjs';

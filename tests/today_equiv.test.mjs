@@ -10,15 +10,15 @@ globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator =
 /* โมดูล 01-07 เป็น ES module จริงแล้ว (base-esm): โหลดด้วย import จากดิสก์ ลำดับตาม _order ให้ shim window ถูกตั้งก่อนไฟล์ window-style (12, 13) อ่าน
    ไฟล์ปัจจุบัน = classic ยังฝังอยู่เป็น fallback ของ production จึงเทียบของจริงที่เสิร์ฟ ไม่ใช่ snapshot */
 const O = globalThis; O.EVAREL_API = 'https://equiv.invalid';
-const M = (f) => import('file://' + root + '/app/web/js/app/' + f + '.js');
+const M = (f) => import('file://' + root + '/web/classic/js/engine/' + f + '.js');
 for (const f of ['00-head','01-core__constants','02-core__dates','03-core__store','04-data__repo','05-data__auth','06-services__schedule','07-services__stats','12-ui__primitives']) await M(f);
 /* S ของ module 05 (import binding) คือ object เดียวกับ window.S: ห้ามสร้าง O.S ใหม่ทับ (06 import S จาก 05 จะยังเห็นของเก่า) แก้เฉพาะฟิลด์ */
 if (!O.S) O.S = { items: [] };
 O.S.items = []; O.UI = O.UI || {}; Object.assign(O.UI, { period: 'week', date: '', weekOff: 0, weekDir: 0, pop: null, tab: 'today', type: 'all', animate: false, loading: false, error: null });
 await M('13-views');
-const rt = fs.readFileSync(root + '/app/web/js/react/runtime.js', 'utf8'); (0, eval)(rt);
-const ir = fs.readFileSync(root + '/app/web/js/react/item-row.js', 'utf8'); O.EvarelComponents = {}; (0, eval)(ir); /* ลำดับตาม REACT_PAGES จริง: item-row ก่อน today */
-const tj = fs.readFileSync(root + '/app/web/js/react/today.js', 'utf8'); O.EvarelPages = {}; (0, eval)(tj);
+const rt = fs.readFileSync(root + '/web/classic/js/react/runtime.js', 'utf8'); (0, eval)(rt);
+const ir = fs.readFileSync(root + '/web/classic/js/react/item-row.js', 'utf8'); O.EvarelComponents = {}; (0, eval)(ir); /* ลำดับตาม REACT_PAGES จริง: item-row ก่อน today */
+const tj = fs.readFileSync(root + '/web/classic/js/react/today.js', 'utf8'); O.EvarelPages = {}; (0, eval)(tj);
 const R = O.EvarelPages.today;
 const TODAY = O.ymd(new Date());
 const cv = (id, o) => ({ id, type: 'habit', title: 'ทดสอบ ' + id, subject: 'วิชา', time: '', timeEnd: '', track: 'check', target: 1, unitName: '', repeat: { unit: 'day', every: 1, days: [] }, start: TODAY, end: '', skip: {}, log: {}, rem: [], ...o });

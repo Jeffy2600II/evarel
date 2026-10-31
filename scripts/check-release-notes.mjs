@@ -2,7 +2,7 @@
 /* Path: scripts/check-release-notes.mjs | Purpose: บังคับว่าทุกการปล่อยเว็บต้องมีโน้ตรุ่นใหม่ (releases/current.json เปลี่ยน)
    วิธีทำงาน: เทียบกับ git ไม่ใช่ไฟล์ในเครื่อง จึงเหมือนกันทั้งเครื่องผมและ GitHub Actions
    ใช้: node scripts/check-release-notes.mjs [<ฐานเทียบ> default = HEAD~1]
-   ผ่านเมื่อ: (ก) code ใต้ app/ web-next/ scripts/ ไม่เปลี่ยน หรือ (ข) releases/current.json เปลี่ยน (version หรือ notes ต่างจากฐาน)
+   ผ่านเมื่อ: (ก) code ใต้ app/ web/next/ scripts/ ไม่เปลี่ยน หรือ (ข) releases/current.json เปลี่ยน (version หรือ notes ต่างจากฐาน)
    Used by: .github/workflows/web.yml */
 import { execFileSync } from 'node:child_process';
 import { checkBump } from './version-rules.mjs';
@@ -14,7 +14,7 @@ catch { console.log('RELEASE-NOTES: ไม่มีฐานเทียบ (com
 /* รูปแบบเลขรุ่นของรุ่นปัจจุบันต้องถูกเสมอ ไม่ว่าไฟล์อะไรเปลี่ยน (กันค่าเสียหลุดเข้า release.json) */
 { const cur = JSON.parse(git('show', 'HEAD:releases/current.json')); const e = checkBump(null, cur.version, cur.notes);
   if (e) { console.error('VERSION FAIL: ' + e); process.exit(1); } }
-const shipped = files.filter(f => /^(app\/web|app\/src|web-next\/src)\//.test(f));
+const shipped = files.filter(f => /^(web\/classic|web\/src|web\/next\/src)\//.test(f));
 if (!shipped.length) { console.log('RELEASE-NOTES: ไม่มีไฟล์ที่ส่งถึงผู้ใช้เปลี่ยน ไม่ต้องมีโน้ตใหม่'); process.exit(0); }
 let before = null;
 try { before = JSON.parse(git('show', `${base}:releases/current.json`)); } catch { /* ฐานยังไม่มีไฟล์ = ถือว่าเปลี่ยน */ }

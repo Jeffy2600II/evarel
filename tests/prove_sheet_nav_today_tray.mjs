@@ -4,7 +4,7 @@ import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 const rd = f => fs.readFileSync(f, 'utf8');
 const OLD = { sheet: rd(process.argv[2]), nav: rd(process.argv[3]), today: rd(process.argv[4]) };
-const NEW = { sheet: rd('app/web/js/react/sheet.js'), nav: rd('app/web/js/react/nav.js'), today: rd('app/web/js/react/today.js') };
+const NEW = { sheet: rd('web/classic/js/react/sheet.js'), nav: rd('web/classic/js/react/nav.js'), today: rd('web/classic/js/react/today.js') };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

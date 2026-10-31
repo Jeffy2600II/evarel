@@ -1,5 +1,8 @@
 # แผนผังระบบ Evarel (จากกราฟโค้ดจริง)
 
+> หมายเหตุโครงสร้าง (F7, 31 ต.ค. 2026): รากของรีโปถูกรื้อใหม่เป็น web/ app/ core/ backend/ archive/ tools/ หลังจาก commit ที่เอกสารนี้จับภาพ (d8fd046) เอกสารนี้จึงเป็นภาพประวัติศาสตร์ พาธที่อ้างในนี้ (เช่น src/m/, app/web/js/m) เป็นของยุคนั้น แผนที่โครงสร้างปัจจุบันที่เครื่องบังคับคือ [FACTORY-MAP.md](FACTORY-MAP.md) และผังรากใน [README](../README.md) ถ้าจะใช้กราฟ docs/graph/ ต้องสร้างใหม่ด้วย graphify จากโครงปัจจุบันก่อน
+
+
 ที่มา: repo Jeffy2600II/evarel สาขา develop commit d8fd046 (ตรงกับ origin) สร้างกราฟด้วย graphify โหมด AST จากซอร์ส 101 ไฟล์ใน app/src, app/api, app/edge ผลคือ 946 โหนด 1,835 เส้นเชื่อม 64 กลุ่ม ไม่พบวงจร import สร้างกราฟใหม่ได้ด้วย graphify update . ในโฟลเดอร์ซอร์ส (graphify-out/ ไม่ commit)
 
 ## ภาพรวม 3 ส่วน

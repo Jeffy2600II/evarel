@@ -1,6 +1,6 @@
 /* เทียบแถบนำทางล่าง: ฉบับ string เดิม (23-render tabs.join) กับฉบับ React จริง (react/nav.jsx NavTabs)
    เกณฑ์: DOM จริงเท่ากันทุกไบต์ ครอบทุกแท็บเป็นแท็บปัจจุบัน + ปุ่ม + ตรงกลาง
-   รัน: node tests/nav_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ app/web) */
+   รัน: node tests/nav_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/classic) */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };

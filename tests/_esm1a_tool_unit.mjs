@@ -1,7 +1,7 @@
 // เทสต์หน่วยของ tools/state_wrap.mjs บนโค้ดจำลอง (TDD: ต้องพังก่อนถ้าเครื่องมือผิด) ใช้: node _esm1a_tool_unit.mjs
 import fs from 'fs'; import path from 'path'; import { execFileSync } from 'child_process'; import os from 'os';
 const mk = (files) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-')); fs.writeFileSync(path.join(d, '_order.json'), JSON.stringify({ order: Object.keys(files).map(f => ({ file: f })) })); for (const [f, c] of Object.entries(files)) fs.writeFileSync(path.join(d, f), c); return d; };
-const run = (d, v) => { try { return { ok: true, out: execFileSync('node', ['/tmp/evarel-repo/tools/state_wrap.mjs', d, v], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }) }; } catch (e) { return { ok: false, err: (e.stderr || '') + (e.message || '') }; } };
+const run = (d, v) => { try { return { ok: true, out: execFileSync('node', ['./tools/state_wrap.mjs', d, v], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }) }; } catch (e) { return { ok: false, err: (e.stderr || '') + (e.message || '') }; } };
 const rd = (d, f) => fs.readFileSync(path.join(d, f), 'utf8'); let pass = 0, fail = 0; const t = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (c ? '' : ' | ' + v)); };
 // 1 ประกาศเดี่ยว + อ่าน + เขียน + update
 let d = mk({ '00.js': 'const ST={a:1};\n', '01.js': 'let U=null;\nfunction f(){return U}\n', '02.js': 'function g(x){U=x;U++;if(U>1)h(U)}\n' }); let r = run(d, 'U');

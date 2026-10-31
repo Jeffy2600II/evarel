@@ -1,7 +1,7 @@
 /* ตัวทดสอบ store กลางที่ React subscribe ได้ (S4 s4f-store-react): สัญญาของ createStore ที่ useSyncExternalStore ต้องการ
    ตรวจ: snapshot คงที่ถ้าไม่ notify | notify เพิ่ม version | ผู้ฟังถูกเรียกครั้งเดียวต่อ notify | unsubscribe หยุดเรียก | ผู้ฟังที่ throw ไม่ล้มคนอื่น | ไม่มีผู้ฟัง = ไม่ทำอะไร
    ใช้: node tests/store.test.mjs   exit 1 ถ้าข้อใดตก */
-import { createStore } from '../app/src/react/store.js';
+import { createStore } from '../web/src/react/store.js';
 let pass = 0, fail = 0; const ok = (n, c, d = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (c || !d ? '' : ' | ' + d)); };
 const s = createStore();
 const v0 = s.getSnapshot();

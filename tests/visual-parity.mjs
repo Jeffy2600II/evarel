@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import { pathToFileURL } from 'url';
 const base = '/app/conversations/6ac77d8632a1ea4bea84b135/evarel';
-const targets = { demo: base + '/design/master-demo-v2.html', split: base + '/app/index.html' };
+const targets = { demo: base + '/archive/design/master-demo-v2.html', split: base + '/app/index.html' };
 const browser = await chromium.launch({ executablePath: process.env.CH });
 for (const scheme of ['light', 'dark']) {
   for (const [name, path] of Object.entries(targets)) {

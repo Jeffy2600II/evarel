@@ -12,7 +12,7 @@ async function run(dir, user) {
   const ctx = await openAsUser(b, user, { serviceWorkers: 'block' }); const p = await ctx.newPage(); const log = [];
   p.on('pageerror', e => log.push('pageerror: ' + e.message.slice(0, 120)));
   p.on('console', m => { if (['warning', 'error'].includes(m.type())) log.push(m.type() + ': ' + m.text().replace(/localhost:\d+/g, 'H').slice(0, 140)); });
-  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('/tmp/evarel-repo/app-v13/vendor/fullcalendar.min.js') }));
+  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('./archive/app-v13/vendor/fullcalendar.min.js') }));
   await p.route(/fonts\.(googleapis|gstatic)/, r => r.abort());
   await p.goto(APP_ORIGIN + '/index.html'); await p.waitForTimeout(3500);
   // เดินทางใช้งานทุกส่วนที่แตะตัวแปรร่วม: แท็บ, ปุ่ม +, sheet, AI, ตั้งค่า, รายละเอียด, ตัวจับเวลา

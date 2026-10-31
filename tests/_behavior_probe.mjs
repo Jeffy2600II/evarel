@@ -1,7 +1,7 @@
-/* Behavior probe v4: เทียบพฤติกรรมจริง เดโม vs app/web(รุ่นเก่า) vs build/web(Next ตัวรันจริง) */
-import { chromium } from '/tmp/evarel-repo/node_modules/playwright/index.mjs';
+/* Behavior probe v4: เทียบพฤติกรรมจริง เดโม vs web/classic(รุ่นเก่า) vs build/web(Next ตัวรันจริง) */
+import { chromium } from './node_modules/playwright/index.mjs';
 import { readFileSync } from 'node:fs';
-import { makeTestUser, openAsUser, APP_ORIGIN } from '/tmp/evarel-repo/tests/live_user.mjs';
+import { makeTestUser, openAsUser, APP_ORIGIN } from './tests/live_user.mjs';
 
 const out = {};
 const snap = () => {
@@ -25,9 +25,9 @@ async function bootDemo() {
   const errs = [];
   p.on('pageerror', e => errs.push(e.message.slice(0, 50)));
   await p.route(/fonts\.(googleapis|gstatic)/, r => r.abort());
-  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: readFileSync('/tmp/evarel-repo/build/web/vendor/fullcalendar.min.js', 'utf8') }));
+  await p.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: readFileSync('./build/web/vendor/fullcalendar.min.js', 'utf8') }));
   await p.addInitScript(() => { Math.random = () => 0.5; const D = Date, fixed = new D('2026-10-09T10:00:00+07:00'); D.now = () => fixed.getTime(); });
-  await p.goto('http://localhost:8779/design/Evarel%20v24.html');
+  await p.goto('http://localhost:8779/archive/design/Evarel%20v24.html');
   await p.waitForTimeout(800);
   await p.evaluate(() => localStorage.clear());
   await p.evaluate(() => { const u = { id: 'u_test', name: 'Nontakorn', email: 'demo.u@evarel.app' }; localStorage.setItem('ev:user', JSON.stringify(u)); localStorage.setItem('ev:token', 't'); });
@@ -64,6 +64,6 @@ async function drive(tag, ctx) {
 }
 
 await drive('demo', await bootDemo());
-await drive('app_vanilla', await bootApp('/tmp/evarel-repo/app/web'));
-await drive('app_next', await bootApp('/tmp/evarel-repo/build/web'));
+await drive('app_vanilla', await bootApp('./web/classic'));
+await drive('app_next', await bootApp('./build/web'));
 console.log('BEHPROBE ' + JSON.stringify(out));

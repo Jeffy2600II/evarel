@@ -5,5 +5,5 @@
     "module": "esnext", "moduleResolution": "bundler",
     "strict": false, "noImplicitAny": false, "skipLibCheck": true, "types": []
   },
-  "include": ["types/*.d.ts", "app/web/js/m/*.js"]
+  "include": ["types/*.d.ts", "web/classic/js/engine/*.js"]
 }

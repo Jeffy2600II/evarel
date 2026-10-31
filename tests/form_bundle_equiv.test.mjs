@@ -1,9 +1,9 @@
 // พิสูจน์ F6 ฟอร์ม: ทั้งสองชื่อ (typeBody, formBody) x ทั้งสองเส้นทาง (Pages สตริง, Components คอมโพเนนต์) จากกล่อง shared/form
 // เรนเดอร์ HTML เท่า bundle เดิมทุกไบต์ ทุกสาขาของ props/ร่างฟอร์ม (ST.D) | ใช้ newDraft + Object.assign + ST.D เหมือน form_equiv
-// ใช้: node tests/form_bundle_equiv.test.mjs <form.js เดิม>   (ไฟล์ใหม่อ่านจาก app/web/js/react/form.js)
+// ใช้: node tests/form_bundle_equiv.test.mjs <form.js เดิม>   (ไฟล์ใหม่อ่านจาก web/classic/js/react/form.js)
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/react/form.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/classic/js/react/form.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

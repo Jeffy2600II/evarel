@@ -1,9 +1,9 @@
 // พิสูจน์ F6 หน้าจับเวลา: Pages.focus (สตริง) และ Components.focus (คอมโพเนนต์) จากกล่อง shared/focus เรนเดอร์ HTML เท่า bundle เดิมทุกไบต์ (สตริงดิบ ไม่ normalize)
 // สถานะ 8 กรณีเดียวกับ focus_equiv + ไม่พบรายการ (ต้องคืน null/ว่างเท่ากัน) | ตรึงเวลา: Date.now คงที่ เพื่อให้ tmMs ของทั้งสองฝั่งเท่ากัน
-// ใช้: node tests/focus_bundle_equiv.test.mjs <focus.js เดิม>   (ไฟล์ใหม่อ่านจาก app/web/js/react/focus.js)
+// ใช้: node tests/focus_bundle_equiv.test.mjs <focus.js เดิม>   (ไฟล์ใหม่อ่านจาก web/classic/js/react/focus.js)
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/react/focus.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/classic/js/react/focus.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

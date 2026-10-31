@@ -2,7 +2,7 @@
 // และยืนยันความเสี่ยง: เรียก core.dayLab(ds) โดยไม่ส่ง today ต้องให้ผลต่างจากชั้น m (พิสูจน์ว่าต้องส่ง today เสมอ)
 import { build } from 'esbuild'; import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
-const DAT = (await build({ entryPoints: ['app/src/core/dates.ts'], bundle: true, write: false, format: 'iife', globalName: 'CoreDates', platform: 'browser', logLevel: 'silent' })).outputFiles[0].text;
+const DAT = (await build({ entryPoints: ['core/dates.ts'], bundle: true, write: false, format: 'iife', globalName: 'CoreDates', platform: 'browser', logLevel: 'silent' })).outputFiles[0].text;
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

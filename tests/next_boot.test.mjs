@@ -1,6 +1,6 @@
-/* S4 next-pages ไบต์ N1: พิสูจน์ว่า build ของ Next (web-next/out) บูตแอปจริงได้
+/* S4 next-pages ไบต์ N1: พิสูจน์ว่า build ของ Next (web/next/out) บูตแอปจริงได้
    — โหลดหน้า รอบันเดิล+เครื่องยนต์ แล้วเช็คว่าแอปวิ่ง (ST, render แล้ว, ทำงานเป็น React ครบ, pageerror 0)
-   รัน: node tests/next_boot.test.mjs (ต้องมี 8791 เสิร์ฟ web-next/out) */
+   รัน: node tests/next_boot.test.mjs (ต้องมี 8791 เสิร์ฟ web/next/out) */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, API } from './live_user.mjs';
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };
@@ -15,7 +15,7 @@ try {
   const st = await (async () => { let r = { ready: false, nav: false, auth: false }; for (let i = 0; i < 40; i++) { r = await p.evaluate(() => ({ ready: typeof window.ST === 'object' && !!window.UI, nav: !!document.querySelector('#nav li'), auth: !document.getElementById('auth').hidden || window.UI?.auth?.status === 'in' })); if (r.ready && (r.nav || r.auth)) return r; await p.waitForTimeout(250); } return r; })();
   ok('เครื่องยนต์บูตครบ (ST+UI มาจากบันเดิล)', st.ready, JSON.stringify(st));
   ok('หน้าแรกเรนเดอร์ (nav หรือ auth แสดง)', st.nav || st.auth, JSON.stringify(st));
-  ok('ไม่มี js/m ใน DOM (โหลดเป็นบันเดิลแทน)', await p.evaluate(() => ![...document.querySelectorAll('script[src]')].some(s => s.src.includes('/js/app/'))));
+  ok('ไม่มี js/m ใน DOM (โหลดเป็นบันเดิลแทน)', await p.evaluate(() => ![...document.querySelectorAll('script[src]')].some(s => s.src.includes('/js/engine/'))));
   ok('ไม่มี pageerror ตลอดบูต', errs.length === 0, errs.join('; ').slice(0, 300));
   /* ล็อกอินจริง (session จาก API ทดสอบ): แอปเต็มต้องวิ่ง — nav + หน้าวันนี้ + React mount */
   {

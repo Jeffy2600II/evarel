@@ -1,4 +1,4 @@
-/* เทียบ "ชั้นฐานชุดใหม่" (app/src/core, ES module จริง) กับต้นฉบับโมดูล window เดิม ด้วยอินพุตและเวลาล็อกชุดเดียวกัน (เกณฑ์ S4 ข้อ 2)
+/* เทียบ "ชั้นฐานชุดใหม่" (core, ES module จริง) กับต้นฉบับโมดูล window เดิม ด้วยอินพุตและเวลาล็อกชุดเดียวกัน (เกณฑ์ S4 ข้อ 2)
    ต้นฉบับอ่านจาก git commit ฐาน (BASE) ไม่ใช่ไฟล์ปัจจุบัน เพราะโมดูลเดิมจะถูกลบเมื่อ React แทนทุก route
    ใช้: node tests/core_equiv.test.mjs   ผล: exit 1 ถ้ามีผลต่างแม้ข้อเดียว */
 import { execFileSync } from 'node:child_process'; import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'; import { tmpdir } from 'node:os'; import { join, dirname } from 'node:path'; import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -6,10 +6,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = process.env.CORE_EQUIV_BASE || '6a5833b';
 const tmp = mkdtempSync(join(tmpdir(), 'core-eq-'));
 const tsc = join(ROOT, 'node_modules/typescript/bin/tsc');
-execFileSync(process.execPath, [tsc, '--ignoreConfig', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler', '--lib', 'dom,esnext', '--outDir', tmp, join(ROOT, 'app/src/core/dates.ts'), join(ROOT, 'app/src/core/schedule.ts'), join(ROOT, 'app/src/core/stats.ts')], { stdio: 'inherit' });
+execFileSync(process.execPath, [tsc, '--ignoreConfig', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler', '--lib', 'dom,esnext', '--outDir', tmp, join(ROOT, 'core/dates.ts'), join(ROOT, 'core/schedule.ts'), join(ROOT, 'core/stats.ts')], { stdio: 'inherit' });
 writeFileSync(join(tmp, 'package.json'), '{"type":"module"}');
 for (const f of ['dates', 'schedule', 'stats']) { const p = join(tmp, f + '.js'); const t = (await import('node:fs')).readFileSync(p, 'utf8').replace(/from '\.\/(\w+)'/g, "from './$1.js'"); writeFileSync(p, t); }
-const orig = (f) => execFileSync('git', ['show', `${BASE}:app/web/js/app/${f}.js`], { cwd: ROOT, encoding: 'utf8' }).replace(/^"use strict";?/, '');
+const orig = (f) => execFileSync('git', ['show', `${BASE}:web/classic/js/engine/${f}.js`], { cwd: ROOT, encoding: 'utf8' }).replace(/^"use strict";?/, '');
 const D = await import(pathToFileURL(join(tmp, 'dates.js'))), S = await import(pathToFileURL(join(tmp, 'schedule.js'))), T = await import(pathToFileURL(join(tmp, 'stats.js')));
 const fs = { readFileSync: (p) => orig(p.split('/').pop().replace(/\.js$/, '')) };
 const FIXED = new Date('2026-10-17T05:30:00Z');
