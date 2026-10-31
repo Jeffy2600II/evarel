@@ -1,4 +1,4 @@
-import { DAY_MS, WD, addDays, fmtDate, parse, ymd } from "./dates.js";
+import { DAY_MS, WD, addDays, esc, fmtDate, parse, ymd } from "./dates.js";
 const UNIT_TH = { day: "\u0E27\u0E31\u0E19", week: "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C", month: "\u0E40\u0E14\u0E37\u0E2D\u0E19" };
 const STREAK_LOOKBACK = 365, STAT_DAYS = 30;
 const PERIODS = ["\u0E17\u0E31\u0E49\u0E07\u0E27\u0E31\u0E19", "\u0E0A\u0E48\u0E27\u0E07\u0E40\u0E0A\u0E49\u0E32", "\u0E0A\u0E48\u0E27\u0E07\u0E1A\u0E48\u0E32\u0E22", "\u0E0A\u0E48\u0E27\u0E07\u0E40\u0E22\u0E47\u0E19\u2013\u0E04\u0E48\u0E33"];
@@ -61,9 +61,18 @@ function dayState(it, ds, today) {
   if (ds > today) return "future";
   return ds === today ? "today" : "miss";
 }
+function dayMenu(it, ds) {
+  const sk = skipped(it, ds), v = val(it, ds), tg = target(it), multi = it.track !== "check", done = isDone(it, ds), out = [];
+  if (sk) return [{ act: "dm-skip", id: `0|${ds}`, icon: "x", label: "\u0E40\u0E25\u0E34\u0E01\u0E02\u0E49\u0E32\u0E21" }];
+  if (multi) out.push({ act: "dm-set", id: `${tg}|${ds}`, icon: "check", label: `\u0E17\u0E33\u0E04\u0E23\u0E1A\u0E40\u0E1B\u0E49\u0E32 (${tg} ${esc(it.unitName)})`, hint: done ? "\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19" : "" }, { act: "dm-num", id: ds, icon: "edit", label: "\u0E1B\u0E23\u0E31\u0E1A\u0E08\u0E33\u0E19\u0E27\u0E19\u2026", hint: `${v}/${tg}` }, { act: "dm-set", id: `0|${ds}`, icon: "x", label: "\u0E25\u0E49\u0E32\u0E07\u0E40\u0E1B\u0E47\u0E19 0" });
+  else out.push({ act: "dm-set", id: `1|${ds}`, icon: "check", label: "\u0E17\u0E33\u0E41\u0E25\u0E49\u0E27", hint: done ? "\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19" : "" }, { act: "dm-set", id: `0|${ds}`, icon: "x", label: "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E17\u0E33", hint: done ? "" : "\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19" });
+  if (!done) out.push("-", { act: "dm-skip", id: `1|${ds}`, icon: "skip", label: "\u0E02\u0E49\u0E32\u0E21\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49 (\u0E44\u0E21\u0E48\u0E19\u0E31\u0E1A\u0E40\u0E1B\u0E47\u0E19\u0E1E\u0E25\u0E32\u0E14)" });
+  return out;
+}
 export {
   PERIODS,
   TYPES,
+  dayMenu,
   dayState,
   isDone,
   isFuture,
