@@ -1,72 +1,116 @@
-/* เทียบเนื้อฟอร์มเพิ่ม/แก้ไข: ฉบับ string เดิม (14-ui__form: typeBody/formBody) กับฉบับ React จริง (shared/form/FormPage.jsx)
-   เกณฑ์: DOM จริงเท่ากันทุกไบต์ (browser-serialized innerHTML) + วงจรจริงบนแอป (เปิดฟอร์ม เลือกประเภท พิมพ์ กดปุ่มในพาเนล ส่งฟอร์มได้จริง)
-   ครอบกรณี: ขั้นเลือกประเภท, กิจวัตร 4 แบบติดตาม (ติ๊ก/นับเป้า/ระยะเวลา) ทำซ้ำวัน-สัปดาห์, ช่วงเวลามีสิ้นสุด, งาน+วิชา+ข้อผิดพลาด, กิจกรรมไม่ซ้ำ/รายสัปดาห์, คาบเรียน+วันเรียน, แจ้งเตือนล่วงหน้า+ตามเวลา, ชื่ออักขระพิเศษ
-   รัน: node tests/form_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ app/web) */
-import { chromium } from 'playwright'; import fs from 'fs';
-import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
-let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };
+/* พิสูจน์ F6 (14-ui__form ส่วนตรรกะ): newDraft/draftFrom/everyTxt/repSum/remSum/rangeSum/notifyIssue/validate/buildItem ที่ย้ายไป core/form ให้ผลเหมือนโมดูลเดิมทุกกรณี
+   เทียบผ่านชื่อ window เดิมทั้งหมด บนเบราว์เซอร์จริง (mk ของจริงจาก core/store ล็อกนาฬิกา) — ครอบคลุมทุกประเภทและทุกกฎการตรวจ
+   ใช้: node tests/form_equiv.test.mjs <14-ui__form.js เดิม>
+   ฉีดความผิดพิสูจน์ว่าเทสต์จับได้: INJECT=1..7 node tests/form_equiv.test.mjs ... (ต้อง exit 1 ทุกค่า) */
+import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
+const OLDM = fs.readFileSync(process.argv[2] || '/tmp/form_m14_at_head.js', 'utf8');
+const NEWM = fs.readFileSync('app/web/js/m/14-ui__form.js', 'utf8');
+const NEWCORE = fs.readFileSync('app/web/js/m/core/form.js', 'utf8');
+const CORE_DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8');
+const CORE_SCHED = fs.readFileSync('app/web/js/m/core/schedule.js', 'utf8');
+const CORE_STORE = fs.readFileSync('app/web/js/m/core/store.js', 'utf8');
+const CORE_CONST = fs.readFileSync('app/web/js/m/core/constants.js', 'utf8');
+const CORE_NOTIFY = fs.readFileSync('app/web/js/m/core/notify.js', 'utf8');
+const CORE_UIHTML = fs.readFileSync('app/web/js/m/core/uihtml.js', 'utf8');
+const inj = Number(process.env.INJECT || 0);
+
+function inject(src, which) {
+  const R = (re, to) => { const n = src.replace(re, to); if (n === src) throw new Error('INJECT ' + which + ': ไม่เจอจุดฉีด'); return n; };
+  if (which === 1) return R(/\.sort\(\)/, ''); /* วันซ้ำไม่เรียง */
+  if (which === 2) return R(/slice\(0, 2\)/, 'slice(0, 3)'); /* โชว์การเตือนเกิน */
+  if (which === 3) return R(/d\.timeEnd <= d\.time/, 'd.timeEnd < d.time'); /* เวลาเท่ากันไม่ตรวจ */
+  if (which === 4) return R(/Math\.max\(1, Math\.round\(\+d\.every \|\| 1\)\)/, 'Math.max(0, Math.round(+d.every || 1))'); /* ทุก ๆ 0 วันผ่าน */
+  if (which === 5) return R(/T === "task" \? "check" : "none"/, '"none"'); /* task ไม่ติ๊กได้ */
+  if (which === 6) return R(/t === "habit" \? "day" : "none"/, '"day"'); /* งานได้ซ้ำรายวัน */
+  if (which === 7) return R(/r\.m >= 0/, 'r.m > 0'); /* เตือนตรงเวลา (m=0) ไม่เตือนให้ใส่เวลา */
+  return src;
+}
+const NEWCOREi = inj ? inject(NEWCORE, inj) : NEWCORE;
+
+const srv = http.createServer((q, s) => { s.setHeader('content-type', 'text/html'); s.end('<!doctype html><title>t</title>') }); await new Promise(r => srv.listen(0, '127.0.0.1', r));
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
-const b = await chromium.launch({ executablePath: exe });
-const user = await makeTestUser('formequiv');
-try {
-  const ctx = await openAsUser(b, user, { colorScheme: 'light' }); const p = await ctx.newPage();
-  const errs = []; p.on('pageerror', e => errs.push(String(e)));
-  await p.goto(APP_ORIGIN + '/index.html');
-  for (let i = 0; i < 50; i++) { if (await p.evaluate(() => !!window.EvarelComponents?.formBody && !!window.EvarelComponents?.typeBody && !!window.EvarelComponents?.sheet)) break; await p.waitForTimeout(200); }
-  ok('React form/typeBody/sheet โหลดแล้ว', await p.evaluate(() => !!(window.EvarelComponents?.formBody && window.EvarelComponents?.typeBody && window.EvarelComponents?.sheet)));
-
-  const run = async (name, isType, mut) => {
-    const r = await p.evaluate(({ isType, mut }) => {
-      const w = window;
-      const D = isType ? { ...w.newDraft('habit'), step: 'type' } : w.newDraft(mut.__type);
-      if (mut.__from) { const it = { id: 1, type: mut.__type, title: '', subject: '', start: D.start, end: '', time: '', timeEnd: '', repeat: { unit: D.unit, every: D.every, days: [...D.days] }, track: D.track, target: D.target, unitName: '', rem: D.rem.map(x => ({ ...x })) }; Object.assign(D, w.draftFrom(it)); }
-      delete mut.__type; delete mut.__from;
-      Object.assign(D, mut);
-      w.ST.D = D;
-      const classic = isType ? w.typeBody() : `<form class="ev-form" id="addForm" novalidate>${w.formBody()}</form>`;
-      const comp = isType ? w.EvarelComponents.typeBody : w.EvarelComponents.formBody;
-      const a = document.createElement('div'); a.innerHTML = classic; document.body.appendChild(a);
-      const bEl = document.createElement('div'); document.body.appendChild(bEl);
-      const root = w.EvarelReact.createRoot(bEl);
-      w.EvarelReact.flushSync(() => root.render(w.EvarelReact.h(comp, {})));
-      const A = a.innerHTML, B = bEl.innerHTML;
-      a.remove(); bEl.remove(); root.unmount();
-      let d=-1; for(let i=0;i<Math.min(A.length,B.length);i++){if(A[i]!==B[i]){d=i;break}}
-      return { same: A === B, A: A.slice(0, 400), B: B.slice(0, 400), diffAt: d, lenA: A.length, lenB: B.length,
-        ctxA: d>=0?A.slice(Math.max(0,d-80),d+120):'', ctxB: d>=0?B.slice(Math.max(0,d-80),d+120):'' };
-    }, { isType, mut: { ...mut } });
-    ok(name, r.same, r.same ? '' : ` diff@${r.diffAt} lenA=${r.lenA} lenB=${r.lenB}\n ctxA=${r.ctxA}\n ctxB=${r.ctxB}`);
-  };
-
-  await run('ขั้นเลือกประเภท (typeBody)', true, {});
-  await run('กิจวัตร ติ๊ก ค่าเริ่มต้น', false, { __type: 'habit' });
-  await run('กิจวัตร นับเป้า + ทำซ้ำสัปดาห์ + พาเนลทำซ้ำเปิด', false, { __type: 'habit', track: 'count', target: 8, unitName: 'แก้ว', unit: 'week', every: 2, days: [1, 3], open: 'rep' });
-  await run('กิจวัตร ระยะเวลา + มีวันสิ้นสุด + พาเนลช่วงเวลาเปิด', false, { __type: 'habit', track: 'timer', target: 30, unitName: 'นาที', endMode: 'date', end: '2026-11-01', open: 'range' });
-  await run('กิจวัตร แจ้งเตือนล่วงหน้า+ตามเวลา + พาเนลแจ้งเตือนเปิด', false, { __type: 'habit', open: 'rem', rem: [{ k: 'before', m: 30 }, { k: 'at', t: '18:30' }] });
-  await run('งาน + วิชา + ข้อผิดพลาดแสดง', false, { __type: 'task', subject: 'คณิต', err: 'กรุณาใส่ชื่อรายการ' });
-  await run('กิจกรรม ไม่ซ้ำ (ไม่มีช่วงเวลา)', false, { __type: 'event', unit: 'none' });
-  await run('กิจกรรม รายสัปดาห์ + เลือกวัน', false, { __type: 'event', unit: 'week', days: [0, 2], every: 1 });
-  await run('คาบเรียน + วันที่เรียน + พาเนลภาคเรียนเปิด', false, { __type: 'class', days: [1, 2, 4], open: 'range' });
-  await run('ชื่ออักขระพิเศษ <b>&"ยักษ์"</b>', false, { __type: 'habit', title: '<b>&"ยักษ์"</b>' });
-  await run('แก้ไขรายการเดิม (draftFrom)', false, { __type: 'habit', __from: true });
-
-  /* วงจรจริงบนแอป: เปิดฟอร์มผ่าน openForm จริง (React sheet+formBody) เลือกประเภท พิมพ์ กดพาเนล ส่งฟอร์ม */
-  const l1 = await p.evaluate(() => { window.openForm(null); return { open: document.getElementById('sheet').dataset.open, types: !!document.querySelector('#sheetBody .ev-types'), roots: Object.keys(window.EvarelMount.roots) }; });
-  ok('แอปจริง: ฟอร์มขั้นเลือกประเภท mount React', l1.open === 'true' && l1.types && l1.roots.includes('sheet'), JSON.stringify(l1));
-  await p.click('#sheetBody .ev-type[data-id="task"]');
-  await p.waitForTimeout(150);
-  const l2 = await p.evaluate(() => ({ form: !!document.querySelector('#sheetBody form#addForm'), title: !!document.querySelector('#addForm [name=title]'), subject: !!document.querySelector('#addForm [name=subject]'), foot: !!document.querySelector('#sheet .ev-sheet-foot [type=submit]') }));
-  ok('แอปจริง: เลือกงานแล้วฟอร์ม React ครบฟิลด์+ปุ่มส่ง', l2.form && l2.title && l2.subject && l2.foot, JSON.stringify(l2));
-  const l3 = await p.evaluate(() => { document.querySelector('#addForm [data-act="dopen"][data-id="rem"]').click(); return { exp: document.querySelector('#addForm [data-act="dopen"][data-id="rem"]').getAttribute('aria-expanded'), panel: document.querySelector('#addForm .ev-panel[data-key="rem"]').dataset.open }; });
-  ok('แอปจริง: กดแถวแจ้งเตือน พาเนลเปิด (dopen กับ DOM ของ React)', l3.exp === 'true' && l3.panel === 'true', JSON.stringify(l3));
-  await p.fill('#addForm [name=title]', 'ทดสอบฟอร์ม React');
-  await p.fill('#addForm [name=time]', '14:30'); /* งานค่าเริ่มต้นแจ้งเตือนตรงเวลา ต้องมีเวลาถึง validate ผ่าน (พฤติกรรมเดิม) */
-  await p.click('#sheet .ev-sheet-foot [type=submit]');
-  await p.waitForTimeout(250);
-  const l4 = await p.evaluate(() => ({ sheet: document.getElementById('sheet').dataset.open, saved: (window.S?.items || []).some(x => x.title === 'ทดสอบฟอร์ม React'), type: (window.S?.items || []).find(x => x.title === 'ทดสอบฟอร์ม React')?.type }));
-  ok('แอปจริง: ส่งฟอร์มบันทึกรายการจริงและปิด sheet', l4.sheet === 'false' && l4.saved && l4.type === 'task', JSON.stringify(l4));
-  ok('ไม่มี pageerror ตลอดวงจร', errs.length === 0, errs.join(' | '));
-  console.log(`ผล: ${pass} ผ่าน ${fail} ตก`);
-  process.exit(fail ? 1 : 0);
-} finally { await b.close(); }
+const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
+const p = await b.newPage(); const pageErrs = []; p.on('pageerror', e => pageErrs.push(e.message.slice(0, 150)));
+await p.goto('http://127.0.0.1:' + srv.address().port + '/');
+const HARNESS = `
+const FIXED = new Date('2026-10-31T10:00:00+07:00').getTime();
+class F extends Date { constructor(...a) { a.length ? super(...a) : super(FIXED) } static now() { return FIXED } }
+globalThis.Date = F;
+window.TODAY = '2026-10-31';
+window.UI = { tab: 'today', date: '2026-10-31', calSel: '2026-10-20' };
+window.ST = { D: null };
+`;
+await p.evaluate(HARNESS);
+const load = async (tag, mSrc, coreSrc) => {
+  const err = await p.evaluate(async ({ mSrc, coreSrc, datesSrc, schedSrc, storeSrc, constSrc, notifySrc, uihtmlSrc, tag }) => {
+    const mk = s => URL.createObjectURL(new Blob([s], { type: 'text/javascript' }));
+    const datesU = mk(datesSrc), constU = mk(constSrc.replace(/\.\/dates\.js/g, datesU));
+    const schedU = mk(schedSrc.replace(/\.\/dates\.js/g, datesU).replace(/\.\/constants\.js/g, constU));
+    const notifyU = mk(notifySrc.replace(/\.\/dates\.js/g, datesU).replace(/\.\/schedule\.js/g, schedU));
+    const storeU = mk(storeSrc.replace(/\.\/dates\.js/g, datesU).replace(/\.\/schedule\.js/g, schedU));
+    const D = await import(datesU), S2 = await import(storeU), K2 = await import(constU), C2 = await import(schedU), N2 = await import(notifyU);
+    Object.assign(window, D, S2, K2, C2, N2); /* global ที่ฝั่งเก่าอ่าน (m/01 m/02 m/06 m/10 เคยปัก) ใช้ของจริงจาก core ทั้งหมด */
+    window.mk = (o) => S2.mk('2026-10-31', o);
+    const uihtmlU = mk(uihtmlSrc.replace(/\.\/dates\.js/g, datesU).replace(/\.\/constants\.js/g, constU).replace(/\.\/schedule\.js/g, schedU));
+    let src = mSrc.replace(/\.\/core\/uihtml\.js/g, uihtmlU);
+    if (coreSrc !== null) src = src.replace(/\.\/core\/form\.js/g, mk(coreSrc.replace(/\.\/constants\.js/g, constU).replace(/\.\/dates\.js/g, datesU).replace(/\.\/schedule\.js/g, schedU).replace(/\.\/notify\.js/g, notifyU) + '\n//core ' + tag));
+    try { await import(mk(src + '\n//' + tag + Math.random())); return null } catch (e) { return (e && e.message || String(e)) + ' ||| ' + (e && e.stack || '').slice(0, 300) }
+  }, { mSrc, coreSrc, datesSrc: CORE_DATES, schedSrc: CORE_SCHED, storeSrc: CORE_STORE, constSrc: CORE_CONST, notifySrc: CORE_NOTIFY, uihtmlSrc: CORE_UIHTML, tag });
+  if (err) throw new Error('โหลดโมดูล ' + tag + ' ไม่ได้: ' + err);
+};
+const ITEM = (over) => Object.assign({ id: 9, type: 'habit', title: 'อ่านหนังสือ', subject: '', start: '2026-10-01', end: '', time: '19:00', timeEnd: '', track: 'check', target: 1, unitName: '', repeat: { unit: 'week', every: 1, days: [1, 3, 5] }, rem: [{ k: 'before', m: 0 }, { k: 'at', t: '08:00' }], log: { '2026-10-31': 1 }, skip: {} }, over);
+const DRAFT = (over) => Object.assign({ id: null, step: 'form', open: '', type: 'habit', title: 'อ่านหนังสือ', subject: '', start: '2026-10-31', end: '', endMode: 'never', time: '19:00', timeEnd: '', unit: 'week', every: 1, days: [3, 1, 5], track: 'check', target: 1, unitName: '', rem: [{ k: 'before', m: 0 }, { k: 'before', m: 30 }, { k: 'before', m: 10 }, { k: 'at', t: '08:00' }], err: '' }, over);
+let n = 0, fail = 0;
+const t = (name, ok, detail = '') => { n++; if (!ok) { fail++; console.log('FAIL ' + name + (detail ? ' :: ' + String(detail).slice(0, 200) : '')) } };
+const recs = {};
+const CASES = [
+  ['newDraft habit', { call: ['newDraft', ['habit']] }],
+  ['newDraft task', { call: ['newDraft', ['task']] }],
+  ['newDraft จากปฏิทิน (base = calSel)', { ui: { tab: 'calendar' }, call: ['newDraft', ['event']] }],
+  ['draftFrom habit ครบ', { call: ['draftFrom', [ITEM()]] }],
+  ['draftFrom task track none', { call: ['draftFrom', [ITEM({ type: 'task', track: 'none' })]] }],
+  ['repSum สัปดาห์ (เรียงวัน)', { D: DRAFT(), call: ['repSum', []] }],
+  ['repSum เดือนทุก ๆ 2', { D: DRAFT({ unit: 'month', every: 2, days: [] }), call: ['repSum', []] }],
+  ['repSum ไม่ซ้ำ', { D: DRAFT({ unit: 'none', days: [] }), call: ['repSum', []] }],
+  ['remSum เกิน 2 รายการ', { D: DRAFT(), call: ['remSum', []] }],
+  ['remSum ปิดแจ้งเตือน', { D: DRAFT({ rem: [] }), call: ['remSum', []] }],
+  ['rangeSum วันนี้', { D: DRAFT(), call: ['rangeSum', []] }],
+  ['rangeSum มีวันสิ้นสุด', { D: DRAFT({ endMode: 'date', end: '2026-11-30', start: '2026-10-05' }), call: ['rangeSum', []] }],
+  ['notifyIssue มีเตือนแต่ไม่มีเวลา', { D: DRAFT({ time: '' }), call: ['notifyIssue', []] }],
+  ['notifyIssue ตรงเวลา (m=0) ไม่มีเวลา', { D: DRAFT({ time: '', rem: [{ k: 'before', m: 0 }] }), call: ['notifyIssue', []] }],
+  ['validate ผ่าน', { D: DRAFT(), call: ['validate', []] }],
+  ['validate ไม่มีชื่อ', { D: DRAFT({ title: '   ' }), call: ['validate', []] }],
+  ['validate เวลาจบก่อนเริ่ม', { D: DRAFT({ timeEnd: '18:00' }), call: ['validate', []] }],
+  ['validate เวลาจบตรงกัน', { D: DRAFT({ timeEnd: '19:00' }), call: ['validate', []] }],
+  ['validate วันสิ้นสุดก่อนเริ่ม', { D: DRAFT({ endMode: 'date', end: '2026-10-01' }), call: ['validate', []] }],
+  ['validate เตือนแต่ไม่มีเวลา', { D: DRAFT({ time: '' }), call: ['validate', []] }],
+  ['validate class ไม่เลือกวัน', { D: DRAFT({ type: 'class', unit: 'week', days: [] }), call: ['validate', []] }],
+  ['buildItem habit นับเป้า (ทุก ๆ 0 -> 1)', { D: DRAFT({ track: 'count', target: 5, unitName: ' แก้ว ', every: -3 }), call: ['buildItem', []] }],
+  ['buildItem task', { D: DRAFT({ type: 'task', track: 'none', timeEnd: '20:00' }), call: ['buildItem', []] }],
+  ['buildItem class (days จาก start)', { D: DRAFT({ type: 'class', unit: 'week', days: [] }), call: ['buildItem', []] }],
+  ['buildItem แก้ไข (รักษา log/skip)', { D: DRAFT({ id: 9 }), call: ['buildItem', []] }],
+  ['buildItem rem เกิน MAX_REM', { D: DRAFT({ rem: Array.from({ length: 12 }, (_, i) => ({ k: 'before', m: i })) }), call: ['buildItem', []] }],
+];
+for (const [tag, mSrc, coreSrc] of [['old', OLDM, null], ['new', NEWM, NEWCOREi]]) {
+  await load(tag, mSrc, coreSrc);
+  const list = [];
+  for (const [name, c] of CASES) {
+    const out = await p.evaluate(([c, ui]) => {
+      if (ui) Object.assign(window.UI, ui); else { window.UI.tab = 'today'; window.UI.date = '2026-10-31'; window.UI.calSel = '2026-10-20' }
+      if (c.D) window.ST.D = JSON.parse(JSON.stringify(c.D));
+      const [fn, args] = c.call;
+      try { return JSON.parse(JSON.stringify(window[fn](...args))) } catch (e) { return 'ERR ' + e.message }
+    }, [c, c.ui || null]);
+    list.push({ name, out });
+  }
+  recs[tag] = list;
+}
+for (let i = 0; i < CASES.length; i++) {
+  const A = JSON.stringify(recs.old[i].out), B = JSON.stringify(recs.new[i].out);
+  t(CASES[i][0], A === B, A.slice(0, 160) + ' vs ' + B.slice(0, 160));
+}
+t('ไม่มี pageerror', pageErrs.length === 0, pageErrs.slice(0, 2).join(' | '));
+console.log((fail ? 'FAIL ' : 'PASS ') + n + ' ตรวจ' + (fail ? ' ตก ' + fail : ' ตรงทุกกรณี') + (inj ? ' (INJECT=' + inj + ')' : ''));
+await b.close(); srv.close();
+process.exit(fail ? 1 : 0);

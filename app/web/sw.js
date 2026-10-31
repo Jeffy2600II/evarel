@@ -59,6 +59,7 @@ const CORE = [
   './js/m/core/timer.js',
   './js/m/core/undo.js',
   './js/m/core/avatar.js',
+  './js/m/core/form.js',
   './js/react/runtime.js',
   './js/react/item-row.js',
   './js/react/ai.js',
