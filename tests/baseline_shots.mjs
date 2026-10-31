@@ -13,11 +13,14 @@ const FONT_CSS=(()=>{ /* ฟอนต์ของแอป = ฟอนต์ร�
   if(!m) throw new Error('ไม่พบ --font ใน app.css: ประตูภาพฉีดฟอนต์ให้เดโมไม่ได้'); return ':root{--font:'+m[1].trim()+'!important}'; })();
 /* ฝั่งแอป = ผู้ใช้จริงผ่าน API forge (สร้างครั้งเดียว ลบท้ายสุด) | ฝั่งเดโม = mock ของไฟล์ต้นฉบับเอง ไม่แตะ | ชื่อและอีเมลที่แสดงผลตั้งให้ตรงเดโม (ไม่กระทบการยืนยันตัวตน เพราะเซิร์ฟเวอร์ตรวจ JWT) */
 const user=await makeTestUser('parity'); user.session.user={...user.session.user,name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'}; await seedItems(user.session,SEED_ITEMS);
+/* ฉาก "สถิติว่าง" (ข้อควรระวังก่อนชุดปลายทาง F6): ผู้ใช้จริงที่ไม่มีรายการเลย กันหน้าสถิติพังเมื่อไม่มีข้อมูล (statsClassic ต้องยังทำงาน) */
+const userE=await makeTestUser('parity-empty'); userE.session.user={...userE.session.user,name:'Nontakorn',email:'demo.user@gmail.com',provider:'google'};
+const USER_FOR=name=>name==='app-stats-empty'?userE:user;
 /* ฐานเทียบ = เดโมจริงทั้งไฟล์ Evarel v24.html ไม่ใช่ไฟล์ intended | ต่างได้เฉพาะที่ Master อนุญาต: หน้าตั้งค่าที่ลบจุดออก, ข้อความ/ส่วนที่บอกว่าเป็นเดโมหรือจำลอง | ที่เหลือทุกพิกเซลต้อง 0 */
 const DEMO='http://localhost:8779/design/Evarel%20v24.html', APP=process.argv[2]||'http://localhost:8779/index.html';
 async function run(url,cs,file,step,logged,name){
   const isApp=url===APP; let ctx=null, p;
-  if(isApp){ ctx=logged?await openAsUser(b,user,{colorScheme:cs}):await openAsUser(b,{session:null},{colorScheme:cs}); p=await ctx.newPage(); }
+  if(isApp){ ctx=logged?await openAsUser(b,USER_FOR(name),{colorScheme:cs}):await openAsUser(b,{session:null},{colorScheme:cs}); p=await ctx.newPage(); }
   else{ p=await b.newPage({viewport:{width:412,height:915},colorScheme:cs,timezoneId:'Asia/Bangkok'}); }
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
   await p.route(/fonts\.(googleapis|gstatic)/,r=>r.abort());
@@ -51,7 +54,7 @@ const click=s=>async p=>{await p.click(s)};
 const steps={
  'app-today':[true,async p=>{}], 'app-all':[true,click('[data-tab="all"]')],
  'app-calendar':[true,async p=>{await p.click('[data-tab="calendar"]');await p.waitForTimeout(1200)}],
- 'app-stats':[true,click('[data-tab="stats"]')], 'app-add':[true,click('[data-act="add"]')],
+ 'app-stats':[true,click('[data-tab="stats"]')], 'app-stats-empty':[true,click('[data-tab="stats"]')], 'app-add':[true,click('[data-act="add"]')],
  'app-settings':[true,async p=>{await p.evaluate(()=>ACTIONS.settings());await p.waitForTimeout(600)}],
  /* ฉากหน้ารายละเอียด 3 ชนิด (เพิ่มชั้น 4: ก่อนหน้านี้ประตูไม่เห็นหน้านี้เลย) เปิดด้วย openDetail ที่มีทั้งเดโมและแอป ใช้ id จาก seed_items ชุดเดียวกัน */
  'app-detail-habit':[true,async p=>{await p.evaluate(()=>openDetail(1760100000001));await p.waitForTimeout(1200)}],
