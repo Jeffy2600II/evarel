@@ -1,4 +1,4 @@
-"use strict";
+import { tmMsOf, dialPctOf, timerMinsOf } from './core/timer.js';
 /* ===== MODULE: core/timer (ทนรีเฟรช: เก็บ timestamp) ===== */
 const loadTM = () => { try {
     return JSON.parse(localStorage.getItem(uk(TIMER_KEY)));
@@ -13,9 +13,9 @@ const saveTM = () => { try {
 catch (e) {
     console.warn('timer save', e);
 } };
-const tmMs = () => ST.TM ? ST.TM.acc + (ST.TM.startedAt ? Date.now() - ST.TM.startedAt : 0) : 0;
+const tmMs = () => tmMsOf(ST.TM, Date.now());
 function focusBody(it) {
-    const mine = ST.TM && ST.TM.id == it.id, run = mine && !!ST.TM.startedAt, ms = mine ? tmMs() : 0, goal = it.target * 60000, base = val(it, mine ? ST.TM.date : UI.fdate) * 60000, p = Math.min(100, (base + ms) / goal * 100);
+    const mine = ST.TM && ST.TM.id == it.id, run = mine && !!ST.TM.startedAt, ms = mine ? tmMs() : 0, goal = it.target * 60000, base = val(it, mine ? ST.TM.date : UI.fdate) * 60000, p = dialPctOf(base + ms, goal);
     const btn = (a, ic, l, big) => `<div style="display:grid;gap:6px;justify-items:center"><button class="ev-round" ${big ? 'data-big="true"' : ''} data-act="${a}" data-id="${it.id}" aria-label="${l}">${icon(ic)}</button><span class="ev-sub">${l}</span></div>`;
     const acts = !mine ? btn('tstart', 'play', 'เริ่ม', true) : run ? btn('tpause', 'pause', 'หยุดชั่วคราว', true) + btn('tfinish', 'stop', 'จบและบันทึก') : btn('tresume', 'play', 'ต่อ', true) + btn('tfinish', 'stop', 'จบและบันทึก');
     return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>จับเวลา</h2>${mine ? `<button class="ev-btn-danger ev-btn-sm" data-act="tcancel">ยกเลิก</button>` : ''}</div>
@@ -84,14 +84,14 @@ function tick() {
     const d = $('digits');
     if (d && ST.focusId !== null) {
         d.textContent = fmtClock(tmMs());
-        $('dial').style.setProperty('--p', Math.min(100, (val(it, ST.TM.date) * 60000 + tmMs()) / (it.target * 60000) * 100));
+        $('dial').style.setProperty('--p', dialPctOf(val(it, ST.TM.date) * 60000 + tmMs(), it.target * 60000));
     }
     else
         updateLive();
 }
 setInterval(tick, 1000);
 function tmFinish() {
-    const it = find(ST.TM.id), mins = Math.round(tmMs() / 60000), date = ST.TM.date;
+    const it = find(ST.TM.id), mins = timerMinsOf(ST.TM, Date.now()), date = ST.TM.date;
     ST.TM = null;
     saveTM();
     if (!it)

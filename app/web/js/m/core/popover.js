@@ -4,6 +4,9 @@ const popPlace = (r, w, h, vw, vh, o = {}) => {
   const below = o.prefer !== "up" && r.bottom + 6 + h < vh - 8, top = below ? r.bottom + 6 : Math.max(8, r.top - h - 8);
   return { left, top, below };
 };
+import { esc } from "./dates.js";
+const popItemsHTML = (items, icon) => items.map((m) => m === "-" ? "<hr>" : `<button role="menuitem" data-act="${m.act}" data-id="${esc(m.id ?? "")}" ${m.tone ? `data-tone="${m.tone}"` : ""}>${icon(m.icon)}<span>${m.label}</span>${m.hint ? `<small>${m.hint}</small>` : ""}</button>`).join("");
 export {
+  popItemsHTML,
   popPlace
 };

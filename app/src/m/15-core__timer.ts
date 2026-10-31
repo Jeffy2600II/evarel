@@ -1,9 +1,10 @@
+import { tmMsOf, dialPctOf, timerMinsOf } from './core/timer.js';
 /* ===== MODULE: core/timer (ทนรีเฟรช: เก็บ timestamp) ===== */
 const loadTM=()=>{try{return JSON.parse(localStorage.getItem(uk(TIMER_KEY)))}catch(e){console.warn('timer load',e);return null}};
 const saveTM=()=>{try{ST.TM?localStorage.setItem(uk(TIMER_KEY),JSON.stringify(ST.TM)):localStorage.removeItem(uk(TIMER_KEY))}catch(e){console.warn('timer save',e)}};
-const tmMs=()=>ST.TM?ST.TM.acc+(ST.TM.startedAt?Date.now()-ST.TM.startedAt:0):0;
+const tmMs=()=>tmMsOf(ST.TM,Date.now());
 
-function focusBody(it){const mine=ST.TM&&ST.TM.id==it.id,run=mine&&!!ST.TM.startedAt,ms=mine?tmMs():0,goal=it.target*60000,base=val(it,mine?ST.TM.date:UI.fdate)*60000,p=Math.min(100,(base+ms)/goal*100);
+function focusBody(it){const mine=ST.TM&&ST.TM.id==it.id,run=mine&&!!ST.TM.startedAt,ms=mine?tmMs():0,goal=it.target*60000,base=val(it,mine?ST.TM.date:UI.fdate)*60000,p=dialPctOf(base+ms,goal);
  const btn=(a,ic,l,big)=>`<div style="display:grid;gap:6px;justify-items:center"><button class="ev-round" ${big?'data-big="true"':''} data-act="${a}" data-id="${it.id}" aria-label="${l}">${icon(ic)}</button><span class="ev-sub">${l}</span></div>`;
  const acts=!mine?btn('tstart','play','เริ่ม',true):run?btn('tpause','pause','หยุดชั่วคราว',true)+btn('tfinish','stop','จบและบันทึก'):btn('tresume','play','ต่อ',true)+btn('tfinish','stop','จบและบันทึก');
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>จับเวลา</h2>${mine?`<button class="ev-btn-danger ev-btn-sm" data-act="tcancel">ยกเลิก</button>`:''}</div>
@@ -21,9 +22,9 @@ const refreshFocus=()=>{const it=find(ST.focusId);if(!it)return;const MT=(window
 function updateLive(){const l=$('live'),it=ST.TM&&find(ST.TM.id);if(!it||ST.focusId!==null){l.dataset.show='false';return}l.dataset.show='true';l.dataset.run=String(!!ST.TM.startedAt);l.dataset.id=it.id;
  l.innerHTML=`<i></i><span>${ST.TM.startedAt?'กำลังจับเวลา':'หยุดชั่วคราว'} · ${esc(it.title)}</span><b>${fmtClock(tmMs())}</b>`}
 function tick(){if(!ST.TM)return;const it=find(ST.TM.id);if(!it){ST.TM=null;saveTM();return updateLive()}
- const d=$('digits');if(d&&ST.focusId!==null){d.textContent=fmtClock(tmMs());$('dial').style.setProperty('--p',Math.min(100,(val(it,ST.TM.date)*60000+tmMs())/(it.target*60000)*100))}else updateLive()}
+ const d=$('digits');if(d&&ST.focusId!==null){d.textContent=fmtClock(tmMs());$('dial').style.setProperty('--p',dialPctOf(val(it,ST.TM.date)*60000+tmMs(),it.target*60000))}else updateLive()}
 setInterval(tick,1000);
-function tmFinish(){const it=find(ST.TM.id),mins=Math.round(tmMs()/60000),date=ST.TM.date;ST.TM=null;saveTM();
+function tmFinish(){const it=find(ST.TM.id),mins=timerMinsOf(ST.TM,Date.now()),date=ST.TM.date;ST.TM=null;saveTM();
  if(!it)return;if(mins<1){toast('สั้นกว่า 1 นาที จึงไม่บันทึก');refreshFocus();return}
  commit(`บันทึก ${mins} นาที: ${it.title}`,()=>{it.log[date]=val(it,date)+mins});refreshFocus()}
 
