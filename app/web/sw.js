@@ -55,6 +55,7 @@ const CORE = [
   './js/m/core/aiproposal.js',
   './js/m/core/settingsviews.js',
   './js/m/core/authclient.js',
+  './js/m/core/ailive.js',
   './js/react/runtime.js',
   './js/react/item-row.js',
   './js/react/ai.js',
