@@ -52,6 +52,7 @@ const CORE = [
   './js/m/core/notify.js',
   './js/m/core/uihtml.js',
   './js/m/core/authviews.js',
+  './js/m/core/aiproposal.js',
   './js/react/runtime.js',
   './js/react/item-row.js',
   './js/react/ai.js',

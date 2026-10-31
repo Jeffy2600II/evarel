@@ -105,6 +105,12 @@ jobs:
         if: always()
         run: |
           for d in app/pages/*/; do n=$(basename "$d"); echo "=== $n ==="; node app/tools/xray.mjs "$n"; done | tee factory-out/xray.txt
+      - name: ความคืบหน้าทำให้ m/ ว่าง (F6) รายงานอย่างเดียว ไม่บล็อก แต่ผลต้องแน่นอนสองรอบ
+        run: |
+          mkdir -p factory-out
+          node app/tools/m_progress.mjs | tee factory-out/m-progress.txt
+          node app/tools/m_progress.mjs > factory-out/m-progress.again.txt
+          cmp factory-out/m-progress.txt factory-out/m-progress.again.txt && rm factory-out/m-progress.again.txt
       - name: สรุปผลขึ้นหน้า run
         if: always()
         run: |
