@@ -16,7 +16,7 @@ const FIXED = new Date('2026-10-17T05:30:00Z');
 const RealDate = Date;
 globalThis.Date = class extends RealDate { constructor(...a){ if(a.length===0) super(FIXED.getTime()); else super(...a); } static now(){ return FIXED.getTime(); } };
 // โหลดต้นฉบับ: ทุกไฟล์ใช้ Object.assign(window,...) -> ให้ window = globalThis
-globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator = {};
+globalThis.window = globalThis; globalThis.document = {}; try { globalThis.navigator = {} } catch { Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true }) } /* Node 24 ขึ้นไป navigator เป็น getter ล้วน ต้อง defineProperty */
 const src = ['01-core__constants','02-core__dates','03-core__store','06-services__schedule','07-services__stats']
   .map(f => orig(f)).join('\n;\n');
 // const ระดับบนสุดของแต่ละไฟล์ไม่ออก global -> ห่อรวมเป็นฟังก์ชันเดียว แล้วคืน window ที่ถูก assign
