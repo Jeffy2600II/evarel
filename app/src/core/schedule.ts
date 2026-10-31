@@ -1,6 +1,6 @@
 /* ชั้นฐาน (ES module จริง): ตารางซ้ำ ความคืบหน้า สตรีค เป็นฟังก์ชันบริสุทธิ์ รับ today/items เป็นอาร์กิวเมนต์
    ตรรกะชุดเดียว: โมดูลเดิม 06-services__schedule ห่อเรียกที่นี่ ส่วน React import ตรงๆ */
-import { DAY_MS, WD, addDays, fmtDate, parse, ymd } from './dates';
+import { DAY_MS, WD, addDays, esc, fmtDate, parse, ymd } from './dates';
 
 export type Repeat = { unit: 'none' | 'day' | 'week' | 'month'; every: number; days: number[] };
 export type Rem = { k: 'before'; m: number } | { k: 'at'; t: string };
@@ -69,4 +69,13 @@ export function dayState(it: Item, ds: string, today: string): string {
   if (val(it, ds) > 0) return 'part';
   if (ds > today) return 'future';
   return ds === today ? 'today' : 'miss';
+}
+/* เมนูต่อวันของรายการ (ปุ่มย่อในเลย์เอาต์ปฏิทิน/รายวัน): สร้างวัตถุเมนูล้วน ไม่แตะ DOM และไม่ผูก TODAY (พิสูจน์แล้วว่าไม่อ่าน)
+   ผู้เรียกเดิม (m/06) ห่อส่งต่อที่เดียว | ตัวเชื่อมเครื่องหมาย '-' คือเส้นคั่นของ openPop */
+export function dayMenu(it: Item, ds: string): any[] {
+  const sk = skipped(it, ds), v = val(it, ds), tg = target(it), multi = it.track !== 'check', done = isDone(it, ds), out: any[] = [];
+  if (sk) return [{ act: 'dm-skip', id: `0|${ds}`, icon: 'x', label: 'เลิกข้าม' }];
+  if (multi) out.push({ act: 'dm-set', id: `${tg}|${ds}`, icon: 'check', label: `ทำครบเป้า (${tg} ${esc(it.unitName)})`, hint: done ? 'ปัจจุบัน' : '' }, { act: 'dm-num', id: ds, icon: 'edit', label: 'ปรับจำนวน…', hint: `${v}/${tg}` }, { act: 'dm-set', id: `0|${ds}`, icon: 'x', label: 'ล้างเป็น 0' });
+  else out.push({ act: 'dm-set', id: `1|${ds}`, icon: 'check', label: 'ทำแล้ว', hint: done ? 'ปัจจุบัน' : '' }, { act: 'dm-set', id: `0|${ds}`, icon: 'x', label: 'ยังไม่ทำ', hint: done ? '' : 'ปัจจุบัน' });
+  if (!done) out.push('-', { act: 'dm-skip', id: `1|${ds}`, icon: 'skip', label: 'ข้ามวันนี้ (ไม่นับเป็นพลาด)' }); return out;
 }
