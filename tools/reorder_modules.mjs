@@ -1,5 +1,5 @@
 // reorder_modules.mjs: ย้ายไฟล์โมดูล 1 ไฟล์ไปตำแหน่งใหม่ แล้วเขียนลำดับ 3 ที่จากแหล่งเดียว (evarel-ts-1i)
-// ที่ที่กำหนดลำดับ: index.html (บรรทัด <script src="js/m/..."> เรียงต่อกัน), sw.js (รายการ CORE), js/m/_order.json
+// ที่ที่กำหนดลำดับ: index.html (บรรทัด <script src="js/app/..."> เรียงต่อกัน), sw.js (รายการ CORE), js/m/_order.json
 // เปลี่ยนชื่อไฟล์ให้เลขนำหน้าสะท้อนลำดับใหม่ (เนื้อหาไม่เปลี่ยนไบต์เดียว) แล้ว sw.js VERSION ให้ผู้เรียกขยับเอง
 // ใช้: node reorder_modules.mjs <appdir> <ไฟล์ที่จะย้าย เช่น 17-services__ai-quota.js> <ย้ายไปก่อนไฟล์ เช่น 15-views__ai.js>
 import fs from 'fs'; import path from 'path';
@@ -15,14 +15,14 @@ for (const f of names) if (rename[f] !== f) fs.renameSync(path.join(mdir, f), pa
 for (const f of names) if (rename[f] !== f) fs.renameSync(path.join(mdir, '__tmp__' + f), path.join(mdir, rename[f]));
 // 2) _order.json
 ord.order = next.map(f => ({ file: rename[f], bytes: bytes[f] })); fs.writeFileSync(ordFile, JSON.stringify(ord, null, 1) + '\n');
-// 3) index.html : แทนที่เฉพาะลำดับ <script src="js/m/..."> ที่ติดกัน (ต้องมีบล็อกเดียว)
+// 3) index.html : แทนที่เฉพาะลำดับ <script src="js/app/..."> ที่ติดกัน (ต้องมีบล็อกเดียว)
 const hp = path.join(app, 'index.html'); let html = fs.readFileSync(hp, 'utf8');
 const re = /(?:<script src="js\/m\/[^"]+"><\/script>)+/g; const blocks = html.match(re) || [];
 if (blocks.length !== 1) { console.error('index.html ควรมีบล็อก script โมดูลเดียว พบ ' + blocks.length); process.exit(3); }
-html = html.replace(re, next.map(f => `<script src="js/m/${rename[f]}"></script>`).join('')); fs.writeFileSync(hp, html);
-// 4) sw.js : แทนที่เฉพาะบรรทัด './js/m/NN-xxx.js', ที่ติดกัน (ต้องมีบล็อกเดียว)
+html = html.replace(re, next.map(f => `<script src="js/app/${rename[f]}"></script>`).join('')); fs.writeFileSync(hp, html);
+// 4) sw.js : แทนที่เฉพาะบรรทัด './js/app/NN-xxx.js', ที่ติดกัน (ต้องมีบล็อกเดียว)
 const sp = path.join(app, 'sw.js'); let sw = fs.readFileSync(sp, 'utf8');
 const rs = /(?:  '\.\/js\/m\/[^']+',\n)+/g; const sb = sw.match(rs) || [];
 if (sb.length !== 1) { console.error('sw.js ควรมีบล็อกรายการโมดูลเดียว พบ ' + sb.length); process.exit(4); }
-sw = sw.replace(rs, next.map(f => `  './js/m/${rename[f]}',\n`).join('')); fs.writeFileSync(sp, sw);
+sw = sw.replace(rs, next.map(f => `  './js/app/${rename[f]}',\n`).join('')); fs.writeFileSync(sp, sw);
 console.log('ย้าย', mover, 'ไปก่อน', before, '| เปลี่ยนชื่อ', Object.entries(rename).filter(([a, b]) => a !== b).map(([a, b]) => a.slice(0, 2) + '->' + b.slice(0, 2)).join(' '));

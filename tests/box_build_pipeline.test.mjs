@@ -14,7 +14,7 @@ t('ผลบิลด์ที่ commit ตรงทุกไบต์ (หน�
 /* สำเนาชั่วคราว: คัดลอกเฉพาะที่บิลด์ต้องใช้ (ไม่ใช้ git worktree เพื่อไม่แตะประวัติ) */
 const tmp = fs.mkdtempSync(path.join(process.env.TMPDIR || os.tmpdir(), 'boxpipe-'));
 const cp = (rel) => fs.cpSync(path.join(root, rel), path.join(tmp, rel), { recursive: true });
-for (const r of ['scripts/build-react.mjs', 'app/src', 'app/shared', 'app/data', 'app/tools', 'app/web/js/react', 'app/web/js/m/19-views__settings.js', 'app/web/sw.js', 'package.json']) { fs.mkdirSync(path.dirname(path.join(tmp, r)), { recursive: true }); cp(r); }
+for (const r of ['scripts/build-react.mjs', 'app/src', 'app/shared', 'app/data', 'app/tools', 'app/web/js/react', 'app/web/js/app/19-views__settings.js', 'app/web/sw.js', 'package.json']) { fs.mkdirSync(path.dirname(path.join(tmp, r)), { recursive: true }); cp(r); }
 fs.rmSync(path.join(tmp, 'app/pages'), { recursive: true, force: true }); fs.mkdirSync(path.join(tmp, 'app/pages'), { recursive: true }); /* สำเนาเริ่มจาก pages ว่าง: ทดสอบเฉพาะกล่องของตัวทดสอบเอง */
 fs.mkdirSync(path.join(tmp, 'web-shell/node_modules'), { recursive: true });
 for (const m of ['react', 'react-dom', 'scheduler']) fs.cpSync(path.join(root, 'web-shell/node_modules', m), path.join(tmp, 'web-shell/node_modules', m), { recursive: true });
@@ -73,7 +73,7 @@ try {
   fs.writeFileSync(path.join(tmp, 'app/pages/multi/parts/MultiPart.jsx'), 'export const x = 1;\n');
   fs.writeFileSync(path.join(tmp, 'app/pages/multi/multi.tray.js'), 'export const t = 1;\n'); fs.writeFileSync(path.join(tmp, 'app/pages/multi/multi.style.css'), '.m{}\n');
   const setReg = (reg) => fs.writeFileSync(path.join(tmp, 'app/pages/multi/BOX.md'), cardOf(reg));
-  const blockTs = () => /REACT_BOX_PAGES:string\[\]=(\[[^\]]*\])/.exec(fs.readFileSync(path.join(tmp, 'app/src/m/19-views__settings.ts'), 'utf8'))[1];
+  const blockTs = () => /REACT_BOX_PAGES:string\[\]=(\[[^\]]*\])/.exec(fs.readFileSync(path.join(tmp, 'app/src/app/19-views__settings.ts'), 'utf8'))[1];
   setReg({ pages: [{ name: 'multiA', export: 'MultiA' }, { name: 'multiB', export: 'MultiB', prepare: 'prepB' }], components: [{ name: 'multiCard', export: 'MultiCard' }], after: ['item-row'] });
   const reg1 = run(tmp, ['scripts/build-react.mjs']);
   t('บิลด์กล่องหลายหน้า+component ผ่านและเติมบล็อกเอง', reg1.ok && /อัปเดตบล็อกลงทะเบียน/.test(reg1.out), reg1.out.slice(-200));
@@ -82,12 +82,12 @@ try {
   const core = new Function(swTxt.slice(swTxt.indexOf('const CORE'), swTxt.indexOf('];', swTxt.indexOf('const CORE')) + 2) + ';return CORE')();
   t('sw.js CORE ได้ไฟล์กล่องทั้งสองและไม่ซ้ำ', core.includes('./js/react/multi.js') && core.includes('./js/react/hdirect.js') && new Set(core).size === core.length, core.filter((u) => /multi|hdirect/.test(u)).join(','));
   t('ทุกไฟล์ react ใน CORE มีอยู่จริง (กัน addAll ล้ม)', core.filter((u) => u.includes('/react/')).every((u) => fs.existsSync(path.join(tmp, 'app/web', u.replace('./', '')))), 'มีไฟล์หาย');
-  const compiled = fs.readFileSync(path.join(tmp, 'app/web/js/m/19-views__settings.js'), 'utf8');
+  const compiled = fs.readFileSync(path.join(tmp, 'app/web/js/app/19-views__settings.js'), 'utf8');
   t('ผลคอมไพล์ .js สะท้อนบล็อกเดียวกับ .ts', JSON.stringify(JSON.parse(blockTs())) === JSON.stringify(eval((/REACT_BOX_PAGES = (\[[^\]]*\])/.exec(compiled) || [0, 'null'])[1])), (/REACT_BOX_PAGES = [^;]*/.exec(compiled) || [''])[0] + ' vs ' + blockTs());
   const chk2 = run(tmp, ['scripts/build-react.mjs', '--check']);
   t('--check ตรงหลังบิลด์ (idempotent)', chk2.ok && /ตรงทุกไฟล์/.test(chk2.out), chk2.out.slice(-160));
   /* ลำดับ: หน้าเดิมต้องมาก่อนกล่องเสมอ และ REACT_PAGES รวม = BASE + กล่อง ตามลำดับ */
-  const tsTxt = fs.readFileSync(path.join(tmp, 'app/src/m/19-views__settings.ts'), 'utf8');
+  const tsTxt = fs.readFileSync(path.join(tmp, 'app/src/app/19-views__settings.ts'), 'utf8');
   t('REACT_PAGES = BASE ต่อด้วยกล่อง (หน้าเดิมคงลำดับ)', /const REACT_PAGES=REACT_PAGES_BASE\.concat\(REACT_BOX_PAGES\)/.test(tsTxt) && /REACT_PAGES_BASE=\['settings','stats','all','item-row'/.test(tsTxt));
   /* after บังคับลำดับ */
   { const mk = run(tmp, ['app/tools/tuner.mjs', 'aearly']); t('เบ้าจูนสร้างกล่องที่ใช้ทดสอบลำดับได้', mk.ok && fs.existsSync(path.join(tmp, 'app/pages/aearly/BOX.md')), mk.out.slice(-150)); } /* ชื่อมาก่อนตามตัวอักษร แต่ตั้ง after ให้ตามหลัง multi */

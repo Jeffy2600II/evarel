@@ -1,12 +1,12 @@
 // พิสูจน์ F6 (22-views__auth -> core/authform): authValidate/EMAIL_RE/PW_MIN/MAIL_TYPO ให้ผลเหมือนของเดิมทุกกรณี และชื่อบน window ครบเหมือนเดิม
 // ใช้: node tests/authform_logic_equiv.test.mjs <22-views__auth.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/22-views__auth.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/app/22-views__auth.js', 'utf8');
 // หลังแยกซิงก์ (F6 ไฟล์ 22): ชื่อบน window 20 ตัวของซิงก์ย้ายไป 22-views__live-sync.js | ฝั่งใหม่โหลดสองไฟล์ต่อกัน (เหมือน index.html) แล้วนับ 49 ชื่อรวม ฝั่งเก่าไฟล์เดียว
-const NEWSYNC = fs.existsSync('app/web/js/m/22-views__live-sync.js') ? fs.readFileSync('app/web/js/m/22-views__live-sync.js', 'utf8') : '';
-const CORE = fs.readFileSync('app/web/js/m/core/authform.js', 'utf8');
-const UIHTML = fs.readFileSync('app/web/js/m/core/uihtml.js', 'utf8'); /* 22-views__auth import fld จาก core/uihtml ด้วย (ตัวสร้าง HTML ย้ายแล้ว) ต้องแทน URL ให้โหลดได้ ไม่เกี่ยวกับค่าคาดหวัง */
-const AUTHVIEWS = fs.readFileSync('app/web/js/m/core/authviews.js', 'utf8'), CONSTANTS = fs.readFileSync('app/web/js/m/core/constants.js', 'utf8'), DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8'); /* auth import authviews (ตัวสร้าง HTML ย้ายแล้ว) และ authviews import constants/dates/uihtml/authform ต้องแทน URL ให้ครบ ไม่เกี่ยวกับค่าคาดหวัง */
+const NEWSYNC = fs.existsSync('app/web/js/app/22-views__live-sync.js') ? fs.readFileSync('app/web/js/app/22-views__live-sync.js', 'utf8') : '';
+const CORE = fs.readFileSync('app/web/js/app/core/authform.js', 'utf8');
+const UIHTML = fs.readFileSync('app/web/js/app/core/uihtml.js', 'utf8'); /* 22-views__auth import fld จาก core/uihtml ด้วย (ตัวสร้าง HTML ย้ายแล้ว) ต้องแทน URL ให้โหลดได้ ไม่เกี่ยวกับค่าคาดหวัง */
+const AUTHVIEWS = fs.readFileSync('app/web/js/app/core/authviews.js', 'utf8'), CONSTANTS = fs.readFileSync('app/web/js/app/core/constants.js', 'utf8'), DATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8'); /* auth import authviews (ตัวสร้าง HTML ย้ายแล้ว) และ authviews import constants/dates/uihtml/authform ต้องแทน URL ให้ครบ ไม่เกี่ยวกับค่าคาดหวัง */
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

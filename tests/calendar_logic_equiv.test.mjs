@@ -1,8 +1,8 @@
 // พิสูจน์ F6 (20-services__calendar -> core/calendar): addMin/occurrenceEvents/dotsFor ให้ผลเหมือนของเดิมทุกกรณี และ occurrenceEvents/dotsFor อ่าน S.items สดทุกครั้ง (ไม่แคชตอนโหลด)
 // ใช้: node tests/calendar_logic_equiv.test.mjs <20-services__calendar.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/20-services__calendar.js', 'utf8');
-const rd = f => fs.readFileSync('app/web/js/m/core/' + f, 'utf8'); const CAL = rd('calendar.js'), SCH = rd('schedule.js'), DAT = rd('dates.js');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/app/20-services__calendar.js', 'utf8');
+const rd = f => fs.readFileSync('app/web/js/app/core/' + f, 'utf8'); const CAL = rd('calendar.js'), SCH = rd('schedule.js'), DAT = rd('dates.js');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

@@ -1,7 +1,7 @@
 // พิสูจน์ F6 (04-data__repo): diffItems ที่มาจาก core/repo ให้ผลเหมือนของเดิมทุกกรณี (รวมกับดักลำดับคีย์/undefined) และ syncChanges/uk/wait ทำงานเหมือนเดิม
 // ใช้: node tests/repo_equiv.test.mjs <04-data__repo.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/04-data__repo.js', 'utf8'), CORE = fs.readFileSync('app/web/js/m/core/repo.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/app/04-data__repo.js', 'utf8'), CORE = fs.readFileSync('app/web/js/app/core/repo.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

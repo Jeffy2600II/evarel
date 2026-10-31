@@ -3,8 +3,8 @@
    ไม่ทดสอบเส้นทาง abort ตามเวลาจริง (45s/15s — โค้ดชุดเดิมทั้งบรรทัด) | ใช้: node tests/ailive_equiv.test.mjs <18-services__ai-live.js เดิม> */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 import { constantsInlined } from './_constants_inline.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/18-services__ai-live.js', 'utf8');
-const AUTHCORE = fs.readFileSync('app/web/js/m/core/ailive.js', 'utf8'), AIPROP = fs.readFileSync('app/web/js/m/core/aiproposal.js', 'utf8'), DATES = fs.readFileSync('app/web/js/m/02-core__dates.js', 'utf8'), CDATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8'), CSTORE = fs.readFileSync('app/web/js/m/core/store.js', 'utf8'), CSCHEDULE = fs.readFileSync('app/web/js/m/core/schedule.js', 'utf8'), CONST = constantsInlined('.');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/app/18-services__ai-live.js', 'utf8');
+const AUTHCORE = fs.readFileSync('app/web/js/app/core/ailive.js', 'utf8'), AIPROP = fs.readFileSync('app/web/js/app/core/aiproposal.js', 'utf8'), DATES = fs.readFileSync('app/web/js/app/02-core__dates.js', 'utf8'), CDATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8'), CSTORE = fs.readFileSync('app/web/js/app/core/store.js', 'utf8'), CSCHEDULE = fs.readFileSync('app/web/js/app/core/schedule.js', 'utf8'), CONST = constantsInlined('.');
 const srv = http.createServer((q, s) => { s.setHeader('content-type', 'text/html'); s.end('<!doctype html><title>t</title>') }); await new Promise(r => srv.listen(0, '127.0.0.1', r));
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';

@@ -2,7 +2,7 @@
 // ใช้: node tests/uihtml_equiv.test.mjs <12-ui__primitives.js เดิม> <14-ui__form.js เดิม> <22-views__auth.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
 const [, , P_OLD, F_OLD, A_OLD] = process.argv;
-const rd = (p) => fs.readFileSync(p, 'utf8'); const W = 'app/web/js/m/';
+const rd = (p) => fs.readFileSync(p, 'utf8'); const W = 'app/web/js/app/';
 const SRC = { old: [rd(P_OLD), rd(F_OLD), rd(A_OLD)], new: [rd(W + '12-ui__primitives.js'), rd(W + '14-ui__form.js'), rd(W + '22-views__auth.js')] };
 const CORE = { uihtml: rd(W + 'core/uihtml.js'), markdown: rd(W + 'core/markdown.js'), authform: rd(W + 'core/authform.js'), authviews: rd(W + 'core/authviews.js'), constants: rd(W + 'core/constants.js'), dates: rd(W + 'core/dates.js') };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';

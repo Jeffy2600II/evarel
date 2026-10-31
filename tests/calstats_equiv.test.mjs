@@ -4,11 +4,11 @@
    ฉีดความผิดพิสูจน์ว่าเทสต์จับได้: INJECT=1..7 node tests/calstats_equiv.test.mjs ... (ต้อง exit 1 ทุกค่า) */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 const OLDM = fs.readFileSync(process.argv[2] || '/tmp/calendar_m20_selfcontained.js', 'utf8');
-const NEWM = fs.readFileSync('app/web/js/m/20-services__calendar.js', 'utf8');
-const NEWCORE = fs.readFileSync('app/web/js/m/core/calendar.js', 'utf8');
-const CORE_DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8');
-const CORE_SCHED = fs.readFileSync('app/web/js/m/core/schedule.js', 'utf8');
-const CORE_STATS = fs.readFileSync('app/web/js/m/core/stats.js', 'utf8');
+const NEWM = fs.readFileSync('app/web/js/app/20-services__calendar.js', 'utf8');
+const NEWCORE = fs.readFileSync('app/web/js/app/core/calendar.js', 'utf8');
+const CORE_DATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8');
+const CORE_SCHED = fs.readFileSync('app/web/js/app/core/schedule.js', 'utf8');
+const CORE_STATS = fs.readFileSync('app/web/js/app/core/stats.js', 'utf8');
 const inj = Number(process.env.INJECT || 0);
 
 /* ฉีดความผิดลงโค้ดจริง ทีละแบบ — เทสต์ต้องจับให้ได้ทุกแบบ */

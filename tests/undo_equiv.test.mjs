@@ -4,9 +4,9 @@
    ฉีดความผิดพิสูจน์ว่าเทสต์จับได้: INJECT=1..7 node tests/undo_equiv.test.mjs ... (ต้อง exit 1 ทุกค่า) */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 const OLDM = fs.readFileSync(process.argv[2] || '/tmp/undo_m08_at_head.js', 'utf8');
-const NEWM = fs.readFileSync('app/web/js/m/08-core__undo.js', 'utf8');
-const NEWCORE = fs.readFileSync('app/web/js/m/core/undo.js', 'utf8');
-const CORE_DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8');
+const NEWM = fs.readFileSync('app/web/js/app/08-core__undo.js', 'utf8');
+const NEWCORE = fs.readFileSync('app/web/js/app/core/undo.js', 'utf8');
+const CORE_DATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8');
 const inj = Number(process.env.INJECT || 0);
 
 function inject(src, which) {

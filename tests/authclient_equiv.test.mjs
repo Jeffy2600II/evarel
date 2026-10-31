@@ -2,11 +2,11 @@
    เทียบไฟล์เก่า (self-contained) กับไฟล์ใหม่ (ตัวห่อที่เรียก core/authclient) บนเบราว์เซอร์จริง origin จริง
    จำลอง fetch ทั้งหมด (ไม่ยิงเครือข่ายจริง) ล็อกนาฬิกา ใช้ localStorage จริงของ origin ทดสอบ
    ไม่ทดสอบ signInGoogle (เมธอดเดียวที่ navigate ออกนอกหน้า — โค้ดเดิมทั้งบรรทัด ไม่ได้แตะ)
-   ใช้: node tests/authclient_equiv.test.mjs <05-data__auth.js เดิม>   (ใหม่อ่านจาก app/web/js/m/05-data__auth.js) */
+   ใช้: node tests/authclient_equiv.test.mjs <05-data__auth.js เดิม>   (ใหม่อ่านจาก app/web/js/app/05-data__auth.js) */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 import { constantsInlined } from './_constants_inline.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/05-data__auth.js', 'utf8');
-const AUTHCORE = fs.readFileSync('app/web/js/m/core/authclient.js', 'utf8'), CORE_DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8'), CONST = constantsInlined('.');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/app/05-data__auth.js', 'utf8');
+const AUTHCORE = fs.readFileSync('app/web/js/app/core/authclient.js', 'utf8'), CORE_DATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8'), CONST = constantsInlined('.');
 /* เซิร์ฟเวอร์จิ๋วให้ origin จริง (about:blank ปิด localStorage/history จึงเสิร์ฟหน้าเปล่า) */
 const srv = http.createServer((q, s) => { s.setHeader('content-type', 'text/html'); s.end('<!doctype html><title>t</title>') }); await new Promise(r => srv.listen(0, '127.0.0.1', r)); const ORIGIN = 'http://127.0.0.1:' + srv.address().port + '/';
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
@@ -125,7 +125,7 @@ const SCEN = [
 ];
 const WNAMES = ['authErr', 'SUPA_SESS', 'nowS', 'supaLoad', 'supaSave', 'supaClear', 'SupaCore', 'SUPA_HOST', 'SupaAuth', 'SupaAdapter', 'SUPA_API', 'Auth', 'initial', 'profileOf', 'avatarHTML', 'firstName', 'AV_HUES', 'THAI_LEAD', 'hashStr', 'S', 'UI', 'find', 'AI_LIVE'];
 /* เตรียมโค้ด 02-core__dates (แทน import ภายในด้วยคำ marker แล้วแทนด้วย blob ในหน้า): ใช้เป็น stub ของทั้งสองเวอร์ชัน — esc/TODAY จริงทั้งคู่ */
-const CODE02 = fs.readFileSync('app/web/js/m/02-core__dates.js', 'utf8');
+const CODE02 = fs.readFileSync('app/web/js/app/02-core__dates.js', 'utf8');
 const ENV = { __DATES2__: CODE02, __CONST__: CONST, __CORE__: CORE_DATES, __AUTHCORE__: AUTHCORE, __SCEN__: SCEN, __WNAMES__: WNAMES };
 await p.evaluate((env) => { window.__DATES2__ = env.__DATES2__; window.__CONST__ = env.__CONST__; window.__CORE__ = env.__CORE__; window.__AUTHCORE__ = env.__AUTHCORE__; window.__SCEN__ = env.__SCEN__; window.__WNAMES__ = env.__WNAMES__ }, ENV);
 const OLD2 = OLD; /* พาธถูกแทนในหน้าเอง */

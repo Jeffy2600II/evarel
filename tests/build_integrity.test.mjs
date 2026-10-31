@@ -27,7 +27,7 @@ const bad = [];
 for (const f of walk(path.join(dir, 'js')).filter((x) => x.endsWith('.js'))) { try { new vm.Script(fs.readFileSync(f, 'utf8'), { filename: f }); } catch (e) { bad.push(path.basename(f) + ': ' + String(e.message).slice(0, 60)); } }
 t('ไฟล์ .js ใน js/ parse ได้ทุกไฟล์', !bad.length, bad.slice(0, 3).join(' | '));
 /* (5) กล่อง/หน้าที่ต้องมีในบันเดิล React ครบตามรายการที่ต้นทางลงทะเบียน */
-const regSrc = fs.readFileSync(path.join(root, 'app/src/m/19-views__settings.ts'), 'utf8');
+const regSrc = fs.readFileSync(path.join(root, 'app/src/app/19-views__settings.ts'), 'utf8');
 const bm = /const REACT_PAGES_BASE=\[([^\]]*)\]/.exec(regSrc);
 const pages = bm ? [...bm[1].matchAll(/'([^']+)'/g)].map((m) => m[1]) : [];
 const pgMissing = pages.filter((p) => !exists('js/react/' + p + '.js'));

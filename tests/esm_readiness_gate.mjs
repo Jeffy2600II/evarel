@@ -1,10 +1,10 @@
-// esm_readiness_gate.mjs (evarel-esm-1a): ประตูความพร้อมเป็น ES module ของ js/m/*.js (สคริปต์คลาสสิก)
+// esm_readiness_gate.mjs (evarel-esm-1a): ประตูความพร้อมเป็น ES module ของ js/app/*.js (สคริปต์คลาสสิก)
 // ตรวจ 3 อย่างที่ ES module จะทำให้พัง: (1) ตัวแปรร่วมถูก assign จากไฟล์อื่นที่ไม่ใช่ไฟล์ประกาศ (import เป็น read-only)
 // (2) implicit global (assign ชื่อที่ไม่เคยประกาศ ใน strict mode จะ throw) (3) this ระดับบนสุด (ใน module คือ undefined)
 // ใช้: node esm_readiness_gate.mjs <appdir>  exit 0=ผ่าน  1=ตก
 import { createRequire } from 'module'; import fs from 'fs'; import path from 'path';
 const acorn = createRequire('/app/conversations/6ab305110a4ed95a28bc31b7/repo/package.json')('acorn');
-const app = process.argv[2]; const dir = path.join(app, 'js/m');
+const app = process.argv[2]; const dir = path.join(app, 'js/app');
 const files = JSON.parse(fs.readFileSync(path.join(dir, '_order.json'), 'utf8')).order.map(o => o.file);
 const kids = (n) => { const r = []; for (const k of Object.keys(n)) { const c = n[k]; if (Array.isArray(c)) c.forEach(x => x && typeof x.type === 'string' && r.push([k, x])); else if (c && typeof c.type === 'string') r.push([k, c]); } return r; };
 const pn = (p, o) => { if (!p) return; if (p.type === 'Identifier') o.push(p.name); else if (p.type === 'ObjectPattern') p.properties.forEach(x => pn(x.value || x.argument, o)); else if (p.type === 'ArrayPattern') p.elements.forEach(x => pn(x, o)); else if (p.type === 'AssignmentPattern') pn(p.left, o); else if (p.type === 'RestElement') pn(p.argument, o); };

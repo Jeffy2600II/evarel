@@ -4,10 +4,10 @@
    ฉีดความผิดพิสูจน์ว่าเทสต์จับได้: INJECT=1..7 node tests/timer_equiv.test.mjs ... (ต้อง exit 1 ทุกค่า) */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 const OLDM = fs.readFileSync(process.argv[2] || '/tmp/timer_m15_at_head.js', 'utf8');
-const NEWM = fs.readFileSync('app/web/js/m/15-core__timer.js', 'utf8');
-const NEWCORE = fs.readFileSync('app/web/js/m/core/timer.js', 'utf8');
-const CORE_DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8');
-const CORE_SCHED = fs.readFileSync('app/web/js/m/core/schedule.js', 'utf8');
+const NEWM = fs.readFileSync('app/web/js/app/15-core__timer.js', 'utf8');
+const NEWCORE = fs.readFileSync('app/web/js/app/core/timer.js', 'utf8');
+const CORE_DATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8');
+const CORE_SCHED = fs.readFileSync('app/web/js/app/core/schedule.js', 'utf8');
 const inj = Number(process.env.INJECT || 0);
 
 function inject(src, which) {

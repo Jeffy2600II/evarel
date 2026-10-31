@@ -8,14 +8,14 @@ const [,, DIR] = process.argv;
 process.env.EVAREL_WEB_DIR = DIR;
 const html = fs.readFileSync(DIR + '/index.html', 'utf8');
 const got = [...html.matchAll(/<script (?:type="module" )?src="js\/m\/([^"]+)"/g)].map(m => m[1]);
-const want = JSON.parse(fs.readFileSync(DIR + '/js/m/_order.json', 'utf8')).order.map(o => o.file);
+const want = JSON.parse(fs.readFileSync(DIR + '/js/app/_order.json', 'utf8')).order.map(o => o.file);
 const orderOk = JSON.stringify(got) === JSON.stringify(want);
 // ลำดับรายการแคชใน sw.js ต้องตรง _order.json ด้วย (evarel-ts-1i): ไม่งั้นผู้ใช้ที่มีแคชเก่าโหลดไม่ครบหรือค้างไฟล์ชื่อเดิม
-const swTxt = fs.readFileSync(DIR + '/sw.js', 'utf8'); const swGot = [...swTxt.matchAll(/'\.\/js\/m\/([^'\/]+)'/g)].map(m => m[1]); /* [^'/] = เฉพาะโมดูล m/ ตรงๆ ไม่นับ js/m/core/*.js (ชั้นฐานที่ไม่อยู่ใน _order) ก่อนแก้ regex จับ core/ ด้วยทำให้ประตูตกมาตั้งแต่ย้าย core รอบแรก */ const swOk = JSON.stringify(swGot) === JSON.stringify(want);
-// ไฟล์ชั้นฐาน js/m/core/*.js ที่ m/*.js import จริงตอนรัน (รวมลูกโซ่ core->core) ต้องอยู่ในแคช sw.js ครบ และ sw.js ห้ามมีไฟล์ core ที่ไม่อยู่บนดิสก์
+const swTxt = fs.readFileSync(DIR + '/sw.js', 'utf8'); const swGot = [...swTxt.matchAll(/'\.\/js\/m\/([^'\/]+)'/g)].map(m => m[1]); /* [^'/] = เฉพาะโมดูล m/ ตรงๆ ไม่นับ js/app/core/*.js (ชั้นฐานที่ไม่อยู่ใน _order) ก่อนแก้ regex จับ core/ ด้วยทำให้ประตูตกมาตั้งแต่ย้าย core รอบแรก */ const swOk = JSON.stringify(swGot) === JSON.stringify(want);
+// ไฟล์ชั้นฐาน js/app/core/*.js ที่ m/*.js import จริงตอนรัน (รวมลูกโซ่ core->core) ต้องอยู่ในแคช sw.js ครบ และ sw.js ห้ามมีไฟล์ core ที่ไม่อยู่บนดิสก์
 // ข้อตรวจลำดับด้านบนตั้งใจไม่นับ core/ จึงมองไม่เห็นไฟล์ core ที่ตกจากแคช | พิสูจน์แล้ว 30 ต.ค. 2026: ถอด core/notify.js ออกจาก sw.js แล้ว ORDER-GATE และ notify_offline ยังผ่านหมด
 // ไม่ใช้ "ทุกไฟล์บนดิสก์": core/today.js อยู่บนดิสก์แต่ไม่ถูก import ตอนรัน (React รวมเข้า bundle ตอนบิลด์) การบังคับให้อยู่ในแคชจะตกเท็จ
-const coreDir = DIR + '/js/m/core', mDir = DIR + '/js/m';
+const coreDir = DIR + '/js/app/core', mDir = DIR + '/js/m';
 const coreDisk = fs.existsSync(coreDir) ? fs.readdirSync(coreDir).filter(f => f.endsWith('.js')) : [];
 const importedBy = (dir, base) => fs.readdirSync(dir).filter(f => f.endsWith('.js')).flatMap(f => [...fs.readFileSync(dir + '/' + f, 'utf8').matchAll(base)].map(m => m[1]));
 const need = new Set(importedBy(mDir, /from\s+'\.\/core\/([^'\/]+\.js)'/g));

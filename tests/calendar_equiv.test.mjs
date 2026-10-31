@@ -9,7 +9,7 @@ globalThis.Date = class extends RD { constructor(...a){ if(a.length===0) super(F
 globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator = {};
 globalThis.EVAREL_API = 'https://equiv.invalid';
 const O = globalThis;
-const M = (f) => import('file://' + root + '/app/web/js/m/' + f + '.js');
+const M = (f) => import('file://' + root + '/app/web/js/app/' + f + '.js');
 for (const f of ['00-head','01-core__constants','02-core__dates','03-core__store','04-data__repo','05-data__auth','06-services__schedule','07-services__stats','12-ui__primitives']) await M(f);
 if (!O.S) O.S = { items: [] };
 O.S.items = []; O.UI = O.UI || {}; Object.assign(O.UI, { period:'week', date:'', weekOff:0, weekDir:0, pop:null, tab:'calendar', type:'all', animate:false, loading:false, error:null, calView:'dayGridMonth', calSel:'', calDate:null });

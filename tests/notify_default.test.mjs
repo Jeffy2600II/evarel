@@ -1,5 +1,5 @@
 /* เทสต์ตรรกะแจ้งเตือนฝั่งแอป (evarel-notify-default) | seam = notifyState / checkNotify / defaultRem / toggleOnTime / toggleAhead
-   โมดูลจริง: app/web/js/m/*-services__notify.js (หาจาก _order.json) (ไม่มี DOM ดึงมารันใน sandbox ได้)
+   โมดูลจริง: app/web/js/app/*-services__notify.js (หาจาก _order.json) (ไม่มี DOM ดึงมารันใน sandbox ได้)
    ความหมายตามสเปก D1: rem มี {k:'before',m:0} = แจ้งเตือนตรงเวลา "เปิด" | ไม่มี = ผู้ใช้ปิด | ล่วงหน้า = before m>0
    ค่าคาดหวังทุกค่ามาจากสเปกและข้อมูลจริง 21 รายการของผู้ใช้ ไม่คำนวณซ้ำด้วยตรรกะเดียวกับโค้ด */
 import { readFileSync } from 'node:fs';

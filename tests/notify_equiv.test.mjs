@@ -3,8 +3,8 @@
 // ใช้: node tests/notify_equiv.test.mjs <10-services__notify.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
 const OLD = fs.readFileSync(process.argv[2], 'utf8');
-const NEW = fs.readFileSync('app/web/js/m/10-services__notify.js', 'utf8');
-const CORE = fs.readFileSync('app/web/js/m/core/notify.js', 'utf8');
+const NEW = fs.readFileSync('app/web/js/app/10-services__notify.js', 'utf8');
+const CORE = fs.readFileSync('app/web/js/app/core/notify.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

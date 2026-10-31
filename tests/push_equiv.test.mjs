@@ -5,8 +5,8 @@
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 const OLDM = fs.readFileSync(process.argv[2] || '/tmp/notify_m10_at_head.js', 'utf8');
 const OLDCORE = fs.readFileSync(process.argv[3] || '/tmp/notify_core_at_head.js', 'utf8');
-const NEWM = fs.readFileSync('app/web/js/m/10-services__notify.js', 'utf8');
-const NEWCORE = fs.readFileSync('app/web/js/m/core/notify.js', 'utf8');
+const NEWM = fs.readFileSync('app/web/js/app/10-services__notify.js', 'utf8');
+const NEWCORE = fs.readFileSync('app/web/js/app/core/notify.js', 'utf8');
 const inj = Number(process.env.INJECT || 0);
 
 /* ฉีดความผิดลงโค้ดจริง (ฝั่งใหม่) ทีละแบบ — เทสต์ต้องจับให้ได้ทุกแบบ */

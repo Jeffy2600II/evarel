@@ -4,14 +4,14 @@
    ฉีดความผิดพิสูจน์ว่าเทสต์จับได้: INJECT=1..7 node tests/form_equiv.test.mjs ... (ต้อง exit 1 ทุกค่า) */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 const OLDM = fs.readFileSync(process.argv[2] || '/tmp/form_m14_at_head.js', 'utf8');
-const NEWM = fs.readFileSync('app/web/js/m/14-ui__form.js', 'utf8');
-const NEWCORE = fs.readFileSync('app/web/js/m/core/form.js', 'utf8');
-const CORE_DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8');
-const CORE_SCHED = fs.readFileSync('app/web/js/m/core/schedule.js', 'utf8');
-const CORE_STORE = fs.readFileSync('app/web/js/m/core/store.js', 'utf8');
-const CORE_CONST = fs.readFileSync('app/web/js/m/core/constants.js', 'utf8');
-const CORE_NOTIFY = fs.readFileSync('app/web/js/m/core/notify.js', 'utf8');
-const CORE_UIHTML = fs.readFileSync('app/web/js/m/core/uihtml.js', 'utf8');
+const NEWM = fs.readFileSync('app/web/js/app/14-ui__form.js', 'utf8');
+const NEWCORE = fs.readFileSync('app/web/js/app/core/form.js', 'utf8');
+const CORE_DATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8');
+const CORE_SCHED = fs.readFileSync('app/web/js/app/core/schedule.js', 'utf8');
+const CORE_STORE = fs.readFileSync('app/web/js/app/core/store.js', 'utf8');
+const CORE_CONST = fs.readFileSync('app/web/js/app/core/constants.js', 'utf8');
+const CORE_NOTIFY = fs.readFileSync('app/web/js/app/core/notify.js', 'utf8');
+const CORE_UIHTML = fs.readFileSync('app/web/js/app/core/uihtml.js', 'utf8');
 const inj = Number(process.env.INJECT || 0);
 
 function inject(src, which) {

@@ -7,7 +7,7 @@ import fs from 'node:fs'; import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url'; import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REF_COMMIT = '9a8cd1d';
-const ref = execFileSync('git', ['show', REF_COMMIT + ':app/src/m/18-services__ai-live.ts'], { cwd: root, encoding: 'utf8' });
+const ref = execFileSync('git', ['show', REF_COMMIT + ':app/src/app/18-services__ai-live.ts'], { cwd: root, encoding: 'utf8' });
 
 /* ตัวอ้างอิง: ตัดวางเฉพาะ remFrom กับ applyProposal จากไฟล์เดิม แล้วให้ global ที่มันพึ่ง (S TODAY find mk daily) มาจากเทสต์ */
 const cut = (name) => { const i = ref.indexOf(name); if (i < 0) throw new Error('ไม่พบ ' + name + ' ในตัวอ้างอิง'); return i; };
@@ -25,7 +25,7 @@ const buildRef = (S, TODAY, nextId) => {
   return new Function('S', 'TODAY', 'find', 'mk', 'daily', 'Date', 'Math', strip(remSrc) + '\n' + strip(apSrc) + '\nreturn applyProposal;')(S, TODAY, find, mk, REF_DAILY, D, M);
 };
 
-const core = await import('file://' + root + '/app/web/js/m/core/aiproposal.js');
+const core = await import('file://' + root + '/app/web/js/app/core/aiproposal.js');
 const inj = Number(process.env.INJECT || 0);
 const TODAY = '2026-10-30';
 const base = () => [

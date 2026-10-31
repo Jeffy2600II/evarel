@@ -15,7 +15,7 @@ try {
   const st = await (async () => { let r = { ready: false, nav: false, auth: false }; for (let i = 0; i < 40; i++) { r = await p.evaluate(() => ({ ready: typeof window.ST === 'object' && !!window.UI, nav: !!document.querySelector('#nav li'), auth: !document.getElementById('auth').hidden || window.UI?.auth?.status === 'in' })); if (r.ready && (r.nav || r.auth)) return r; await p.waitForTimeout(250); } return r; })();
   ok('เครื่องยนต์บูตครบ (ST+UI มาจากบันเดิล)', st.ready, JSON.stringify(st));
   ok('หน้าแรกเรนเดอร์ (nav หรือ auth แสดง)', st.nav || st.auth, JSON.stringify(st));
-  ok('ไม่มี js/m ใน DOM (โหลดเป็นบันเดิลแทน)', await p.evaluate(() => ![...document.querySelectorAll('script[src]')].some(s => s.src.includes('/js/m/'))));
+  ok('ไม่มี js/m ใน DOM (โหลดเป็นบันเดิลแทน)', await p.evaluate(() => ![...document.querySelectorAll('script[src]')].some(s => s.src.includes('/js/app/'))));
   ok('ไม่มี pageerror ตลอดบูต', errs.length === 0, errs.join('; ').slice(0, 300));
   /* ล็อกอินจริง (session จาก API ทดสอบ): แอปเต็มต้องวิ่ง — nav + หน้าวันนี้ + React mount */
   {

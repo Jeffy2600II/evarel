@@ -1,7 +1,7 @@
 // พิสูจน์ F6 (24-services__legacy-import): แผนนำเข้า (planImport จาก core/repo) ให้ผลเหมือนของเดิมทุกกรณี และพฤติกรรมของไฟล์ (import/flag/boot ตอนโหลด) ไม่เปลี่ยน
 // ใช้: node tests/legacy_equiv.test.mjs <24-services__legacy-import.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/24-services__legacy-import.js', 'utf8'), CORE = fs.readFileSync('app/web/js/m/core/repo.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/app/24-services__legacy-import.js', 'utf8'), CORE = fs.readFileSync('app/web/js/app/core/repo.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

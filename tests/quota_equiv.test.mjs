@@ -4,9 +4,9 @@
    ฉีดความผิดพิสูจน์ว่าเทสต์จับได้: INJECT=1..7 node tests/quota_equiv.test.mjs ... (ต้อง exit 1 ทุกค่า) */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 const OLDM = fs.readFileSync(process.argv[2] || '/tmp/quota_m16_selfcontained.js', 'utf8');
-const NEWM = fs.readFileSync('app/web/js/m/16-services__ai-quota.js', 'utf8');
-const NEWCORE = fs.readFileSync('app/web/js/m/core/quota.js', 'utf8');
-const CORE_DATES = fs.readFileSync('app/web/js/m/core/dates.js', 'utf8');
+const NEWM = fs.readFileSync('app/web/js/app/16-services__ai-quota.js', 'utf8');
+const NEWCORE = fs.readFileSync('app/web/js/app/core/quota.js', 'utf8');
+const CORE_DATES = fs.readFileSync('app/web/js/app/core/dates.js', 'utf8');
 const inj = Number(process.env.INJECT || 0);
 
 /* ฉีดความผิดลงโค้ดจริง (ฝั่งใหม่ core เป็นหลัก) ทีละแบบ — เทสต์ต้องจับให้ได้ทุกแบบ */

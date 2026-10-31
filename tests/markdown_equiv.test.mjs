@@ -1,8 +1,8 @@
 // พิสูจน์ F6 (12-ui__primitives -> core/markdown): mdToHtml จาก core ให้ผลเหมือนของเดิมทุกกรณี และยังกัน XSS (เจาะตรงๆ ไม่พึ่งแค่ "เหมือนเดิม")
 // ใช้: node tests/markdown_equiv.test.mjs <12-ui__primitives.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/m/12-ui__primitives.js', 'utf8'), CORE = fs.readFileSync('app/web/js/m/core/markdown.js', 'utf8');
-const UIHTML = fs.readFileSync('app/web/js/m/core/uihtml.js', 'utf8'); /* 12-ui__primitives import pills/skeleton จาก core/uihtml ด้วย (ตัวสร้าง HTML ย้ายแล้ว) ต้องแทน URL ให้โหลดได้ ไม่เกี่ยวกับค่าคาดหวัง */
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('app/web/js/app/12-ui__primitives.js', 'utf8'), CORE = fs.readFileSync('app/web/js/app/core/markdown.js', 'utf8');
+const UIHTML = fs.readFileSync('app/web/js/app/core/uihtml.js', 'utf8'); /* 12-ui__primitives import pills/skeleton จาก core/uihtml ด้วย (ตัวสร้าง HTML ย้ายแล้ว) ต้องแทน URL ให้โหลดได้ ไม่เกี่ยวกับค่าคาดหวัง */
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

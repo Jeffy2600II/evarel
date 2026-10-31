@@ -10,7 +10,7 @@ globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator =
 /* โมดูล 01-07 เป็น ES module จริงแล้ว (base-esm): โหลดด้วย import จากดิสก์ ลำดับตาม _order ให้ shim window ถูกตั้งก่อนไฟล์ window-style (12, 13) อ่าน
    ไฟล์ปัจจุบัน = classic ยังฝังอยู่เป็น fallback ของ production จึงเทียบของจริงที่เสิร์ฟ ไม่ใช่ snapshot */
 const O = globalThis; O.EVAREL_API = 'https://equiv.invalid';
-const M = (f) => import('file://' + root + '/app/web/js/m/' + f + '.js');
+const M = (f) => import('file://' + root + '/app/web/js/app/' + f + '.js');
 for (const f of ['00-head','01-core__constants','02-core__dates','03-core__store','04-data__repo','05-data__auth','06-services__schedule','07-services__stats','12-ui__primitives']) await M(f);
 /* S ของ module 05 (import binding) คือ object เดียวกับ window.S: ห้ามสร้าง O.S ใหม่ทับ (06 import S จาก 05 จะยังเห็นของเก่า) แก้เฉพาะฟิลด์ */
 if (!O.S) O.S = { items: [] };

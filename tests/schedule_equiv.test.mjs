@@ -1,11 +1,11 @@
 // พิสูจน์ F6 (06-services__schedule): โมดูลใหม่ (ตรรกะบริสุทธิ์มาจาก core/schedule) ให้ผลเหมือนโมดูลเดิมทุกชื่อที่ส่งออก
-// ใช้: node tests/schedule_equiv.test.mjs <06-services__schedule.js เดิม>  (ใหม่อ่านจาก app/web/js/m/06-services__schedule.js)
+// ใช้: node tests/schedule_equiv.test.mjs <06-services__schedule.js เดิม>  (ใหม่อ่านจาก app/web/js/app/06-services__schedule.js)
 // ล็อกนาฬิกา + ป้อนรายการหลายรูปแบบผ่าน S (จำลอง 05-data__auth) แล้วเทียบทุกฟังก์ชัน ทุกวันในช่วง 120 วัน
 import { chromium } from 'playwright'; import fs from 'fs';
 import { constantsInlined } from './_constants_inline.mjs';
 const R = p => fs.readFileSync(p, 'utf8');
-const OLD = R(process.argv[2]), NEW = R('app/web/js/m/06-services__schedule.js');
-const SRC = { dates: R('app/web/js/m/02-core__dates.js'), cdates: R('app/web/js/m/core/dates.js'), cschedule: R('app/web/js/m/core/schedule.js'), constants: constantsInlined('.') };
+const OLD = R(process.argv[2]), NEW = R('app/web/js/app/06-services__schedule.js');
+const SRC = { dates: R('app/web/js/app/02-core__dates.js'), cdates: R('app/web/js/app/core/dates.js'), cschedule: R('app/web/js/app/core/schedule.js'), constants: constantsInlined('.') };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

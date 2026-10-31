@@ -2,7 +2,7 @@
 // ใช้: node tests/constants_equiv.test.mjs <01-core__constants.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
 const R = p => fs.readFileSync(p, 'utf8');
-const OLD = R(process.argv[2]), NEW = R('app/web/js/m/01-core__constants.js'), CORE = R('app/web/js/m/core/constants.js');
+const OLD = R(process.argv[2]), NEW = R('app/web/js/app/01-core__constants.js'), CORE = R('app/web/js/app/core/constants.js');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

@@ -32,7 +32,7 @@ for (const per of ['week', 'month']) {
 }
 // หน้ารายการ: ฉบับก่อนหน้า (รับ sections สำเร็จรูป) กับฉบับปัจจุบัน (คำนวณเองจาก items/type/iconOf) ใช้ icon จากตาราง ICONS จริงของ 01-constants
 {
-  const consts = fs.readFileSync(root + '/app/web/js/m/core/constants.js', 'utf8'); const im = consts.match(/const ICONS\s*=\s*(\{[^\n]*?\});/) || consts.match(/const ICONS\s*=\s*(\{[\s\S]*?\n\})/) || consts.match(/const ICONS\s*=\s*(\{[\s\S]*?\});/);
+  const consts = fs.readFileSync(root + '/app/web/js/app/core/constants.js', 'utf8'); const im = consts.match(/const ICONS\s*=\s*(\{[^\n]*?\});/) || consts.match(/const ICONS\s*=\s*(\{[\s\S]*?\n\})/) || consts.match(/const ICONS\s*=\s*(\{[\s\S]*?\});/);
   if (!im) { n++; fail++; console.log('FAIL: ดึงตาราง ICONS ไม่ได้'); }
   else {
     const ICONS = new Function('return ' + im[1])(); const icon = (nm) => `<svg class="ev-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[nm]}"/></svg>`;

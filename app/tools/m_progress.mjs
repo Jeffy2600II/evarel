@@ -17,7 +17,7 @@ import { fileURLToPath } from 'url';
  */
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const M_DIR = process.env.M_DIR || path.resolve(HERE, '../src/m');
+const M_DIR = process.env.M_DIR || path.resolve(HERE, '../src/app'); /* F6 จบ: ชั้นเดิมคือ src/m ย้ายมาเป็น src/app (31 ต.ค. 2026) */
 
 /* ชื่อที่ตรวจด้วยตาแล้วว่าไม่ใช่การพึ่งข้ามไฟล์ (ผลบวกลวงของการค้นชื่อ) 30 ต.ค. 2026
    date   = คีย์วัตถุ / ตัวแปรท้องถิ่น / สตริง ('date') ไม่ใช่ date() ของ 25-actions
@@ -103,7 +103,10 @@ export function analyze(dir = M_DIR) {
 export function report(r) {
   const out = [];
   const bytes = r.files.reduce((a, x) => a + x.bytes, 0);
-  out.push(`ไฟล์ใน m/ เหลือ: ${r.files.length} | ${bytes} ไบต์ | ชั้นพึ่งพา ${r.layers} | วงจรจริง ${r.cycles.length}`);
+  const oldDir = path.resolve(HERE, '../src/m');
+  out.push(fs.existsSync(oldDir)
+    ? `ไฟล์ใน m/ เหลือ: ${r.files.length} | ${bytes} ไบต์ | ชั้นพึ่งพา ${r.layers} | วงจรจริง ${r.cycles.length}`
+    : `F6 จบแล้ว: ไม่มี app/src/m แล้ว (ย้ายเป็น app/src/app ทั้งหมด 31 ต.ค. 2026) | โมดูลใน app/ ปัจจุบัน: ${r.files.length} ไฟล์ | ${bytes} ไบต์ | ชั้นพึ่งพา ${r.layers} | วงจรจริง ${r.cycles.length}`);
   const by = {};
   for (const x of r.files) (by[x.layer] ||= []).push(x);
   for (const k of Object.keys(by).map(Number).sort((a, b) => a - b)) {
@@ -122,5 +125,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const r = analyze();
   if (r.error) { console.error(r.error); process.exit(1); }
   console.log(args.includes('--json') ? JSON.stringify(r, null, 2) : report(r));
-  process.exit(args.includes('--check-empty') && r.files.length > 0 ? 1 : 0);
+  /* "m ว่าง" = ไม่มี app/src/m (ย้ายออกหมดแล้ว) หรือไม่มีไฟล์ .ts ในนั้น */
+  const mGone = !fs.existsSync(path.resolve(HERE, '../src/m')) || (fs.readdirSync(path.resolve(HERE, '../src/m')).filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts')).length === 0);
+  process.exit(args.includes('--check-empty') && !mGone ? 1 : 0);
 }

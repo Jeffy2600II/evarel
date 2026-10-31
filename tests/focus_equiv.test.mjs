@@ -9,12 +9,12 @@ globalThis.Date = class extends RD { constructor(...a){ if(a.length===0) super(F
 globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator = {};
 globalThis.localStorage = { getItem(){ return null; }, setItem(){}, removeItem(){} };
 const O = globalThis; O.EVAREL_API = 'https://equiv.invalid';
-const M = (f) => import('file://' + root + '/app/web/js/m/' + f + '.js');
+const M = (f) => import('file://' + root + '/app/web/js/app/' + f + '.js');
 for (const f of ['00-head','01-core__constants','02-core__dates','03-core__store','04-data__repo','05-data__auth','06-services__schedule','07-services__stats','12-ui__primitives']) await M(f);
 if (!O.S) O.S = { items: [] };
 O.UI = O.UI || {};
 /* 15-core__timer.js เป็นสคริปต์ปกติ (ไม่ใช่ ES module): ประเมินใน global เพื่อให้ focusBody เห็น ST UI find val icon esc dayLab fmtClock */
-(0, eval)(fs.readFileSync(root + '/app/web/js/m/15-core__timer.js', 'utf8') + '\n;globalThis.__focusBody = focusBody;');
+(0, eval)(fs.readFileSync(root + '/app/web/js/app/15-core__timer.js', 'utf8') + '\n;globalThis.__focusBody = focusBody;');
 const classicFn = O.__focusBody;
 if (typeof classicFn !== 'function') { console.log('FAIL โหลด focusBody ของ classic ไม่ได้'); process.exit(1); }
 const rt = fs.readFileSync(root + '/app/web/js/react/runtime.js', 'utf8'); (0, eval)(rt);

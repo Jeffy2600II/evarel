@@ -3,7 +3,7 @@
 // ยิงเหตุการณ์จริงบน DOM จริงของแต่ละฝั่ง | ใช้: node tests/authlogic_equiv.test.mjs <22-views__auth.js เดิม>
 import { chromium } from 'playwright'; import fs from 'fs';
 const [, , A_OLD] = process.argv;
-const rd = (p) => fs.readFileSync(p, 'utf8'); const W = 'app/web/js/m/';
+const rd = (p) => fs.readFileSync(p, 'utf8'); const W = 'app/web/js/app/';
 const SRC = { old: rd(A_OLD), new: rd(W + '22-views__auth.js') };
 const C = { authform: rd(W + 'core/authform.js'), uihtml: rd(W + 'core/uihtml.js'), authviews: rd(W + 'core/authviews.js'), constants: rd(W + 'core/constants.js'), dates: rd(W + 'core/dates.js') };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';

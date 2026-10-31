@@ -163,13 +163,13 @@ for (const j of boxJobs) {
 }
 
 /* ===== F4-ลงทะเบียนเอง: บิลด์เป็นเจ้าของบล็อกลงทะเบียนใน 2 ไฟล์ (ห้ามแก้มือ) =====
-   (1) app/src/m/19-views__settings.ts  -> REACT_BOX_PAGES   (ลำดับโหลด: หน้าเดิมคงเดิมเป๊ะ แล้วตามด้วยกล่องที่เรียงตาม after)
+   (1) app/src/app/19-views__settings.ts  -> REACT_BOX_PAGES   (ลำดับโหลด: หน้าเดิมคงเดิมเป๊ะ แล้วตามด้วยกล่องที่เรียงตาม after)
    (2) app/web/sw.js                    -> รายการแคชของกล่อง
-   ผลคอมไพล์ app/web/js/m/19-views__settings.js ถูก commit ด้วย จึงคอมไพล์คู่ด้วย tsc ตัวเดียวกับ evarel_gate_group.sh (ไม่ให้ผลล้าหลังเงียบๆ)
+   ผลคอมไพล์ app/web/js/app/19-views__settings.js ถูก commit ด้วย จึงคอมไพล์คู่ด้วย tsc ตัวเดียวกับ evarel_gate_group.sh (ไม่ให้ผลล้าหลังเงียบๆ)
    โหมด --check: เทียบอย่างเดียว ไม่เขียนอะไร */
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-const SETTINGS_TS = join(root, 'app/src/m/19-views__settings.ts'), SETTINGS_JS = join(root, 'app/web/js/m/19-views__settings.js'), SW = join(root, 'app/web/sw.js');
+const SETTINGS_TS = join(root, 'app/src/app/19-views__settings.ts'), SETTINGS_JS = join(root, 'app/web/js/app/19-views__settings.js'), SW = join(root, 'app/web/sw.js');
 const BLOCK = (file, txt) => { const m = /(\/\* BOXES:START[^*]*\*\/)([\s\S]*?)(\/\* BOXES:END \*\/)/.exec(txt); if (!m) throw new Error(file + ': ไม่มีเครื่องหมายบล็อก BOXES:START/END (ห้ามลบ)'); return m; };
 export function renderSettingsBlock(names) { return `const REACT_BOX_PAGES:string[]=${JSON.stringify(names)};`; }
 export function renderSwBlock(names) { return names.length ? '\n' + names.map((n) => `  './js/react/${n}.js',`).join('\n') + '\n  ' : '\n  '; }

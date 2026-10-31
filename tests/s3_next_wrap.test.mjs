@@ -31,7 +31,7 @@ t('S4 index.html ต่างจากต้นทางเฉพาะบรร
   if (b !== expect) throw new Error('index.html ต่างจากที่คาดมากกว่าบรรทัดฉีด (อาจถูก Next เขียนทับ)');
 });
 t('S5 ลำดับโมดูลใน index.html และ sw.js ตรง _order.json', () => {
-  const ord = JSON.parse(fs.readFileSync(path.join(OUT, 'js/m/_order.json'), 'utf8')).order.map((o) => o.file);
+  const ord = JSON.parse(fs.readFileSync(path.join(OUT, 'js/app/_order.json'), 'utf8')).order.map((o) => o.file);
   const idx = [...fs.readFileSync(path.join(OUT, 'index.html'), 'utf8').matchAll(/src="js\/m\/([^"]+)"/g)].map((m) => m[1]);
   const sw = [...fs.readFileSync(path.join(OUT, 'sw.js'), 'utf8').matchAll(/'\.\/js\/m\/([^']+)'/g)].map((m) => m[1]);
   if (JSON.stringify(idx) !== JSON.stringify(ord)) throw new Error('index ไม่ตรง'); if (JSON.stringify(sw) !== JSON.stringify(ord)) throw new Error('sw ไม่ตรง');

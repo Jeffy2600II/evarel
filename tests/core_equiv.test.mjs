@@ -9,7 +9,7 @@ const tsc = join(ROOT, 'node_modules/typescript/bin/tsc');
 execFileSync(process.execPath, [tsc, '--ignoreConfig', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler', '--lib', 'dom,esnext', '--outDir', tmp, join(ROOT, 'app/src/core/dates.ts'), join(ROOT, 'app/src/core/schedule.ts'), join(ROOT, 'app/src/core/stats.ts')], { stdio: 'inherit' });
 writeFileSync(join(tmp, 'package.json'), '{"type":"module"}');
 for (const f of ['dates', 'schedule', 'stats']) { const p = join(tmp, f + '.js'); const t = (await import('node:fs')).readFileSync(p, 'utf8').replace(/from '\.\/(\w+)'/g, "from './$1.js'"); writeFileSync(p, t); }
-const orig = (f) => execFileSync('git', ['show', `${BASE}:app/web/js/m/${f}.js`], { cwd: ROOT, encoding: 'utf8' }).replace(/^"use strict";?/, '');
+const orig = (f) => execFileSync('git', ['show', `${BASE}:app/web/js/app/${f}.js`], { cwd: ROOT, encoding: 'utf8' }).replace(/^"use strict";?/, '');
 const D = await import(pathToFileURL(join(tmp, 'dates.js'))), S = await import(pathToFileURL(join(tmp, 'schedule.js'))), T = await import(pathToFileURL(join(tmp, 'stats.js')));
 const fs = { readFileSync: (p) => orig(p.split('/').pop().replace(/\.js$/, '')) };
 const FIXED = new Date('2026-10-17T05:30:00Z');
