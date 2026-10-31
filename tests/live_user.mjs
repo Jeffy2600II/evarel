@@ -1,10 +1,7 @@
 /* ตัวช่วยกลางของประตูทดสอบ: สร้างผู้ใช้ทดสอบที่ยืนยันแล้วผ่าน Supabase Admin API
    ล็อกอินผ่าน API จริง (evarel-api-forge) แล้วคืนฟังก์ชันลบผู้ใช้ทิ้ง ไม่ยิงอีเมล ไม่ทิ้งขยะ */
-import fs from 'fs'; import { fileURLToPath } from 'url'; import { dirname, join } from 'path';
-/* หาไฟล์ env: เครื่องงานหลักเก็บ repo ไว้ที่ /app แต่เครื่องอื่นใช้ repo-local .agents/.env ได้เหมือนกัน (ลอง /app ก่อนเสมอ ไม่เปลี่ยนพฤติกรรมเดิม) */
-const envPath = ['/app/.agents/.env', join(dirname(fileURLToPath(import.meta.url)), '..', '.agents', '.env')].find(p => { try { fs.accessSync(p); return true; } catch { return false; } });
-if (!envPath) throw new Error('ไม่พบ .agents/.env ทั้งที่ /app/.agents/.env และ <repo>/.agents/.env (ดู docs/plan/factory-steps/F6-m-layer-order.md หัวข้อประตูภาพ)');
-const envText = fs.readFileSync(envPath, 'utf-8');
+import fs from 'fs'; import { readEnvText } from './_env.mjs';
+const envText = readEnvText();
 const pick = k => { const m = envText.match(new RegExp('^\\s*(?:export\\s+)?' + k + '\\s*=\\s*(.*)$', 'm')); return m ? m[1].trim().replace(/^\$'(.*)'$/s, '$1').replace(/^["']|["']$/g, '') : ''; };
 export const SB = 'https://vdbmwmmsfrgpaauzspup.supabase.co';
 export const API = process.env.EVAREL_TEST_API || 'https://evarel-api-forge.nontakorn2600.workers.dev';

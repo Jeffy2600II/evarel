@@ -1,6 +1,7 @@
+import { readEnvText } from './_env.mjs';
 /* ทดสอบบนเว็บที่ deploy จริง + Worker จริง + Groq จริง + MemoryLake จริง (ไม่จำลองอะไร) ผู้ใช้ทดสอบถูกลบหลังจบ */
 import { chromium } from 'playwright'; import fs from 'fs';
-const vals={};for(const l0 of fs.readFileSync('/app/.agents/.env','utf8').split('\n')){let l=l0.trim().replace(/^export /,'');const i=l.indexOf('=');if(i<0)continue;let v=l.slice(i+1).trim();if(v.startsWith("$'")&&v.endsWith("'"))v=v.slice(2,-1);vals[l.slice(0,i)]=v}
+const vals={};for(const l0 of readEnvText().split('\n')){let l=l0.trim().replace(/^export /,'');const i=l.indexOf('=');if(i<0)continue;let v=l.slice(i+1).trim();if(v.startsWith("$'")&&v.endsWith("'"))v=v.slice(2,-1);vals[l.slice(0,i)]=v}
 const K=vals.SUPABASE_SERVICE_KEY,SB='https://vdbmwmmsfrgpaauzspup.supabase.co',APP=process.argv[2]||'https://evarel-v13s-test.nontakorn2600.workers.dev/';
 const adm={apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json'};
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/',exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';

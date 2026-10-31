@@ -1,7 +1,8 @@
+import { readEnvText } from './_env.mjs';
 /* ทดสอบการ์ดความจำ (จำไว้/ลืม) ในเบราว์เซอร์จริง
    ล็อกอิน Supabase จริง (ผู้ใช้ทดสอบ แล้วลบ) แต่ดัก /ai/chat และ /ai/memory ด้วย page.route -> ทดสอบ UI ได้ก่อน deploy Worker */
 import { chromium } from 'playwright'; import fs from 'fs';
-const vals = {}; for (const l0 of fs.readFileSync('/app/.agents/.env', 'utf8').split('\n')) { let l = l0.trim().replace(/^export /, ''); const i = l.indexOf('='); if (i < 0) continue; let v = l.slice(i + 1).trim(); if (v.startsWith("$'") && v.endsWith("'")) v = v.slice(2, -1); vals[l.slice(0, i)] = v; }
+const vals = {}; for (const l0 of readEnvText().split('\n')) { let l = l0.trim().replace(/^export /, ''); const i = l.indexOf('='); if (i < 0) continue; let v = l.slice(i + 1).trim(); if (v.startsWith("$'") && v.endsWith("'")) v = v.slice(2, -1); vals[l.slice(0, i)] = v; }
 const K = vals.SUPABASE_SERVICE_KEY, SB = 'https://vdbmwmmsfrgpaauzspup.supabase.co', API = 'https://evarel-api-b-test.nontakorn2600.workers.dev', APP = process.argv[2] || 'http://localhost:8779/index.html';
 const adm = { apikey: K, Authorization: 'Bearer ' + K, 'Content-Type': 'application/json' };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/', exe = d + fs.readdirSync(d).find((x) => x.startsWith('chrome')) + '/chrome-headless-shell';

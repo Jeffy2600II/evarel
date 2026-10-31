@@ -1,5 +1,6 @@
+import { readEnvText } from './_env.mjs';
 import { chromium } from 'playwright'; import fs from 'fs';
-const vals={}; for(let l of fs.readFileSync('/app/.agents/.env','utf8').split('\n')){l=l.trim().replace(/^export /,'');const i=l.indexOf('=');if(i>0){let v=l.slice(i+1).trim();if(v.startsWith("$'")&&v.endsWith("'"))v=v.slice(2,-1);vals[l.slice(0,i)]=v}}
+const vals={}; for(let l of readEnvText().split('\n')){l=l.trim().replace(/^export /,'');const i=l.indexOf('=');if(i>0){let v=l.slice(i+1).trim();if(v.startsWith("$'")&&v.endsWith("'"))v=v.slice(2,-1);vals[l.slice(0,i)]=v}}
 const K=vals.SUPABASE_SERVICE_KEY,SB='https://vdbmwmmsfrgpaauzspup.supabase.co',API='https://evarel-api-b-test.nontakorn2600.workers.dev',APP='http://localhost:8779/index.html';
 const j=async(m,u,b,h={})=>{const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json',...h},body:b?JSON.stringify(b):undefined});const t=await r.text();try{return JSON.parse(t)}catch{return t}};
 const adm={apikey:K,Authorization:'Bearer '+K};
