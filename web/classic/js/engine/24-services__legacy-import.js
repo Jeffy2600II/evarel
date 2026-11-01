@@ -119,8 +119,13 @@ async function boot() {
         return;
     }
     await loadApp();
-    startLiveSync();
-    pushAutoSync();
+    try {
+        startLiveSync();
+        pushAutoSync();
+    }
+    catch (err) {
+        console.warn('live sync', err);
+    }
 }
 boot();
 /* moved by move_defs (evarel-ts-1f) */
@@ -197,5 +202,11 @@ catch (err) {
     btn.innerHTML = old;
     toast(AU_MSG[err.code] || AU_MSG.unknown);
 } }
-async function enterApp(user) { ST.USER = user; await loadApp(); startLiveSync(); pushAutoSync(); }
+async function enterApp(user) { ST.USER = user; await loadApp(); try {
+    startLiveSync();
+    pushAutoSync();
+}
+catch (err) {
+    console.warn('live sync', err);
+} }
 Object.assign(window, { IMPORT_FLAG, readLegacyItems, importLegacy, maybeImportLegacy, IMPORT_PENDING, runImport, loadApp, boot, authSubmit, authGoogle, enterApp });

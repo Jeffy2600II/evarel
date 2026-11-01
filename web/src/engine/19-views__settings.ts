@@ -40,10 +40,14 @@ async function usageRefresh(){try{const q=await quotaFetch();ST.QUOTA=q||{unknow
 function settingsOpen(){const MT=(window as any).EvarelMount;
  if(MT?.ready('settings')){MT.unmountOne('settings');let sp=pageOf('settings');if(!sp)sp=openPage('',undefined,'settings');sp.innerHTML='';MT.mountAt(sp,'settings',settingsProps());usageRefresh();versionRefresh();return}
  const html=settingsHTML();const sp=pageOf('settings');if(sp)patch(sp,html);else openPage(html,undefined,'settings');usageRefresh();versionRefresh()}
+/* คงตำแหน่งเลื่อนข้ามการวาดใหม่: mountAt สร้าง DOM หน้าใหม่ทั้งก้อน (flushSync) ถ้าไม่จับ scrollTop เก็บก่อน
+   ทุกครั้งที่เปลี่ยนธีม/อนิเมชั่น/ลงทะเบียนแจ้งเตือน หน้าจะเด้งกลับไปขึ้นบนสุดเสมอ — จับค่าเก่า วาดใหม่ แล้วคืนค่าทันที */
 function settingsRepaint(){const MT=(window as any).EvarelMount;
  const sp=pageOf('settings');if(!sp)return;
- if(MT?.ready('settings')){MT.mountAt(sp,'settings',settingsProps());return}
- patch(sp,settingsHTML())}
+ const tops=[...sp.querySelectorAll('.ev-page-scroll')].map((e:any)=>e.scrollTop),spTop=sp.scrollTop;
+ const restore=()=>{sp.querySelectorAll('.ev-page-scroll').forEach((e:any,i:number)=>{e.scrollTop=tops[i]??0});sp.scrollTop=spTop};
+ if(MT?.ready('settings')){MT.mountAt(sp,'settings',settingsProps());restore();return}
+ patch(sp,settingsHTML());restore()}
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name){return new Promise((ok,no)=>{const W=window as any;if(name==='runtime'&&W.EvarelReact)return ok(0);/* index โหลด runtime ก่อนบูตแล้ว ห้าม execute ซ้ำเพราะจะเกิด React สองชุด */
  const k=`script[data-ev-react="${name}"]`;if(document.querySelector(k))return ok(0);

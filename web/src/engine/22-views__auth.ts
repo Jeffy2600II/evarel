@@ -26,7 +26,10 @@ document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t
 document.addEventListener('focusout',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const h=mailHint(t.value),b=$('e-email');
  if(h&&b){const u=h.u,fix=h.fix;b.hidden=false;b.dataset.tone='hint';b.innerHTML=`<span>หมายถึง ${esc(u)}@${fix} หรือเปล่า?</span><button type="button" data-act="au-fixmail" data-id="${esc(u)}@${fix}">ใช้อันนี้</button>`}});
 
-async function doSignOut(del){stopLiveSync();try{if(del)await Auth.deleteAccount();else await Auth.signOut()}catch(err){console.warn('signout',err);toast(AU_MSG.unknown);return}
+async function doSignOut(del){
+ /* ออกจากระบบต้องสำเร็จเสมอ: ตัดการเชื่อม realtime แบบผ่อนปรน (ถ้าโมดูล live-sync ยังไม่พร้อมก็ข้าม ไม่ให้พังทั้ง flow) */
+ try{(window as any).stopLiveSync?.()}catch(err){console.warn('stopLiveSync',err)}
+ try{if(del)await Auth.deleteAccount();else await Auth.signOut()}catch(err){console.warn('signout',err);toast(AU_MSG.unknown);return}
  while(LAYERS.length)popLayer();closePop();destroyCal('main');destroyCal('habit');ST.DETAIL=null;S.items=[];ST.CH={list:[],cur:null};ST.TM=null;ST.USER=null;
  Object.assign(UI,{tab:'today',date:TODAY,type:'all',weekOff:0,loading:true,error:null});UI.auth={status:'out',screen:'welcome',email:'',cool:0};$('auth').dataset.screen='';ST._render();if(del)toast('ลบบัญชีแล้ว')}
 

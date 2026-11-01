@@ -84,7 +84,13 @@ document.addEventListener('focusout', e => {
     }
 });
 async function doSignOut(del) {
-    stopLiveSync();
+    /* ออกจากระบบต้องสำเร็จเสมอ: ตัดการเชื่อม realtime แบบผ่อนปรน (ถ้าโมดูล live-sync ยังไม่พร้อมก็ข้าม ไม่ให้พังทั้ง flow) */
+    try {
+        window.stopLiveSync?.();
+    }
+    catch (err) {
+        console.warn('stopLiveSync', err);
+    }
     try {
         if (del)
             await Auth.deleteAccount();

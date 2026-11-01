@@ -97,16 +97,22 @@ function settingsOpen() {
     usageRefresh();
     versionRefresh();
 }
+/* คงตำแหน่งเลื่อนข้ามการวาดใหม่: mountAt สร้าง DOM หน้าใหม่ทั้งก้อน (flushSync) ถ้าไม่จับ scrollTop เก็บก่อน
+   ทุกครั้งที่เปลี่ยนธีม/อนิเมชั่น/ลงทะเบียนแจ้งเตือน หน้าจะเด้งกลับไปขึ้นบนสุดเสมอ — จับค่าเก่า วาดใหม่ แล้วคืนค่าทันที */
 function settingsRepaint() {
     const MT = window.EvarelMount;
     const sp = pageOf('settings');
     if (!sp)
         return;
+    const tops = [...sp.querySelectorAll('.ev-page-scroll')].map((e) => e.scrollTop), spTop = sp.scrollTop;
+    const restore = () => { sp.querySelectorAll('.ev-page-scroll').forEach((e, i) => { e.scrollTop = tops[i] ?? 0; }); sp.scrollTop = spTop; };
     if (MT?.ready('settings')) {
         MT.mountAt(sp, 'settings', settingsProps());
+        restore();
         return;
     }
     patch(sp, settingsHTML());
+    restore();
 }
 /* โหลดทีละไฟล์ตามลำดับ runtime ก่อนแล้วหน้า (หน้าอ่าน window.EvarelReact ตอนรัน) พลาดไฟล์ใดก็ไม่เป็นไร ใช้ของเดิมต่อ */
 function loadReactFile(name) {

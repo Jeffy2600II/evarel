@@ -64,6 +64,9 @@ export default function AppBoot() {
       () => import('../../../classic/js/engine/20-services__calendar.js'),
       () => import('../../../classic/js/engine/21-views__detail.js'),
       () => import('../../../classic/js/engine/22-views__auth.js'),
+      /* 22-views__live-sync ตกหล่นจากลำดับบูตเดิมของ index.html (ไบต์ N1) — ไม่โหลด = stopLiveSync เป็น undefined
+         ทำให้กดออกจากระบบไม่ตอบสนอง (doSignOut โยน ReferenceError เงียบ ๆ) และ realtime sync/push auto-sync ไม่เริ่มหลังล็อกอิน */
+      () => import('../../../classic/js/engine/22-views__live-sync.js'),
       () => import('../../../classic/js/engine/23-render.js'),
       () => import('../../../classic/js/engine/24-services__legacy-import.js'),
       () => import('../../../classic/js/engine/25-actions.js'),
