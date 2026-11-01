@@ -46,7 +46,7 @@ export function generateFactoryMap(rootDir = '.') {
   const absRootDir = path.resolve(rootDir);
   const zones = ['web/pages', 'web/shared', 'web/styles', 'web/data', 'tools/factory'];
 
-  let md = `# แผนที่โรงงาน Frontend Evarel (Factory Map)\n\n`;
+  let md = `# แผนที่โรงงาน Frontend Ordivel (Factory Map)\n\n`;
   md += `> สร้างอัตโนมัติด้วย \`node tools/factory/mapper.mjs\` เมื่อโค้ดเปลี่ยน ห้ามแก้มือ\n\n`;
   md += `## โครงสร้างภาพรวม 5 โซน\n\n`;
 
