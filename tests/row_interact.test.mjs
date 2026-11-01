@@ -39,8 +39,10 @@ try {
   const opened = await p.evaluate(() => ({ focus: !!document.querySelector('.ev-focus, [data-focus], #focusLayer, .ev-timer'), url: location.hash, layers: document.querySelectorAll('[role="dialog"], .ev-layer, .ev-sheet').length }));
   t('timer กดแล้วเปิดหน้าจับเวลา/ชั้นใหม่', opened.focus || opened.layers > 0, JSON.stringify(opened));
   // ปิดหน้าจับเวลาก่อน ไม่งั้น dialog บังปุ่มอื่น
-  await press('#page [data-act="close"]'); await p.waitForFunction(() => !document.querySelector('#page[data-open="true"]'), null, { timeout: 5000 }).catch(() => null); await p.waitForTimeout(400);
-  t('ปิดหน้าจับเวลาด้วยปุ่มกลับได้', await p.evaluate(() => !document.querySelector('#page[data-open="true"]')), '');
+  const pagesBefore = await p.evaluate(() => window.LAYERS.length); /* สแตกชั้นของแอปเอง ไม่เดาจาก class */
+  await p.evaluate(() => { const top = window.LAYERS[window.LAYERS.length - 1]?.el; top?.querySelector('[data-act="close"]')?.click(); });
+  await p.waitForFunction((n) => window.LAYERS.length < n, pagesBefore, { timeout: 5000 }).catch(() => null); await p.waitForTimeout(400);
+  t('ปิดหน้าจับเวลาด้วยปุ่มกลับได้', await p.evaluate((n) => window.LAYERS.length < n, pagesBefore), '');
   // วันอนาคต: ปุ่มต้อง disabled
   await press('[data-act="wk"][data-id="1"]'); await p.waitForTimeout(700); await p.evaluate(() => document.querySelector('.ev-week button').click()); await p.waitForTimeout(700);
   const fut = await p.evaluate(() => ({ chk: [...document.querySelectorAll('.ev-check')].map(e => e.disabled), inc: [...document.querySelectorAll('[data-act="inc"]')].map(e => e.disabled) }));

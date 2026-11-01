@@ -91,6 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # ด่านตรวจตารางไฟล์อ้างอิงต้องอ่านประวัติเพื่อ git show commit ฐาน (โคลนตื้นจะหาของไม่เจอ)
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: ตรวจกติกากล่อง BOX-01..06 (ไม่ผ่าน = ไม่ปล่อย)
@@ -125,6 +126,8 @@ jobs:
         run: python3 tools/plan_check.py
       - name: เกตแคช core ของ service worker (import ./core/ ทุกตัวต้องอยู่ใน CORE ของ sw.js ไม่งั้นออฟไลน์พังเงียบ)
         run: node tests/m_core_import.test.mjs
+      - name: ตารางไฟล์อ้างอิงของเทสต์เทียบยังใช้ได้ (tests/refs.lock.json -> git commit ฐาน)
+        run: node scripts/gen-equiv-refs.mjs --check
       - name: สรุปผลขึ้นหน้า run
         if: always()
         run: |
