@@ -88,3 +88,25 @@ node tests/live_user.mjs            # ล็อกอินผู้ใช้ท
 
 `node tests/domains.test.mjs` วิ่งใน CI แล้ว (งาน factory) ตรวจทุกไฟล์ที่ส่งถึงผู้ใช้และไฟล์ตั้งค่า
 ถ้าใครก๊อปโค้ดยุคเก่ากลับมา จะตกพร้อมบอกไฟล์และบรรทัด ไม่ปล่อยให้ยิงไปโดเมนที่ปิดไปแล้วแบบเงียบ ๆ
+
+## 9. ล็อกอิน Google หลังตั้งโปรเจกต์ใหม่ (ทำแล้ว 1 พ.ย. 2026)
+
+โปรเจกต์ Google Cloud ถูกตั้งใหม่ชื่อ `ordivel` รหัสลูกค้าจึงเปลี่ยน ฝั่ง Supabase คือที่เก็บรหัสจริง
+ไม่ได้อยู่ในรีโปนี้ (รีโปไม่มีความลับ) ค่าที่ตั้งไว้แล้ว
+
+| ที่ | ค่า |
+|---|---|
+| OAuth client (ใหม่) | `1040076904923-u8jrggkv954mdlov3i2nn314sauor02i.apps.googleusercontent.com` |
+| Authorized redirect URI | `https://vdbmwmmsfrgpaauzspup.supabase.co/auth/v1/callback` |
+| JavaScript origins | `https://ordivel-app.nontakorn2600.workers.dev`, `https://ordivel-app-forge.nontakorn2600.workers.dev` |
+| Supabase `site_url` | `https://ordivel-app.nontakorn2600.workers.dev/` |
+| Supabase `uri_allow_list` | production, forge และ `http://localhost:8779/**` |
+
+ตรวจว่าเส้นล็อกอินชี้รหัสใหม่จริง (คำสั่งเดียว ไม่ต้องเปิดเบราว์เซอร์)
+
+```
+curl -s -o /dev/null -D - "https://vdbmwmmsfrgpaauzspup.supabase.co/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Fordivel-app-forge.nontakorn2600.workers.dev%2F" | grep -i location
+```
+
+ต้องเห็น `client_id=1040076904923-...` ถ้ายังเห็นรหัสเดิมแปลว่า Supabase ยังไม่ถูกเปลี่ยน
+รหัสลับ (`GOCSPX-...`) เก็บที่ Supabase และใน `.agents/.env` ของเครื่องএইเท่านั้น ห้าม commit
