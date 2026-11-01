@@ -1,6 +1,6 @@
 ---
 version: alpha
-name: Evarel
+name: Ordivel
 description: "Personal life-management PWA (tasks, routines, calendar, AI). Phone-first, Thai-first, offline-first. Feel — 'Precision with warmth': Linear/Vercel discipline with soft geometry and a calm, friendly face."
 omitted: []
 colors:
@@ -176,15 +176,15 @@ components:
     rounded: "{rounded.card}"
 ---
 
-# Evarel — DESIGN.md
+# Ordivel — DESIGN.md
 
-> Tokens are **normative** — the machine-readable block above is the decision of record; prose explains why values exist and how to apply them. Validate with `npx @google/design.md lint DESIGN.md`, compare versions with `npx @google/design.md diff`. Sections follow the [Google DESIGN.md spec](https://github.com/google-labs-code/design.md) order; Evarel-specific governance appendices live after the canonical sections.
+> Tokens are **normative** — the machine-readable block above is the decision of record; prose explains why values exist and how to apply them. Validate with `npx @google/design.md lint DESIGN.md`, compare versions with `npx @google/design.md diff`. Sections follow the [Google DESIGN.md spec](https://github.com/google-labs-code/design.md) order; Ordivel-specific governance appendices live after the canonical sections.
 >
 > Two lint notes, both intentional: (1) the `-dark` color tokens are **theme-flat mirrors** — the spec has one `colors` map, and the `[data-theme="dark"]` block in `design.css` maps each `-dark` token onto the same components (hence lint counts them "unreferenced"); (2) hover/focus/scrim/border details live in prose, not the components map, because the schema models only the base pair — they remain fully specified below.
 
 ## Overview
 
-Evarel is a personal life-management PWA — tasks, routines, calendar, and an AI assistant — for one user, on a phone, in Thai, offline-first. The design language is **"Precision with warmth."** The skeleton is Linear/Vercel: flat surfaces, hairline borders, restrained color, tight type. The skin is Evarel: generous radius, spring confirmations, the system + Noto Sans Thai type stack, a calm near-white canvas. The result reads engineered, not decorated — friendly because of geometry and rhythm, never because of ornament.
+Ordivel is a personal life-management PWA — tasks, routines, calendar, and an AI assistant — for one user, on a phone, in Thai, offline-first. The design language is **"Precision with warmth."** The skeleton is Linear/Vercel: flat surfaces, hairline borders, restrained color, tight type. The skin is Ordivel: generous radius, spring confirmations, the system + Noto Sans Thai type stack, a calm near-white canvas. The result reads engineered, not decorated — friendly because of geometry and rhythm, never because of ornament.
 
 | # | Principle | In practice |
 |---|---|---|
@@ -292,6 +292,19 @@ The radius scale is the brand's signature (DD-2). **One radius per component cla
 
 Icons: 24px grid, **1.75px stroke**, round caps and joins (soft = on-brand), inline SVG inside the components. Inactive `muted`; active `accent` (the tab bar pairs an active icon with an `accent-text` label; filled variant allowed for the active tab — outline → filled is a cheap, legible "you are here"). Emoji are never UI icons — they live only inside user-generated content.
 
+## Brand assets
+
+The platform symbol and name live in `brand/` — the designer's original pack, **byte-immutable** (verify with `cmp` against `brand/1-ordinal/` before any commit that touches logo files). Symbol = symbol, name = name: the symbol never substitutes the letter "O".
+
+| Asset | Immutable source | Shipped copy & use |
+|---|---|---|
+| App icon (any) | `brand/1-ordinal/png/appicon-violet-1024.png` | `icons/appicon-violet-1024.png` — manifest `purpose: any` + apple-touch-icon |
+| App icon (maskable) | `brand/1-ordinal/png/circle-violet-1024.png` | `icons/circle-violet-1024.png` — manifest `purpose: maskable` |
+| Favicons | `brand/1-ordinal/favicon.ico` + `png/favicon-{16,32,48,256}.png` | `icons/favicon.*` — head links; `favicon-256` is the Web Push icon/badge |
+| Symbol (gradient) | `brand/1-ordinal/svg/mark-gradient.svg` | `icons/mark-gradient.svg` — the `EV_MARK` in the auth hero and both boot splashes |
+
+Symbol DNA (do not redraw): the O is "your circle of days"; the pearl dot ("next item") sits at 25°, the empty slot at 162.5° — exactly 137.5° apart (golden angle). The artwork's indigo-violet sits in the same family as `{colors.primary}`; **recoloring or resizing the artwork is forbidden** — theming happens around the logo, never inside it.
+
 ## Components
 
 Motion (component behavior): `--t-fast` 180ms for presses, toggles, chips; 240ms for content changes and tab switches; 320ms for sheet enter/exit. Default curve `out-expo` `cubic-bezier(.22,1,.36,1)` for everything that enters or moves; `spring` `cubic-bezier(.34,1.56,.64,1)` **only** for affirmative micro-moments (task done, chip selected, quota saved) — once per moment. Exits are always faster than enters (≤160ms, no spring). Honor `prefers-reduced-motion` by collapsing to 80ms opacity fades.
@@ -334,13 +347,13 @@ Rules that settle real edits — when a decision isn't in the tokens, this secti
 
 ---
 
-# Appendices — Evarel governance (repo workflow)
+# Appendices — Ordivel governance (repo workflow)
 
 *The sections above are the design system an agent implements. This appendix is how the repo keeps it true.*
 
 ## A1. How this file works (governance)
 
-Four artifacts touch Evarel's visual language. Exactly one of them is the source of truth:
+Four artifacts touch Ordivel's visual language. Exactly one of them is the source of truth:
 
 ```
 DESIGN.md  ── semantic rules (this file; the ONLY place decisions are made)
@@ -372,7 +385,8 @@ DESIGN.md  ── semantic rules (this file; the ONLY place decisions are made)
 | DD-5 | Typography ramp locked (§ Typography); Thai-safe tracking floor −0.01em; line-height floors 1.6/1.3; tabular numerals | 2026-10-30 |
 | DD-6 | Motion table locked (§ Components): out-expo default, spring reserved for affirmative moments, reduced-motion honored | 2026-10-30 |
 | DD-7 | Font stack locked to the shipped system stack (`system-ui … 'Noto Sans Thai' …`) — no webfont, no `@font-face`, no font files. The "IBM Plex Sans Thai" claim is retired as an error (D-008) | 2026-11-01 |
-| DD-8 | This file adopts the Google DESIGN.md format: YAML token front matter (normative) + canonical section order + components map — machine-lintable with `npx @google/design.md lint` while keeping Evarel's governance appendices. Same change: § Components destructive button aligned with the measured § Colors consequences (`--c-danger-soft` fill + ink text; solid `--c-danger` = icon/fill only — it was 3.91:1 behind a 15px label) | 2026-11-01 |
+| DD-8 | This file adopts the Google DESIGN.md format: YAML token front matter (normative) + canonical section order + components map — machine-lintable with `npx @google/design.md lint` while keeping Ordivel's governance appendices. Same change: § Components destructive button aligned with the measured § Colors consequences (`--c-danger-soft` fill + ink text; solid `--c-danger` = icon/fill only — it was 3.91:1 behind a 15px label) | 2026-11-01 |
+| DD-9 | Platform renamed **Evarel → Ordivel**. Brand assets shipped as byte-exact copies of the designer pack stored under `brand/` (§ Brand assets; the folder README holds the immutability contract): icon set (any + maskable), favicons, gradient symbol in the auth hero and boot splashes. Every user-facing name string switched (manifest, titles, per-tab `document.title`, e-mail sender/subjects, push title, AI persona/drawer); technical identifiers and storage keys (`evarel-*`, `EvarelMount`, repo URLs) deliberately stay for data continuity. Resolves the launcher-icon residual of D-005 | 2026-11-01 |
 
 ## A3. Drift log (burn down as part of V1)
 
@@ -382,7 +396,7 @@ DESIGN.md  ── semantic rules (this file; the ONLY place decisions are made)
 | D-002 | `tailwind.config.cjs` cites `archive/design/master-demo-v29.html`; `archive/design/` holds v2 / v7 / v12 / v12-intended / `Evarel v24.html` only — **v29 still does not exist** (re-verified 2026-11-01) | **Resolved 2026-11-01 (citation half):** `tailwind.config.cjs` and the `design.css` headers now cite `archive/design/Evarel v24.html`. Re-issuing a fresh single-file master demo stays open as optional polish |
 | D-003 | (2026-10-30) Tailwind maps `fill` → `var(--c-fill)` but tokens never defined it | **Resolved (definition only)** — `--c-fill` exists (light `#EDEDF1`, dark `#262630`), but those hexes differ from the decision-of-record (`#F0F0F4`/`#23232C`). Reconcile one side during the D-006 consolidation |
 | D-004 | (2026-10-30) token file header cited demo **v2** — stale provenance | **Resolved 2026-11-01:** both `design.css` headers now cite `archive/design/Evarel v24.html` and note the real demo chain (v2 → v7 → v12 → v24); the phantom v3/v29 mentions are gone (tailwind.config.cjs fixed in the same commit) |
-| D-005 | Accent family mismatch across artifacts (violet in app, indigo decided) | **Resolved 2026-11-01 (one commit, four artifacts):** light `#4F46E5`/`#6366F1`/`#EEF2FF`, dark `#818CF8`/`#A5B4FC`/`#23234A`/`#8386F6`; dark `--c-on-accent:#0E0E12` added (DD-3); `--c-ink-a/b/c` hue-shifted to indigo with luminance kept — light `#3A2FF5/#473CFA/#4136FF`, dark `#232C80/#37419F/#515CCC` (white-on-gradient ≥6.37 light / ≥5.60 dark); `--shadow-fab` and the v16 `--c-accent-soft`/`--c-halo` re-tinted; `theme-color` (index.html + next layout) and manifest `theme_color` updated; MOLD-TABLE re-tinted. Residuals: launcher PNG icons still carry the violet era (re-draw later); v17 `--c-on-ok` belongs to the D-006 consolidation |
+| D-005 | Accent family mismatch across artifacts (violet in app, indigo decided) | **Resolved 2026-11-01 (one commit, four artifacts):** light `#4F46E5`/`#6366F1`/`#EEF2FF`, dark `#818CF8`/`#A5B4FC`/`#23234A`/`#8386F6`; dark `--c-on-accent:#0E0E12` added (DD-3); `--c-ink-a/b/c` hue-shifted to indigo with luminance kept — light `#3A2FF5/#473CFA/#4136FF`, dark `#232C80/#37419F/#515CCC` (white-on-gradient ≥6.37 light / ≥5.60 dark); `--shadow-fab` and the v16 `--c-accent-soft`/`--c-halo` re-tinted; `theme-color` (index.html + next layout) and manifest `theme_color` updated; MOLD-TABLE re-tinted. Residuals: launcher PNG icons replaced 2026-11-01 with the Ordivel brand set (DD-9); v17 `--c-on-ok` belongs to the D-006 consolidation |
 | D-006 | **Open (2026-11-01; extended same day):** `design.css` contains **three** competing token layers — the TOKENS block (L7: radius 26/32, spacing 8/16/24/32, `--nav-h` 60), the "v16 design pass" (L431: radius 32/38, spacing 10/20/28/40, `--nav-h` 64, softer neutrals), and a semantic-text pass (L532: `--c-ok` `#0E8A55`/`#3DD598`, `--c-muted` `#65637A`/`#A3A1B5`, `--c-line` `#E1DFEB`/`#363544`, plus text-safe tokens `--c-ok-text`/`--c-warn-text`/`--c-danger-text`/`--c-danger-fill`/`--c-line-ctl`/`--c-halo` that this doc does not yet govern). The later blocks win the cascade, so the *effective* values contradict DD-2, § Colors and § Layout | Consolidate into ONE canonical block aligned with the decision log — or re-decide via A2 if the later direction is preferred (owner's call). Introduce the missing `--r-chip`/`--r-control` tokens and adopt or retire the text-safe tokens in the same commit |
 | D-007 | **Open (2026-11-01):** navigation drift — the implemented router (`web/classic/js/route.js`) uses hash routes: tabs `#/today #/all #/calendar #/stats`, full pages `#/ai #/settings`; auth is an in-app layer (no `/login` route). SITEMAP §1 specifies path routes incl. `/tasks` and `/routines`, and § Components specifies a Today·Tasks·Calendar·AI tab bar | One reconciling decision: adopt the implemented navigation into SITEMAP/§ Components, or change the router to the spec. Until then, SITEMAP §1 carries a verified implementation note |
 | D-008 | **Resolved (2026-11-01):** typography drift — this doc claimed "IBM Plex Sans Thai (already the app's `--font`)"; false on both counts. The shipped `--font` is `system-ui,…,'Noto Sans Thai',…` with the owner's system-font decision recorded in `extra.css` (2026-10-23). Body line-height ships at 1.45, not the 1.6 floor stated in § Typography | § Typography corrected to the system stack (**DD-7**); 1.45 is parity-locked through 2026-11-02, the 1.6 floor is re-decided at the D-006 consolidation. `tailwind.config.cjs` `fontFamily` now maps the DD-7 system stack |
@@ -397,5 +411,6 @@ DESIGN.md  ── semantic rules (this file; the ONLY place decisions are made)
 - `web/classic/styles/app.css` — compiled component CSS (build artifact of `scripts/build-css.mjs`; never edit by hand)
 - `tailwind.config.cjs` — utility mapping (colors → CSS vars; radius; `--col-max:480px`; timing curves)
 - `archive/design/*.html` — visual reference chain (v2 / v7 / v12 / `Evarel v24`)
+- `brand/1-ordinal/` — the immutable Ordivel logo pack (v8 premium edition) + `ordivel-1-ordinal-full.zip` backup; shipped copies mapped in § Brand assets
 - WCAG 2.1 contrast math: computed with a contrast script on 2026-10-30, values reproduced in § Colors
 - Format reference: [google-labs-code/design.md](https://github.com/google-labs-code/design.md) (Apache-2.0, Google Labs) · catalog of real-site DESIGN.md analyses: [getdesign.md](https://getdesign.md/)

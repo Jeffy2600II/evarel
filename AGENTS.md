@@ -1,10 +1,10 @@
-# AGENTS.md — Evarel
+# AGENTS.md — Ordivel
 
 > **Who this file is for:** AI coding agents (Claude Code, Cursor, Windsurf, and any tool that reads the AGENTS.md standard). It is the binding rulebook. When any other document conflicts with this file, this file wins and the other file gets fixed in the same change.
 
 ## Project context (read this first)
 
-Evarel is a **single-owner, Thai-language, offline-first life-management PWA** (tasks, routines, calendar, AI assistant) running on **zero budget** — Cloudflare + Supabase + Groq/OpenRouter free tiers only. Primary device: real Android. Hard deadline: **2026-11-02**. Full product scope: `PRD.md` §3. This doc set exists so you never need the owner to re-explain the project.
+Ordivel is a **single-owner, Thai-language, offline-first life-management PWA** (tasks, routines, calendar, AI assistant) running on **zero budget** — Cloudflare + Supabase + Groq/OpenRouter free tiers only. Primary device: real Android. Hard deadline: **2026-11-02**. Full product scope: `PRD.md` §3. This doc set exists so you never need the owner to re-explain the project.
 
 ## 1. Read order (mandatory before any task)
 

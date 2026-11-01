@@ -1,4 +1,4 @@
-# ชุดอัปเดต Evarel — ปรับแอปจริง (app/web) ให้ตรง demo 24 (design/Evarel v24.html)
+# ชุดอัปเดต Ordivel — ปรับแอปจริง (app/web) ให้ตรง demo 24 (design/Evarel v24.html)
 
 วิธีใช้: วางไฟล์ตามพาธใน zip ทับตำแหน่งเดียวกันในที่เก็บ (สาขา develop) — จบ ไม่ต้องทำอะไรเพิ่ม
 - โค้ดต่อ API จริงอยู่แล้ว (ไม่แตะ data adapter: 05-data__auth / SupaAdapter เดิมทั้งหมด)

@@ -1,8 +1,8 @@
-# Evarel — Product Requirements Document (PRD)
+# Ordivel — Product Requirements Document (PRD)
 
 | Field | Value |
 |---|---|
-| Product | Evarel — personal life-management PWA |
+| Product | Ordivel — personal life-management PWA |
 | Document | `PRD.md` · V1 |
 | Status | Living document — the single source of truth for product scope |
 | Scope of this doc set | `web/` PWA (classic runtime + React page boxes, served by `web/next`) with `core/` and its Worker API / Supabase `backend/` (this repository) |
@@ -16,7 +16,7 @@
 
 ## 1. Product summary
 
-Evarel is a **single-owner, personal life-management Progressive Web App**. It combines the owner's work items, daily routines, calendar, and an AI assistant into one Thai-language app that runs offline-first on Android.
+Ordivel is a **single-owner, personal life-management Progressive Web App**. It combines the owner's work items, daily routines, calendar, and an AI assistant into one Thai-language app that runs offline-first on Android.
 
 - It is a **personal tool, not a SaaS**. Exactly one primary account. No multi-tenant features, no onboarding funnel, no marketing surfaces.
 - It must behave like a **native app on Android**: installable, fast on a real device, working offline, and delivering real push notifications.

@@ -6,7 +6,7 @@
   const TAB_IDS = TABS.map(t => t[0]);
   const NAMES = { today: 'วันนี้', all: 'รายการ', calendar: 'ปฏิทิน', stats: 'สถิติ', ai: 'ผู้ช่วย AI', settings: 'ตั้งค่า' };
   const routeOf = () => { const m = /^#\/(\w+)/.exec(location.hash); return m && (TAB_IDS.includes(m[1]) || m[1] === 'ai' || m[1] === 'settings') ? m[1] : null; };
-  const setTitle = r => { document.title = 'Evarel · ' + (NAMES[r] || NAMES.today); };
+  const setTitle = r => { document.title = 'Ordivel · ' + (NAMES[r] || NAMES.today); };
   const pageOpen = () => LAYERS.some(l => l.el === page);
 
   /* hash → หน้าจอ (เรียกเมื่อโหลดครั้งแรก และเมื่อ Back/Forward เปลี่ยน hash ข้ามแท็บ) */

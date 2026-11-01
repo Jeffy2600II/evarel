@@ -1,4 +1,4 @@
-# Evarel — ARCHITECTURE.md
+# Ordivel — ARCHITECTURE.md
 
 | Field | Value |
 |---|---|

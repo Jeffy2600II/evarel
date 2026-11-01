@@ -16,7 +16,7 @@ const H=p=>p.evaluate(()=>location.hash), T=p=>p.evaluate(()=>document.querySele
 let p=await fresh();
 ok('1 initial hash normalised to #/today',await H(p)==='#/today',await H(p));
 for(const [t,l] of [['all','รายการ'],['calendar','ปฏิทิน'],['stats','สถิติ']]){await p.click(`[data-tab="${t}"]`);await p.waitForTimeout(400);ok(`2 tab ${t}`,(await H(p))==='#/'+t&&(await T(p))===l,(await H(p))+' '+(await T(p)))}
-ok('2b document.title',(await p.title())==='Evarel · สถิติ',await p.title());
+ok('2b document.title',(await p.title())==='Ordivel · สถิติ',await p.title());
 await p.goBack();await p.waitForTimeout(500);ok('3 Back -> calendar',(await H(p))==='#/calendar'&&(await T(p))==='ปฏิทิน',(await H(p))+' '+(await T(p)));
 await p.goBack();await p.waitForTimeout(500);ok('3b Back -> all',(await H(p))==='#/all'&&(await T(p))==='รายการ');
 await p.goForward();await p.waitForTimeout(500);ok('3c Forward -> calendar',(await H(p))==='#/calendar');

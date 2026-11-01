@@ -1,4 +1,4 @@
-# Evarel
+# Ordivel
 
 PWA ส่วนตัวสำหรับจัดการชีวิต (งาน กิจวัตร ปฏิทิน ผู้ช่วย AI) ใช้งานบน Android เป้าหมายพร้อมใช้งานภายใน 2 พ.ย. 2026
 ใช้ Cloudflare (Workers และ Static Assets) กับ Supabase ภายใต้งบ 0 บาท

@@ -1,6 +1,6 @@
 # กฎของบ้านนี้ (Frontend Factory House Rules)
 
-เอกสารฉบับนี้รวบรวมกฎเฉพาะของโครงสร้าง Frontend Factory ในโปรเจกต์ Evarel อ่านจบใน 1 หน้า
+เอกสารฉบับนี้รวบรวมกฎเฉพาะของโครงสร้าง Frontend Factory ในโปรเจกต์ Ordivel อ่านจบใน 1 หน้า
 
 ---
 

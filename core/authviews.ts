@@ -7,7 +7,7 @@ import { fld } from './uihtml.js';
 import { PW_MIN } from './authform.js';
 
 export const GLOGO='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
-export const EV_MARK='<svg class="mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><path d="M16.5 24.5l5.5 5.5 10-11.5"/></svg>';
+export const EV_MARK='<img class="mark" src="icons/mark-gradient.svg" alt="" aria-hidden="true" draggable="false">';
 export const RINGS=`<svg class="ev-rings" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${[46,86,126,166,206,246].map((r,i)=>`<circle cx="200" cy="130" r="${r}" stroke-width="1" stroke-opacity="${(.34-i*.05).toFixed(2)}" style="animation-delay:${i*90}ms"/>`).join('')}</svg>`;
 export const authBack=(to:any)=>`<div class="ev-auth-top"><button class="ev-icon-btn" data-flat data-act="au-go" data-id="${to}" aria-label="ย้อนกลับ">${icon('back')}</button></div>`;
 export const gBtn=(t:any)=>`<button type="button" class="ev-btn-auth" data-kind="google" data-act="au-google">${GLOGO}<span>${t}</span></button>`;
@@ -15,9 +15,9 @@ export const legal='<p class="ev-legal">การดำเนินการต�
 export const eyeBtn=(id:any)=>`<button type="button" class="ev-icon-btn" data-flat data-act="au-eye" data-id="${id}" aria-label="แสดงรหัสผ่าน" aria-pressed="false">${icon('eye')}</button>`;
 export const EMAIL_X='autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="name@gmail.com"';
 export const submitBtn=(l:any)=>`<button class="ev-btn-auth" data-kind="accent" type="submit" data-label="${l}"><span>${l}</span></button>`;
-export const heroS=(to:any)=>`<div class="ev-hero ev-hero-s">${RINGS}<div class="ev-brand">${EV_MARK}<b>Evarel</b></div><button class="ev-icon-btn" data-flat data-act="au-go" data-id="${to}" aria-label="ย้อนกลับ">${icon('back')}</button></div>`;
+export const heroS=(to:any)=>`<div class="ev-hero ev-hero-s">${RINGS}<div class="ev-brand">${EV_MARK}<b>Ordivel</b></div><button class="ev-icon-btn" data-flat data-act="au-go" data-id="${to}" aria-label="ย้อนกลับ">${icon('back')}</button></div>`;
 export const authViews=(a:{email?:string;codeType?:string})=>({
- welcome:()=>`<div class="ev-hero">${RINGS}<div class="ev-brand">${EV_MARK}<b>Evarel</b><span class="ev-tag">จัดการกิจวัตรและชีวิตให้ง่ายขึ้น</span></div></div>
+ welcome:()=>`<div class="ev-hero">${RINGS}<div class="ev-brand">${EV_MARK}<b>Ordivel</b><span class="ev-tag">จัดการกิจวัตรและชีวิตให้ง่ายขึ้น</span></div></div>
   <div class="ev-auth-body"><div><h1 class="ev-auth-title">เริ่มต้นใช้งาน</h1><p class="ev-sub" style="margin-top:6px">ติ๊ก นับ จับเวลา และดูความต่อเนื่องของนิสัย ทั้งหมดในที่เดียว</p></div>
   <div class="ev-stack">${gBtn('ดำเนินการต่อด้วย Google')}<button class="ev-btn-auth" data-kind="ink" data-act="au-go" data-id="signup">${icon('mail')}<span>สร้างบัญชีด้วยอีเมล</span></button></div>
   <p class="ev-auth-sw">มีบัญชีอยู่แล้ว? <button data-act="au-go" data-id="login">เข้าสู่ระบบ</button></p></div>${legal}`,
@@ -37,4 +37,4 @@ export const authViews=(a:{email?:string;codeType?:string})=>({
   <button class="ev-btn-auth" data-kind="google" id="resendBtn" data-act="au-resend" disabled></button>`,
  newpw:()=>`<div><h1 class="ev-auth-title">ตั้งรหัสผ่านใหม่</h1><p class="ev-sub" style="margin-top:6px">ตั้งรหัสผ่านใหม่ให้บัญชี <b>${esc(a.email)}</b></p></div>
   <form class="ev-form ev-authform" data-kind="newpw" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('รหัสผ่านใหม่','password','password',`autocomplete="new-password" placeholder="อย่างน้อย ${PW_MIN} ตัวอักษร"`,eyeBtn('f-password'))}${submitBtn('บันทึกรหัสผ่าน')}</form>`});
-export const AUTH_SPLASH=`<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Evarel</b><span class="ev-spin ev-spin-splash" role="status" aria-label="กำลังโหลด"></span><span class="ev-splash-note">กำลังโหลด…</span></div>`;
+export const AUTH_SPLASH=`<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Ordivel</b><span class="ev-spin ev-spin-splash" role="status" aria-label="กำลังโหลด"></span><span class="ev-splash-note">กำลังโหลด…</span></div>`;

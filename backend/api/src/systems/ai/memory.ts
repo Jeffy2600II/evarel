@@ -57,7 +57,7 @@ export async function ensureActor(env: MemEnv, userId: string, ws: string, timeo
   if (hit) return hit;
   const cid = actorCustomId(userId);
   let actorId: string | null = null;
-  const c = await ml(env, 'POST', '/actors', { custom_id: cid, display_name: `Evarel ${userId.slice(0, 8)}` }, timeoutMs);
+  const c = await ml(env, 'POST', '/actors', { custom_id: cid, display_name: `Ordivel ${userId.slice(0, 8)}` }, timeoutMs);
   if (c.ok) actorId = c.data?.id || null;
   if (!actorId) {
     const g = await ml(env, 'GET', `/actors/${encodeURIComponent(cid)}?by_custom_id=true`, undefined, timeoutMs); // ต้องมี by_custom_id=true (ตรวจกับบริการจริง: ไม่ใส่ = 404)

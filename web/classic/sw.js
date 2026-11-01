@@ -1,9 +1,9 @@
-/* Path: app-v11/sw.js | Purpose: Service Worker ของ Evarel
+/* Path: app-v11/sw.js | Purpose: Service Worker ของ Ordivel
    - แคช app shell ให้เปิดเร็ว + ใช้ได้ตอนออฟไลน์
    - รับ Web Push (ต่อกับ /api/push ฝั่ง Worker ในขั้น F)
    Layer: install/activate (จัดแคช) -> fetch (cache-first) -> push/notificationclick */
 
-const VERSION = 'evarel-v81-u11-stats';
+const VERSION = 'evarel-v82-ordivel';
 const ASSET_V = '';    /* รหัสเนื้อหาไฟล์ชื่อคงที่ (ฝังตอน build ตรงกับ ?v= ใน HTML) */
 const APP_VERSION = '';  /* เลขรุ่นที่ผู้ใช้เห็น (ปี.รอบ.แพตช์[-ช่อง]) ถูกแทนตอน build ดู docs/versioning.md */
 const CORE = [
@@ -83,8 +83,11 @@ const CORE = [
   './js/boot.js',
   './vendor/morphdom-umd.min.js',
   './vendor/fullcalendar.min.js',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
+  './icons/appicon-violet-1024.png',
+  './icons/circle-violet-1024.png',
+  './icons/favicon-256.png',
+  './icons/favicon.ico',
+  './icons/mark-gradient.svg',
 ];
 
 /* ให้หน้าถามได้ว่ากำลังรัน build ไหน (ระบบอัปเดตเทียบกับ release.json) | VERSION = evarel-next-<digest> */
@@ -213,10 +216,10 @@ function lateNote(atAbs, nowMs) {
 self.addEventListener('push', e => {
   let data = {};
   try { data = e.data ? e.data.json() : {}; } catch { data = { body: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(data.title || 'Evarel', {
+  e.waitUntil(self.registration.showNotification(data.title || 'Ordivel', {
     body: (data.body || '') + lateNote(data.atAbs, Date.now()),
-    icon: './icons/icon-192.png',
-    badge: './icons/icon-192.png',
+    icon: './icons/favicon-256.png',
+    badge: './icons/favicon-256.png',
     tag: data.tag || 'evarel',
     data: { url: data.url || './' },
   }));

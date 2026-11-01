@@ -34,9 +34,9 @@ function decrypt(headers, body) {
 }
 await t('E1 เข้ารหัสแล้วผู้รับถอดกลับได้ข้อความเดิม (ภาษาไทย)', async () => {
   let got; const f = async (url, o) => { got = { url, o }; return new Response(null, { status: 201 }); };
-  const send = M.makeSender({ VAPID_KEYS_JSON: VAPID }, f); const r = await send(subRow, { title: 'Evarel', body: 'ประชุมทีม 09:00', tag: 't1' });
+  const send = M.makeSender({ VAPID_KEYS_JSON: VAPID }, f); const r = await send(subRow, { title: 'Ordivel', body: 'ประชุมทีม 09:00', tag: 't1' });
   assert.equal(r.status, 201); assert.equal(got.url, subRow.endpoint);
-  assert.deepEqual(JSON.parse(decrypt(got.o.headers, got.o.body)), { title: 'Evarel', body: 'ประชุมทีม 09:00', tag: 't1' });
+  assert.deepEqual(JSON.parse(decrypt(got.o.headers, got.o.body)), { title: 'Ordivel', body: 'ประชุมทีม 09:00', tag: 't1' });
 });
 await t('E2 header ครบ: Authorization(WebPush jwt), Content-Encoding aesgcm, TTL', async () => {
   let h; const f = async (u, o) => { h = o.headers; return new Response(null, { status: 201 }); };

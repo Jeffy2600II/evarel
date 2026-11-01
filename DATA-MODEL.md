@@ -1,4 +1,4 @@
-# Evarel — DATA-MODEL.md
+# Ordivel — DATA-MODEL.md
 
 | Field | Value |
 |---|---|

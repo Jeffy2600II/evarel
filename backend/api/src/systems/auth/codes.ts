@@ -79,9 +79,9 @@ function mapResult(r: { status: number; data: any }): CheckResult {
 export function composeMail(purpose: Purpose, code: string): { subject: string; text: string; html: string } {
   if (!CODE_RE.test(String(code))) throw new Error('code must be 6 digits');
   if (purpose !== 'signup' && purpose !== 'recovery') throw new Error('bad purpose');
-  const subject = purpose === 'signup' ? 'รหัสยืนยันอีเมล Evarel' : 'รหัสตั้งรหัสผ่านใหม่ Evarel';
+  const subject = purpose === 'signup' ? 'รหัสยืนยันอีเมล Ordivel' : 'รหัสตั้งรหัสผ่านใหม่ Ordivel';
   const lead = purpose === 'signup' ? 'ใช้รหัสนี้เพื่อยืนยันอีเมลของคุณ' : 'ใช้รหัสนี้เพื่อตั้งรหัสผ่านใหม่';
-  const text = `${lead}\n\n${code}\n\nรหัสใช้ได้ภายใน 10 นาที และใช้ได้ครั้งเดียว\nถ้าคุณไม่ได้เป็นคนขอ ไม่ต้องทำอะไร ปล่อยผ่านได้เลย\nอย่าบอกรหัสนี้กับใคร ทีมงาน Evarel จะไม่ขอรหัสนี้จากคุณ`;
-  const html = `<div style="font-family:sans-serif;max-width:420px;margin:auto;padding:24px"><p>${lead}</p><p style="font-size:32px;letter-spacing:8px;font-weight:700;margin:16px 0">${code}</p><p style="color:#555;font-size:14px">รหัสใช้ได้ภายใน 10 นาที และใช้ได้ครั้งเดียว<br>ถ้าคุณไม่ได้เป็นคนขอ ไม่ต้องทำอะไร ปล่อยผ่านได้เลย<br>อย่าบอกรหัสนี้กับใคร ทีมงาน Evarel จะไม่ขอรหัสนี้จากคุณ</p></div>`;
+  const text = `${lead}\n\n${code}\n\nรหัสใช้ได้ภายใน 10 นาที และใช้ได้ครั้งเดียว\nถ้าคุณไม่ได้เป็นคนขอ ไม่ต้องทำอะไร ปล่อยผ่านได้เลย\nอย่าบอกรหัสนี้กับใคร ทีมงาน Ordivel จะไม่ขอรหัสนี้จากคุณ`;
+  const html = `<div style="font-family:sans-serif;max-width:420px;margin:auto;padding:24px"><p>${lead}</p><p style="font-size:32px;letter-spacing:8px;font-weight:700;margin:16px 0">${code}</p><p style="color:#555;font-size:14px">รหัสใช้ได้ภายใน 10 นาที และใช้ได้ครั้งเดียว<br>ถ้าคุณไม่ได้เป็นคนขอ ไม่ต้องทำอะไร ปล่อยผ่านได้เลย<br>อย่าบอกรหัสนี้กับใคร ทีมงาน Ordivel จะไม่ขอรหัสนี้จากคุณ</p></div>`;
   return { subject, text, html };
 }

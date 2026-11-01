@@ -39,8 +39,8 @@ export default function Page() {
   return (
     <>
       <div id="ev-boot" hidden><div className="ev-splash">
-        <svg className="mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="17" /><path d="M16.5 24.5l5.5 5.5 10-11.5" /></svg>
-        <b style={{ fontSize: 28, letterSpacing: -1 }}>Evarel</b>
+        <img className="mark" src="icons/mark-gradient.svg" alt="" aria-hidden="true" draggable={false} />
+        <b style={{ fontSize: 28, letterSpacing: -1 }}>Ordivel</b>
         <span className="ev-spin ev-spin-splash" aria-hidden="true"></span>
         <span className="ev-splash-note" role="status">กำลังโหลด…</span>
       </div></div>

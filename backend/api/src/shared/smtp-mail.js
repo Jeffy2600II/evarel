@@ -48,7 +48,7 @@ export function buildMessage({ from, to, subject, text, html, messageId, date })
   assertAddress("from", from); assertAddress("to", to);
   const boundary = "evarel-" + (messageId || "b").replace(/[^A-Za-z0-9]/g, "").slice(0, 24);
   const head = [
-    "From: Evarel <" + from + ">",
+    "From: Ordivel <" + from + ">",
     "To: <" + to + ">",
     "Subject: " + encodeHeaderWord(subject),
     "Date: " + (date || new Date()).toUTCString(),

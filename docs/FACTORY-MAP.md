@@ -1,4 +1,4 @@
-# แผนที่โรงงาน Frontend Evarel (Factory Map)
+# แผนที่โรงงาน Frontend Ordivel (Factory Map)
 
 > สร้างอัตโนมัติด้วย `node tools/factory/mapper.mjs` เมื่อโค้ดเปลี่ยน ห้ามแก้มือ
 

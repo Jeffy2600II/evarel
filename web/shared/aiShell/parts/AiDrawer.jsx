@@ -7,7 +7,7 @@ export function AiDrawer({ D, avatarBg, avatarText, userName }) {
   return h('aside', { key: 'dr', className: 'ev-drawer', id: 'drawer', 'data-open': 'false', 'aria-label': 'เมนูแชท' }, [
   h('div', { key: 'dh', className: 'ev-drawer-head' }, [
     h('div', { key: 'top', className: 'ev-drawer-top' }, [
-      h('h2', { key: 'h2' }, 'Evarel AI'),
+      h('h2', { key: 'h2' }, 'Ordivel AI'),
       h('button', { key: 'x', className: 'ev-icon-btn', 'data-flat': '', 'data-act': 'ai-hist', 'aria-label': 'ปิดเมนูแชท', ...ic('x') }),
     ]),
     h('button', { key: 'nw', className: 'ev-navrow', 'data-tone': 'primary', 'data-act': 'ai-new', dangerouslySetInnerHTML: { __html: D.icon('edit') + '<span>แชทใหม่</span>' } }),
