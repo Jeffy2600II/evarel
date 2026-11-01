@@ -8,7 +8,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url'; import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REF_COMMIT = 'a6c2858';
-const ref = execFileSync('git', ['show', REF_COMMIT + ':web/src/engine/19-views__settings.ts'], { cwd: root, encoding: 'utf8' });
+/* พาธใน git show ต้องเป็นพาธยุค commit ฐาน (app/src/m/) ห้ามแก้ตามการย้ายโฟลเดอร์ปัจจุบัน: อดีตไม่ย้ายตาม */
+const ref = execFileSync('git', ['show', REF_COMMIT + ':app/src/m/19-views__settings.ts'], { cwd: root, encoding: 'utf8' });
 const cut = (a, b) => { const i = ref.indexOf(a); if (i < 0) throw new Error('ไม่พบ ' + a); const j = b ? ref.indexOf(b, i) : ref.length; if (j < 0) throw new Error('ไม่พบจบ ' + b); return ref.slice(i, j); };
 const strip = (s) => s.replace(/:\s*any\b/g, '').replace(/as any/g, '');
 const quota = await import('file://' + root + '/web/classic/js/engine/core/quota.js');

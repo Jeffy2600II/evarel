@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'; import { dirname, join } from 'node:pa
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXED = new Date('2026-10-17T05:30:00Z'); const RD = Date;
 globalThis.Date = class extends RD { constructor(...a){ if(a.length===0) super(FIXED.getTime()); else super(...a); } static now(){ return FIXED.getTime(); } };
-globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator = {};
+globalThis.window = globalThis; globalThis.document = {}; try { globalThis.navigator = {} } catch { Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true }) } /* Node 24 ขึ้นไป navigator เป็น getter ล้วน ต้อง defineProperty */
 globalThis.EVAREL_API = 'https://equiv.invalid';
 const O = globalThis;
 const M = (f) => import('file://' + root + '/web/classic/js/engine/' + f + '.js');

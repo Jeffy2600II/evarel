@@ -9,7 +9,8 @@ const tsc = join(ROOT, 'node_modules/typescript/bin/tsc');
 execFileSync(process.execPath, [tsc, '--ignoreConfig', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler', '--lib', 'dom,esnext', '--outDir', tmp, join(ROOT, 'core/dates.ts'), join(ROOT, 'core/schedule.ts'), join(ROOT, 'core/stats.ts')], { stdio: 'inherit' });
 writeFileSync(join(tmp, 'package.json'), '{"type":"module"}');
 for (const f of ['dates', 'schedule', 'stats']) { const p = join(tmp, f + '.js'); const t = (await import('node:fs')).readFileSync(p, 'utf8').replace(/from '\.\/(\w+)'/g, "from './$1.js'"); writeFileSync(p, t); }
-const orig = (f) => execFileSync('git', ['show', `${BASE}:web/classic/js/engine/${f}.js`], { cwd: ROOT, encoding: 'utf8' }).replace(/^"use strict";?/, '');
+/* พาธใน git show ต้องเป็นพาธยุค commit ฐาน (app/web/js/m/) ห้ามแก้ตามการย้ายโฟลเดอร์ปัจจุบัน: อดีตไม่ย้ายตาม */
+const orig = (f) => execFileSync('git', ['show', `${BASE}:app/web/js/m/${f}.js`], { cwd: ROOT, encoding: 'utf8' }).replace(/^"use strict";?/, '');
 const D = await import(pathToFileURL(join(tmp, 'dates.js'))), S = await import(pathToFileURL(join(tmp, 'schedule.js'))), T = await import(pathToFileURL(join(tmp, 'stats.js')));
 const fs = { readFileSync: (p) => orig(p.split('/').pop().replace(/\.js$/, '')) };
 const FIXED = new Date('2026-10-17T05:30:00Z');

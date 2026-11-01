@@ -7,7 +7,8 @@ import fs from 'node:fs'; import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url'; import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REF_COMMIT = '9a8cd1d';
-const ref = execFileSync('git', ['show', REF_COMMIT + ':web/src/engine/18-services__ai-live.ts'], { cwd: root, encoding: 'utf8' });
+/* พาธใน git show ต้องเป็นพาธยุค commit ฐาน (app/src/m/) ห้ามแก้ตามการย้ายโฟลเดอร์ปัจจุบัน: อดีตไม่ย้ายตาม (บทเรียน F6/F7 เปลี่ยนค้างไว้จนเทสต์ตาย) */
+const ref = execFileSync('git', ['show', REF_COMMIT + ':app/src/m/18-services__ai-live.ts'], { cwd: root, encoding: 'utf8' });
 
 /* ตัวอ้างอิง: ตัดวางเฉพาะ remFrom กับ applyProposal จากไฟล์เดิม แล้วให้ global ที่มันพึ่ง (S TODAY find mk daily) มาจากเทสต์ */
 const cut = (name) => { const i = ref.indexOf(name); if (i < 0) throw new Error('ไม่พบ ' + name + ' ในตัวอ้างอิง'); return i; };

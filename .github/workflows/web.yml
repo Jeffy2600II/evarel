@@ -50,6 +50,16 @@ jobs:
             git diff --stat -- web/classic/js
             exit 1
           fi
+      - name: เทสต์เทียบชุด Node ล้วน 6 ชุด (อ่านตัวอ้างอิงจาก git commit ฐานเก่า จึงต้องมี fetch-depth 0 ด้านบน)
+        run: |
+          node tests/aiproposal_equiv.test.mjs
+          node tests/calendar_equiv.test.mjs
+          node tests/core_equiv.test.mjs
+          node tests/settingsviews_equiv.test.mjs
+          node tests/stats_html_equiv.test.mjs
+          node tests/today_equiv.test.mjs
+      # ชุดเทียบที่เหลือ (เปิดเบราว์เซอร์ ~42 ไฟล์) ไม่เอาเข้า CI: ต้องมี SUPABASE_SERVICE_KEY (.agents/.env) + chromium 1243 ที่ pin + ยิง forge จริง
+      # จึงเป็นเครื่องมือรันมือตาม tests/README.md ชุด Node ล้วนข้างบนคือส่วนที่ CI เฝ้าได้แทน (บทเรียน F7: ของที่ไม่มีใครรันจะพังเงียบ ๆ)
       - name: build forge (พิสูจน์ว่า build ผ่าน)
         run: node scripts/build-web.mjs forge
       - name: ตรวจความสมบูรณ์ของผลบิลด์ (ไฟล์ที่อ้างมีจริง สคริปต์ parse ได้ ไม่มี js/m กล่องครบ แคช sw ไม่อ้างไฟล์ผี) | สถิต ไม่เปิดเบราว์เซอร์ ไม่ใช้ความลับ
@@ -74,8 +84,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: web-build, path: build/web, retention-days: 3 }
 
-  # สายพานโรงงาน (F5): ตรวจกติกากล่อง + วาดแผนที่ใหม่ทุก push + X-ray รายหน้า
-  # เครื่องมือเป็น Node ล้วน ไม่ต้อง npm ci (รวมวัดจริง < 1 วินาที) | ไม่ commit อะไรกลับเข้ารีโป (กันวน CI) แผนที่ออกเป็น artifact
+  # สายพานโรงงาน (F5): ตรวจกติกากล่อง + วาดแผนที่ใหม่ทุก push + X-ray รายหน้า + ตรวจแผน/เกตแคช core (รอบ 2026.2.62)
+  # เครื่องมือเป็น Node + python3 ของรันเนอร์ ไม่ต้อง npm ci (รวมวัดจริง < 1 วินาที) | ไม่ commit อะไรกลับเข้ารีโป (กันวน CI) แผนที่ออกเป็น artifact
   # ถอด job นี้ออกแล้วเครื่องตรวจยังรันมือได้: node tools/factory/checker.mjs --all
   factory:
     runs-on: ubuntu-latest
@@ -111,6 +121,10 @@ jobs:
           node tools/factory/m_progress.mjs | tee factory-out/m-progress.txt
           node tools/factory/m_progress.mjs > factory-out/m-progress.again.txt
           cmp factory-out/m-progress.txt factory-out/m-progress.again.txt && rm factory-out/m-progress.again.txt
+      - name: ตรวจแผน docs/plan ตามกติกา (ลิงก์ไม่หัก ไม่มีอิโมจิ/em dash ไม่มีความลับ ทุกขั้นมีไฟล์ลึก)
+        run: python3 tools/plan_check.py
+      - name: เกตแคช core ของ service worker (import ./core/ ทุกตัวต้องอยู่ใน CORE ของ sw.js ไม่งั้นออฟไลน์พังเงียบ)
+        run: node tests/m_core_import.test.mjs
       - name: สรุปผลขึ้นหน้า run
         if: always()
         run: |

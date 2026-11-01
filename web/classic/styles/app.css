@@ -426,11 +426,11 @@
   transition-duration:150ms;
 }
 
-/* Path: app/web/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก design/master-demo-v24.html (style type=text/tailwindcss)
-   Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น app/web/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
+/* Path: web/classic/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/master-demo-v24.html (style type=text/tailwindcss)
+   Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น web/classic/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
 
-/* Path: design/master-demo-v3.html | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนตรงกับ app/styles/tokens.css
-   Used by: เป็นแบบอ้างอิงให้ agent ย้ายเข้า app/ (ส่วน CSS → app.css, ส่วน JS แยกตามหัวข้อ "MODULE:") */
+/* Path: archive/design/master-demo-v3.html | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนรวมอยู่ในส่วน TOKENS ของไฟล์นี้ (เดิมแยกเป็น tokens.css)
+   Used by: เป็นแบบอ้างอิงให้ agent ย้ายเข้าเว็บแอป (ส่วน CSS → app.css, ส่วน JS แยกตามหัวข้อ "MODULE:") */
 
 /* ============ TOKENS ============ */
 
@@ -5347,7 +5347,7 @@ body{
   background:var(--c-accent-soft)
 }
 
-/* Path: app/web/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
+/* Path: web/classic/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
 
 /* ฟอนต์: ใช้ฟอนต์ระบบของเครื่อง (Master เลือก 23 ต.ค. 2026 หลังเทียบ 7 แบบ) จึงไม่มี @font-face และไม่โหลดไฟล์ฟอนต์ */
 

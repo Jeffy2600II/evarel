@@ -1,4 +1,4 @@
-/* Path: app/web/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
+/* Path: web/classic/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
 
 /* ฟอนต์: ใช้ฟอนต์ระบบของเครื่อง (Master เลือก 23 ต.ค. 2026 หลังเทียบ 7 แบบ) จึงไม่มี @font-face และไม่โหลดไฟล์ฟอนต์ */
 /* ===== ชิป/แถบโควตา AI (ชั่วคราวจนกว่าหน้า AI จะแทนด้วย ev-limit/ev-notice ตามเดโม) ===== */
