@@ -39,7 +39,7 @@ web/
 ├── classic/              # committed build — what tests read and what ships offline
 │   ├── index.html        # shell: mounts views, owns header/tab bar per SITEMAP
 │   ├── sw.js             # service worker: offline shell + cache strategy
-│   ├── js/engine/        # compiled engine (27 numbered modules, 00-head → 25-actions)
+│   ├── js/engine/        # compiled engine (27 modules, numbers 00–25; slot 22 holds two files: views__auth + views__live-sync)
 │   ├── js/react/         # compiled React islands (today, calendar, ai, …)
 │   ├── js/route.js       # hash router (tab routes + full-page layers)
 │   └── styles/           # design.css (token source) → app.css (compiled components)
@@ -72,7 +72,7 @@ DESIGN.md (decisions)
 ## 4. Back end — Cloudflare Worker (TypeScript)
 
 - One Worker serves the JSON API in front of Supabase; static assets are served from the same zone (Cloudflare Static Assets).
-- Systems (verified from `backend/api/src/systems`): **auth** (email+password, Google), **items** (tasks/routines/events routes, validation, abuse guards), **AI gateway** (agent · llm · quota · memory · tools; Groq primary, OpenRouter backup), **notify** (`due`, `reminders`, `scheduler`, `sender`, `push-routes`), plus shared `auth` / `ratelimit` / `smtp-mail` helpers. Due reminders are fired by the Supabase Edge Function `backend/edge/notify-tick` on a pg_cron minute tick.
+- Systems (verified from `backend/api/src/systems`): **auth** (email+password, Google), **items** (tasks/routines/events routes, validation, abuse guards), **AI gateway** (agent · llm · quota · memory · tools; Groq primary, OpenRouter backup), **notify** (`due`, `reminders`, `scheduler`, `sender`, `push-routes`), plus shared `auth` / `ratelimit` / `smtp-mail` helpers. Due reminders are fired by the Supabase Edge Function `backend/edge/notify-tick` on a pg_cron minute tick — and that Edge Function imports and runs the **same** `scheduler`/`sender` modules from the Worker source (verified 2026-11-01). That is what MASTER-PLAN S2's “notify sender moved to Supabase” means: the code is shared, the scheduled runtime moved to the Edge Function.
 - API conventions: JSON in/out; UTC timestamps everywhere (`DATA-MODEL.md` §2); client-generated ids accepted for idempotent upserts (§6 of that doc); errors are typed, never stringly.
 - Worker tests: 225 passing cases at inspection. The notify suite runs via `npm run test:notify`.
 

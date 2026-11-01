@@ -13,7 +13,7 @@
 
 **Trigger:** App opened with no session. **Goal:** A working session on a real Android device.
 
-1. `S-AUTH` shows brand mark, then two actions: **"เข้าสร้างบัญชี"** (email) and **"ดำเนินการต่อด้วย Google"** (Google). Email expands inline fields (email, password, confirm) — no page hop.
+1. `S-AUTH` shows brand mark, then two actions: **"สมัครบัญชีใหม่"** (email) and **"ดำเนินการต่อด้วย Google"** (Google). Email expands inline fields (email, password, confirm) — no page hop. A quiet **"มีบัญชีอยู่แล้ว — เข้าสู่ระบบ"** link flips the same panel to sign-in mode (email + password only, no confirm field).
 2. Submit → loading state on the button (never a disabled screen) → on success land on `S-TODAY`.
 3. Returning user with a session skips `S-AUTH` entirely (token refresh silently; failure falls back with a toast, not a dead end).
 
@@ -24,6 +24,7 @@
 | Invalid credentials | Inline field error (border `--c-danger` + helper text ink on `--c-danger-soft`). Never a modal for validation |
 | Offline at first run | Auth requires network — show inline "ต้องการอินเทอร์เน็ต" note with retry; the rest of the shell stays cached |
 | Google flow interrupted | Return to `S-AUTH` untouched state; no partial account |
+| Existing account, expired session | Same panel in sign-in mode (email + password only); success lands on `S-TODAY` |
 | Already signed in | Skip `S-AUTH` (step 3) |
 
 ## Flow 2 — Create a task (PRD F2)

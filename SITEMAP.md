@@ -69,7 +69,7 @@ Overlay rules: one overlay at a time; scrim `--c-scrim` behind sheets/dialogs; e
 | Screen | Empty | Loading | Offline | Error |
 |---|---|---|---|---|
 | S-AUTH | n/a (first run) | Button-level only | Inline "ต้องการอินเทอร์เน็ต" + retry | Inline field errors; never a modal |
-| S-TODAY | "วันนี้ว่าง" — icon + one line + one action (สว่างแล้ววันนี้!) | Skeleton rows | Banner-lite: "ออฟไลน์ — แสดงข้อมูลล่าสุด" | Read-only with cached data; retry quiet |
+| S-TODAY | "วันนี้ยังไม่มีรายการ" — icon + one line + one action ("เพิ่มรายการแรก") | Skeleton rows | Banner-lite: "ออฟไลน์ — แสดงข้อมูลล่าสุด" | Read-only with cached data; retry quiet |
 | S-TASKS | "ยังไม่มีงาน" + FAB remains visible | Skeleton | Items render from cache; queued writes show "รอซิงค์" meta | Same as S-TODAY |
 | S-ROUTINES | "ยังไม่มีกิจวัตร" + one action | Skeleton | Same pattern as S-TASKS | Same |
 | S-CAL | Days simply have no dots (month is never "empty") | First-paint skeleton only | Cached month renders | Retry on next focus |

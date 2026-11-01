@@ -7,7 +7,7 @@
 | Applies to | `web/` PWA — classic runtime + React page boxes (all screens, components, and states) |
 | Reference themes | Light = primary (polished first) · Dark = full parity, already implemented in code |
 | Feel | **"Precision with warmth"** — Linear/Vercel-grade discipline, delivered with soft curves and a calm, friendly face |
-| Verified | All contrast ratios in §12 computed with a WCAG 2.1 script on 2026-10-30 · paths and drift log re-checked against the F7 layout on 2026-11-01 |
+| Verified | All contrast ratios in §12 computed with a WCAG 2.1 script on 2026-10-30 · full doc-vs-repo consistency audit 2026-11-01 (drift log re-checked against the actual files, not from memory) |
 | Sources | `web/classic/styles/design.css` (token source; `scripts/build-css.mjs` compiles it → `app.css`), `tailwind.config.cjs`, `archive/design/*.html` |
 
 ---
@@ -37,7 +37,7 @@ Current drift between these artifacts is recorded in §15 and must be burned dow
 
 ## 2. Feel and principles
 
-**Precision with warmth.** The skeleton is Linear/Vercel: flat surfaces, hairline borders, restrained color, tight type. The skin is Evarel: generous radius, spring confirmations, IBM Plex Sans Thai, a calm near-white canvas. The result reads engineered, not decorated — friendly because of geometry and rhythm, never because of ornament.
+**Precision with warmth.** The skeleton is Linear/Vercel: flat surfaces, hairline borders, restrained color, tight type. The skin is Evarel: generous radius, spring confirmations, the system + Noto Sans Thai type stack (DD-7), a calm near-white canvas. The result reads engineered, not decorated — friendly because of geometry and rhythm, never because of ornament.
 
 | # | Principle | In practice |
 |---|---|---|
@@ -72,6 +72,8 @@ Current drift between these artifacts is recorded in §15 and must be burned dow
 | `--c-danger` | `#E5484D` | Destructive actions — icon/fill only, not small text (3.91:1) |
 | `--c-danger-soft` | `#FDECEC` | Destructive backgrounds (pair with ink text) |
 
+> **2026-11-01 audit:** the shipped TOKENS block differs from these targets in `--c-line` (`#E8E8ED`), `--c-fill` (`#EDEDF1`), `--c-scrim`, `--shadow`, `--shadow-fab`, and `--font` — every delta is logged in §15. Values in this table stay the decision of record; never "fix" code silently (change protocol §1).
+
 ### 3.2 Palette — Dark (full parity)
 
 | Token | Value | Note |
@@ -98,12 +100,12 @@ Current drift between these artifacts is recorded in §15 and must be burned dow
 3. **No gradients.** Flat fills only, in both themes. `--c-accent-2` exists for hover tints and chart series — not for gradient washes.
 4. **Neutrals first.** When unsure, the answer is `--c-fill`, `--c-line`, or `--c-muted` — not accent.
 
-### 3.4 Paste-ready token block (drop-in replacement for the `:root` TOKENS block in `web/classic/styles/design.css`)
+### 3.4 Token block (decisions of record — merge via the §1 protocol; **not** byte-identical with `design.css` today, see the note below the block)
 
 ```css
 :root{
-  --font:'IBM Plex Sans Thai',system-ui,sans-serif;
-  /* neutrals — unchanged from the current app (continuity by design) */
+  --font:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Thai','Noto Sans Thai UI',sans-serif;
+  /* neutrals — carried from the shipped app; shipped deltas (line/fill hex) are logged in §15 */
   --c-bg:#F7F7F9; --c-surface:#fff; --c-text:#14141A; --c-muted:#6A6A77; --c-line:#ECECF0;
   /* accent — indigo family (DD-1) */
   --c-accent:#4F46E5; --c-accent-text:#4F46E5; --c-accent-soft:#EEF2FF; --c-on-accent:#fff;
@@ -113,21 +115,26 @@ Current drift between these artifacts is recorded in §15 and must be burned dow
   --c-danger-soft:#FDECEC; --c-warn-soft:#FFF3E0;
   /* NEW: quiet fill (fixes D-003) */
   --c-fill:#F0F0F4;
+  /* continuity vars the code defines and components/Tailwind rely on (ink-* is violet-era — re-tint at DD-1) */
+  --c-on-ink-soft:rgba(255,255,255,.2); --c-on-fill:#fff;
+  --c-ink-a:#4B2FF5; --c-ink-b:#5B3CFA; --c-ink-c:#5836FF;
   /* spacing — 8px scale, unchanged */
   --s1:8px; --s2:16px; --s3:24px; --s4:32px;
   /* radius — canonical scale (DD-2) */
   --r-chip:12px; --r-control:14px; --r-card:26px; --r-sheet:32px; --r-pill:999px;
-  /* elevation */
-  --shadow:0 1px 2px rgba(20,20,26,.04),0 8px 24px rgba(20,20,26,.06);
-  --shadow-fab:0 2px 8px rgba(20,20,26,.22);
-  --c-scrim:rgba(0,0,0,.4);
-  /* motion & layout */
-  --t-fast:.18s; --nav-h:64px; --col-max:480px;
+  /* elevation — the shipped --shadow is a 1px ring applied to cards (§7); no blur at rest */
+  --shadow:0 0 0 1px rgba(20,20,26,.035);
+  --shadow-fab:0 6px 20px rgba(75,47,245,.35); /* violet-era tint — re-tint to indigo in the DD-1 commit */
+  --c-scrim:rgba(10,10,20,.45);
+  /* motion & layout — these MUST exist or Tailwind ease aliases and the dock layout break */
+  --t-fast:.18s; --t-med:.32s; --ease:cubic-bezier(.22,1,.36,1); --spring:cubic-bezier(.34,1.56,.64,1);
+  --nav-h:64px; --col-max:480px; /* TOKENS block ships 60, the v16 pass ships 64 (effective) — unify in D-006 */
+  --dock:calc(var(--nav-h) + env(safe-area-inset-bottom,0) + 10px);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --c-bg:#0E0E12; --c-surface:#1A1A21; --c-text:#F2F2F5; --c-muted:#9A9AA8; --c-line:#2A2A33;
   --c-accent:#818CF8; --c-accent-text:#A5B4FC; --c-accent-soft:#23234A; --c-on-accent:#0E0E12;
-  --c-accent-2:#8386F6; --c-fill:#23232C;
+  --c-accent-2:#8386F6; --c-fill:#23232C; --c-on-ink-soft:rgba(0,0,0,.14);
   --c-ok:#18A66A; --c-on-ok:#0E0E12; --c-warn:#E8890C; --c-danger:#E5484D;
   --c-danger-soft:#3A1E21; --c-warn-soft:#3A2D14;
   --shadow:none; --shadow-fab:0 2px 8px rgba(0,0,0,.45);
@@ -135,18 +142,18 @@ Current drift between these artifacts is recorded in §15 and must be burned dow
 :root[data-theme="dark"]{
   --c-bg:#0E0E12; --c-surface:#1A1A21; --c-text:#F2F2F5; --c-muted:#9A9AA8; --c-line:#2A2A33;
   --c-accent:#818CF8; --c-accent-text:#A5B4FC; --c-accent-soft:#23234A; --c-on-accent:#0E0E12;
-  --c-accent-2:#8386F6; --c-fill:#23232C;
+  --c-accent-2:#8386F6; --c-fill:#23232C; --c-on-ink-soft:rgba(0,0,0,.14);
   --c-ok:#18A66A; --c-on-ok:#0E0E12; --c-warn:#E8890C; --c-danger:#E5484D;
   --c-danger-soft:#3A1E21; --c-warn-soft:#3A2D14;
   --shadow:none; --shadow-fab:0 2px 8px rgba(0,0,0,.45);
 }
 ```
 
-> **Reality check (2026-11-01):** `design.css` currently also contains a second `:root` block — the “v16 design pass” (~L431) — which overrides the TOKENS block above in the cascade (radius 32/38, spacing 10/20/28/40, softer neutrals, no accent override). This document stays the decision of record; the duplication is logged as **D-006** and must be consolidated into one block aligned with this section.
+> **Reality check (2026-11-01):** `design.css` currently contains **three** competing token layers — the TOKENS block (L7), the “v16 design pass” (~L431), and a semantic-text pass (~L532) — the later ones win the cascade (radius 32/38, spacing 10/20/28/40, softer neutrals, no accent override; details in **D-006**). This document stays the decision of record; **do not paste §3.4 wholesale** until the D-006 consolidation — merge per the §1 protocol, keeping every var the code defines.
 
 ## 4. Typography
 
-One family: **IBM Plex Sans Thai** (already the app's `--font`). No second family, ever. Hierarchy comes from size, weight, and color — not from new fonts.
+One family pair — the device system stack: Latin resolves to the platform system face (`system-ui…`), Thai to **'Noto Sans Thai'**. Decided 2026-10-23 after comparing 7 typefaces (recorded in `extra.css`); **no webfont, no `@font-face`, no font files on the wire** — free-tier bytes and offline-first win together. An earlier draft of this doc named “IBM Plex Sans Thai” as the app font; that was an error — IBM Plex has never shipped in `web/` — retired by **DD-7** (D-008). Hierarchy comes from size, weight, and color — not from new fonts.
 
 | Role | Size / line-height | Weight | Tracking | Usage |
 |---|---|---|---|---|
@@ -163,7 +170,7 @@ Rules:
 1. **No all-caps, anywhere.** Thai has no uppercase; mixed all-caps Latin next to Thai looks broken. Sentence case everywhere.
 2. **Emphasis = weight** (400→600), or `--c-text`→`--c-accent-text` for links. Never italics, never underline (reserved for links on web views only).
 3. **Numbers are tabular.** Counts, times, quota meters use `font-variant-numeric: tabular-nums` so digits don't jitter.
-4. **Thai line-height is non-negotiable**: body ≥1.6, headings ≥1.3. Descending Thai vowels (ฤๅ ฦๅ ๎) clip at 1.1–1.2.
+4. **Thai line-height**: shipped body is **1.45** (the `design.css` body rule) and is parity-locked through 2026-11-02 — never lower it for Thai; raising body to the 1.6 target is re-decided at the D-006 consolidation (log it in §14 if raised). Descending Thai vowels (ฤๅ ฦๅ ๎) clip at 1.1–1.2 — headings never below ~1.3.
 5. Maximum line length ~34–40 Thai characters per line inside the 480px column at Body size — achieved naturally by the column; do not widen past `--col-max`.
 
 ## 5. Spacing and layout
@@ -194,7 +201,7 @@ Migration status (re-verified 2026-11-01): the old `tokens.css` (20/28) is gone;
 ## 7. Elevation and borders
 
 1. **Default surface: flat + 1px `--c-line` border.** No shadow. This is the single biggest "looks engineered, not generated" lever.
-2. **`--shadow` is for overlays only** — bottom sheets, popovers, menus. Cards at rest never carry it.
+2. **Blurred elevation is for overlays only** — bottom sheets, popovers, menus. Cards at rest never carry a blur. *(Audit 2026-11-01: the shipped `--shadow` is a 1px ring — `0 0 0 1px rgba(20,20,26,.035)` — and `.ev-card` applies it at rest as its soft hairline; that ring *is* rule 1's border expressed as a shadow, so it is allowed. §3.4 now carries the ring value.)*
 3. **`--shadow-fab`** belongs to the FAB alone.
 4. **Dark mode:** shadows off (existing behavior); separation comes from `#1A1A21` on `#0E0E12` + hairlines.
 5. Scrim over content: `--c-scrim` (40% black) behind every sheet/dialog.
@@ -202,7 +209,7 @@ Migration status (re-verified 2026-11-01): the old `tokens.css` (20/28) is gone;
 
 ## 8. Iconography
 
-- 24px grid, **1.75px stroke**, round caps and joins (soft = on-brand), from one consistent outline set. `web/classic/icons/` is the asset home.
+- 24px grid, **1.75px stroke**, round caps and joins (soft = on-brand), inline SVG in the components. (`web/classic/icons/` holds the PWA launcher PNGs only — audited 2026-11-01.)
 - Inactive: `--c-muted`. Active/selected: `--c-accent` (icon only — the tab bar pairs an active icon with `--c-accent-text` label).
 - Filled variant allowed for the active tab state (outline → filled is a cheap, legible "you are here").
 - **No emoji as UI icons. No emoji bullets.** Emoji appear only inside user-generated content (task notes, chat).
@@ -244,11 +251,11 @@ Rules: animate **state changes only**; nothing moves at rest or on scroll. Exits
 
 **Tab bar** — bottom, `--nav-h` 64 + safe-area, `--c-surface` top hairline. 4 items: Today · Tasks · Calendar · AI (Settings lives in the header). Active: icon `--c-accent` (filled) + label 12px `--c-accent-text`; inactive: `--c-muted` outline. Never more than 5 items. *(2026-11-01 check: the shipped build's tabs are วันนี้ · รายการ · ปฏิทิน · สถิติ, with AI and Settings as full pages — navigation contract drift is logged as D-007.)*
 
-**Header** — 56px, transparent, screen title Display left-aligned... no: header shows H1 context (e.g., current month); the *screen* owns the Display title. Right side: 1–2 icon actions (settings, search).
+**Header** — 56px, transparent. The header shows only context (e.g., the current month at H1); the *screen* owns the one Display title inside the content area. Right side: 1–2 icon actions (settings, search).
 
 **FAB** — 56px circle, `--c-accent`, `--c-on-accent` icon, `--shadow-fab`, bottom-right 24px above the tab bar + safe-area. One FAB max per screen; it creates the screen's core object ("+" on Tasks).
 
-**Toast** — pill, `--c-fill` at 96% opacity backdrop-free, ink text 13px, icon 20px semantic dot; bottom-center above the tab bar; auto-dismiss 3.5s; never stacks more than one.
+**Toast** — pill, `--c-fill` at 96% opacity backdrop-free, ink text 13px + a 20px icon tinted with the semantic color (dots stay 8px per the Chip spec); bottom-center above the tab bar; auto-dismiss 3.5s; never stacks more than one.
 
 **Empty state** — icon 48px muted, one line H3, one line Secondary, **one** primary action. No illustration, no full-screen art.
 
@@ -309,6 +316,7 @@ These are **banned** in Evarel. Each line is a real failure mode of model-genera
 | DD-4 | `--c-fill` introduced (quiet interactive fill), fixing the undefined Tailwind `fill` mapping | 2026-10-30 |
 | DD-5 | Typography ramp locked (§4); Thai-safe tracking floor −0.01em; line-height floors 1.6/1.3; tabular numerals | 2026-10-30 |
 | DD-6 | Motion table locked (§9): out-expo default, spring reserved for affirmative moments, reduced-motion honored | 2026-10-30 |
+| DD-7 | Font stack locked to the shipped system stack (`system-ui … 'Noto Sans Thai' …`) — no webfont, no `@font-face`, no font files. The “IBM Plex Sans Thai” claim in this doc is retired as an error; the owner's system-font decision is recorded in `extra.css` (2026-10-23) | 2026-11-01 |
 
 ## 15. Drift log (burn down as part of V1)
 
@@ -316,15 +324,17 @@ These are **banned** in Evarel. Each line is a real failure mode of model-genera
 |---|---|---|
 | D-001 | (2026-10-30) `tokens.css` radius 20/28 vs `tailwind.config.cjs` 26/32 | Superseded 2026-11-01: `tokens.css` dissolved into `web/classic/styles/design.css` (F7 restructure); its TOKENS block now carries 26/32, matching the Tailwind mapping. Residual conflict → D-006 |
 | D-002 | `tailwind.config.cjs` cites `archive/design/master-demo-v29.html`; `archive/design/` holds v2 / v7 / v12 / v12-intended / `Evarel v24.html` only — **v29 still does not exist** (re-verified 2026-11-01) | Re-issue one current master demo (single file), fix the citation; demos are *referenced by* DESIGN.md, never the reverse |
-| D-003 | (2026-10-30) Tailwind maps `fill` → `var(--c-fill)` but tokens never defined it | **Resolved** by the restructure: `--c-fill` is defined in `design.css` (light `#EDEDF1`, dark `#262630`). §3.4 remains the target value set |
-| D-004 | (2026-10-30) token file header cited demo **v2** — stale provenance | Carried over: `design.css` now cites `archive/design/master-demo-v24.html`, but the file on disk is named `Evarel v24.html` — fix the citation. Governance (§1) unchanged: DESIGN.md is the decision point |
-| D-005 | Accent family mismatch across artifacts (violet in app, indigo decided) | **Still open** (2026-11-01): code runs violet `#4B2FF5` (light) / `#6E5BEF` (dark); DD-1 targets `#4F46E5` / `#818CF8`. `--c-on-ok` is `#fff` in code vs ink per DD-3. Apply as one commit across all four artifacts |
-| D-006 | **New (2026-11-01):** `design.css` contains two competing `:root` token blocks — the TOKENS block (L7: radius 26/32, spacing 8/16/24/32) and the “v16 design pass” (L431: radius 32/38, spacing 10/20/28/40, softer neutrals). The later block wins the cascade, so the *effective* values contradict DD-2 and §5 | Consolidate into ONE canonical block aligned with the decision log — or re-decide via §14 if the v16 direction is preferred (owner's call). Introduce the missing `--r-chip`/`--r-control` tokens in the same commit |
+| D-003 | (2026-10-30) Tailwind maps `fill` → `var(--c-fill)` but tokens never defined it | **Resolved (definition only)** — `--c-fill` exists (light `#EDEDF1`, dark `#262630`), but those hexes differ from the §3.1/§3.4 target (`#F0F0F4`/`#23232C`). Reconcile one side during the D-006 consolidation |
+| D-004 | (2026-10-30) token file header cited demo **v2** — stale provenance | Carried over: `design.css` now cites `archive/design/master-demo-v24.html`, but the file on disk is named `Evarel v24.html`; the same header also cites `archive/design/master-demo-v3.html` — **no v3 exists anywhere** (audit 2026-11-01). Fix both citations. Governance (§1) unchanged: DESIGN.md is the decision point |
+| D-005 | Accent family mismatch across artifacts (violet in app, indigo decided) | **Still open** (2026-11-01): code runs violet `#4B2FF5` (light) / `#6E5BEF` (dark); DD-1 targets `#4F46E5` / `#818CF8`. `--c-on-ok` is `#fff` in code vs ink per DD-3; the violet-tinted `--shadow-fab` (`rgba(75,47,245,.35)`) and the `--c-ink-a/b/c` card-gradient family re-tint in the same commit. Apply as one commit across all four artifacts |
+| D-006 | **New (2026-11-01; extended same day):** `design.css` contains **three** competing token layers — the TOKENS block (L7: radius 26/32, spacing 8/16/24/32, `--nav-h` 60), the “v16 design pass” (L431: radius 32/38, spacing 10/20/28/40, `--nav-h` 64, softer neutrals), and a semantic-text pass (L532: `--c-ok` `#0E8A55`/`#3DD598`, `--c-muted` `#65637A`/`#A3A1B5`, `--c-line` `#E1DFEB`/`#363544`, plus text-safe tokens `--c-ok-text`/`--c-warn-text`/`--c-danger-text`/`--c-danger-fill`/`--c-line-ctl`/`--c-halo` that this doc does not yet govern). The later blocks win the cascade, so the *effective* values contradict DD-2, §3.1 and §5 | Consolidate into ONE canonical block aligned with the decision log — or re-decide via §14 if the later direction is preferred (owner's call). Introduce the missing `--r-chip`/`--r-control` tokens and adopt or retire the text-safe tokens in the same commit |
 | D-007 | **New (2026-11-01):** navigation drift — the implemented router (`web/classic/js/route.js`) uses hash routes: tabs `#/today #/all #/calendar #/stats`, full pages `#/ai #/settings`; auth is an in-app layer (no `/login` route). SITEMAP §1 specifies path routes incl. `/tasks` and `/routines`, and §10 above specifies a Today·Tasks·Calendar·AI tab bar | One reconciling decision: adopt the implemented navigation into SITEMAP/§10, or change the router to the spec. Until then, SITEMAP §1 carries a verified implementation note |
+| D-008 | **New (2026-11-01):** typography drift — this doc claimed “IBM Plex Sans Thai (already the app's `--font`)”; false on both counts. `web/` contains no IBM Plex anywhere; the shipped `--font` is `system-ui,…,'Noto Sans Thai',…` with the owner's system-font decision recorded in `extra.css` (2026-10-23, after comparing 7 typefaces). Body line-height ships at 1.45, not the 1.6 floor stated in §4 | §4 and §3.4 corrected to the system stack (**DD-7**); 1.45 is parity-locked through 2026-11-02, the 1.6 floor is re-decided at the D-006 consolidation |
 
 ## 16. Sources
 
-- `web/classic/styles/design.css` — token source (TOKENS block + v16 pass; see D-006) — re-verified 2026-11-01
+- `web/classic/styles/design.css` — token source (TOKENS block + v16 pass + semantic-text pass; see D-006) — re-verified 2026-11-01
+- `web/classic/styles/extra.css` — app-only styles; records the system-font decision (2026-10-23) — audited 2026-11-01
 - `web/classic/styles/app.css` — compiled component CSS (build artifact of `scripts/build-css.mjs`; never edit by hand)
 - `tailwind.config.cjs` — utility mapping (colors → CSS vars; radius; `--col-max:480px`; timing curves)
 - `archive/design/*.html` — visual reference chain (v2 / v7 / v12 / `Evarel v24`)

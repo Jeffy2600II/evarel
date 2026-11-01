@@ -27,6 +27,7 @@ Evarel is a **single-owner, Thai-language, offline-first life-management PWA** (
 - **One accent per view;** semantic colors are dots/icons, **never body text**; states = ink text on `-soft` backgrounds (`DESIGN.md` §3.3, §12).
 - **Banned (the "AI look" list, `DESIGN.md` §13):** gradients, glassmorphism, shadows on resting cards, colored body text, emoji as icons, decorative motion, all-caps, multi-column mosaics, fake content, new colors. If your output contains any of these, it is wrong by definition.
 - **Both themes, always:** light and dark ship in the same change; dark buttons use ink-on-accent, not white (`DESIGN.md` §3.2).
+- **Font:** the shipped `--font` stack only — `system-ui … 'Noto Sans Thai'` (DD-7). Never add a family, `@font-face`, or font files.
 
 ## 4. Code rules
 
