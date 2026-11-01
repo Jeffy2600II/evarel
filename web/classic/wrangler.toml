@@ -1,6 +1,6 @@
 # Evarel Web (ส่วนหน้า PWA เสิร์ฟเป็น Static Assets)
-#   forge      = ชุดพัฒนา -> evarel-app-forge
-#   production = ชุดทางการ -> evarel-app
+#   forge      = ชุดพัฒนา -> ordivel-app-forge
+#   production = ชุดทางการ -> ordivel-app
 # ที่อยู่ API ฉีดตอน deploy ด้วย scripts/deploy.mjs ไม่ฝังในไฟล์ต้นฉบับ
 # account_id ตั้งผ่านตัวแปรสภาพแวดล้อม CLOUDFLARE_ACCOUNT_ID
 
@@ -9,7 +9,7 @@ compatibility_date = "2026-10-01"
 directory = "../../build/web"
 
 [env.forge]
-name = "evarel-app-forge"
+name = "ordivel-app-forge"
 
 [env.production]
-name = "evarel-app"
+name = "ordivel-app"

@@ -2,7 +2,7 @@
 import { chromium } from 'playwright'; import fs from 'fs';
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
-const API='https://evarel-api-b-test.nontakorn2600.workers.dev', APP='http://localhost:8779/index.html';
+const API='https://ordivel-api-b-test.nontakorn2600.workers.dev', APP='http://localhost:8779/index.html';
 const em=`e2e-${Math.random().toString(36).slice(2,8)}@example.com`, pw='Passw0rd!'+Math.random().toString(36).slice(2,6);
 const b=await chromium.launch({executablePath:exe}), ctx=await b.newContext({viewport:{width:412,height:915}}), p=await ctx.newPage();
 const errs=[]; p.on('pageerror',e=>errs.push(e.message)); await p.route(/fonts\./,r=>r.abort());

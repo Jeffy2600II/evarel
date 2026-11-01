@@ -1,7 +1,7 @@
 import { readEnvText } from './_env.mjs';
 import fs from 'fs';
 const vals={};for(const l0 of readEnvText().split('\n')){let l=l0.trim().replace(/^export /,'');const i=l.indexOf('=');if(i<0)continue;let v=l.slice(i+1).trim();if(v.startsWith("$'")&&v.endsWith("'"))v=v.slice(2,-1);vals[l.slice(0,i)]=v}
-const K=vals.SUPABASE_SERVICE_KEY,SB='https://vdbmwmmsfrgpaauzspup.supabase.co',API=process.argv[2]||'https://evarel-api-b-test.nontakorn2600.workers.dev';
+const K=vals.SUPABASE_SERVICE_KEY,SB='https://vdbmwmmsfrgpaauzspup.supabase.co',API=process.argv[2]||'https://ordivel-api-b-test.nontakorn2600.workers.dev';
 const adm={apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json'};
 let ok=true;const t=(n,c,v='')=>{console.log(c?'PASS':'FAIL',n,v);if(!c)ok=false};
 const em=`ai${Date.now()}@example.com`,pw='Passw0rd!ai1';let uid;

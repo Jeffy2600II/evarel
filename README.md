@@ -38,8 +38,8 @@ types/              ชนิด TS กลาง (dom, globals, st)
 
 | ชุด | ส่วนหน้า | API | ใช้เมื่อ |
 |---|---|---|---|
-| forge | evarel-app-forge | evarel-api-forge | พัฒนาและทดลอง (สาขา develop) |
-| production | evarel-app | evarel-api | ชุดทางการ (สาขา main) |
+| forge | ordivel-app-forge | ordivel-api-forge | พัฒนาและทดลอง (สาขา develop) |
+| production | ordivel-app | ordivel-api | ชุดทางการ (สาขา main) |
 
 ไฟล์ตั้งค่าอยู่ที่ `backend/api/wrangler.toml` และ `web/classic/wrangler.toml` แยกชุดด้วย `--env forge` หรือ `--env production`
 

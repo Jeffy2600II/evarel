@@ -12,8 +12,8 @@ execFileSync(process.execPath, [join(dirname(fileURLToPath(import.meta.url)), 'b
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API = {
-  forge: 'https://evarel-api-forge.nontakorn2600.workers.dev',
-  production: 'https://evarel-api.nontakorn2600.workers.dev',
+  forge: 'https://ordivel-api-forge.nontakorn2600.workers.dev',
+  production: 'https://ordivel-api.nontakorn2600.workers.dev',
 };
 const env = process.argv[2];
 if (!Object.hasOwn(API, env)) { console.error('ระบุสภาพแวดล้อม: forge หรือ production'); process.exit(2); }

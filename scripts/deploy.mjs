@@ -47,7 +47,7 @@ if (!accountId) {
 /* ตรวจ build ก่อน: ต้องมีไฟล์และ API URL ถูกเส้นทางปลายทาง */
 const buildDir = resolve(ROOT, 'build/web');
 if (!existsSync(resolve(buildDir, 'index.html'))) { console.error('ไม่มี build/web/index.html — รัน build ก่อน'); process.exit(1); }
-const expectApi = mode === 'forge' ? 'evarel-api-forge' : 'evarel-api';
+const expectApi = mode === 'forge' ? 'ordivel-api-forge' : 'ordivel-api';
 const buildHtmlPath = resolve(ROOT, 'build/web/index.html');
 const sw = readFileSync(resolve(buildDir, 'sw.js'), 'utf8');
 /* บิลด์ Next ไม่ฝัง URL API ใน sw.js แล้ว ตรวจจาก index.html แทน (ค่า API ที่แอปใช้จริง) */

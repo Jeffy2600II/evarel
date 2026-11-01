@@ -6,7 +6,7 @@ const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe });
 const user = await makeTestUser('dlnet'); await seedItems(user.session, SEED_ITEMS);
-const ORIGIN = 'https://evarel-app-forge.nontakorn2600.workers.dev';
+const ORIGIN = 'https://ordivel-app-forge.nontakorn2600.workers.dev';
 let pass = 0, total = 0;
 for (const [hash, want, kind] of [['#/calendar', 'ปฏิทิน', 'tab'], ['#/ai', 'AI', 'page'], ['#/settings', 'ตั้งค่า', 'page']]) {
   total++;

@@ -27,7 +27,7 @@ migration 001 ถึง 004 อยู่ใน supabase/ ทั้งหมด�
 
 ## ระบบที่ deploy อยู่ (ตรวจ 13 ต.ค. 2026)
 - แอป: evarel-v13s-test ส่ง service worker evarel-v44-esm2 ตรงกับโฟลเดอร์ app-esm2
-- API: evarel-api-b-test (บัญชี ข้อมูลรายการ AI) ตอบ /api/health ปกติ
+- API: ordivel-api-b-test (บัญชี ข้อมูลรายการ AI) ตอบ /api/health ปกติ
 - ต้นแบบ: evarel-poc (Push และ AI รุ่นแรก) เก็บไว้เป็นต้นแบบ ไม่ใช่ระบบหลัก
 - ห้ามสร้าง Worker เพิ่มจากสามตัวนี้ (Master ไม่ต้องการ)
 

@@ -1,4 +1,4 @@
-/* พิสูจน์ค่าสำรอง auth.js: เมื่อไม่ตั้ง window.EVAREL_API ล็อกอินต้องยิงไป Worker ที่ยังมีอยู่ (evarel-api-b-test) ไม่ใช่ตัวที่ถูกลบ */
+/* พิสูจน์ค่าสำรอง auth.js: เมื่อไม่ตั้ง window.EVAREL_API ล็อกอินต้องยิงไป Worker ที่ยังมีอยู่ (ordivel-api-b-test) ไม่ใช่ตัวที่ถูกลบ */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http'; import path from 'path';
 const root=process.argv[2]||'./archive/app-v13';
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png'};
@@ -15,7 +15,7 @@ await p.route(/fonts\./,r=>r.abort());
 const host=await p.goto(`http://localhost:${port}/index.html`).then(()=>p.evaluate(async()=>{
   const src=await (await fetch('/js/auth.js')).text();const m=src.match(/const API = \(window\.EVAREL_API \|\| '([^']+)'\)/);return m?m[1]:null}));
 console.log('   ค่าสำรองที่ deploy จะใช้:',host);
-t('1 ค่าสำรองชี้ evarel-api-b-test',host==='https://evarel-api-b-test.nontakorn2600.workers.dev');
+t('1 ค่าสำรองชี้ ordivel-api-b-test',host==='https://ordivel-api-b-test.nontakorn2600.workers.dev');
 const code=await fetch(host+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'x@example.com',password:'wrongpass1'})}).then(r=>r.status).catch(()=>0);
 t('2 Worker ที่ค่าสำรองชี้ตอบจริง (401 รหัสผิด ไม่ใช่ 404/1042)',code===401,String(code));
 
@@ -31,7 +31,7 @@ t('2 Worker ที่ค่าสำรองชี้ตอบจริง (401
   const sent=await q.evaluate(async()=>{try{const fn=(window.EvarelAuth||window.Auth||{}).login;if(fn){await fn('x@example.com','wrongpass1').catch(()=>{});return 'module'}}catch(e){}
     return 'none'});
   console.log('   เรียกผ่านโมดูล:',sent,'| คำขอที่ออกจริง:',JSON.stringify(reqs.map(u=>new URL(u).host+new URL(u).pathname)));
-  if(reqs.length) t('3 คำขอล็อกอินจริงไปที่ evarel-api-b-test เท่านั้น',reqs.every(u=>u.includes('evarel-api-b-test')));
+  if(reqs.length) t('3 คำขอล็อกอินจริงไปที่ ordivel-api-b-test เท่านั้น',reqs.every(u=>u.includes('ordivel-api-b-test')));
   else console.log('   (ไม่มีทางเรียกโมดูลจากภายนอก ข้อ 1-2 ยืนยันที่ระดับค่าสำรอง)');
 }
 await b.close();srv.close();console.log(ok?'ALL PASS':'SOME FAILED');process.exit(ok?0:1);

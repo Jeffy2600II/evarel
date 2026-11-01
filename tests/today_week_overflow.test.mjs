@@ -7,7 +7,7 @@ import { chromium } from 'playwright'; import fs from 'node:fs'; import os from 
 import { execFileSync } from 'node:child_process'; import { fileURLToPath } from 'node:url';
 import { makeTestUser, seedItems, API } from './live_user.mjs'; import { SEED_ITEMS } from './seed_items.mjs';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..'); const DIR = path.join(root, 'build/web');
-const HOST = 'evarel-app-forge.nontakorn2600.workers.dev';
+const HOST = 'ordivel-app-forge.nontakorn2600.workers.dev';
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'week-overflow-'));
 execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', tmp + '/k.pem', '-out', tmp + '/c.pem', '-days', '1', '-subj', '/CN=' + HOST, '-addext', 'subjectAltName=DNS:' + HOST], { stdio: 'ignore' });

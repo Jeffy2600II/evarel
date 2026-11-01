@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API = {
   local: '',
-  forge: 'https://evarel-api-forge.nontakorn2600.workers.dev',
-  production: 'https://evarel-api.nontakorn2600.workers.dev',
+  forge: 'https://ordivel-api-forge.nontakorn2600.workers.dev',
+  production: 'https://ordivel-api.nontakorn2600.workers.dev',
 };
 const env = process.argv[2] || 'forge';
 if (!Object.hasOwn(API, env)) { console.error('ระบุสภาพแวดล้อม: local | forge | production'); process.exit(2); }

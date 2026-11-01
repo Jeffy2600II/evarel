@@ -3,7 +3,7 @@ import { readEnvText } from './_env.mjs';
    ใช้ Supabase จริงสร้างผู้ใช้ชั่วคราว, ดัก /api/ai/quota และ /api/ai/chat เพื่อคุมสถานการณ์ */
 import { chromium } from 'playwright'; import fs from 'fs';
 const vals = {}; for (const l0 of readEnvText().split('\n')) { let l = l0.trim().replace(/^export /, ''); const i = l.indexOf('='); if (i < 0) continue; let v = l.slice(i + 1).trim(); if (v.startsWith("$'") && v.endsWith("'")) v = v.slice(2, -1); vals[l.slice(0, i)] = v; }
-const K = vals.SUPABASE_SERVICE_KEY, SB = 'https://vdbmwmmsfrgpaauzspup.supabase.co', API = 'https://evarel-api-b-test.nontakorn2600.workers.dev', APP = process.argv[2] || 'http://localhost:8779/index.html';
+const K = vals.SUPABASE_SERVICE_KEY, SB = 'https://vdbmwmmsfrgpaauzspup.supabase.co', API = 'https://ordivel-api-b-test.nontakorn2600.workers.dev', APP = process.argv[2] || 'http://localhost:8779/index.html';
 const adm = { apikey: K, Authorization: 'Bearer ' + K, 'Content-Type': 'application/json' };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/', exe = d + fs.readdirSync(d).find((x) => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe }); let uid, ok = true;

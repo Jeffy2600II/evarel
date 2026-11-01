@@ -5,8 +5,8 @@
 import { chromium } from 'playwright'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import https from 'node:https'; import { execFileSync } from 'node:child_process'; import { fileURLToPath } from 'node:url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-push-'));
-execFileSync('openssl', ['req','-x509','-newkey','rsa:2048','-nodes','-keyout',tmp+'/k.pem','-out',tmp+'/c.pem','-days','1','-subj','/CN=evarel-app-forge.nontakorn2600.workers.dev','-addext','subjectAltName=DNS:evarel-app-forge.nontakorn2600.workers.dev'],{stdio:'ignore'});
-const TLS=tmp; const HOST='evarel-app-forge.nontakorn2600.workers.dev'; const NEW=process.env.SW_NEW_DIR||path.join(root,'build/web');
+execFileSync('openssl', ['req','-x509','-newkey','rsa:2048','-nodes','-keyout',tmp+'/k.pem','-out',tmp+'/c.pem','-days','1','-subj','/CN=ordivel-app-forge.nontakorn2600.workers.dev','-addext','subjectAltName=DNS:ordivel-app-forge.nontakorn2600.workers.dev'],{stdio:'ignore'});
+const TLS=tmp; const HOST='ordivel-app-forge.nontakorn2600.workers.dev'; const NEW=process.env.SW_NEW_DIR||path.join(root,'build/web');
 const mime={html:'text/html; charset=utf-8',js:'application/javascript',css:'text/css',json:'application/json',webmanifest:'application/manifest+json',png:'image/png',svg:'image/svg+xml',ico:'image/x-icon',txt:'text/plain'};
 const srv=https.createServer({key:fs.readFileSync(TLS+'/k.pem'),cert:fs.readFileSync(TLS+'/c.pem')},(q,r)=>{let p=decodeURIComponent(new URL(q.url,'https://x').pathname); if(p.endsWith('/'))p+='index.html'; const f=NEW+p;
   if(!fs.existsSync(f)||fs.statSync(f).isDirectory()){r.writeHead(404);return r.end('nf')} r.writeHead(200,{'content-type':mime[f.split('.').pop()]||'application/octet-stream','cache-control':'no-store'}); r.end(fs.readFileSync(f))});
@@ -15,7 +15,7 @@ const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/'; 
 const b=await chromium.launch({executablePath:exe,args:[`--host-resolver-rules=MAP ${HOST} 127.0.0.1:${PORT}`,'--ignore-certificate-errors']});
 try{
   const ctx=await b.newContext({ignoreHTTPSErrors:true,serviceWorkers:'allow'});
-  await ctx.route(/fonts\.(googleapis|gstatic)|cdn\.jsdelivr|evarel-api/,r=>r.abort());
+  await ctx.route(/fonts\.(googleapis|gstatic)|cdn\.jsdelivr|ordivel-api/,r=>r.abort());
   const p=await ctx.newPage(); await p.goto(`https://${HOST}/index.html`); await p.waitForTimeout(4500);
   // หา worker ของ SW ผ่าน Playwright (context.serviceWorkers) แล้วครอบ showNotification ในบริบทของ worker เอง
   let sw=ctx.serviceWorkers().find(w=>w.url().includes('/sw.js')); if(!sw) sw=await ctx.waitForEvent('serviceworker',{timeout:5000}).catch(()=>null);
