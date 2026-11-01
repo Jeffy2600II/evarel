@@ -1,5 +1,5 @@
 /* ล็อกอิน Microsoft ครั้งเดียวแบบ device code เพื่อรับ refresh token สำหรับส่งเมลผ่าน Graph
-   ใช้: MS_CLIENT_ID=<application client id> node scripts/ms-device-login.mjs
+   ใช้: MS_CLIENT_ID=<client id> [MS_TENANT=<tenant id หรือ common>] node scripts/ms-device-login.mjs
    สิ่งที่พิมพ์: URL กับรหัสให้ผู้ใช้เอาไปกรอก (รหัสไม่ใช่ความลับระยะยาว)
    สิ่งที่บันทึก: /tmp/ordivel-ms-refresh-token.txt (โหมด 600) — เอาไปตั้งเป็น Worker secret ชื่อ MS_REFRESH_TOKEN
    ไม่พิมพ์ refresh token ออกหน้าจอเด็ดขาด */
@@ -7,7 +7,9 @@ import fs from 'node:fs';
 
 const CLIENT_ID = process.env.MS_CLIENT_ID || '';
 const SCOPE = 'https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/User.Read offline_access';
-const TENANT = 'consumers';
+/* tenant: 'common' ใช้ได้กับแอปที่รองรับทั้งบัญชีองค์กรและบัญชีส่วนตัว (กรณีจดทะเบียนแอปใน tenant ของเรา)
+   'consumers' ใช้เมื่อแอปตั้งรองรับเฉพาะบัญชีส่วนตัว — เลือกผ่าน MS_TENANT */
+const TENANT = process.env.MS_TENANT || 'common';
 if (!CLIENT_ID) { console.error('ต้องตั้ง MS_CLIENT_ID ก่อน (Application (client) ID จาก Entra)'); process.exit(2); }
 
 const post = async (url, params) => {
