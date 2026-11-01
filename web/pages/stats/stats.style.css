@@ -1,5 +1,5 @@
-/* สีและสไตล์เฉพาะหน้าของกล่อง stats */
+/* สีและสไตล์เฉพาะหน้าของกล่อง stats | แก้ 1 พ.ย. 2026 (D-010): โทเคนเดียวกับกล่อง all */
 .box-stats {
-  padding: var(--sp-4, 16px);
-  color: var(--c-ink-a, #333);
+  padding: var(--s2, 16px);
+  color: var(--c-text, #14141A);
 }

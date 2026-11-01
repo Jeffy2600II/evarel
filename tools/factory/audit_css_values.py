@@ -3,7 +3,7 @@
 ใช้: python3 tools/factory/audit_css_values.py [--json out.json]
 นับนอกคอมเมนต์ แยก (ก) ค่าที่ประกาศเป็นตัวแปรใน :root (ข) ค่าฝังตรงนอกการประกาศตัวแปร"""
 import re,sys,json,collections,os
-ROOT=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','web','styles')
+ROOT=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','web','classic','styles')
 FILES=['app.css','design.css','extra.css']
 def strip(s): return re.sub(r'/\*.*?\*/','',s,flags=re.S)
 def split_decl(s):

@@ -426,10 +426,10 @@
   transition-duration:150ms;
 }
 
-/* Path: web/classic/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/master-demo-v24.html (style type=text/tailwindcss)
+/* Path: web/classic/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/Evarel v24.html (style type=text/tailwindcss; แก้ชื่อไฟล์อ้างอิงตาม D-004 — ไม่มีไฟล์ master-demo-v24.html)
    Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น web/classic/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
 
-/* Path: archive/design/master-demo-v3.html | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนรวมอยู่ในส่วน TOKENS ของไฟล์นี้ (เดิมแยกเป็น tokens.css)
+/* Path: archive/design/Evarel v24.html (สายเดโม v2→v7→v12→v24; ชื่อ master-demo-v3 ที่เคยอ้างไม่มีไฟล์จริง — แก้ตาม D-004) | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนรวมอยู่ในส่วน TOKENS ของไฟล์นี้ (เดิมแยกเป็น tokens.css)
    Used by: เป็นแบบอ้างอิงให้ agent ย้ายเข้าเว็บแอป (ส่วน CSS → app.css, ส่วน JS แยกตามหัวข้อ "MODULE:") */
 
 /* ============ TOKENS ============ */
@@ -443,17 +443,17 @@
   --c-line:#E8E8ED;
   --c-fill:#EDEDF1;
   --c-on-ink-soft:rgba(255,255,255,.2);
-  --c-accent:#4B2FF5;
-  --c-accent-text:#4B2FF5;
-  --c-accent-soft:#EEEBFF;
-  --c-accent-2:#7A5CFF;
+  --c-accent:#4F46E5;
+  --c-accent-text:#4F46E5;
+  --c-accent-soft:#EEF2FF;
+  --c-accent-2:#6366F1;
   --c-on-accent:#fff;
   --c-ok:#18A66A;
   --c-on-ok:#fff;
   --c-on-fill:#fff;
-  --c-ink-a:#4B2FF5;
-  --c-ink-b:#5B3CFA;
-  --c-ink-c:#5836FF;
+  --c-ink-a:#3A2FF5;
+  --c-ink-b:#473CFA;
+  --c-ink-c:#4136FF;
   --c-warn:#E8890C;
   --c-danger:#E5484D;
   --c-danger-soft:#FDECEC;
@@ -468,7 +468,7 @@
   --r-sheet:32px;
   --shadow:0 0 0 1px rgba(20,20,26,.035);
   --dock:calc(var(--nav-h) + env(safe-area-inset-bottom,0) + 10px);
-  --shadow-fab:0 6px 20px rgba(75,47,245,.35);
+  --shadow-fab:0 6px 20px rgba(79,70,229,.35);
   --t-fast:.18s;
   --t-med:.32s;
   --ease:cubic-bezier(.22,1,.36,1);
@@ -486,17 +486,18 @@
     --c-line:#2A2A33;
     --c-fill:#262630;
     --c-on-ink-soft:rgba(0,0,0,.14);
-    --c-accent:#6E5BEF;
-    --c-accent-text:#9585FF;
-    --c-accent-soft:#25214A;
-    --c-accent-2:#9A8AFF;
+    --c-accent:#818CF8;
+    --c-accent-text:#A5B4FC;
+    --c-accent-soft:#23234A;
+    --c-accent-2:#8386F6;
+    --c-on-accent:#0E0E12;
     --shadow:none;
     --shadow-fab:0 6px 20px rgba(0,0,0,.5);
     --c-danger-soft:#3A1E21;
     --c-warn-soft:#3A2D14;
-    --c-ink-a:#2D2380;
-    --c-ink-b:#43379F;
-    --c-ink-c:#5F51CC
+    --c-ink-a:#232C80;
+    --c-ink-b:#37419F;
+    --c-ink-c:#515CCC
   }
 }
 
@@ -508,17 +509,18 @@
   --c-line:#2A2A33;
   --c-fill:#262630;
   --c-on-ink-soft:rgba(0,0,0,.14);
-  --c-accent:#6E5BEF;
-  --c-accent-text:#9585FF;
-  --c-accent-soft:#25214A;
-  --c-accent-2:#9A8AFF;
+  --c-accent:#818CF8;
+  --c-accent-text:#A5B4FC;
+  --c-accent-soft:#23234A;
+  --c-accent-2:#8386F6;
+  --c-on-accent:#0E0E12;
   --shadow:none;
   --shadow-fab:0 6px 20px rgba(0,0,0,.5);
   --c-danger-soft:#3A1E21;
   --c-warn-soft:#3A2D14;
-  --c-ink-a:#2D2380;
-  --c-ink-b:#43379F;
-  --c-ink-c:#5F51CC
+  --c-ink-a:#232C80;
+  --c-ink-b:#37419F;
+  --c-ink-c:#515CCC
 }
 
 @property --p{
@@ -3848,10 +3850,10 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
   --c-muted:#767487;
   --c-line:#E9E7F0;
   --c-fill:#EFEEF5;
-  --c-accent-soft:#EFECFF;
+  --c-accent-soft:#EEF2FF;
   --shadow:0 1px 2px rgba(40,30,90,.04);
   --spring:cubic-bezier(.3,1.2,.5,1);
-  --c-halo:rgba(75,47,245,.05)
+  --c-halo:rgba(79,70,229,.05)
 }
 
 @media (prefers-color-scheme:dark){
@@ -3862,9 +3864,9 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
     --c-muted:#9B99AC;
     --c-line:#2A2935;
     --c-fill:#232230;
-    --c-accent-soft:#27234F;
+    --c-accent-soft:#23234A;
     --shadow:none;
-    --c-halo:rgba(130,110,255,.07)
+    --c-halo:rgba(129,140,248,.07)
   }
 }
 
@@ -3875,9 +3877,9 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
   --c-muted:#9B99AC;
   --c-line:#2A2935;
   --c-fill:#232230;
-  --c-accent-soft:#27234F;
+  --c-accent-soft:#23234A;
   --shadow:none;
-  --c-halo:rgba(130,110,255,.07)
+  --c-halo:rgba(129,140,248,.07)
 }
 
 html[data-perf="lite"]{
@@ -3942,9 +3944,11 @@ body{
   overflow:hidden;
   isolation:isolate;
   color:#fff;
-  background:linear-gradient(150deg,#4B2FF5 0%,#6446FF 55%,#8466FF 100%);
-  box-shadow:0 14px 34px rgba(75,47,245,.2)
+  background:linear-gradient(150deg,var(--c-ink-a) 0%,var(--c-ink-b) 55%,var(--c-ink-c) 100%);
+  box-shadow:0 14px 34px rgba(79,70,229,.2)
 }
+
+/* DD-1 1 พ.ย. 2026: hex ม่วงเดิม (#4B2FF5/#6446FF/#8466FF) ย้ายไปอ้าง --c-ink-* จุดเดียวกับ v17 */
 
 .ev-card[data-tone="ink"]::before{
   content:"";
@@ -4727,7 +4731,7 @@ body{
   background:linear-gradient(150deg,var(--c-ink-a) 0%,var(--c-ink-b) 55%,var(--c-ink-c) 100%)
 }
 
-/* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
+/* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 | DD-1 1 พ.ย. 2026: ม่วง→indigo --c-ink-* = #3A2FF5/#473CFA/#4136FF (hue-shift คงความสว่างเดิม) ขาวบนปลายสว่างสุดคิดตามสูตร = 6.57:1 สูงกว่าเดิม */
 
 /* ============ v19: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ · อวาตาร์โปรไฟล์ระบบกลาง ============
    ความสูง: JS วัดก่อน/หลังเปลี่ยนเนื้อหา แล้ว transition เฉพาะ height ชั่วครู่ (.34s) แล้วคืนเป็น auto — ไม่มี animation ค้างตลอดเวลา

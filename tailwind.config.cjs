@@ -1,4 +1,4 @@
-/** Tailwind config ของแอปจริง — คัดจาก tailwind.config ใน archive/design/master-demo-v29.html ตรงทั้งหมด
+/** Tailwind config ของแอปจริง — คัดจาก tailwind.config ในเดโมหลัก archive/design/Evarel v24.html (แก้อ้างอิงเดิม v29 ที่ไม่มีไฟล์จริง ตาม D-002)
  *  (colors ชี้ CSS vars / radius card, sheet / maxWidth col / fontFamily / timing)
  *  ห้ามแก้ค่าตรงนี้เอง ต้องสั่งจาก Master — ถ้าเดโมเปลี่ยน ให้คัดใหม่จากเดโม
  *  preflight ปิดตาม config จริงของเดโม (วัดจากหน้าเดโมสด: tailwind.config={corePlugins:{preflight:false}})
@@ -23,7 +23,7 @@ module.exports = {
       },
       borderRadius: { card: '26px', sheet: '32px' },
       maxWidth: { col: '480px' },
-      fontFamily: { sans: ['IBM Plex Sans Thai', 'system-ui', 'sans-serif'] },
+      fontFamily: { sans: ['system-ui', '-apple-system', '"Segoe UI"', 'Roboto', '"Noto Sans Thai"', '"Noto Sans Thai UI"', 'sans-serif'] }, /* DD-7: ตรงกับ --font ใน design.css ตัวอักษรจริง (IBM Plex เดิมไม่เคยถูกโหลด — D-008) */
       transitionTimingFunction: {
         'out-expo': 'cubic-bezier(.22,1,.36,1)',
         spring: 'cubic-bezier(.34,1.56,.64,1)',

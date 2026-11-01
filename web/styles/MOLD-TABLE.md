@@ -4,32 +4,34 @@
 ทาง A (Master ตัดสิน 26 ต.ค. 2026): ไม่แตะชั้นประกาศซ้ำใน design.css ตารางนี้เป็นบันทึกอ้างอิง
 แก้ค่า: แก้ที่ web/classic/styles/design.css หรือ extra.css แล้วสั่ง node scripts/build-css.mjs แล้วสร้างตารางนี้ใหม่
 
+> 1 พ.ย. 2026 (DD-1): แก้มือเฉพาะแถวครอบครัว accent/ink/halo/shadow-fab และ --c-on-accent มืด — ยังไม่ได้รัน tests/measure_root_vars.mjs ใหม่ ให้รันยืนยันครั้งถัดไปที่ deploy
+
 รวม 137 ตัวแปร | ต่างตามโหมด 33 ตัว
 
 | กลุ่ม | ตัวแปร | สว่าง | มืด |
 |---|---|---|---|
 | อื่นๆ | `--ai-bar-h` | `` | `` |
 | อื่นๆ | `--ai-dock-h` | `` | `` |
-| สี | `--c-accent` | `#4B2FF5` | `#6E5BEF` |
-| สี | `--c-accent-2` | `#7A5CFF` | `#9A8AFF` |
-| สี | `--c-accent-soft` | `#EFECFF` | `#27234F` |
-| สี | `--c-accent-text` | `#4B2FF5` | `#9585FF` |
+| สี | `--c-accent` | `#4F46E5` | `#818CF8` |
+| สี | `--c-accent-2` | `#6366F1` | `#8386F6` |
+| สี | `--c-accent-soft` | `#EEF2FF` | `#23234A` |
+| สี | `--c-accent-text` | `#4F46E5` | `#A5B4FC` |
 | สี | `--c-bg` | `#F5F4F9` | `#0F0E15` |
 | สี | `--c-danger` | `#E5484D` | `#FF6B70` |
 | สี | `--c-danger-fill` | `#C7312F` | `#CB3A3E` |
 | สี | `--c-danger-soft` | `#FDECEC` | `#3A1E21` |
 | สี | `--c-danger-text` | `#B42318` | `#FF9A9E` |
 | สี | `--c-fill` | `#EFEEF5` | `#232230` |
-| สี | `--c-halo` | `rgba(75,47,245,.05)` | `rgba(130,110,255,.07)` |
-| สี | `--c-ink-a` | `#4B2FF5` | `#2D2380` |
-| สี | `--c-ink-b` | `#5B3CFA` | `#43379F` |
-| สี | `--c-ink-c` | `#5836FF` | `#5F51CC` |
+| สี | `--c-halo` | `rgba(79,70,229,.05)` | `rgba(129,140,248,.07)` |
+| สี | `--c-ink-a` | `#3A2FF5` | `#232C80` |
+| สี | `--c-ink-b` | `#473CFA` | `#37419F` |
+| สี | `--c-ink-c` | `#4136FF` | `#515CCC` |
 | สี | `--c-line` | `#E1DFEB` | `#363544` |
 | สี | `--c-line-ctl` | `#8E8CA3` | `#77758E` |
 | สี | `--c-muted` | `#65637A` | `#A3A1B5` |
 | สี | `--c-ok` | `#0E8A55` | `#3DD598` |
 | สี | `--c-ok-text` | `#0A6E43` | `#5BE0A8` |
-| สี | `--c-on-accent` | `#fff` | `#fff` |
+| สี | `--c-on-accent` | `#fff` | `#0E0E12` (DD-3) |
 | สี | `--c-on-fill` | `#fff` | `#fff` |
 | สี | `--c-on-ink-soft` | `rgba(255,255,255,.2)` | `rgba(0,0,0,.14)` |
 | สี | `--c-on-ok` | `#fff` | `#04251A` |
@@ -85,7 +87,7 @@
 | ระยะ | `--s3` | `28px` | `28px` |
 | ระยะ | `--s4` | `40px` | `40px` |
 | เงา | `--shadow` | `none` | `0 0 0 1px rgba(255,255,255,.06)` |
-| เงา | `--shadow-fab` | `0 6px 20px rgba(75,47,245,.35)` | `0 6px 20px rgba(0,0,0,.5)` |
+| เงา | `--shadow-fab` | `0 6px 20px rgba(79,70,229,.35)` | `0 6px 20px rgba(0,0,0,.5)` |
 | ระยะ | `--spring` | `cubic-bezier(.3,1.2,.5,1)` | `cubic-bezier(.3,1.2,.5,1)` |
 | อื่นๆ | `--t-fast` | `.18s` | `.18s` |
 | อื่นๆ | `--t-med` | `.32s` | `.32s` |

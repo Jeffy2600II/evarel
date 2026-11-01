@@ -16,7 +16,7 @@ export default function Root({ children }: { children: ReactNode }) {
     <head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
-      <meta name="theme-color" content="#4B2FF5" />
+      <meta name="theme-color" content="#4F46E5" />
       <link rel="manifest" href="manifest.webmanifest" />
       <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
       <link rel="apple-touch-icon" href="icons/icon-192.png" />
