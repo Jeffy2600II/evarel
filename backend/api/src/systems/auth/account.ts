@@ -8,6 +8,7 @@ import { Env, jsonResponse } from '../items/routes';
 import { verifyJWT, extractBearer } from '../../shared/auth';
 import { issueCode, verifyCode, composeMail, type Purpose } from './codes';
 import { sendMail as smtpSend } from '../../shared/smtp-mail.js';
+import { sendGraphMail, graphConfigured } from '../../shared/graph-mail.js';
 
 
 const MAX_BODY = 2048;
@@ -83,6 +84,18 @@ async function sendOwnCode(env: Env, email: string, purpose: Purpose): Promise<v
     const m = composeMail(purpose, code);
     const send = (env as any).CUSTOM_SEND_MAIL
       ? (env as any).CUSTOM_SEND_MAIL
+      : graphConfigured(env as any)
+      ? async (_cfg: any, mail: any) => { /* Microsoft ปิด SMTP AUTH ของกล่อง outlook.com -> ใช้ Graph แทน */
+          const r = (env as any).CUSTOM_SEND_GRAPH_MAIL
+            ? await (env as any).CUSTOM_SEND_GRAPH_MAIL(mail)
+            : await sendGraphMail({
+                clientId: (env as any).MS_CLIENT_ID,
+                refreshToken: (env as any).MS_REFRESH_TOKEN,
+                from: String((env as any).MAIL_FROM || (env as any).SMTP_FROM || (env as any).SMTP_USER),
+              }, mail);
+          if (!r.ok) throw Object.assign(new Error(r.error || 'graph mail failed'), { code: r.code });
+          return r;
+        }
       : async (cfg: any, mail: any) => {
           /* โหลดโมดูลซ็อกเก็ตของ Cloudflare เมื่อส่งเมลจริงเท่านั้น (ไม่ผูกตอนคอมไพล์ จึง bundle/ทดสอบนอก Cloudflare ได้) */
           const spec = 'cloudflare:' + 'sockets';

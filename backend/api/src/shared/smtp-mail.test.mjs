@@ -102,4 +102,40 @@ const baseMail = { to: 'someone@example.com', subject: 'ทดสอบ', text: 
   assert.match(msg, /^From: .*verify\.ordivel@outlook\.com/m, 'หัว From ต้องเป็นที่อยู่ที่กำหนด');
 }
 
-console.log('SMTP-MAIL PASS: 4 กลุ่ม (TLS ตั้งแต่เชื่อม / STARTTLS / ไม่มี STARTTLS / หัว From)');
+
+/* 5) เซิร์ฟเวอร์ประกาศแค่ LOGIN (outlook ตอบ AUTH PLAIN ด้วย 504): ต้องเปลี่ยนไปใช้ AUTH LOGIN เอง */
+{
+  const { first, state } = scripted([
+    '220 ok\r\n',
+    '250-HELLO\r\n250 STARTTLS\r\n',
+    '220 ready\r\n',
+    '250-HELLO\r\n250 AUTH LOGIN\r\n', /* หลังยกระดับ: ไม่มี PLAIN */
+    '334 VXNlcm5hbWU6\r\n',
+    '334 UGFzc3dvcmQ6\r\n',
+    '235 2.7.0 Authentication successful\r\n',
+    '250 2.1.0 Sender OK\r\n',
+    '250 2.1.5 Recipient OK\r\n',
+    '354 Start mail input\r\n',
+    '250 2.0.0 Accepted\r\n',
+    '221 Bye\r\n',
+  ]);
+  const r = await sendMail({ user: 'u@example.com', pass: 'p', host: 'smtp-mail.outlook.com', port: 587, secure: 'starttls' }, baseMail, { connect: () => first });
+  assert.equal(r.ok, true, 'ต้องล็อกอินด้วย LOGIN ได้: ' + JSON.stringify(r));
+  const cmds = state.log.join('|');
+  assert.match(cmds, /AUTH LOGIN/, 'ต้องส่ง AUTH LOGIN');
+  assert.ok(!/AUTH PLAIN/.test(cmds), 'ต้องไม่ส่ง AUTH PLAIN เมื่อเซิร์ฟเวอร์ไม่ประกาศ');
+  assert.ok(r.trace.every((t) => !String(t.text || '').includes('p')), 'ห้ามหลุดข้อมูลล็อกอินใน trace');
+}
+
+/* 6) ไม่ประกาศทั้ง PLAIN และ LOGIN: ต้องล้มแบบบอกเหตุว่าต้อง OAuth2 */
+{
+  const { first } = scripted([
+    '220 ok\r\n',
+    '250-HELLO\r\n250 AUTH XOAUTH2\r\n',
+  ]);
+  const r = await sendMail({ user: 'u@example.com', pass: 'x' }, baseMail, { connect: () => first });
+  assert.equal(r.ok, false);
+  assert.match(String(r.error), /OAuth2/, 'ต้องบอกว่าต้องใช้ OAuth2: ' + r.error);
+}
+
+console.log('SMTP-MAIL PASS: 6 กลุ่ม (TLS ตั้งแต่เชื่อม / STARTTLS / ไม่มี STARTTLS / หัว From / AUTH LOGIN / ต้อง OAuth2)');

@@ -128,9 +128,11 @@ export async function sendMail(cfg, mail, deps) {
       /* ต้องประกาศ STARTTLS ก่อน ไม่งั้นส่งแบบไม่เข้ารหัสไม่ได้ (จะไม่ยอมลดระดับความปลอดภัยเงียบ ๆ) */
       if (!/starttls/i.test(ehlo.text || "")) throw new Error("เซิร์ฟเวอร์ไม่ประกาศ STARTTLS");
       expect(await send("STARTTLS"), 220, "STARTTLS");
-      const secured = sock.startTls(); /* คืนซ็อกเก็ตใหม่ ตัวเก่าปิดถาวร ต้องสร้าง reader/writer ใหม่ */
+      /* ต้องคืนล็อกของสตรีมเดิมก่อนยกระดับ ไม่งั้นสตรีมของซ็อกเก็ตใหม่จะถูกรายงานว่าถูกล็อกอยู่
+         (ของจริงบน Cloudflare: startTls() คืนซ็อกเก็ตใหม่ และสตรีมเดิมใช้ต่อไม่ได้) */
       try { reader.releaseLock(); } catch (_) {}
       try { writer.releaseLock(); } catch (_) {}
+      const secured = sock.startTls();
       sock = secured;
       reader = sock.readable.getReader();
       writer = sock.writable.getWriter();
@@ -138,9 +140,20 @@ export async function sendMail(cfg, mail, deps) {
       ehlo = await send("EHLO ordivel.local");
       expect(ehlo, 250, "EHLO(หลัง STARTTLS)");
     }
-    // AUTH PLAIN : ข้อความลับถูกส่งในคำสั่งเดียว และไม่ถูกบันทึกลง trace
-    const plain = b64(enc.encode("\0" + user + "\0" + pass));
-    expect(await send("AUTH PLAIN " + plain, "AUTH PLAIN"), 235, "AUTH");
+    /* เลือกวิธีล็อกอินตามที่เซิร์ฟเวอร์ประกาศ: PLAIN ถ้ามี, ไม่งั้น LOGIN (outlook ไม่รับ PLAIN ตอบ 504)
+       ข้อความลับไม่ถูกบันทึกลง trace ทั้งสองวิธี */
+    const mechs = String((ehlo.text || "")).toUpperCase();
+    const has = (m) => new RegExp("(^|[\\s-])" + m + "([\\s-]|$)").test(mechs);
+    if (has("PLAIN")) {
+      const plain = b64(enc.encode("\0" + user + "\0" + pass));
+      expect(await send("AUTH PLAIN " + plain, "AUTH PLAIN"), 235, "AUTH");
+    } else if (has("LOGIN")) {
+      expect(await send("AUTH LOGIN", "AUTH LOGIN"), 334, "AUTH LOGIN");
+      expect(await send(b64(enc.encode(user)), "USER(base64)"), 334, "USER");
+      expect(await send(b64(enc.encode(pass)), "PASS(base64)"), 235, "AUTH");
+    } else {
+      throw new Error("เซิร์ฟเวอร์ไม่รองรับ AUTH PLAIN หรือ LOGIN (ต้องใช้ OAuth2)");
+    }
     expect(await send("MAIL FROM:<" + user + ">"), 250, "MAIL FROM");
     expect(await send("RCPT TO:<" + mail.to + ">"), 250, "RCPT TO");
     expect(await send("DATA"), 354, "DATA");
