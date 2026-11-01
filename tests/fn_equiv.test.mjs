@@ -43,7 +43,7 @@ try {
   for (const s of SERVERS) {
     const ctx = await b.newContext({ timezoneId: 'Asia/Bangkok', locale: 'th-TH', serviceWorkers: 'block' });
     /* N4: build ของ Next บูตจากบันเดิล + ต้องมี EVAREL_API ตั้งแต่ก่อนโมดูล 05-data__auth ประเมินค่า (ฝั่ง ORIG เดิมไม่กระทบ ตั้งเพิ่มเฉยๆ) */
-    await ctx.addInitScript(a => { window.EVAREL_API = a; }, process.env.EVAREL_TEST_API || 'https://evarel-api-forge.nontakorn2600.workers.dev');
+    await ctx.addInitScript(a => { window.EVAREL_API = a; }, process.env.EVAREL_TEST_API || 'https://ordivel-api-forge.nontakorn2600.workers.dev');
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
     await p.route(/fonts\.(googleapis|gstatic)|supabase|workers\.dev|cdn\./, r => r.abort());
     await p.clock.install({ time: FIXED }); await p.goto(`http://127.0.0.1:${s.address().port}/index.html`);

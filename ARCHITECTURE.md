@@ -95,8 +95,8 @@ DESIGN.md (decisions)
 
 | Environment | Purpose | Names (per `README.md`) |
 |---|---|---|
-| `forge` | Development | `evarel-app-forge`, `evarel-api-forge` |
-| `production` | Official release | `evarel-app`, `evarel-api` |
+| `forge` | Development | `ordivel-app-forge`, `ordivel-api-forge` |
+| `production` | Official release | `ordivel-app`, `ordivel-api` |
 
 Secrets (names only — values never enter code, docs, or chat): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `MEMORYLAKE_API_KEY`.
 

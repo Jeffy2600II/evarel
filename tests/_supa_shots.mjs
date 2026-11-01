@@ -4,7 +4,7 @@ const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-
 const b=await chromium.launch({executablePath:exe});
 for(const cs of ['light','dark']){
  const ctx=await b.newContext({viewport:{width:412,height:915},colorScheme:cs}), p=await ctx.newPage(); await p.route(/fonts\./,r=>r.abort());
- await ctx.addInitScript(()=>{window.EVAREL_API='https://evarel-api-b-test.nontakorn2600.workers.dev'});
+ await ctx.addInitScript(()=>{window.EVAREL_API='https://ordivel-api-b-test.nontakorn2600.workers.dev'});
  await p.goto('http://localhost:8779/index.html'); await p.waitForTimeout(1500);
  await p.click('[data-act="au-go"][data-id="login"]'); await p.waitForTimeout(300); await p.click('[data-act="au-go"][data-id="forgot"]'); await p.waitForTimeout(300);
  await p.fill('#f-email','nobody-shot@example.com'); await p.click('button[type="submit"]'); await p.waitForTimeout(2800);

@@ -35,7 +35,7 @@ await p.click('[data-yes]');await p.waitForFunction(()=>typeof UI!=='undefined'&
 // 5) หลังนำเข้า: แอปมี 5 รายการ + ที่เซิร์ฟเวอร์มี 5 + ฟิลด์ตรงทุกตัว
 const nApp=await p.evaluate(()=>S.items.length);ok('app shows 5 items after import',nApp===5,String(nApp));
 const tok=await p.evaluate(()=>JSON.parse(localStorage.getItem('evarel-session-v1')).access_token);
-const srv=await p.evaluate(async t=>{const r=await fetch('https://evarel-api-test.nontakorn2600.workers.dev/api/items',{headers:{Authorization:'Bearer '+t}});return (await r.json()).items},tok);
+const srv=await p.evaluate(async t=>{const r=await fetch('https://ordivel-api-test.nontakorn2600.workers.dev/api/items',{headers:{Authorization:'Bearer '+t}});return (await r.json()).items},tok);
 ok('server has 5 items (count before=after)',srv.length===5,String(srv.length));
 const canon=v=>Array.isArray(v)?v.map(canon):(v&&typeof v==='object')?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canon(v[k])])):v;
 const m=new Map(srv.map(x=>[x.id,x]));let lossless=true;
@@ -49,7 +49,7 @@ let puts=0;p.on('request',q=>{if(q.method()==='PUT')puts++});
 // 7) แก้ไขในแอป -> ขึ้นเซิร์ฟเวอร์ (เพิ่มงานใหม่ผ่าน Repo)
 await p.evaluate(async()=>{const it={id:1760100000099,type:'task',title:'งานใหม่จาก v12',subject:'',time:'',timeEnd:'',track:'check',target:1,unitName:'',repeat:{unit:'none',every:1,days:[]},start:'2026-10-20',end:'',skip:{},rem:[],log:{}};const prev=S.items.slice();S.items.push(it);await syncChanges(prev,S.items)});
 await p.waitForTimeout(1500);
-const srv2=await p.evaluate(async t=>{const r=await fetch('https://evarel-api-test.nontakorn2600.workers.dev/api/items',{headers:{Authorization:'Bearer '+t}});return (await r.json()).items},tok);
+const srv2=await p.evaluate(async t=>{const r=await fetch('https://ordivel-api-test.nontakorn2600.workers.dev/api/items',{headers:{Authorization:'Bearer '+t}});return (await r.json()).items},tok);
 ok('one added item = exactly 1 PUT (no key-order churn)',puts===1,String(puts));
 ok('new item saved to server (6)',srv2.length===6&&srv2.some(x=>x.id===1760100000099),String(srv2.length));
 // 8) เปิดแอปใหม่ -> ไม่ต้องล็อกอินซ้ำ ไม่ถามนำเข้าซ้ำ ข้อมูลยังอยู่

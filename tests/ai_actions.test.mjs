@@ -14,7 +14,7 @@ const ctx=await openAsUser(b,user,{colorScheme:'light'});
 await ctx.addInitScript(()=>{ let clip=''; Object.defineProperty(navigator,'clipboard',{value:{writeText:v=>{clip=String(v);return Promise.resolve()},readText:()=>Promise.resolve(clip)},configurable:true}); window.__clip=()=>clip; });
 const p=await ctx.newPage();
 const errs=[]; p.on('pageerror',e=>errs.push(e.message));
-await p.goto('https://evarel-app-forge.nontakorn2600.workers.dev/index.html');
+await p.goto('https://ordivel-app-forge.nontakorn2600.workers.dev/index.html');
 await p.waitForTimeout(2600);
 
 /* ฉากตั้งต้น: เปิดหน้า AI + ใส่แชทปัจจุบันพร้อมข้อความ AI 1 ที (ไม่ต้องเรียก AI จริง ประหยัดโควตา) */

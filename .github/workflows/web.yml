@@ -128,6 +128,8 @@ jobs:
         run: node tests/m_core_import.test.mjs
       - name: ตารางไฟล์อ้างอิงของเทสต์เทียบยังใช้ได้ (tests/refs.lock.json -> git commit ฐาน)
         run: node scripts/gen-equiv-refs.mjs --check
+      - name: โดเมนทั้งระบบเป็น ordivel-* (กันชื่อยุคเก่ากลับมาแล้วยิงไปโดเมนที่ปิดไปแล้ว)
+        run: node tests/domains.test.mjs
       - name: สรุปผลขึ้นหน้า run
         if: always()
         run: |
@@ -158,7 +160,7 @@ jobs:
         run: |
           WANT=$(node -p "require('./build/web/release.json').build")
           for i in 1 2 3 4 5 6; do
-            GOT=$(curl -fsS -H 'Cache-Control: no-store' "https://evarel-app-forge.nontakorn2600.workers.dev/release.json?_=$RANDOM" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).build" 2>/dev/null || echo none)
+            GOT=$(curl -fsS -H 'Cache-Control: no-store' "https://ordivel-app-forge.nontakorn2600.workers.dev/release.json?_=$RANDOM" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).build" 2>/dev/null || echo none)
             echo "ลองครั้งที่ $i: เว็บ=$GOT ต้องการ=$WANT"
             [ "$GOT" = "$WANT" ] && echo "POST-DEPLOY OK" && exit 0
             sleep 10

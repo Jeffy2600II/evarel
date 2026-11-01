@@ -1,10 +1,10 @@
 /* ตัวช่วยกลางของประตูทดสอบ: สร้างผู้ใช้ทดสอบที่ยืนยันแล้วผ่าน Supabase Admin API
-   ล็อกอินผ่าน API จริง (evarel-api-forge) แล้วคืนฟังก์ชันลบผู้ใช้ทิ้ง ไม่ยิงอีเมล ไม่ทิ้งขยะ */
+   ล็อกอินผ่าน API จริง (ordivel-api-forge) แล้วคืนฟังก์ชันลบผู้ใช้ทิ้ง ไม่ยิงอีเมล ไม่ทิ้งขยะ */
 import fs from 'fs'; import { readEnvText } from './_env.mjs';
 const envText = readEnvText();
 const pick = k => { const m = envText.match(new RegExp('^\\s*(?:export\\s+)?' + k + '\\s*=\\s*(.*)$', 'm')); return m ? m[1].trim().replace(/^\$'(.*)'$/s, '$1').replace(/^["']|["']$/g, '') : ''; };
 export const SB = 'https://vdbmwmmsfrgpaauzspup.supabase.co';
-export const API = process.env.EVAREL_TEST_API || 'https://evarel-api-forge.nontakorn2600.workers.dev';
+export const API = process.env.EVAREL_TEST_API || 'https://ordivel-api-forge.nontakorn2600.workers.dev';
 const KEY = pick('SUPABASE_SERVICE_KEY');
 const H = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', 'User-Agent': 'evarel-test/1.0' };
 
@@ -54,8 +54,8 @@ export async function makeTestUser(tag = 'gate') {
 }
 
 /* เสิร์ฟโค้ดในเครื่องภายใต้โดเมน forge จริง เพื่อให้ผ่าน CORS ของ API โดยไม่ต้องเปิดช่องให้ localhost
-   (ทดสอบโค้ดที่แก้อยู่ แต่เบราว์เซอร์เห็น origin = evarel-app-forge) */
-export const APP_ORIGIN = 'https://evarel-app-forge.nontakorn2600.workers.dev';
+   (ทดสอบโค้ดที่แก้อยู่ แต่เบราว์เซอร์เห็น origin = ordivel-app-forge) */
+export const APP_ORIGIN = 'https://ordivel-app-forge.nontakorn2600.workers.dev';
 export async function serveLocalAs(ctx, webDir = process.env.EVAREL_WEB_DIR || './web/classic') {
   const mime = { html: 'text/html; charset=utf-8', js: 'application/javascript', css: 'text/css', json: 'application/json', webmanifest: 'application/manifest+json', png: 'image/png', svg: 'image/svg+xml', ico: 'image/x-icon' };
   await ctx.route(APP_ORIGIN + '/**', async route => {
