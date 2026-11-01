@@ -8,7 +8,9 @@ import { execFileSync } from 'node:child_process';
 /* ชื่อโดเมนยุคเก่าที่ห้ามโผล่ในโค้ดที่รันจริง/ตั้งค่า/เอกสารปฏิบัติการ
    ไม่นับ archive/ (ของประวัติศาสตร์) และ brand/ (ต้นฉบับนักออกแบบ ห้ามแตะ) และ *prototype* */
 const LEGACY = [/\bevarel-app-forge\b/, /\bevarel-api-forge\b/, /\bevarel-app\./, /\bevarel-api\b/];
-const SKIP = [/^archive\//, /prototype/, /^brand\//, /^node_modules\//];
+/* เอกสารการย้ายโดยตั้งใจต้องเอ่ยชื่อเดิม (ตารางเทียบของเก่ากับของใหม่ + คำสั่งลบ worker เก่า)
+   จึงยกเว้นเฉพาะไฟล์คู่มือการย้าย ไม่ใช่ยกเว้นทั้งโฟลเดอร์ docs */
+const SKIP = [/^archive\//, /prototype/, /^brand\//, /^node_modules\//, /^docs\/ops\/DOMAIN-MIGRATION\.md$/];
 const EXT = /\.(mjs|js|ts|tsx|json|toml|yml|yaml|html|md)$/;
 
 const files = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).split('\n').filter(Boolean)
