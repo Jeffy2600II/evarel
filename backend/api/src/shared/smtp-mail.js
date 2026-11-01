@@ -84,15 +84,21 @@ export function redact(s, secrets) {
 
 // ---- ส่วนเครือข่าย (รับ connect เข้ามา จึงทดสอบด้วยตัวปลอมได้) ----
 
+/* ส่งเมลผ่าน SMTP สองแบบ:
+   - "on"       = TLS ตั้งแต่เชื่อม (ค่าเดิม gmail 465)
+   - "starttls" = เริ่มแบบธรรมดาแล้วยกระดับด้วย STARTTLS (outlook.com 587) ต้องมี STARTTLS ใน EHLO
+   - "off"      = ไม่เข้ารหัส (เฉพาะเซิร์ฟเวอร์ทดสอบในเครื่อง) */
 export async function sendMail(cfg, mail, deps) {
-  const { host = "smtp.gmail.com", port = 465, user, pass } = cfg;
+  const { host = "smtp.gmail.com", port = 465, user, pass, from: fromCfg } = cfg;
+  const secure = cfg.secure === "starttls" ? "starttls" : cfg.secure === "off" ? "off" : "on";
   assertAddress("user", user); assertSingleLine("pass", pass);
-  const message = buildMessage({ from: user, ...mail });
+  /* From ใช้ค่าที่ผู้เรียกกำหนดก่อน (ถ้าไม่ให้มา ใช้ผู้ใช้ SMTP เหมือนเดิม) เพื่อรองรับกรณีส่งในนามที่อยู่เฉพาะ */
+  const message = buildMessage({ from: fromCfg || user, ...mail });
   const trace = [];
   const t0 = Date.now();
-  const sock = deps.connect({ hostname: host, port }, { secureTransport: "on", allowHalfOpen: false });
-  const reader = sock.readable.getReader();
-  const writer = sock.writable.getWriter();
+  let sock = deps.connect({ hostname: host, port }, { secureTransport: secure === "off" ? "off" : secure, allowHalfOpen: false });
+  let reader = sock.readable.getReader();
+  let writer = sock.writable.getWriter();
   let buf = "";
 
   const readReply = async () => {
@@ -116,7 +122,22 @@ export async function sendMail(cfg, mail, deps) {
     const greet = await readReply();
     trace.push({ cmd: "CONNECT", code: greet.code, text: redact(greet.text, [pass]).slice(0, 120) });
     expect(greet, 220, "greeting");
-    expect(await send("EHLO evarel.local"), 250, "EHLO");
+    let ehlo = await send("EHLO ordivel.local");
+    expect(ehlo, 250, "EHLO");
+    if (secure === "starttls") {
+      /* ต้องประกาศ STARTTLS ก่อน ไม่งั้นส่งแบบไม่เข้ารหัสไม่ได้ (จะไม่ยอมลดระดับความปลอดภัยเงียบ ๆ) */
+      if (!/starttls/i.test(ehlo.text || "")) throw new Error("เซิร์ฟเวอร์ไม่ประกาศ STARTTLS");
+      expect(await send("STARTTLS"), 220, "STARTTLS");
+      const secured = sock.startTls(); /* คืนซ็อกเก็ตใหม่ ตัวเก่าปิดถาวร ต้องสร้าง reader/writer ใหม่ */
+      try { reader.releaseLock(); } catch (_) {}
+      try { writer.releaseLock(); } catch (_) {}
+      sock = secured;
+      reader = sock.readable.getReader();
+      writer = sock.writable.getWriter();
+      buf = "";
+      ehlo = await send("EHLO ordivel.local");
+      expect(ehlo, 250, "EHLO(หลัง STARTTLS)");
+    }
     // AUTH PLAIN : ข้อความลับถูกส่งในคำสั่งเดียว และไม่ถูกบันทึกลง trace
     const plain = b64(enc.encode("\0" + user + "\0" + pass));
     expect(await send("AUTH PLAIN " + plain, "AUTH PLAIN"), 235, "AUTH");
