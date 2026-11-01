@@ -105,13 +105,37 @@ async function loadApp() {
 async function boot() {
     UI.auth.status = 'loading';
     render();
+    let oauthNote = '';
     try {
         ST.USER = (Auth.takeOAuthReturn && await Auth.takeOAuthReturn()) || await Auth.session();
     }
     catch (err) {
         console.warn('session failed', err);
-        ST.USER = null;
+        /* กลับจาก Google แล้วมีปัญหา: แจ้งผู้ใช้แบบเข้าใจง่าย และยังลองเซสชันเดิมต่อ (เคสยกเลิกที่หน้า Google ต้องเข้าแอปตามเดิมถ้าเซสชันเก่ายังอยู่)
+           oauth_failed คง token ที่จอดไว้ (OAUTH_PARK) — รีโหลดหน้าถัดไปจะลองใหม่เองอัตโนมัติ */
+        if (err && err.code === 'oauth_cancelled') {
+            oauthNote = 'ยกเลิกการเข้าสู่ระบบด้วย Google แล้ว';
+            try {
+                ST.USER = await Auth.session();
+            }
+            catch (e2) {
+                ST.USER = null;
+            }
+        }
+        else if (err && err.code === 'oauth_failed') {
+            oauthNote = 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ ลองใหม่อีกครั้ง';
+            try {
+                ST.USER = await Auth.session();
+            }
+            catch (e2) {
+                ST.USER = null;
+            }
+        }
+        else
+            ST.USER = null;
     }
+    if (oauthNote)
+        toast(oauthNote);
     if (!ST.USER) {
         UI.auth.status = 'out';
         UI.auth.screen = 'welcome';
@@ -194,14 +218,22 @@ async function authSubmit(kind, form) {
         haptic();
     }
 }
-async function authGoogle(btn) { const old = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="ev-spin"></span>'; try {
-    await enterApp(await Auth.signInGoogle());
+async function authGoogle(btn) {
+    const old = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ev-spin"></span>';
+    /* กันสปินเนอร์ค้าง: ถ้าพาไปหน้า Google ไม่สำเร็จ (เน็ตหลุด/ถูกบล็อก) 10 วิ คืนปุ่มและแจ้งเสมอ — ถ้าไปได้ปกติหน้านี้เปลี่ยนไปก่อน timer ทำงาน */
+    const back = setTimeout(() => { btn.disabled = false; btn.innerHTML = old; toast(AU_MSG.network); }, 10000);
+    try {
+        await enterApp(await Auth.signInGoogle());
+    }
+    catch (err) {
+        clearTimeout(back);
+        btn.disabled = false;
+        btn.innerHTML = old;
+        toast(AU_MSG[err.code] || AU_MSG.unknown);
+    }
 }
-catch (err) {
-    btn.disabled = false;
-    btn.innerHTML = old;
-    toast(AU_MSG[err.code] || AU_MSG.unknown);
-} }
 async function enterApp(user) { ST.USER = user; await loadApp(); try {
     startLiveSync();
     pushAutoSync();

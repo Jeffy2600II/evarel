@@ -34,7 +34,7 @@ const authViews = (a) => ({
   newpw: () => `<div><h1 class="ev-auth-title">\u0E15\u0E31\u0E49\u0E07\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19\u0E43\u0E2B\u0E21\u0E48</h1><p class="ev-sub" style="margin-top:6px">\u0E15\u0E31\u0E49\u0E07\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19\u0E43\u0E2B\u0E21\u0E48\u0E43\u0E2B\u0E49\u0E1A\u0E31\u0E0D\u0E0A\u0E35 <b>${esc(a.email)}</b></p></div>
   <form class="ev-form ev-authform" data-kind="newpw" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld("\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19\u0E43\u0E2B\u0E21\u0E48", "password", "password", `autocomplete="new-password" placeholder="\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 ${PW_MIN} \u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23"`, eyeBtn("f-password"))}${submitBtn("\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19")}</form>`
 });
-const AUTH_SPLASH = `<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Evarel</b></div>`;
+const AUTH_SPLASH = `<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Evarel</b><span class="ev-spin ev-spin-splash" role="status" aria-label="\u0E01\u0E33\u0E25\u0E31\u0E07\u0E42\u0E2B\u0E25\u0E14"></span><span class="ev-splash-note">\u0E01\u0E33\u0E25\u0E31\u0E07\u0E42\u0E2B\u0E25\u0E14\u2026</span></div>`;
 export {
   AUTH_SPLASH,
   EMAIL_X,

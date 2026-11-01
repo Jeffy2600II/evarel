@@ -3305,6 +3305,42 @@ body[data-auth="out"] .ev-app,body[data-auth="out"] .ev-nav,body[data-auth="out"
   animation:breathe 2s ease-in-out infinite
 }
 
+.ev-splash-note{
+  font-size:13px;
+  color:var(--c-muted)
+}
+
+.ev-splash .ev-spin-splash{
+  width:22px;
+  height:22px;
+  border-width:2.5px;
+  color:var(--c-accent)
+}
+
+/* สแปลชบูตแบบนิ่ง: อยู่ใน HTML ตั้งแต่ไบต์แรก (ก่อน JS โหลด) — จอดับขาวตอนกลับจาก Google หรือเปิดแอปครั้งต่อไป
+   โชว์ด้วยสคริปต์หัวหน้าเมื่อมีเซสชัน/token รออยู่ เครื่องยนต์พร้อมแล้วเรียก evBootHide() คืน (เฟดผ่าน opacity, pointer-events:none ตลอด) */
+
+#ev-boot{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:grid;
+  place-items:center;
+  background:var(--c-bg);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .24s var(--ease)
+}
+
+#ev-boot[data-on="1"]{
+  opacity:1
+}
+
+#ev-boot .ev-splash{
+  margin:0;
+  animation:none
+}
+
 /* หัวหน้าแบบย่อ: ใช้ร่วมกันทุกหน้า auth ให้หน้าตาเป็นชุดเดียวกับหน้าต้อนรับ */
 
 .ev-hero-s{

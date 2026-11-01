@@ -12,6 +12,44 @@
 
 </head>
 <body>
+<div id="ev-boot" hidden><div class="ev-splash">
+<svg class="mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><path d="M16.5 24.5l5.5 5.5 10-11.5"/></svg>
+<b style="font-size:28px;letter-spacing:-1px">Evarel</b>
+<span class="ev-spin ev-spin-splash" aria-hidden="true"></span>
+<span class="ev-splash-note" role="status">กำลังโหลด…</span>
+</div></div>
+<script>
+/* Evarel เฟรมแรก (ก่อนโมดูลทุกตัวซึ่งเป็นแบบ deferred): จับ token ที่กลับมาจาก Google จาก URL hash — เก็บ (park) ไว้ที่ localStorage แล้วล้าง hash ทันที กัน token หายถ้าเน็ตวูบ
+   แล้วโชว์สแปลชนี้ทันทีถ้ากำลังจะเข้าสู่ระบบอัตโนมัติ (มี token OAuth หรือเซสชันเดิม) = ไม่มีหน้าขาวอีกต่อไป เครื่องยนต์พร้อมเมื่อไรเรียก evBootHide() คืน */
+(function () {
+  var PARK = 'evarel-oauth-park', OERR = 'evarel-oauth-error', back = false;
+  try {
+    var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    if (h.get('error')) {
+      try { sessionStorage.setItem(OERR, h.get('error_description') || h.get('error') || 'oauth'); } catch (e) {}
+      history.replaceState(null, '', location.pathname + location.search);
+    } else if (h.get('access_token')) {
+      var p = {}; h.forEach(function (v, k) { p[k] = v; });
+      try { localStorage.setItem(PARK, JSON.stringify(p)); } catch (e) {}
+      history.replaceState(null, '', location.pathname + location.search);
+      back = true;
+    }
+    var parked = false; try { parked = !!localStorage.getItem(PARK); } catch (e) {}
+    var sess = false; try { sess = !!localStorage.getItem('evarel-session-v2'); } catch (e) {}
+    if (back || parked || sess) {
+      var b = document.getElementById('ev-boot');
+      if (b) {
+        if (back || parked) { var n = b.querySelector('.ev-splash-note'); if (n) n.textContent = 'กำลังเข้าสู่ระบบด้วย Google…'; }
+        b.hidden = false;
+        requestAnimationFrame(function () { b.dataset.on = '1'; });
+      }
+    }
+  } catch (e) { /* อะไรก็ตามล้มเหลว ห้ามกระทบการบูตเดิม */ }
+  window.evBootHide = function () { try { var x = document.getElementById('ev-boot'); if (x) x.dataset.on = ''; } catch (e) {} };
+  /* กันค้างสุดขั้ว: 15 วิ ไม่ว่าอะไรจะเกิดขึ้นก็ปลดสแปลชออก */
+  setTimeout(function () { window.evBootHide(); }, 15000);
+})();
+</script>
 <div class="ev-app" id="app"></div>
 <button class="ev-live" id="live" data-show="false" aria-label="เปิดหน้าจับเวลา"></button>
 <nav class="ev-nav" aria-label="เมนูหลัก"><ul id="nav"></ul></nav>

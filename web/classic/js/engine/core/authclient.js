@@ -43,6 +43,28 @@ const SupaCore = (api) => {
   return { raw, token, userOf };
 };
 const SUPA_HOST = "https://vdbmwmmsfrgpaauzspup.supabase.co";
+const OAUTH_PARK = "evarel-oauth-park";
+const OAUTH_ERR = "evarel-oauth-error";
+const oauthParkRead = () => {
+  try {
+    const v = localStorage.getItem(OAUTH_PARK);
+    return v ? JSON.parse(v) : null;
+  } catch (err) {
+    return null;
+  }
+};
+const oauthParkWrite = (p) => {
+  try {
+    localStorage.setItem(OAUTH_PARK, JSON.stringify(p));
+  } catch (err) {
+  }
+};
+const oauthParkClear = () => {
+  try {
+    localStorage.removeItem(OAUTH_PARK);
+  } catch (err) {
+  }
+};
 const SupaAuth = (api) => {
   const c = SupaCore(api);
   let pending = null;
@@ -69,12 +91,39 @@ const SupaAuth = (api) => {
       });
     },
     async takeOAuthReturn() {
+      let oauthErr = "";
+      try {
+        oauthErr = sessionStorage.getItem(OAUTH_ERR) || "";
+        sessionStorage.removeItem(OAUTH_ERR);
+      } catch (err) {
+      }
+      if (oauthErr) throw authErr(oauthErr === "access_denied" ? "oauth_cancelled" : "oauth_failed");
       const h = new URLSearchParams(location.hash.replace(/^#/, ""));
-      if (!h.get("access_token")) return null;
-      history.replaceState(null, "", location.pathname + location.search);
-      const at = h.get("access_token") || "", rt = h.get("refresh_token") || "", ex = Number(h.get("expires_at")) || 0;
-      const j = await c.raw("/auth/session", { method: "POST", body: { access_token: at, refresh_token: rt, expires_at: ex } });
-      return take(j);
+      const inHash = !!h.get("access_token");
+      const tok = inHash ? Object.fromEntries(h) : oauthParkRead();
+      if (!tok || !tok.access_token) return null;
+      if (inHash) {
+        oauthParkWrite(tok);
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+      const ex = Number(tok.expires_at) || nowS() + (Number(tok.expires_in) || 0);
+      const post = () => c.raw("/auth/session", { method: "POST", body: { access_token: String(tok.access_token), refresh_token: String(tok.refresh_token || ""), expires_at: ex } });
+      try {
+        let j;
+        try {
+          j = await post();
+        } catch (err) {
+          if (err && (err.code === "network" || !(err.status < 500))) {
+            await new Promise((r) => setTimeout(r, 500));
+            j = await post();
+          } else throw err;
+        }
+        oauthParkClear();
+        return take(j);
+      } catch (err) {
+        if (err && err.status && err.status < 500) oauthParkClear();
+        throw authErr("oauth_failed");
+      }
     },
     async signInEmail(email, pw) {
       return take(await c.raw("/auth/login", { method: "POST", body: { email, password: pw } }));
@@ -102,7 +151,9 @@ const SupaAuth = (api) => {
     },
     async signOut() {
       supaClear();
+      oauthParkClear();
     },
+    /* ล้าง OAuth ที่จอดไว้ด้วย กันเซสชันค้างหลังออกจากระบบ */
     async deleteAccount(pw) {
       await c.raw("/auth/account", { method: "DELETE", body: { password: pw }, token: await c.token() });
       supaClear();
@@ -128,6 +179,8 @@ const SupaAdapter = (api) => {
   };
 };
 export {
+  OAUTH_ERR,
+  OAUTH_PARK,
   SUPA_HOST,
   SUPA_SESS,
   SupaAdapter,
@@ -135,6 +188,9 @@ export {
   SupaCore,
   authErr,
   nowS,
+  oauthParkClear,
+  oauthParkRead,
+  oauthParkWrite,
   supaClear,
   supaLoad,
   supaSave

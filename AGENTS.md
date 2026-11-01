@@ -10,7 +10,7 @@ Evarel is a **single-owner, Thai-language, offline-first life-management PWA** (
 
 1. `AGENTS.md` (this file)
 2. `PRD.md` — scope, acceptance criteria (§4, frozen), constraints
-3. `DESIGN.md` — the design system; §13 anti-patterns are hard bans
+3. `DESIGN.md` — the design system; the “Do's and Don'ts” section is hard bans
 4. `SITEMAP.md` + `USER-FLOW.md` — screens and flows you must preserve
 5. `ARCHITECTURE.md` + `DATA-MODEL.md` — how to build without breaking layering
 
@@ -22,16 +22,16 @@ Evarel is a **single-owner, Thai-language, offline-first life-management PWA** (
 ## 3. Design rules (short form of `DESIGN.md`)
 
 - **Tokens only.** Every color, radius, spacing, shadow, and motion value comes from `web/classic/styles/design.css` via CSS vars or Tailwind aliases (`bg-surface`, `rounded-card`, …). **Never write a literal hex, px radius, or ad-hoc shadow in a component.**
-- **Single edit point.** Value changes happen in `web/classic/styles/design.css` only — the compiled `app.css` is never edited by hand — following the change protocol in `DESIGN.md` §1 (decision log → tokens → demo → tailwind mapping, one commit).
+- **Single edit point.** Value changes happen in `web/classic/styles/design.css` only — the compiled `app.css` is never edited by hand — following the change protocol in `DESIGN.md` Appendix A1 (decision log → tokens → demo → tailwind mapping, one commit).
 - **Radius per class:** chip 12 · control 14 · card 26 · sheet 32 · pill 999 (`--r-*`; chip/control tokens are still pending in code — see DESIGN.md D-006). Never improvise a radius.
-- **One accent per view;** semantic colors are dots/icons, **never body text**; states = ink text on `-soft` backgrounds (`DESIGN.md` §3.3, §12).
-- **Banned (the "AI look" list, `DESIGN.md` §13):** gradients, glassmorphism, shadows on resting cards, colored body text, emoji as icons, decorative motion, all-caps, multi-column mosaics, fake content, new colors. If your output contains any of these, it is wrong by definition.
-- **Both themes, always:** light and dark ship in the same change; dark buttons use ink-on-accent, not white (`DESIGN.md` §3.2).
+- **One accent per view;** semantic colors are dots/icons, **never body text**; states = ink text on `-soft` backgrounds (`DESIGN.md` § Colors — semantic rules + measured contrast).
+- **Banned (the “AI look” list, `DESIGN.md` § Do's and Don'ts):** gradients, glassmorphism, shadows on resting cards, colored body text, emoji as icons, decorative motion, all-caps, multi-column mosaics, fake content, new colors. If your output contains any of these, it is wrong by definition.
+- **Both themes, always:** light and dark ship in the same change; dark buttons use ink-on-accent, not white (`DESIGN.md` § Colors — Dark).
 - **Font:** the shipped `--font` stack only — `system-ui … 'Noto Sans Thai'` (DD-7). Never add a family, `@font-face`, or font files.
 
 ## 4. Code rules
 
-- **UI copy: Thai. Identifiers, comments, docs: English.** No all-caps Thai; emphasis by weight, never underline/italics (`DESIGN.md` §4).
+- **UI copy: Thai. Identifiers, comments, docs: English.** No all-caps Thai; emphasis by weight, never underline/italics (`DESIGN.md` § Typography).
 - **Layering is strict** (`ARCHITECTURE.md` §2): router → views → services → core → network. Views never fetch; services never render. The AI never writes to storage directly — it goes through the same services as manual actions.
 - **Offline-first:** writes are optimistic with client-generated UUIDs; reconciliation is idempotent upsert, last-write-wins, checklist monotonic (`DATA-MODEL.md` §6). Never block the UI on the network.
 - **No new runtime framework or dependency in `web/`** beyond the existing stack (TS engine modules, React page boxes, the `web/next` serving route). No new dependency without a stated free-tier-budget justification.
@@ -58,7 +58,7 @@ If you cannot run a suite, say so explicitly instead of claiming it passed.
 [ ] Thai copy, sentence case, no all-caps, no underline emphasis
 [ ] Empty/loading/offline/error states present (SITEMAP.md §5)
 [ ] Motion only on state change (out-expo default; spring only for affirmative moments)
-[ ] No item from the anti-pattern list (DESIGN.md §13)
+[ ] No item from the Do/Don't list (DESIGN.md § Do's and Don'ts)
 [ ] Visual parity suite passes (image 0 pixels)
 ```
 
@@ -69,7 +69,7 @@ Secret **names** only in code/docs: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SMT
 ## 8. Changing the docs themselves
 
 - Product scope changes: `PRD.md` (cite the plan file). Acceptance criteria are frozen.
-- Visual changes: append to `DESIGN.md` §14 decision log, then sync per §1. Log discovered drift in §15 — never "fix" drift silently.
+- Visual changes: append to `DESIGN.md` Appendix A2 decision log, then sync per A1. Log discovered drift in A3 — never "fix" drift silently.
 - Schema changes: migration + `DATA-MODEL.md` entry in the same commit (§8 there).
 
 ## 9. Working style

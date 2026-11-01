@@ -6,7 +6,7 @@ const RESEND_SEC=30;
 import { GLOGO, EV_MARK, RINGS, authBack, gBtn, legal, eyeBtn, EMAIL_X, submitBtn, authViews, AUTH_SPLASH } from './core/authviews.js';
 /* AUTH_VIEWS: เดิมเป็นอ็อบเจ็กต์ของฟังก์ชันที่อ่าน UI.auth ตอนเรียก ตอนนี้ตัวสร้างอยู่ core/authviews (รับ email/codeType เป็นพารามิเตอร์) ชั้นนี้ห่อให้เรียก AUTH_VIEWS[sc]() แบบไม่มีอาร์กิวเมนต์เหมือนเดิม และอ่าน UI.auth ตอนเรียกเหมือนเดิม */
 const AUTH_VIEWS=Object.fromEntries(['welcome','login','signup','forgot','sent','code','newpw'].map(k=>[k,()=>(authViews as any)(UI.auth)[k]()]));
-function renderAuthRoot(){const au=$('auth');au.hidden=false;const sc=UI.auth.status==='loading'?'loading':UI.auth.screen;if(au.dataset.screen===sc)return;au.dataset.screen=sc;
+function renderAuthRoot(){(window as any).evBootHide?.(); /* สแปลชบูตแบบนิ่ง (index.html วาดไว้ก่อน JS) เข้าช่วงเครื่องยนต์แล้ว มอบหมายให้หน้า auth ต่อ */const au=$('auth');au.hidden=false;const sc=UI.auth.status==='loading'?'loading':UI.auth.screen;if(au.dataset.screen===sc)return;au.dataset.screen=sc;
  const MT=(window as any).EvarelMount;
  if(MT?.ready('auth')){MT.mountAt(au,'auth',{screen:sc})}
  else{au.innerHTML=`<div class="ev-auth-in">${sc==='loading'?AUTH_SPLASH:AUTH_VIEWS[sc]()}</div>`}

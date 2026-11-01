@@ -37,4 +37,4 @@ export const authViews=(a:{email?:string;codeType?:string})=>({
   <button class="ev-btn-auth" data-kind="google" id="resendBtn" data-act="au-resend" disabled></button>`,
  newpw:()=>`<div><h1 class="ev-auth-title">ตั้งรหัสผ่านใหม่</h1><p class="ev-sub" style="margin-top:6px">ตั้งรหัสผ่านใหม่ให้บัญชี <b>${esc(a.email)}</b></p></div>
   <form class="ev-form ev-authform" data-kind="newpw" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('รหัสผ่านใหม่','password','password',`autocomplete="new-password" placeholder="อย่างน้อย ${PW_MIN} ตัวอักษร"`,eyeBtn('f-password'))}${submitBtn('บันทึกรหัสผ่าน')}</form>`});
-export const AUTH_SPLASH=`<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Evarel</b></div>`;
+export const AUTH_SPLASH=`<div class="ev-splash">${EV_MARK}<b style="font-size:28px;letter-spacing:-1px">Evarel</b><span class="ev-spin ev-spin-splash" role="status" aria-label="กำลังโหลด"></span><span class="ev-splash-note">กำลังโหลด…</span></div>`;

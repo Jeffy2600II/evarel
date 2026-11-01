@@ -27,7 +27,15 @@ async function loadApp(){claimLegacyData();UI.auth.status='in';ST.CH=loadChats()
  try{const [s]=await Promise.all([ST.Repo.load(),wait(SKELETON_MS)]);S.items=s.items}catch(err){console.warn('load failed',err);UI.error=err}
  UI.loading=false;UI.animate=true;render();
  if(!UI.error){const r=await maybeImportLegacy(S.items);if(r!==S.items){S.items=r;UI.animate=false;render()}}}
-async function boot(){UI.auth.status='loading';render();try{ST.USER=(Auth.takeOAuthReturn&&await Auth.takeOAuthReturn())||await Auth.session()}catch(err){console.warn('session failed',err);ST.USER=null}
+async function boot(){UI.auth.status='loading';render();let oauthNote='';
+ try{ST.USER=(Auth.takeOAuthReturn&&await Auth.takeOAuthReturn())||await Auth.session()}
+ catch(err){console.warn('session failed',err);
+  /* กลับจาก Google แล้วมีปัญหา: แจ้งผู้ใช้แบบเข้าใจง่าย และยังลองเซสชันเดิมต่อ (เคสยกเลิกที่หน้า Google ต้องเข้าแอปตามเดิมถ้าเซสชันเก่ายังอยู่)
+     oauth_failed คง token ที่จอดไว้ (OAUTH_PARK) — รีโหลดหน้าถัดไปจะลองใหม่เองอัตโนมัติ */
+  if(err&&err.code==='oauth_cancelled'){oauthNote='ยกเลิกการเข้าสู่ระบบด้วย Google แล้ว';try{ST.USER=await Auth.session()}catch(e2){ST.USER=null}}
+  else if(err&&err.code==='oauth_failed'){oauthNote='เข้าสู่ระบบด้วย Google ไม่สำเร็จ ลองใหม่อีกครั้ง';try{ST.USER=await Auth.session()}catch(e2){ST.USER=null}}
+  else ST.USER=null}
+ if(oauthNote)toast(oauthNote);
  if(!ST.USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp();try{startLiveSync();pushAutoSync()}catch(err){console.warn('live sync',err)}}
 boot();
 /* moved by move_defs (evarel-ts-1f) */
@@ -39,7 +47,10 @@ async function authSubmit(kind,form){clearErrs(form);const v=/** @type {Record<s
   if(kind==='newpw'){await Auth.setPassword(v.password);const u=UI.auth.pendingUser;UI.auth.pendingUser=null;toast('ตั้งรหัสผ่านใหม่แล้ว');await enterApp(u);return}
   const user=kind==='login'?await Auth.signInEmail(v.email.trim(),v.password):await Auth.signUp({name:v.name.trim(),email:v.email.trim(),password:v.password});await enterApp(user)}
  catch(err){setBusy(form,false);if(err.code==='verify_needed'){UI.auth.email=v.email.trim();UI.auth.codeType='signup';UI.auth.screen='code';renderAuthRoot();return}if(err.code==='email_taken'||err.code==='needs_link')fieldErr(form,'email',AU_MSG[err.code]);else if(err.code==='code_invalid'||err.code==='code_expired')fieldErr(form,'code',AU_MSG[err.code]);else{const fe=form.querySelector('#form-err');fe.textContent=AU_MSG[err.code]||AU_MSG.unknown;fe.hidden=false;fe.style.animation='none';void fe.offsetWidth;fe.style.animation=''}haptic()}}
-async function authGoogle(btn){const old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="ev-spin"></span>';try{await enterApp(await Auth.signInGoogle())}catch(err){btn.disabled=false;btn.innerHTML=old;toast(AU_MSG[err.code]||AU_MSG.unknown)}}
+async function authGoogle(btn){const old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="ev-spin"></span>';
+ /* กันสปินเนอร์ค้าง: ถ้าพาไปหน้า Google ไม่สำเร็จ (เน็ตหลุด/ถูกบล็อก) 10 วิ คืนปุ่มและแจ้งเสมอ — ถ้าไปได้ปกติหน้านี้เปลี่ยนไปก่อน timer ทำงาน */
+ const back=setTimeout(()=>{btn.disabled=false;btn.innerHTML=old;toast(AU_MSG.network)},10000);
+ try{await enterApp(await Auth.signInGoogle())}catch(err){clearTimeout(back);btn.disabled=false;btn.innerHTML=old;toast(AU_MSG[err.code]||AU_MSG.unknown)}}
 async function enterApp(user){ST.USER=user;await loadApp();try{startLiveSync();pushAutoSync()}catch(err){console.warn('live sync',err)}}
 
 Object.assign(window, { IMPORT_FLAG, readLegacyItems, importLegacy, maybeImportLegacy, IMPORT_PENDING, runImport, loadApp, boot, authSubmit, authGoogle, enterApp });
