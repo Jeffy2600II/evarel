@@ -91,6 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # ด่านตรวจตารางไฟล์อ้างอิงต้องอ่านประวัติเพื่อ git show commit ฐาน (โคลนตื้นจะหาของไม่เจอ)
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: ตรวจกติกากล่อง BOX-01..06 (ไม่ผ่าน = ไม่ปล่อย)

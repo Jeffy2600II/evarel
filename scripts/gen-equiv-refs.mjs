@@ -138,7 +138,11 @@ function main() {
     const c = lock[r.engine];
     if (!c) { console.log(`✗ ${r.engine}: ไม่มีใน ${path.relative(ROOT, LOCK)} (รัน --verify ครั้งเดียวแล้ว commit ไฟล์นั้น)`); bad++; continue; }
     const src = show(c.base, c.basePath);
-    if (src === null) { console.log(`✗ ${r.engine}: commit ${String(c.base).slice(0, 7)} ไม่มีไฟล์ ${c.basePath} (ประวัติถูกเขียนใหม่?)`); bad++; continue; }
+    if (src === null) {
+      const shallow = (() => { try { return git('rev-parse', '--is-shallow-repository').trim() === 'true'; } catch { return false; } })();
+      const why = shallow ? 'โคลนตื้น (ต้อง fetch-depth 0 / git fetch --unshallow)' : 'ประวัติถูกเขียนใหม่หรือ commit ไม่มีอยู่';
+      console.log(`✗ ${r.engine}: commit ${String(c.base).slice(0, 7)} ไม่มีไฟล์ ${c.basePath} — ${why}`); bad++; continue;
+    }
     /* ไม่ตัดสินว่า "ต้องไม่มี import" เอง: บางเทสต์รับไฟล์ที่มี import ได้ (ตัวเทสต์เป็นผู้พิสูจน์ตอน --verify)
        สิ่งที่บังคับคือ ห้ามเหมือนไฟล์ปัจจุบัน ไม่งั้นเทสต์จะเทียบกับตัวเองแล้วผ่านลวง */
     const curPath = CANDIDATES(r.engine).find((x) => show('HEAD', x) !== null);
