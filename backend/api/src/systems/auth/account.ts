@@ -90,7 +90,17 @@ async function sendOwnCode(env: Env, email: string, purpose: Purpose): Promise<v
           return smtpSend(cfg, mail, { connect });
         };
     const from = String((env as any).SMTP_FROM || '').trim();
-    await send({ user: (env as any).SMTP_USER, pass: String((env as any).SMTP_PASS).replace(/\s+/g, ''), from }, { to: email, ...m });
+    /* โฮสต์/พอร์ต/วิธีเข้ารหัสมาจาก env เพื่อสลับผู้ให้บริการได้โดยไม่แก้โค้ด
+       ค่าเริ่มต้นคงเดิม (gmail 465 TLS) — outlook ใช้ SMTP_HOST=smtp-mail.outlook.com SMTP_PORT=587 SMTP_SECURE=starttls */
+    const num = (v: any) => { const n = Number(String(v ?? '').trim()); return Number.isFinite(n) && n > 0 ? n : undefined };
+    await send({
+      user: (env as any).SMTP_USER,
+      pass: String((env as any).SMTP_PASS).replace(/\s+/g, ''),
+      from,
+      host: String((env as any).SMTP_HOST || '').trim() || undefined,
+      port: num((env as any).SMTP_PORT),
+      secure: String((env as any).SMTP_SECURE || '').trim() || undefined,
+    }, { to: email, ...m });
   } catch { /* กลืนเงียบ: ห้ามต่างกันตามผล เพื่อกันเดาอีเมล */ }
 }
 /* รันหลังตอบ (ctx.waitUntil) เพื่อให้เวลาตอบเท่ากันทุกกรณี ถ้าไม่มี ctx (เช่นเทสต์เดิม) รอให้เสร็จ */
