@@ -69,8 +69,8 @@ try {
     ok('settings_equiv (classic string vs React mount)', sp.same, sp.same ? '' : `\n A=${sp.A}\n B=${sp.B}`);
 
     /* === SETTINGS วงจรจริง: เปิด/ปิดหน้าตั้งค่า + สลับธีม + unmount สะอาด === */
-    const c1 = await p.evaluate(() => { window.settingsOpen(); const pg = document.getElementById('page'); return { hasRoot: !!window.EvarelMount?.roots?.settings, hasBar: !!pg?.querySelector('.ev-page-bar'), hasScroll: !!pg?.querySelector('.ev-page-scroll') }; });
-    ok('วงจรเปิดหน้าตั้งค่า (mountAt ที่ #page)', c1.hasRoot && c1.hasBar && c1.hasScroll, JSON.stringify(c1));
+    const c1 = await p.evaluate(() => { window.settingsOpen(); const top = window.LAYERS[window.LAYERS.length - 1]?.el; return { hasRoot: !!window.EvarelMount?.roots?.settings, hasBar: !!top?.querySelector('.ev-page-bar'), hasScroll: !!top?.querySelector('.ev-page-scroll') }; });
+    ok('วงจรเปิดหน้าตั้งค่า (ชั้นเต็มจอที่สร้างใหม่)', c1.hasRoot && c1.hasBar && c1.hasScroll, JSON.stringify(c1));
     const c2 = await p.evaluate(() => { window.applyTheme('dark'); window.settingsRepaint(); return { hasRoot: !!window.EvarelMount?.roots?.settings, theme: document.documentElement.dataset.theme || document.body.dataset.theme || '' }; });
     ok('วงจรสลับธีม + repaint ผ่าน React', c2.hasRoot, JSON.stringify(c2));
     const c3 = await p.evaluate(() => { const n = window.LAYERS.length; for (let i = 0; i < n; i++) window.popLayer(); return { layersEmpty: window.LAYERS.length === 0 }; });

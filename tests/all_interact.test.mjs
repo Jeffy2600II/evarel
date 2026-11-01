@@ -13,7 +13,9 @@ try {
   await seedItems(user.session, [mk(9101, 'habit', 'กิจวัตรทดสอบ'), mk(9102, 'task', 'งานทดสอบ', { repeat: { unit: 'none', every: 1, days: [] } }), mk(9103, 'event', 'กิจกรรมทดสอบ', { repeat: { unit: 'none', every: 1, days: [] }, time: '09:30', timeEnd: '10:30' })]);
   const ctx = await openAsUser(b, user, { colorScheme: 'light' }); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(APP_ORIGIN + '/index.html'); await p.waitForTimeout(3800);
-  const openLayers = () => p.evaluate(() => ['sheet', 'page', 'dialog'].filter(id => document.getElementById(id)?.dataset.open === 'true'));
+  /* ความจริงเดียวเรื่องชั้นที่เปิดอยู่ = สแตกของแอปเอง (window.LAYERS, 09-ui__layers pushLayer)
+     ห้ามเดาจาก .ev-page[role=dialog] เพราะหน้าเส้นทางหลัก (#/today, #/all) ก็เป็น .ev-page role=dialog เหมือนกัน */
+  const openLayers = () => p.evaluate(() => window.LAYERS.map((l) => l.kind));
   const heads = () => p.evaluate(() => [...document.querySelectorAll('h3.ev-group')].map(h => h.firstChild?.textContent?.trim() + ':' + h.querySelector('span')?.textContent));
   const press = async (sel) => { try { await p.click(sel, { timeout: 4000 }); return true } catch (e) { t('กดปุ่มไม่ได้: ' + sel, false, String(e.message).split('\n')[0]); return false } };
   await p.evaluate(() => { location.hash = '#/all' });
@@ -31,7 +33,7 @@ try {
   // ปุ่ม + เพิ่ม: ต้องเปิดฟอร์มของชนิดนั้น
   for (const [k, label] of [['habit', 'กิจวัตร'], ['task', 'งาน'], ['event', 'กิจกรรม']]) {
     if (await press(`[data-act="add-type"][data-id="${k}"]`)) { await p.waitForTimeout(600);
-      const st = await p.evaluate(() => ({ type: ST.D?.type, layers: ['sheet', 'page', 'dialog'].filter(id => document.getElementById(id)?.dataset.open === 'true') }));
+      const st = await p.evaluate(() => ({ type: ST.D?.type, layers: window.LAYERS.map((l) => l.kind) }));
       t(`ปุ่ม + ของ${label}: เปิดฟอร์มชนิด ${k}`, st.type === k && st.layers.length >= 1, JSON.stringify(st));
       await p.keyboard.press('Escape'); await p.waitForTimeout(600); /* ตรวจจริง 17 ต.ค. 2026: Escape ปิดฟอร์มและกลับ #/all เอง ห้ามสั่ง history.back() ซ้ำ ไม่งั้นถอยไป #/today */
       t(`หลังปิดฟอร์ม${label}: ยังอยู่หน้ารายการและไม่มีชั้นค้าง`, (await p.evaluate(() => location.hash)) === '#/all' && (await openLayers()).length === 0, await p.evaluate(() => location.hash));
@@ -39,7 +41,7 @@ try {
   }
   // กดแถว: เปิดรายละเอียดของรายการนั้น
   if (await press('[data-act="detail"][data-id="9102"]')) { await p.waitForTimeout(800);
-    const dt = await p.evaluate(() => ({ layers: ['sheet', 'page', 'dialog'].filter(id => document.getElementById(id)?.dataset.open === 'true'), text: (document.getElementById('page')?.textContent || '') + (document.getElementById('sheet')?.textContent || '') }));
+    const dt = await p.evaluate(() => ({ layers: window.LAYERS.map((l) => l.kind), text: [...document.querySelectorAll('.ev-page[role="dialog"]')].map((e) => e.textContent).join(' ') + (document.getElementById('sheet')?.textContent || '') }));
     t('กดแถว "งานทดสอบ": เปิดรายละเอียดที่มีชื่อรายการนั้น', dt.layers.length >= 1 && dt.text.includes('งานทดสอบ'), JSON.stringify({ layers: dt.layers, hasTitle: dt.text.includes('งานทดสอบ') })); }
   t('ไม่มี pageerror ตลอดกระบวนการ', errs.length === 0, errs.join(' | '));
 } finally { await b.close(); console.log('cleanup', await user.cleanup()); }

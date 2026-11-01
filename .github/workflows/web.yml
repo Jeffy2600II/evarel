@@ -125,6 +125,8 @@ jobs:
         run: python3 tools/plan_check.py
       - name: เกตแคช core ของ service worker (import ./core/ ทุกตัวต้องอยู่ใน CORE ของ sw.js ไม่งั้นออฟไลน์พังเงียบ)
         run: node tests/m_core_import.test.mjs
+      - name: ตารางไฟล์อ้างอิงของเทสต์เทียบยังใช้ได้ (tests/refs.lock.json -> git commit ฐาน)
+        run: node scripts/gen-equiv-refs.mjs --check
       - name: สรุปผลขึ้นหน้า run
         if: always()
         run: |

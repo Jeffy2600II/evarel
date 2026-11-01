@@ -1,0 +1,58 @@
+{
+  "05-data__auth": {
+    "base": "da52ccf46926f9b0589b65350ffcabcf5f6d9628",
+    "basePath": "app/web/js/m/05-data__auth.js",
+    "corePath": null,
+    "standalone": false,
+    "checked_at": "2026-11-01"
+  },
+  "08-core__undo": {
+    "base": "d840fe62f29f61b37f8e71bce838f16036c431af",
+    "basePath": "app/web/js/m/08-core__undo.js",
+    "corePath": null,
+    "standalone": true,
+    "checked_at": "2026-11-01"
+  },
+  "10-services__notify": {
+    "base": "f7f13bbd11cf38c4d7f592fb775b36692527983d",
+    "basePath": "app/web/js/m/10-services__notify.js",
+    "corePath": "app/web/js/m/core/notify.js",
+    "standalone": false,
+    "checked_at": "2026-11-01"
+  },
+  "11-ui__popover": {
+    "base": "d840fe62f29f61b37f8e71bce838f16036c431af",
+    "basePath": "app/web/js/m/11-ui__popover.js",
+    "corePath": "app/web/js/m/core/popover.js",
+    "standalone": false,
+    "checked_at": "2026-11-01"
+  },
+  "14-ui__form": {
+    "base": "1602783eb1003916c87bf6c5a9b9f44ab3fd2e6a",
+    "basePath": "app/web/js/m/14-ui__form.js",
+    "corePath": null,
+    "standalone": true,
+    "checked_at": "2026-11-01"
+  },
+  "15-core__timer": {
+    "base": "d840fe62f29f61b37f8e71bce838f16036c431af",
+    "basePath": "app/web/js/m/15-core__timer.js",
+    "corePath": null,
+    "standalone": true,
+    "checked_at": "2026-11-01"
+  },
+  "16-services__ai-quota": {
+    "base": "2c8560d61bb8eac7026106f411d374bfaca2e149",
+    "basePath": "app/web/js/m/16-services__ai-quota.js",
+    "corePath": null,
+    "standalone": true,
+    "checked_at": "2026-11-01"
+  },
+  "20-services__calendar": {
+    "base": "9963b8eb627ad9a0b1e0487f310dfb66f99f8374",
+    "basePath": "app/web/js/m/20-services__calendar.js",
+    "corePath": null,
+    "standalone": true,
+    "checked_at": "2026-11-01"
+  }
+}
