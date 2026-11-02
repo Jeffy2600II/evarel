@@ -52,7 +52,10 @@ export function buildMessage({ from, to, subject, text, html, messageId, date })
     "To: <" + to + ">",
     "Subject: " + encodeHeaderWord(subject),
     "Date: " + (date || new Date()).toUTCString(),
-    "Message-ID: <" + (messageId || "m" + Date.now()) + "@evarel.local>",
+    "Message-ID: <" + (messageId || ("m" + Date.now() + "." + Math.random().toString(36).slice(2, 10))) + "@" + (String(from).split("@")[1] || "ordivel.invalid") + ">",
+    "Reply-To: Ordivel <" + from + ">",
+    "Auto-Submitted: auto-generated",
+    "X-Auto-Response-Suppress: All",
     "MIME-Version: 1.0",
     'Content-Type: multipart/alternative; boundary="' + boundary + '"',
   ].join(CRLF);

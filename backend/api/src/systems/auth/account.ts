@@ -150,17 +150,9 @@ export async function handleSignup(request: Request, env: Env, ctx?: any): Promi
 
   /* ชั้นป้องกันข้อ 3: อีเมลนี้มีบัญชีอยู่แล้ว -> ไม่สร้างซ้ำ ไม่ผูก ไม่ลบ */
   const existing = await findUserByEmail(env, email);
-  if (existing) {
-    const confirmed = !!existing.email_confirmed_at;
-    const viaOther = (existing.app_metadata?.providers || []).some((p: string) => p !== 'email');
-    /* ยืนยันแล้ว/มี Google อยู่ -> ต้องล็อกอินของเดิมก่อนแล้วเชื่อมเอง (ไม่เปิดเผยรายละเอียดเกินจำเป็น) */
-    if (confirmed || viaOther) return fail('needs_link', 409, env);
-    /* บัญชีค้างอยู่ระหว่างรอยืนยัน: ห้ามสร้างซ้ำและห้ามพาไปไหน (Master สั่ง 2 พ.ย. 2026)
-       อีเมลอยู่ในฐานข้อมูลแล้ว = สมัครเพิ่มไม่ได้ ต้องแจ้งให้ไปยืนยันผ่านทาง "เข้าสู่ระบบ"
-       ซึ่งจะพาไปหน้ารหัสได้เอง (ล็อกอินสำเร็จเฉพาะรหัสที่ถูก) */
-    if (needVerify(env)) return fail('verify_pending', 409, env);
-    return fail('email_taken', 409, env);
-  }
+  /* มีบัญชีอยู่แล้ว (จะยืนยันแล้วหรือยังไม่ยืนยันก็เหมือนกัน) -> ตอบข้อความเดียวว่า "มีอยู่แล้ว"
+     ไม่บอกว่าค้างที่ขั้นไหน ไม่บอกว่าต้องทำอะไรต่อ — ผู้ใช้ที่รู้ว่ามีบัญชีจะไปเข้าสู่ระบบเอง (Master สั่ง 2 พ.ย. 2026) */
+  if (existing) return fail('email_taken', 409, env);
 
   const wantVerify = needVerify(env);
   const create = await f(env)(`${base(env)}/auth/v1/admin/users`, {
@@ -181,6 +173,28 @@ export async function handleSignup(request: Request, env: Env, ctx?: any): Promi
   const t = await f(env)(`${base(env)}/auth/v1/token?grant_type=password`, { method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: b.password }) });
   if (!t.ok) return fail('unknown', 502, env);
   return jsonResponse({ status: 'ok', ...sessionOf(await t.json()) }, 200, env);
+}
+
+/* ตรวจว่าอีเมลมีบัญชีหรือยัง — ใช้ระหว่างกรอกฟอร์ม เพื่อให้รู้ทันทีไม่ต้องรอกดปุ่มสมัคร
+   ค้นแถวเดียวด้วยฟังก์ชัน ac_email_exists (มีดัชนีที่ auth.users) ไม่ไล่อ่านทั้งตาราง
+   ตอบ 200 เสมอพร้อม ok บอกว่า "ตรวจได้จริงหรือไม่" เพื่อให้หน้าเว็บแยก "ไม่มีบัญชี" ออกจาก "ตรวจไม่ได้" */
+export async function handleCheckEmail(request: Request, env: Env): Promise<Response> {
+  const b = await body(request);
+  if (!b || typeof b.email !== 'string' || !EMAIL_RE.test(b.email.trim())) return jsonResponse({ ok: false }, 200, env);
+  const email = b.email.trim().toLowerCase();
+  try {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 4000);
+    const r = await f(env)(`${base(env)}/rest/v1/rpc/ac_email_exists`, {
+      method: 'POST',
+      headers: { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_email: email }),
+      signal: ctl.signal,
+    });
+    clearTimeout(t);
+    if (!r.ok) return jsonResponse({ ok: false }, 200, env);
+    const v = await r.json().catch(() => null);
+    return jsonResponse({ ok: true, exists: v === true }, 200, env);
+  } catch { return jsonResponse({ ok: false }, 200, env); }
 }
 
 /* ลืมรหัสผ่าน: ตอบเหมือนกันเสมอไม่ว่าอีเมลมีอยู่หรือไม่ (กันเดาอีเมล) */
