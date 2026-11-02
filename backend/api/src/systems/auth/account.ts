@@ -182,6 +182,16 @@ export async function handleCheckEmail(request: Request, env: Env): Promise<Resp
   const b = await body(request);
   if (!b || typeof b.email !== 'string' || !EMAIL_RE.test(b.email.trim())) return jsonResponse({ ok: false }, 200, env);
   const email = b.email.trim().toLowerCase();
+  /* แคชคำตอบสั้น ๆ ที่ขอบเครือข่าย: ผู้ใช้มักแก้/กลับมาเช็กอีเมลเดิมซ้ำในไม่กี่วินาที
+     ครั้งแรกยังต้องถามฐานข้อมูล แต่ครั้งถัดไปตอบทันทีโดยไม่ต้องข้ามทวีปไป Seoul */
+  const cache = (globalThis as any).caches?.default as Cache | undefined;
+  let cacheKey: Request | null = null;
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email));
+    const hex = Array.from(new Uint8Array(buf)).map((x) => x.toString(16).padStart(2, '0')).join('');
+    cacheKey = new Request('https://email-check.ordivel.internal/' + hex);
+    if (cache && cacheKey) { const hit = await cache.match(cacheKey); if (hit) return jsonResponse(await hit.json(), 200, env); }
+  } catch { /* ไม่มีแคชก็ทำงานปกติ */ }
   try {
     const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 4000);
     const r = await f(env)(`${base(env)}/rest/v1/rpc/ac_email_exists`, {
@@ -193,7 +203,12 @@ export async function handleCheckEmail(request: Request, env: Env): Promise<Resp
     clearTimeout(t);
     if (!r.ok) return jsonResponse({ ok: false }, 200, env);
     const v = await r.json().catch(() => null);
-    return jsonResponse({ ok: true, exists: v === true }, 200, env);
+    const out = { ok: true, exists: v === true };
+    if (cache && cacheKey) {
+      /* แคช "มีบัญชี" นานกว่า (60 วิ) / "ว่าง" สั้น (20 วิ) เพื่อไม่ให้ผู้ใช้เห็นคำตอบเก่าหลังสมัครเสร็จ */
+      try { await cache.put(cacheKey, new Response(JSON.stringify(out), { headers: { 'Cache-Control': 'max-age=' + (out.exists ? 60 : 20) } })); } catch { }
+    }
+    return jsonResponse(out, 200, env);
   } catch { return jsonResponse({ ok: false }, 200, env); }
 }
 
