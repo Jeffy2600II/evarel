@@ -1,7 +1,7 @@
 import { EMAIL_RE, PW_MIN, MAIL_TYPO, authValidate, pwStrength, coolView, mailHint, resendToast } from './core/authform.js';
 import { fld } from './core/uihtml.js';
 /* ===== MODULE: views/auth (เข้าสู่ระบบ / สร้างบัญชี / ลืมรหัสผ่าน) ===== */
-const AU_MSG = { invalid_credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', email_taken: 'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน', network: 'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่', unknown: 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง', needs_link: 'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบด้วยบัญชีเดิมก่อน', code_invalid: 'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง', code_expired: 'รหัสหมดอายุแล้ว กดส่งรหัสใหม่', too_many_requests: 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่', unverified: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' };
+const AU_MSG = { invalid_credentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', email_taken: 'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน', verify_pending: 'อีเมลนี้มีบัญชีอยู่ในระบบแล้ว (ยังไม่ได้ยืนยันอีเมล) เข้าสู่ระบบเพื่อยืนยันให้เสร็จก่อน', network: 'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่', unknown: 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง', needs_link: 'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบด้วยบัญชีเดิมก่อน', code_invalid: 'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง', code_expired: 'รหัสหมดอายุแล้ว กดส่งรหัสใหม่', too_many_requests: 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่', unverified: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' };
 const RESEND_SEC = 30;
 import { GLOGO, EV_MARK, RINGS, authBack, gBtn, legal, eyeBtn, EMAIL_X, submitBtn, authViews, AUTH_SPLASH } from './core/authviews.js';
 /* AUTH_VIEWS: เดิมเป็นอ็อบเจ็กต์ของฟังก์ชันที่อ่าน UI.auth ตอนเรียก ตอนนี้ตัวสร้างอยู่ core/authviews (รับ email/codeType เป็นพารามิเตอร์) ชั้นนี้ห่อให้เรียก AUTH_VIEWS[sc]() แบบไม่มีอาร์กิวเมนต์เหมือนเดิม และอ่าน UI.auth ตอนเรียกเหมือนเดิม */

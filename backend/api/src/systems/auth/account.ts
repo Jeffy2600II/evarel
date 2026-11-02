@@ -155,21 +155,10 @@ export async function handleSignup(request: Request, env: Env, ctx?: any): Promi
     const viaOther = (existing.app_metadata?.providers || []).some((p: string) => p !== 'email');
     /* ยืนยันแล้ว/มี Google อยู่ -> ต้องล็อกอินของเดิมก่อนแล้วเชื่อมเอง (ไม่เปิดเผยรายละเอียดเกินจำเป็น) */
     if (confirmed || viaOther) return fail('needs_link', 409, env);
-    /* บัญชีค้างอยู่ระหว่างรอยืนยัน = สมัครสำเร็จแล้ว เหลือยืนยันอีเมล:
-       - ไม่สร้างบัญชีซ้ำ (จะกลายเป็นสองบัญชีอีเมลเดียวกัน)
-       - รับชื่อ/รหัสผ่านชุดล่าสุดที่ผู้ใช้เพิ่งกรอก เพื่อให้สิ่งที่เห็นบนฟอร์มตรงกับบัญชีจริง
-         (ปลอดภัยเพราะการเข้าใช้งานยังต้องใช้รหัสจากอีเมล ซึ่งพิสูจน์ว่าเป็นเจ้าของกล่อง)
-       - ส่งรหัสชุดใหม่ให้ แล้วพากลับไปหน้ายืนยัน */
-    if (needVerify(env)) {
-      const upd = await f(env)(`${base(env)}/auth/v1/admin/users/${existing.id}`, {
-        method: 'PUT', headers: admin(env),
-        body: JSON.stringify({ password: b.password, user_metadata: { name }, email_confirm: false }),
-      });
-      if (!upd.ok) return fail('unknown', 502, env);
-      const job = later(ctx, sendOwnCode(env, email, 'signup'));
-      if (job) await job;
-      return jsonResponse({ status: 'verify', email, resumed: true }, 200, env);
-    }
+    /* บัญชีค้างอยู่ระหว่างรอยืนยัน: ห้ามสร้างซ้ำและห้ามพาไปไหน (Master สั่ง 2 พ.ย. 2026)
+       อีเมลอยู่ในฐานข้อมูลแล้ว = สมัครเพิ่มไม่ได้ ต้องแจ้งให้ไปยืนยันผ่านทาง "เข้าสู่ระบบ"
+       ซึ่งจะพาไปหน้ารหัสได้เอง (ล็อกอินสำเร็จเฉพาะรหัสที่ถูก) */
+    if (needVerify(env)) return fail('verify_pending', 409, env);
     return fail('email_taken', 409, env);
   }
 
