@@ -26,13 +26,20 @@ export const SUPA_HOST = 'https://vdbmwmmsfrgpaauzspup.supabase.co';
    จึง "จอด" (park) ข้อมูลดิบไว้ที่ localStorage ให้สคริปต์หัวหน้า (inline ใน index.html/layout) จับตั้งแต่เฟรมแรก
    แล้ว takeOAuthReturn ค่อยอ่านจากที่จอดมาตรวจกับ /auth/session — สำเร็จค่อยล้าง ไม่สำเร็จคงไว้ให้รีโหลดหน้าถัดไปลองใหม่เอง
    OAUTH_ERR: กรณีผู้ใช้กดยกเลิกที่หน้า Google (Supabase ส่งกลับด้วย #error=access_denied) เก็บไว้แจ้งผู้ใช้แบบมีมารยาท */
+/* สถานะ "สมัครแล้วแต่ยังไม่ยืนยัน" ต้องอยู่รอดข้ามการรีเฟรช/ปิดแท็บ ไม่งั้นผู้ใช้จะติดกับ:
+   สมัครซ้ำก็ไม่ได้ (บัญชีมีอยู่) ล็อกอินก็ไม่ได้ (ยังไม่ยืนยัน) — เก็บเฉพาะอีเมลกับชนิดรหัส ไม่มีความลับ */
+export const PENDING_V = 'ordivel-pending-verify';
+export const pendingSave = (p: any): void => { try { localStorage.setItem(PENDING_V, JSON.stringify(p)) } catch (err) { } };
+export const pendingRead = (): any => { try { const v = localStorage.getItem(PENDING_V); return v ? JSON.parse(v) : null } catch (err) { return null } };
+export const pendingClear = (): void => { try { localStorage.removeItem(PENDING_V) } catch (err) { } };
+
 export const OAUTH_PARK = 'evarel-oauth-park';
 export const OAUTH_ERR = 'evarel-oauth-error';
 export const oauthParkRead = (): any => { try { const v = localStorage.getItem(OAUTH_PARK); return v ? JSON.parse(v) : null } catch (err) { return null } };
 export const oauthParkWrite = (p: any): void => { try { localStorage.setItem(OAUTH_PARK, JSON.stringify(p)) } catch (err) { /* เต็ม/โหมดส่วนตัว: hash ยังอยู่ใน URL จน takeOAuthReturn อ่านเอง */ } };
 export const oauthParkClear = (): void => { try { localStorage.removeItem(OAUTH_PARK) } catch (err) { } };
 
-export const SupaAuth = (api: string) => { const c = SupaCore(api); let pending: any = null; /* pending: ที่รอยืนยันรหัส 6 หลัก {email,type} */
+export const SupaAuth = (api: string) => { const c = SupaCore(api); let pending: any = pendingRead(); /* pending: ที่รอยืนยันรหัส 6 หลัก {email,type} — โหลดจากที่เก็บถาวรของเบราว์เซอร์ */
   const take = (s: any) => { supaSave({ access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at, user: s.user }); return c.userOf(s) };
   return {
     async session() { const s = supaLoad(); if (!s) return null; try { await c.token(); return c.userOf(supaLoad()) } catch (err) { console.warn('session', err); return null } },
@@ -58,13 +65,15 @@ export const SupaAuth = (api: string) => { const c = SupaCore(api); let pending:
         if (err && err.status && err.status < 500) oauthParkClear(); /* 4xx = token เสียถาวร เลิกพยายาม กันวนถามทุกรีโหลด */
         throw authErr('oauth_failed')
       } },
-    async signInEmail(email: string, pw: string) { return take(await c.raw('/auth/login', { method: 'POST', body: { email, password: pw } })) },
-    async signUp({ name, email, password }: any) { const j = await c.raw('/auth/signup', { method: 'POST', body: { name, email, password } }); if (j.status === 'verify') { pending = { email, type: 'signup' }; throw authErr('verify_needed') } return take(j) },
-    async sendReset(email: string) { await c.raw('/auth/forgot', { method: 'POST', body: { email } }); pending = { email, type: 'recovery' } },
-    async verifyCode(email: string, code: string, type: string) { return take(await c.raw('/auth/verify', { method: 'POST', body: { email, code, type } })) },
+    async signInEmail(email: string, pw: string) { const j = await c.raw('/auth/login', { method: 'POST', body: { email, password: pw } }); if (j.status === 'verify') { pending = { email, type: 'signup', at: Date.now() }; pendingSave(pending); throw authErr('verify_needed') } return take(j) },
+    async signUp({ name, email, password }: any) { const j = await c.raw('/auth/signup', { method: 'POST', body: { name, email, password } }); if (j.status === 'verify') { pending = { email, type: 'signup', at: Date.now() }; pendingSave(pending); throw authErr('verify_needed') } return take(j) },
+    async sendReset(email: string) { await c.raw('/auth/forgot', { method: 'POST', body: { email } }); pending = { email, type: 'recovery', at: Date.now() }; pendingSave(pending) },
+    async verifyCode(email: string, code: string, type: string) { const u = take(await c.raw('/auth/verify', { method: 'POST', body: { email, code, type } })); pending = null; pendingClear(); return u },
+    pendingInfo() { const p = pending || pendingRead(); return p && p.email ? p : null },
+    clearPending() { pending = null; pendingClear() },
     async resend(email: string, type: string) { await c.raw('/auth/resend', { method: 'POST', body: { email, type } }) },
     async setPassword(password: string) { await c.raw('/auth/password', { method: 'POST', body: { password }, token: await c.token() }) },
-    async signOut() { supaClear(); oauthParkClear() }, /* ล้าง OAuth ที่จอดไว้ด้วย กันเซสชันค้างหลังออกจากระบบ */
+    async signOut() { supaClear(); oauthParkClear(); pending = null; pendingClear() }, /* ล้าง OAuth ที่จอดไว้ด้วย กันเซสชันค้างหลังออกจากระบบ */
     async deleteAccount(pw: string) { await c.raw('/auth/account', { method: 'DELETE', body: { password: pw }, token: await c.token() }); supaClear() } } };
 
 export const SupaAdapter = (api: string) => { const c = SupaCore(api); const call = async (path: string, o: any = {}) => { const t = await c.token(); const r = await fetch(`${api}${path}`, { ...o, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t } }); if (!r.ok) throw new Error(`${o.method || 'GET'} ${path} ${r.status}`); return r };

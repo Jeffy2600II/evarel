@@ -43,6 +43,27 @@ const SupaCore = (api) => {
   return { raw, token, userOf };
 };
 const SUPA_HOST = "https://vdbmwmmsfrgpaauzspup.supabase.co";
+const PENDING_V = "ordivel-pending-verify";
+const pendingSave = (p) => {
+  try {
+    localStorage.setItem(PENDING_V, JSON.stringify(p));
+  } catch (err) {
+  }
+};
+const pendingRead = () => {
+  try {
+    const v = localStorage.getItem(PENDING_V);
+    return v ? JSON.parse(v) : null;
+  } catch (err) {
+    return null;
+  }
+};
+const pendingClear = () => {
+  try {
+    localStorage.removeItem(PENDING_V);
+  } catch (err) {
+  }
+};
 const OAUTH_PARK = "evarel-oauth-park";
 const OAUTH_ERR = "evarel-oauth-error";
 const oauthParkRead = () => {
@@ -67,7 +88,7 @@ const oauthParkClear = () => {
 };
 const SupaAuth = (api) => {
   const c = SupaCore(api);
-  let pending = null;
+  let pending = pendingRead();
   const take = (s) => {
     supaSave({ access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at, user: s.user });
     return c.userOf(s);
@@ -126,22 +147,41 @@ const SupaAuth = (api) => {
       }
     },
     async signInEmail(email, pw) {
-      return take(await c.raw("/auth/login", { method: "POST", body: { email, password: pw } }));
+      const j = await c.raw("/auth/login", { method: "POST", body: { email, password: pw } });
+      if (j.status === "verify") {
+        pending = { email, type: "signup", at: Date.now() };
+        pendingSave(pending);
+        throw authErr("verify_needed");
+      }
+      return take(j);
     },
     async signUp({ name, email, password }) {
       const j = await c.raw("/auth/signup", { method: "POST", body: { name, email, password } });
       if (j.status === "verify") {
-        pending = { email, type: "signup" };
+        pending = { email, type: "signup", at: Date.now() };
+        pendingSave(pending);
         throw authErr("verify_needed");
       }
       return take(j);
     },
     async sendReset(email) {
       await c.raw("/auth/forgot", { method: "POST", body: { email } });
-      pending = { email, type: "recovery" };
+      pending = { email, type: "recovery", at: Date.now() };
+      pendingSave(pending);
     },
     async verifyCode(email, code, type) {
-      return take(await c.raw("/auth/verify", { method: "POST", body: { email, code, type } }));
+      const u = take(await c.raw("/auth/verify", { method: "POST", body: { email, code, type } }));
+      pending = null;
+      pendingClear();
+      return u;
+    },
+    pendingInfo() {
+      const p = pending || pendingRead();
+      return p && p.email ? p : null;
+    },
+    clearPending() {
+      pending = null;
+      pendingClear();
     },
     async resend(email, type) {
       await c.raw("/auth/resend", { method: "POST", body: { email, type } });
@@ -152,6 +192,8 @@ const SupaAuth = (api) => {
     async signOut() {
       supaClear();
       oauthParkClear();
+      pending = null;
+      pendingClear();
     },
     /* ล้าง OAuth ที่จอดไว้ด้วย กันเซสชันค้างหลังออกจากระบบ */
     async deleteAccount(pw) {
@@ -181,6 +223,7 @@ const SupaAdapter = (api) => {
 export {
   OAUTH_ERR,
   OAUTH_PARK,
+  PENDING_V,
   SUPA_HOST,
   SUPA_SESS,
   SupaAdapter,
@@ -191,6 +234,9 @@ export {
   oauthParkClear,
   oauthParkRead,
   oauthParkWrite,
+  pendingClear,
+  pendingRead,
+  pendingSave,
   supaClear,
   supaLoad,
   supaSave

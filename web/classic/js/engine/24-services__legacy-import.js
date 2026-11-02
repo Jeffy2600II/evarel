@@ -138,6 +138,25 @@ async function boot() {
         toast(oauthNote);
     if (!ST.USER) {
         UI.auth.status = 'out';
+        /* กลับมาหลังปิดแท็บ/รีเฟรชระหว่างรอยืนยัน: พากลับไปหน้ายืนยันของอีเมลเดิมทันที ไม่ต้องเริ่มสมัครใหม่
+           (สถานะเก็บใน localStorage ผ่าน Auth.pendingInfo — สมัครซ้ำไม่ได้เพราะบัญชีมีอยู่แล้ว) */
+        const pd = Auth.pendingInfo && Auth.pendingInfo();
+        if (pd && pd.email) {
+            UI.auth.email = pd.email;
+            UI.auth.codeType = pd.type === 'recovery' ? 'recovery' : 'signup';
+            UI.auth.screen = 'code';
+            render();
+            if (pd.type !== 'recovery') {
+                try {
+                    await Auth.resend(pd.email, 'signup');
+                    toast('ส่งรหัสยืนยันชุดใหม่ให้ทางอีเมลแล้ว');
+                }
+                catch (err) {
+                    console.warn('resume resend', err);
+                }
+            }
+            return;
+        }
         UI.auth.screen = 'welcome';
         render();
         return;
