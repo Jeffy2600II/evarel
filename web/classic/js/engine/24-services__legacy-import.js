@@ -222,7 +222,7 @@ async function authSubmit(kind, form) {
             renderAuthRoot();
             return;
         }
-        if (err.code === 'email_taken' || err.code === 'needs_link')
+        if (err.code === 'email_taken' || err.code === 'needs_link' || err.code === 'verify_pending')
             fieldErr(form, 'email', AU_MSG[err.code]);
         else if (err.code === 'code_invalid' || err.code === 'code_expired')
             fieldErr(form, 'code', AU_MSG[err.code]);
