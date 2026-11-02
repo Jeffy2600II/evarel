@@ -105,7 +105,13 @@ async function loadApp() {
 async function boot() {
     UI.auth.status = 'loading';
     render();
-    let oauthNote = '';
+    let oauthNote = '', outAt = 0;
+    /* จุดจำ "เพิ่งออกไป Google เมื่อไหร่" (ตั้งโดย authGoogle): อ่านครั้งเดียวแล้วลบทันที กันถามซ้ำทุกรีโหลด (2026.8.1) */
+    try {
+        outAt = +sessionStorage.getItem('evarel-oauth-out') || 0;
+        sessionStorage.removeItem('evarel-oauth-out');
+    }
+    catch (e) { }
     try {
         ST.USER = (Auth.takeOAuthReturn && await Auth.takeOAuthReturn()) || await Auth.session();
     }
@@ -134,6 +140,10 @@ async function boot() {
         else
             ST.USER = null;
     }
+    /* กลับมาจากหน้า Google แบบโหลดหน้าใหม่แต่ไม่มี token (ผู้ใช้กดย้อนกลับเอง/ปิดหน้า Google):
+       แจ้งสั้น ๆ ว่ายกเลิกแล้ว ไม่ใช่ error เครือข่าย (หลักเดียวกับ bfcache ที่ authGoogle จัดการไว้) */
+    if (!ST.USER && outAt && !oauthNote && Date.now() - outAt < 600000)
+        oauthNote = 'ยกเลิกการเข้าสู่ระบบด้วย Google แล้ว';
     if (oauthNote)
         toast(oauthNote);
     if (!ST.USER) {
@@ -241,16 +251,51 @@ async function authGoogle(btn) {
     const old = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<span class="ev-spin"></span>';
-    /* กันสปินเนอร์ค้าง: ถ้าพาไปหน้า Google ไม่สำเร็จ (เน็ตหลุด/ถูกบล็อก) 10 วิ คืนปุ่มและแจ้งเสมอ — ถ้าไปได้ปกติหน้านี้เปลี่ยนไปก่อน timer ทำงาน */
-    const back = setTimeout(() => { btn.disabled = false; btn.innerHTML = old; toast(AU_MSG.network); }, 10000);
+    /* จำว่าเพิ่งออกไปหน้า Google เมื่อไหร่ (2026.8.1): ให้ตัวกลับมารู้ว่าผู้ใช้ย้อนกลับ "เอง" ไม่ใช่เน็ตล่ม */
+    try {
+        sessionStorage.setItem('evarel-oauth-out', String(Date.now()));
+    }
+    catch (e) { }
+    let said = false, back = null;
+    const restore = () => {
+        clearTimeout(back);
+        btn.disabled = false;
+        btn.innerHTML = old;
+        document.removeEventListener('pageshow', onPage);
+        document.removeEventListener('visibilitychange', onVis);
+        try {
+            sessionStorage.removeItem('evarel-oauth-out');
+        }
+        catch (e) { }
+    };
+    const note = () => { if (said)
+        return; said = true; toast('ยกเลิกการเข้าสู่ระบบด้วย Google แล้ว'); };
+    /* bfcache ย้อนกลับ = ผู้ใช้ยกเลิกเอง: คืนปุ่มทันที ไม่รอ timer ไม่แจ้งเป็นปัญหาเครือข่าย */
+    const onPage = e => { if (e.persisted) {
+        restore();
+        note();
+    } };
+    /* PWA มือถือ: Google เปิดในเบราว์เซอร์ภายนอก ผู้ใช้สลับกลับมาแอปโดยไม่จบ flow = คืนปุ่มทันทีเช่นกัน */
+    const onVis = () => { if (document.visibilityState === 'visible') {
+        restore();
+        note();
+    } };
+    document.addEventListener('pageshow', onPage);
+    document.addEventListener('visibilitychange', onVis);
+    /* กันสปินเนอร์ค้างเคสหน้าไม่ไปไหนเลย (ไป Google ไม่สำเร็จจริง ๆ): 5 วิ คืนปุ่มและแจ้ง — ไปได้ปกติหน้าเปลี่ยนไปก่อน timer ทำงาน (เดิม 10 วินาที นานเกินไป) */
+    back = setTimeout(() => { restore(); if (!said) {
+        said = true;
+        toast(AU_MSG.network);
+    } }, 5000);
     try {
         await enterApp(await Auth.signInGoogle());
     }
     catch (err) {
-        clearTimeout(back);
-        btn.disabled = false;
-        btn.innerHTML = old;
-        toast(AU_MSG[err.code] || AU_MSG.unknown);
+        restore();
+        if (!said) {
+            said = true;
+            toast(AU_MSG[err.code] || AU_MSG.unknown);
+        }
     }
 }
 async function enterApp(user) { ST.USER = user; await loadApp(); try {

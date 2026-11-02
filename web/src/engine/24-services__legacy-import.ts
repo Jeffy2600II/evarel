@@ -27,7 +27,9 @@ async function loadApp(){claimLegacyData();UI.auth.status='in';ST.CH=loadChats()
  try{const [s]=await Promise.all([ST.Repo.load(),wait(SKELETON_MS)]);S.items=s.items}catch(err){console.warn('load failed',err);UI.error=err}
  UI.loading=false;UI.animate=true;render();
  if(!UI.error){const r=await maybeImportLegacy(S.items);if(r!==S.items){S.items=r;UI.animate=false;render()}}}
-async function boot(){UI.auth.status='loading';render();let oauthNote='';
+async function boot(){UI.auth.status='loading';render();let oauthNote='',outAt=0;
+ /* จุดจำ "เพิ่งออกไป Google เมื่อไหร่" (ตั้งโดย authGoogle): อ่านครั้งเดียวแล้วลบทันที กันถามซ้ำทุกรีโหลด (2026.8.1) */
+ try{outAt=+sessionStorage.getItem('evarel-oauth-out')||0;sessionStorage.removeItem('evarel-oauth-out')}catch(e){}
  try{ST.USER=(Auth.takeOAuthReturn&&await Auth.takeOAuthReturn())||await Auth.session()}
  catch(err){console.warn('session failed',err);
   /* กลับจาก Google แล้วมีปัญหา: แจ้งผู้ใช้แบบเข้าใจง่าย และยังลองเซสชันเดิมต่อ (เคสยกเลิกที่หน้า Google ต้องเข้าแอปตามเดิมถ้าเซสชันเก่ายังอยู่)
@@ -35,6 +37,9 @@ async function boot(){UI.auth.status='loading';render();let oauthNote='';
   if(err&&err.code==='oauth_cancelled'){oauthNote='ยกเลิกการเข้าสู่ระบบด้วย Google แล้ว';try{ST.USER=await Auth.session()}catch(e2){ST.USER=null}}
   else if(err&&err.code==='oauth_failed'){oauthNote='เข้าสู่ระบบด้วย Google ไม่สำเร็จ ลองใหม่อีกครั้ง';try{ST.USER=await Auth.session()}catch(e2){ST.USER=null}}
   else ST.USER=null}
+ /* กลับมาจากหน้า Google แบบโหลดหน้าใหม่แต่ไม่มี token (ผู้ใช้กดย้อนกลับเอง/ปิดหน้า Google):
+    แจ้งสั้น ๆ ว่ายกเลิกแล้ว ไม่ใช่ error เครือข่าย (หลักเดียวกับ bfcache ที่ authGoogle จัดการไว้) */
+ if(!ST.USER&&outAt&&!oauthNote&&Date.now()-outAt<600000)oauthNote='ยกเลิกการเข้าสู่ระบบด้วย Google แล้ว';
  if(oauthNote)toast(oauthNote);
  if(!ST.USER){UI.auth.status='out';
   /* กลับมาหลังปิดแท็บ/รีเฟรชระหว่างรอยืนยัน: พากลับไปหน้ายืนยันของอีเมลเดิมทันที ไม่ต้องเริ่มสมัครใหม่
@@ -55,9 +60,21 @@ async function authSubmit(kind,form){clearErrs(form);const v=/** @type {Record<s
   const user=kind==='login'?await Auth.signInEmail(v.email.trim(),v.password):await Auth.signUp({name:v.name.trim(),email:v.email.trim(),password:v.password});await enterApp(user)}
  catch(err){setBusy(form,false);if(err.code==='verify_needed'){UI.auth.email=v.email.trim();UI.auth.codeType='signup';UI.auth.screen='code';renderAuthRoot();return}if(err.code==='email_taken'||err.code==='needs_link'||err.code==='verify_pending')fieldErr(form,'email',AU_MSG[err.code]);else if(err.code==='code_invalid'||err.code==='code_expired')fieldErr(form,'code',AU_MSG[err.code]);else{const fe=form.querySelector('#form-err');fe.textContent=AU_MSG[err.code]||AU_MSG.unknown;fe.hidden=false;fe.style.animation='none';void fe.offsetWidth;fe.style.animation=''}haptic()}}
 async function authGoogle(btn){const old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="ev-spin"></span>';
- /* กันสปินเนอร์ค้าง: ถ้าพาไปหน้า Google ไม่สำเร็จ (เน็ตหลุด/ถูกบล็อก) 10 วิ คืนปุ่มและแจ้งเสมอ — ถ้าไปได้ปกติหน้านี้เปลี่ยนไปก่อน timer ทำงาน */
- const back=setTimeout(()=>{btn.disabled=false;btn.innerHTML=old;toast(AU_MSG.network)},10000);
- try{await enterApp(await Auth.signInGoogle())}catch(err){clearTimeout(back);btn.disabled=false;btn.innerHTML=old;toast(AU_MSG[err.code]||AU_MSG.unknown)}}
+ /* จำว่าเพิ่งออกไปหน้า Google เมื่อไหร่ (2026.8.1): ให้ตัวกลับมารู้ว่าผู้ใช้ย้อนกลับ "เอง" ไม่ใช่เน็ตล่ม */
+ try{sessionStorage.setItem('evarel-oauth-out',String(Date.now()))}catch(e){}
+ let said=false,back=null;
+ const restore=()=>{clearTimeout(back);btn.disabled=false;btn.innerHTML=old;
+  document.removeEventListener('pageshow',onPage);document.removeEventListener('visibilitychange',onVis);
+  try{sessionStorage.removeItem('evarel-oauth-out')}catch(e){}};
+ const note=()=>{if(said)return;said=true;toast('ยกเลิกการเข้าสู่ระบบด้วย Google แล้ว')};
+ /* bfcache ย้อนกลับ = ผู้ใช้ยกเลิกเอง: คืนปุ่มทันที ไม่รอ timer ไม่แจ้งเป็นปัญหาเครือข่าย */
+ const onPage=e=>{if(e.persisted){restore();note()}};
+ /* PWA มือถือ: Google เปิดในเบราว์เซอร์ภายนอก ผู้ใช้สลับกลับมาแอปโดยไม่จบ flow = คืนปุ่มทันทีเช่นกัน */
+ const onVis=()=>{if(document.visibilityState==='visible'){restore();note()}};
+ document.addEventListener('pageshow',onPage);document.addEventListener('visibilitychange',onVis);
+ /* กันสปินเนอร์ค้างเคสหน้าไม่ไปไหนเลย (ไป Google ไม่สำเร็จจริง ๆ): 5 วิ คืนปุ่มและแจ้ง — ไปได้ปกติหน้าเปลี่ยนไปก่อน timer ทำงาน (เดิม 10 วินาที นานเกินไป) */
+ back=setTimeout(()=>{restore();if(!said){said=true;toast(AU_MSG.network)}},5000);
+ try{await enterApp(await Auth.signInGoogle())}catch(err){restore();if(!said){said=true;toast(AU_MSG[err.code]||AU_MSG.unknown)}}}
 async function enterApp(user){ST.USER=user;await loadApp();try{startLiveSync();pushAutoSync()}catch(err){console.warn('live sync',err)}}
 
 Object.assign(window, { IMPORT_FLAG, readLegacyItems, importLegacy, maybeImportLegacy, IMPORT_PENDING, runImport, loadApp, boot, authSubmit, authGoogle, enterApp });

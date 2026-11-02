@@ -23,24 +23,28 @@ function setBusy(form,on){const b=form.querySelector('button[type="submit"]');b.
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t.closest('[data-kind="signup"]')){const m=pwStrength(t.value);
  $('pwMeter').dataset.lv=String(m.lv);$('pwLabel').textContent=m.label}
  if(t.closest('.ev-authform')&&t.getAttribute('aria-invalid')==='true'){t.setAttribute('aria-invalid','false');const b=$('e-'+t.name);if(b){b.hidden=true;b.innerHTML=''}}});
-/* ตรวจอีเมลเร็ว ๆ ระหว่างกรอกฟอร์มสมัคร (Master สั่ง 2 พ.ย. 2026):
-   - หน่วง 700ms หลังหยุดพิมพ์ ไม่ยิงทุกตัวอักษร และยกเลิกผลของคำขอเก่าที่มาช้า (กันข้อความกระพริบ/ผิดคิว)
-   - blur = ตรวจทันที (ผู้ใช้กรอกเสร็จแล้วต้องรู้เลย)
-   - ตรวจไม่ได้ (เน็ต/เซิร์ฟเวอร์ล่ม) = เงียบ ไม่รบกวนผู้ใช้ ไม่เดาเอาว่ามีหรือไม่มี */
-let chkTimer=null,chkSeq=0,chkShown=false;
-function emailNote(msg){const b=$('e-email');if(!b)return;b.hidden=!msg;b.dataset.tone='hint';b.innerHTML=msg?`<span>${esc(msg)}</span>`:'';chkShown=!!msg}
-async function emailTakenCheck(raw){const v=String(raw||'').trim().toLowerCase();if(!EMAIL_RE.test(v))return null;
- const seq=++chkSeq;let r=null;try{r=Auth.checkEmail?await Auth.checkEmail(v):null}catch(err){r=null}
- if(seq!==chkSeq)return null; if(!r||!r.ok)return null; /* ผลเก่าหรือตรวจไม่ได้ = ไม่แตะหน้าจอ */
- if(r.exists)emailNote('อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน'); else if(chkShown)emailNote('');
- return r}
-document.addEventListener('input',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('[data-kind="signup"]'))return;
- clearTimeout(chkTimer);const v=t.value;if(chkShown)emailNote('');
- chkTimer=setTimeout(()=>{emailTakenCheck(v)},700)});
-document.addEventListener('focusout',e=>{const t=e.target;if(t.name==='email'&&t.closest?.('[data-kind="signup"]')){clearTimeout(chkTimer);emailTakenCheck(t.value)}
- /* ไม่เดาและไม่ชี้ทางเรื่องอีเมล (Master สั่ง 2 พ.ย. 2026): เดิมพอพิมพ์อีเมลแล้วลบ ระบบเสนอ
-    "หมายถึง xxx@yyy หรือเปล่า?" ซึ่งคนที่ไม่ใช่เจ้าของบัญชีก็ใช้ไล่เดาได้ — ตัดออกทั้งท่อน */
- });
+/* ตรวจอีเมลสดระหว่างกรอกหน้าสมัคร — ปรับรอบ 2026.8.1 (Master สั่ง 3 พ.ย. 2026 ให้ตรวจ "ทุก" การแก้ไขค่า):
+   - ครอบพิมพ์ ลบ วาง และ autocomplete ผ่าน input+change — เดิมเคสลบแล้วหยุดพักไปสักพัก ระบบไม่ตรวจซ้ำให้
+   - หน่วง 650ms หลังแก้ไขครั้งสุดท้าย (ไม่ยิงทุกตัวอักษร) / ออกจากช่อง (focusout) = ตรวจทันที
+   - จำผลตรวจต่ออีเมลไว้ในหน้า (สูงสุด 40 ค่า): ลบแล้วพิมพ์คืนเป็นอีเมลเดิม = ตอบทันที ไม่ยิงเครือข่ายซ้ำ
+   - โน้ตอยู่ div ของตัวเอง (#n-email) ไม่เหยียบข้อความ error ของฟอร์ม (#e-email)
+   - ตรวจไม่ได้ (เน็ต/เซิร์ฟเวอร์ล่ม) = เงียบ และห้ามเดา/ชี้ทางอีเมล (กฎ 2 พ.ย. 2026) */
+let chkTimer=null,chkSeq=0;
+const chkMemo=new Map();
+function chkNote(msg){const b=$('n-email');if(!b)return;b.hidden=!msg;if(msg)b.innerHTML=`<span>${esc(msg)}</span>`}
+function chkPaint(em){const hit=chkMemo.get(em);chkNote(hit===true?'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน':'')}
+async function chkRun(em){if(!EMAIL_RE.test(em)||chkMemo.has(em))return;
+ const seq=++chkSeq;let r=null;try{r=Auth.checkEmail?await Auth.checkEmail(em):null}catch(err){r=null}
+ if(seq!==chkSeq||!r||!r.ok)return; /* คำขอเก่า/ตรวจไม่ได้ = ไม่แตะหน้าจอ */
+ if(chkMemo.size>=40)chkMemo.delete(chkMemo.keys().next().value);
+ chkMemo.set(em,!!r.exists);chkPaint(em)}
+const chkSoon=v=>{clearTimeout(chkTimer);const em=String(v||'').trim().toLowerCase();
+ if(!EMAIL_RE.test(em)){chkNote('');return} /* ลบจนอีเมลยังไม่ครบ: เอาโน้ตออกทันที ไม่รอตรวจ */
+ if(chkMemo.has(em)){chkPaint(em);return} /* ค่าที่รู้ผลแล้ว: วาดทันที ไม่เปลี่ยนอะไรบนจอถ้าผลเดิม */
+ chkNote('');chkTimer=setTimeout(()=>chkRun(em),650)} /* ค่าใหม่ที่ยังไม่รู้ผล: หน่วงรอหยุดพิมพ์/หยุดลบ */
+document.addEventListener('input',e=>{const t=e.target;if(t.name==='email'&&t.closest?.('[data-kind="signup"]'))chkSoon(t.value)});
+document.addEventListener('change',e=>{const t=e.target;if(t.name==='email'&&t.closest?.('[data-kind="signup"]'))chkSoon(t.value)});
+document.addEventListener('focusout',e=>{const t=e.target;if(t.name==='email'&&t.closest?.('[data-kind="signup"]')){clearTimeout(chkTimer);chkRun(String(t.value||'').trim().toLowerCase())}});
 
 async function doSignOut(del){
  /* ออกจากระบบต้องสำเร็จเสมอ: ตัดการเชื่อม realtime แบบผ่อนปรน (ถ้าโมดูล live-sync ยังไม่พร้อมก็ข้าม ไม่ให้พังทั้ง flow) */
