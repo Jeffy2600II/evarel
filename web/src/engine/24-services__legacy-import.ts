@@ -36,7 +36,14 @@ async function boot(){UI.auth.status='loading';render();let oauthNote='';
   else if(err&&err.code==='oauth_failed'){oauthNote='เข้าสู่ระบบด้วย Google ไม่สำเร็จ ลองใหม่อีกครั้ง';try{ST.USER=await Auth.session()}catch(e2){ST.USER=null}}
   else ST.USER=null}
  if(oauthNote)toast(oauthNote);
- if(!ST.USER){UI.auth.status='out';UI.auth.screen='welcome';render();return}await loadApp();try{startLiveSync();pushAutoSync()}catch(err){console.warn('live sync',err)}}
+ if(!ST.USER){UI.auth.status='out';
+  /* กลับมาหลังปิดแท็บ/รีเฟรชระหว่างรอยืนยัน: พากลับไปหน้ายืนยันของอีเมลเดิมทันที ไม่ต้องเริ่มสมัครใหม่
+     (สถานะเก็บใน localStorage ผ่าน Auth.pendingInfo — สมัครซ้ำไม่ได้เพราะบัญชีมีอยู่แล้ว) */
+  const pd=Auth.pendingInfo&&Auth.pendingInfo();
+  if(pd&&pd.email){UI.auth.email=pd.email;UI.auth.codeType=pd.type==='recovery'?'recovery':'signup';UI.auth.screen='code';render();
+   if(pd.type!=='recovery'){try{await Auth.resend(pd.email,'signup');toast('ส่งรหัสยืนยันชุดใหม่ให้ทางอีเมลแล้ว')}catch(err){console.warn('resume resend',err)}}
+   return}
+  UI.auth.screen='welcome';render();return}await loadApp();try{startLiveSync();pushAutoSync()}catch(err){console.warn('live sync',err)}}
 boot();
 /* moved by move_defs (evarel-ts-1f) */
 async function authSubmit(kind,form){clearErrs(form);const v=/** @type {Record<string,string>} */(Object.fromEntries(new FormData(form))),errs=authValidate(kind,v),keys=Object.keys(errs);

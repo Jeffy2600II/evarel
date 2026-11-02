@@ -20,6 +20,13 @@ async function grant(env: Env, grantType: 'password' | 'refresh_token', payload:
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
+    /* บัญชีที่ยังไม่ยืนยันอีเมล: Supabase ตอบ email_not_confirmed — คืนสถานะให้แอปพาไปหน้ายืนยัน
+       (ไม่ใช่ "รหัสผิด" ซึ่งทำให้ผู้ใช้ติด เพราะสมัครซ้ำก็ไม่ได้) */
+    if (grantType === 'password') {
+      const j: any = await res.clone().json().catch(() => ({}));
+      const blob = String(j.error_code || '') + ' ' + String(j.error_description || '') + ' ' + String(j.error || '') + ' ' + String(j.msg || '');
+      if (/not\s*confirmed/i.test(blob)) return jsonResponse({ status: 'verify', email: payload.email }, 200, env);
+    }
     // ไม่บอกรายละเอียดว่าอีเมลหรือรหัสผิด (กันไล่เดาบัญชี)
     return errorResponse(res.status === 400 || res.status === 401 ? 'Invalid credentials' : 'Auth service error', res.status === 400 ? 401 : res.status, env);
   }

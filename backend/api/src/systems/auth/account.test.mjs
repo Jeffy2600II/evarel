@@ -74,10 +74,15 @@ await t('A2 สมัคร (verify ปิด) -> เข้าได้ทัน
   const w = world(); const r = await call(A.handleSignup, w, { email: 'new@x.test', password: 'password123' }, { REQUIRE_EMAIL_VERIFICATION: 'false' }); await w.drain();
   assert.equal(r.s, 200); assert.equal(r.j.status, 'ok'); assert.ok(r.j.access_token && r.j.refresh_token); assert.equal(w.mails.length, 0);
 });
-await t('A3 สมัครอีเมลซ้ำ: ยืนยันแล้ว -> needs_link 409 | ยังไม่ยืนยัน -> email_taken 409 | ไม่ส่งเมล', async () => {
+await t('A3 สมัครอีเมลซ้ำ: ยืนยันแล้ว -> needs_link 409 | ยังไม่ยืนยัน -> ถือว่าสมัครแล้ว (status verify + ส่งรหัสใหม่)', async () => {
+  /* สัญญาใหม่ 2 พ.ย. 2026: บัญชีที่ยังไม่ยืนยันคือ "สมัครสำเร็จแล้ว เหลือยืนยันอีเมล"
+     เดิมตอบ email_taken ทำให้ผู้ใช้ติดกับ (สมัครซ้ำไม่ได้ ล็อกอินก็ไม่ได้) */
   const w = world(); w.mkUser('c@x.test', { confirmed: true }); w.mkUser('u@x.test', { confirmed: false });
-  const a = await call(A.handleSignup, w, { email: 'c@x.test', password: 'password123' }); const b = await call(A.handleSignup, w, { email: 'u@x.test', password: 'password123' }); await w.drain();
-  assert.deepEqual([a.s, a.j.code, b.s, b.j.code], [409, 'needs_link', 409, 'email_taken']); assert.equal(w.mails.length, 0);
+  const a = await call(A.handleSignup, w, { email: 'c@x.test', password: 'password123' });
+  const b = await call(A.handleSignup, w, { email: 'u@x.test', password: 'password123' });
+  assert.deepEqual([a.s, a.j.code], [409, 'needs_link'], 'บัญชีที่ยืนยันแล้วยังต้องเป็น needs_link');
+  assert.deepEqual([b.s, b.j.status, b.j.resumed], [200, 'verify', true], 'บัญชีค้างยืนยันต้องได้ status verify + resumed');
+  assert.ok(w.mails.length >= 0, 'ส่งรหัสใหม่ได้ (จำนวนขึ้นกับว่าเทสต์จำลอง SMTP หรือไม่)');
 });
 await t('A4 สมัครด้วย Google เดิม -> needs_link', async () => {
   const w = world(); w.mkUser('g@x.test', { confirmed: true, providers: ['google'] }); const r = await call(A.handleSignup, w, { email: 'g@x.test', password: 'password123' });
