@@ -13,7 +13,7 @@ import { RULES, clientIp, emailKey, check, tooMany, status as rlStatus, maybeCle
 import { jsonResponse } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
 import { handlePushKey, handlePushSubscribe, handlePushUnsubscribe } from './systems/notify/push-routes';
-import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession } from './systems/auth/account';
+import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession , handleCheckEmail } from './systems/auth/account';
 
 const AUTH_BODY_MAX = 2048;
 
@@ -52,6 +52,7 @@ export async function handleRequest(request: Request, baseEnv: Env, ctx?: any): 
     const checks: [any, string][] = [];
     if (path === '/api/auth/login') { checks.push([RULES.loginIp, ip]); if (who) checks.push([RULES.loginIpEmail, ip + '|' + who]); }
     else if (path === '/api/auth/signup') checks.push([RULES.signupIp, ip]);
+    else if (path === '/api/auth/check-email') checks.push([RULES.checkEmailIp, ip]);
     else if (path === '/api/auth/forgot' || path === '/api/auth/resend') { checks.push([RULES.mailIp, ip]); if (who) checks.push([RULES.mailEmail, who]); }
     else if (path === '/api/auth/refresh') checks.push([RULES.refreshIp, ip]);
     if (checks.length) { maybeCleanup(env); const v = await check(env, checks); if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse); }
@@ -63,6 +64,7 @@ export async function handleRequest(request: Request, baseEnv: Env, ctx?: any): 
   if (path === '/api/auth/login' && method === 'POST') return handleLogin(request, aenv);
   if (path === '/api/auth/refresh' && method === 'POST') return handleRefresh(request, aenv);
   if (path === '/api/auth/signup' && method === 'POST') return handleSignup(request, aenv, ctx);
+  if (path === '/api/auth/check-email' && method === 'POST') return handleCheckEmail(request, aenv);
   if (path === '/api/auth/forgot' && method === 'POST') return handleForgot(request, aenv, ctx);
   if (path === '/api/auth/verify' && method === 'POST') return handleVerify(request, aenv, ctx);
   if (path === '/api/auth/resend' && method === 'POST') return handleResend(request, aenv, ctx);

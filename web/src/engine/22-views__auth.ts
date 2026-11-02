@@ -23,7 +23,22 @@ function setBusy(form,on){const b=form.querySelector('button[type="submit"]');b.
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t.closest('[data-kind="signup"]')){const m=pwStrength(t.value);
  $('pwMeter').dataset.lv=String(m.lv);$('pwLabel').textContent=m.label}
  if(t.closest('.ev-authform')&&t.getAttribute('aria-invalid')==='true'){t.setAttribute('aria-invalid','false');const b=$('e-'+t.name);if(b){b.hidden=true;b.innerHTML=''}}});
-document.addEventListener('focusout',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const h=mailHint(t.value),b=$('e-email');
+/* ตรวจอีเมลเร็ว ๆ ระหว่างกรอกฟอร์มสมัคร (Master สั่ง 2 พ.ย. 2026):
+   - หน่วง 700ms หลังหยุดพิมพ์ ไม่ยิงทุกตัวอักษร และยกเลิกผลของคำขอเก่าที่มาช้า (กันข้อความกระพริบ/ผิดคิว)
+   - blur = ตรวจทันที (ผู้ใช้กรอกเสร็จแล้วต้องรู้เลย)
+   - ตรวจไม่ได้ (เน็ต/เซิร์ฟเวอร์ล่ม) = เงียบ ไม่รบกวนผู้ใช้ ไม่เดาเอาว่ามีหรือไม่มี */
+let chkTimer=null,chkSeq=0,chkShown=false;
+function emailNote(msg){const b=$('e-email');if(!b)return;b.hidden=!msg;b.dataset.tone='hint';b.innerHTML=msg?`<span>${esc(msg)}</span>`:'';chkShown=!!msg}
+async function emailTakenCheck(raw){const v=String(raw||'').trim().toLowerCase();if(!EMAIL_RE.test(v))return null;
+ const seq=++chkSeq;let r=null;try{r=Auth.checkEmail?await Auth.checkEmail(v):null}catch(err){r=null}
+ if(seq!==chkSeq)return null; if(!r||!r.ok)return null; /* ผลเก่าหรือตรวจไม่ได้ = ไม่แตะหน้าจอ */
+ if(r.exists)emailNote('อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน'); else if(chkShown)emailNote('');
+ return r}
+document.addEventListener('input',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('[data-kind="signup"]'))return;
+ clearTimeout(chkTimer);const v=t.value;if(chkShown)emailNote('');
+ chkTimer=setTimeout(()=>{emailTakenCheck(v)},700)});
+document.addEventListener('focusout',e=>{const t=e.target;if(t.name==='email'&&t.closest?.('[data-kind="signup"]')){clearTimeout(chkTimer);emailTakenCheck(t.value)}
+ if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const h=mailHint(t.value),b=$('e-email');
  if(h&&b){const u=h.u,fix=h.fix;b.hidden=false;b.dataset.tone='hint';b.innerHTML=`<span>หมายถึง ${esc(u)}@${fix} หรือเปล่า?</span><button type="button" data-act="au-fixmail" data-id="${esc(u)}@${fix}">ใช้อันนี้</button>`}});
 
 async function doSignOut(del){

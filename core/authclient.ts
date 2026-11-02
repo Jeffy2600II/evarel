@@ -69,6 +69,8 @@ export const SupaAuth = (api: string) => { const c = SupaCore(api); let pending:
     async signUp({ name, email, password }: any) { const j = await c.raw('/auth/signup', { method: 'POST', body: { name, email, password } }); if (j.status === 'verify') { pending = { email, type: 'signup', at: Date.now() }; pendingSave(pending); throw authErr('verify_needed') } return take(j) },
     async sendReset(email: string) { await c.raw('/auth/forgot', { method: 'POST', body: { email } }); pending = { email, type: 'recovery', at: Date.now() }; pendingSave(pending) },
     async verifyCode(email: string, code: string, type: string) { const u = take(await c.raw('/auth/verify', { method: 'POST', body: { email, code, type } })); pending = null; pendingClear(); return u },
+    /* ตรวจว่าอีเมลมีบัญชีหรือยัง - ใช้ระหว่างกรอก ต้องเร็วและไม่ทำให้ฟอร์มค้าง (ล้มเหลว = ok:false ไม่โยน error) */
+    async checkEmail(email: string) { try { return await c.raw('/auth/check-email', { method: 'POST', body: { email } }) } catch (err) { return { ok: false } } },
     pendingInfo() { const p = pending || pendingRead(); return p && p.email ? p : null },
     clearPending() { pending = null; pendingClear() },
     async resend(email: string, type: string) { await c.raw('/auth/resend', { method: 'POST', body: { email, type } }) },

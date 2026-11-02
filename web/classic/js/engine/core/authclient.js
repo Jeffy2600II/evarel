@@ -175,6 +175,14 @@ const SupaAuth = (api) => {
       pendingClear();
       return u;
     },
+    /* ตรวจว่าอีเมลมีบัญชีหรือยัง - ใช้ระหว่างกรอก ต้องเร็วและไม่ทำให้ฟอร์มค้าง (ล้มเหลว = ok:false ไม่โยน error) */
+    async checkEmail(email) {
+      try {
+        return await c.raw("/auth/check-email", { method: "POST", body: { email } });
+      } catch (err) {
+        return { ok: false };
+      }
+    },
     pendingInfo() {
       const p = pending || pendingRead();
       return p && p.email ? p : null;

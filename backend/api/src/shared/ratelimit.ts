@@ -9,6 +9,7 @@ export const RULES = {
   loginIpEmail: { bucket: 'login_ip_email', limit: 8,  windowSec: 300 },   // เดารหัสบัญชีเดียวจากไอพีเดียว
   loginIp:      { bucket: 'login_ip',       limit: 60, windowSec: 300 },   // ไอพีเดียว (หลวม: เน็ตโรงเรียน/CGNAT)
   signupIp:     { bucket: 'signup_ip',      limit: 20, windowSec: 3600 },  // ห้องเรียนทั้งห้องสมัครได้
+  checkEmailIp: { bucket: 'check_email_ip', limit: 600, windowSec: 3600 }, // ตรวจอีเมลระหว่างพิมพ์ (เรียกบ่อยแต่ค้นแถวเดียว)
   mailIp:       { bucket: 'mail_ip',        limit: 10, windowSec: 3600 },  // forgot/resend ต่อไอพี
   mailEmail:    { bucket: 'mail_email',     limit: 3,  windowSec: 3600 },  // ส่งเมลถึงอีเมลเดียว (กันถล่มกล่องเหยื่อ/กินโควตา SMTP)
   refreshIp:    { bucket: 'refresh_ip',     limit: 120, windowSec: 300 },

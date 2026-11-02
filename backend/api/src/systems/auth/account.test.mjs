@@ -74,19 +74,18 @@ await t('A2 สมัคร (verify ปิด) -> เข้าได้ทัน
   const w = world(); const r = await call(A.handleSignup, w, { email: 'new@x.test', password: 'password123' }, { REQUIRE_EMAIL_VERIFICATION: 'false' }); await w.drain();
   assert.equal(r.s, 200); assert.equal(r.j.status, 'ok'); assert.ok(r.j.access_token && r.j.refresh_token); assert.equal(w.mails.length, 0);
 });
-await t('A3 สมัครอีเมลซ้ำ: ยืนยันแล้ว -> needs_link | ยังไม่ยืนยัน -> verify_pending (ห้ามสร้างซ้ำ ไม่ส่งเมล)', async () => {
-  /* สัญญา 2 พ.ย. 2026 (Master สั่ง): อีเมลที่อยู่ในฐานข้อมูลแล้วสมัครเพิ่มไม่ได้ทุกกรณี
-     ยังไม่ยืนยันก็ต้องแจ้งว่ามีบัญชีอยู่ ให้ไปยืนยันผ่านทาง "เข้าสู่ระบบ" (ล็อกอินจะพาไปหน้ารหัสเอง) */
+await t('A3 สมัครอีเมลซ้ำ: ทั้งที่ยืนยันแล้วและยังไม่ยืนยัน -> email_taken ข้อความเดียว ไม่ส่งเมล', async () => {
+  /* Master สั่ง 2 พ.ย. 2026: อย่าบอกว่าค้างขั้นไหน บอกแค่ "มีบัญชีอยู่แล้ว" แล้วให้ผู้ใช้ไปเข้าสู่ระบบเอง */
   const w = world(); w.mkUser('c@x.test', { confirmed: true }); w.mkUser('u@x.test', { confirmed: false });
   const a = await call(A.handleSignup, w, { email: 'c@x.test', password: 'password123' });
   const b = await call(A.handleSignup, w, { email: 'u@x.test', password: 'password123' });
-  assert.deepEqual([a.s, a.j.code], [409, 'needs_link'], 'บัญชีที่ยืนยันแล้วต้องเป็น needs_link');
-  assert.deepEqual([b.s, b.j.code], [409, 'verify_pending'], 'บัญชีค้างยืนยันต้องถูกปฏิเสธด้วย verify_pending');
+  assert.deepEqual([a.s, a.j.code], [409, 'email_taken']);
+  assert.deepEqual([b.s, b.j.code], [409, 'email_taken'], 'บัญชีค้างยืนยันต้องได้ข้อความเดียวกับบัญชีที่ยืนยันแล้ว');
   assert.equal(w.mails.length, 0, 'ห้ามส่งเมลจากการกดสร้างบัญชีซ้ำ');
 });
-await t('A4 สมัครด้วย Google เดิม -> needs_link', async () => {
+await t('A4 สมัครด้วยอีเมลที่ผูก Google ไว้ -> email_taken (ข้อความเดียว ไม่บอกช่องทาง)', async () => {
   const w = world(); w.mkUser('g@x.test', { confirmed: true, providers: ['google'] }); const r = await call(A.handleSignup, w, { email: 'g@x.test', password: 'password123' });
-  assert.deepEqual([r.s, r.j.code], [409, 'needs_link']);
+  assert.deepEqual([r.s, r.j.code], [409, 'email_taken']);
 });
 await t('A5 ตรวจอินพุตสมัคร: อีเมลผิดรูป / รหัสสั้น / รหัสยาว / ชนิดผิด -> 400 unknown', async () => {
   const w = world(); for (const b of [{ email: 'bad', password: 'password123' }, { email: 'a@x.test', password: 'short' }, { email: 'a@x.test', password: 'x'.repeat(73) }, { email: 1, password: 'password123' }, 'not json', '{}']) { const r = await call(A.handleSignup, w, b); assert.deepEqual([r.s, r.j.code], [400, 'unknown'], JSON.stringify(b)); }
