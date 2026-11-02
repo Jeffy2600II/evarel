@@ -50,6 +50,8 @@ jobs:
             git diff --stat -- web/classic/js
             exit 1
           fi
+      - name: ห้ามมีระบบเดา/ชี้ทางอีเมล (กันข้อบกพร่องด้านความเป็นส่วนตัวกลับมา)
+        run: node tests/no-email-guessing.test.mjs
       - name: เทสต์เทียบชุด Node ล้วน 6 ชุด (อ่านตัวอ้างอิงจาก git commit ฐานเก่า จึงต้องมี fetch-depth 0 ด้านบน)
         run: |
           node tests/aiproposal_equiv.test.mjs

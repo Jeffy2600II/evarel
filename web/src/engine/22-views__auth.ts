@@ -1,4 +1,4 @@
-import { EMAIL_RE, PW_MIN, MAIL_TYPO, authValidate, pwStrength, coolView, mailHint, resendToast } from './core/authform.js';
+import { EMAIL_RE, PW_MIN, MAIL_TYPO, authValidate, pwStrength, coolView, resendToast } from './core/authform.js'; /* mailHint ไม่ถูกเรียกแล้ว (ห้ามเดาอีเมล) */
 import { fld } from './core/uihtml.js';
 /* ===== MODULE: views/auth (เข้าสู่ระบบ / สร้างบัญชี / ลืมรหัสผ่าน) ===== */
 const AU_MSG={invalid_credentials:'อีเมลหรือรหัสผ่านไม่ถูกต้อง',email_taken:'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน',verify_pending:'อีเมลนี้มีบัญชีอยู่ในระบบแล้ว (ยังไม่ได้ยืนยันอีเมล) เข้าสู่ระบบเพื่อยืนยันให้เสร็จก่อน',network:'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',unknown:'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง',needs_link:'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบด้วยบัญชีเดิมก่อน',code_invalid:'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง',code_expired:'รหัสหมดอายุแล้ว กดส่งรหัสใหม่',too_many_requests:'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่',unverified:'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'};
@@ -38,8 +38,9 @@ document.addEventListener('input',e=>{const t=e.target;if(t.name!=='email'||!t.c
  clearTimeout(chkTimer);const v=t.value;if(chkShown)emailNote('');
  chkTimer=setTimeout(()=>{emailTakenCheck(v)},700)});
 document.addEventListener('focusout',e=>{const t=e.target;if(t.name==='email'&&t.closest?.('[data-kind="signup"]')){clearTimeout(chkTimer);emailTakenCheck(t.value)}
- if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const h=mailHint(t.value),b=$('e-email');
- if(h&&b){const u=h.u,fix=h.fix;b.hidden=false;b.dataset.tone='hint';b.innerHTML=`<span>หมายถึง ${esc(u)}@${fix} หรือเปล่า?</span><button type="button" data-act="au-fixmail" data-id="${esc(u)}@${fix}">ใช้อันนี้</button>`}});
+ /* ไม่เดาและไม่ชี้ทางเรื่องอีเมล (Master สั่ง 2 พ.ย. 2026): เดิมพอพิมพ์อีเมลแล้วลบ ระบบเสนอ
+    "หมายถึง xxx@yyy หรือเปล่า?" ซึ่งคนที่ไม่ใช่เจ้าของบัญชีก็ใช้ไล่เดาได้ — ตัดออกทั้งท่อน */
+ });
 
 async function doSignOut(del){
  /* ออกจากระบบต้องสำเร็จเสมอ: ตัดการเชื่อม realtime แบบผ่อนปรน (ถ้าโมดูล live-sync ยังไม่พร้อมก็ข้าม ไม่ให้พังทั้ง flow) */

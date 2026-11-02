@@ -45,7 +45,6 @@ const ACTIONS={
  'au-go':id=>{stopCool();UI.auth.screen=id;renderAuthRoot();return NR},
  'au-google':(id,el)=>{authGoogle(el.closest('button'));return NR},
  'au-eye':(id,el)=>{const i=$(id),show=i.type==='password';i.type=show?'text':'password';el.innerHTML=icon(show?'eyeoff':'eye');el.setAttribute('aria-pressed',String(show));el.setAttribute('aria-label',show?'ซ่อนรหัสผ่าน':'แสดงรหัสผ่าน');return NR},
- 'au-fixmail':(id)=>{const i=document.querySelector('.ev-authform [name="email"]');if(i)i.value=id;const b=$('e-email');if(b){b.hidden=true;b.innerHTML=''}return NR},
  'au-terms':id=>{openDialog(`<h3>${id==='terms'?'ข้อกำหนดการใช้งาน':'นโยบายความเป็นส่วนตัว'}</h3><p class="ev-sub">เอกสารฉบับเต็มกำลังจัดทำและจะเผยแพร่ก่อนเปิดให้ผู้อื่นใช้งาน</p><div class="ev-dlg-actions" style="grid-template-columns:1fr"><button class="ev-btn-primary" data-act="close">เข้าใจแล้ว</button></div>`);return NR},
  'au-resend':()=>{resendReset();return NR},
  'au-signout-ask':()=>{confirmDialog({title:'ออกจากระบบ?',msg:'ข้อมูลของคุณยังอยู่ และเข้าสู่ระบบกลับมาได้เสมอ',keep:'อยู่ต่อ',ok:'ออกจากระบบ',tone:'primary',fn:()=>doSignOut(false)});return NR},
