@@ -18,13 +18,13 @@ export default function Root({ children }: { children: ReactNode }) {
       <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
       <meta name="theme-color" content="#4F46E5" />
       <link rel="manifest" href="manifest.webmanifest" />
-      <link rel="icon" href="icons/favicon.ico" sizes="16x16 32x32 48x48" />
+      <link rel="icon" href={q('icons/favicon.ico')} sizes="16x16 32x32 48x48" />
       <link rel="icon" type="image/svg+xml" href={q('icons/favicon.svg')} />
       <link rel="icon" type="image/png" sizes="128x128" href={q('icons/favicon-128.png')} />
       <link rel="icon" type="image/png" sizes="64x64" href={q('icons/favicon-64.png')} />
       <link rel="icon" type="image/png" sizes="32x32" href={q('icons/favicon-32.png')} />
       <link rel="icon" type="image/png" sizes="16x16" href={q('icons/favicon-16.png')} />
-      <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png" />
+      <link rel="apple-touch-icon" sizes="180x180" href={q('icons/apple-touch-icon-180.png')} />
       <link rel="stylesheet" href={q('styles/app.css')} />
       <script id="ev-api" dangerouslySetInnerHTML={{ __html: `window.EVAREL_API = window.EVAREL_API || ${JSON.stringify(process.env.NEXT_PUBLIC_EVAREL_API || '')};window.__EV_BUILD__ = ${JSON.stringify(V)};window.__EV_VERSION__ = ${JSON.stringify(VER)};` }} />
     </head>

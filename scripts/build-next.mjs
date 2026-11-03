@@ -33,12 +33,16 @@ try {
   for (const a of ['styles', 'icons', 'vendor', 'js/react']) cpSync(join(SRC, a), join(PUB, a), { recursive: true });
   cpSync(join(SRC, 'manifest.webmanifest'), join(PUB, 'manifest.webmanifest'));
 
-  /* รหัสเนื้อหาไฟล์ชื่อคงที่ (styles/vendor/js/react) รู้ได้ก่อน next build จึงส่งให้ layout ใส่ ?v= ตั้งแต่ต้นทาง
-     (ถ้าแก้ HTML ทีหลัง React จะ hydrate ด้วยค่าคนละตัว = error #418) */
+  /* รหัสเนื้อหาไฟล์ชื่อคงที่ (styles/vendor/js/react + icons) รู้ได้ก่อน next build จึงส่งให้ layout ใส่ ?v= ตั้งแต่ต้นทาง
+     (ถ้าแก้ HTML ทีหลัง React จะ hydrate ด้วยค่าคนละตัว = error #418)
+     icons ต้องอยู่ในแฮชด้วย: ไฟล์โลโก้ชื่อคงที่เนื้อหาเปลี่ยนได้ (อัปเดตชุด brand) — ไม่นับเข้าแฮช = URL ?v= เดิม = browser/SW ยังเสิร์ฟของเก่า */
   const walkFiles = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walkFiles(join(d, e.name)) : [join(d, e.name)]);
   const fixedHash = createHash('sha256');
-  for (const a of ['styles', 'vendor', 'js/react']) for (const f of walkFiles(join(PUB, a)).sort()) fixedHash.update(f.slice(PUB.length) + ':').update(readFileSync(f));
+  for (const a of ['styles', 'vendor', 'js/react', 'icons']) for (const f of walkFiles(join(PUB, a)).sort()) fixedHash.update(f.slice(PUB.length) + ':').update(readFileSync(f));
   const ASSET_V = fixedHash.digest('hex').slice(0, 12);
+  /* เวอร์ชันไอคอนใน manifest: ไฟล์โลโก้ชื่อคงที่ — ผูก URL กับ ?v= ให้ OS ดึงไอคอนหน้าจอหลัก (PWA) ใหม่เมื่อโลโก้เปลี่ยน */
+  const MANI = join(PUB, 'manifest.webmanifest');
+  writeFileSync(MANI, readFileSync(MANI, 'utf8').replace(/"src":\s*"(icons\/[^"?]+)"/g, `"src": "$1?v=${ASSET_V}"`));
   /* เลขเวอร์ชันที่ผู้ใช้เห็น (รวมช่อง) รู้ได้ก่อน next build จึงส่งให้ layout ฝังใน HTML: หน้าบอกได้เองว่ากำลังรันเวอร์ชันไหน ไม่ต้องพึ่ง SW */
   const REL_VERSION = JSON.parse(readFileSync(join(root, 'releases/current.json'), 'utf8')).version + (env === 'production' ? '' : '-' + env);
   rmSync(OUT, { recursive: true, force: true });

@@ -105,9 +105,10 @@ self.addEventListener('message', e => {
 
 self.addEventListener('install', e => {
   /* ไม่ skipWaiting เอง: ผู้ใช้ที่กำลังใช้งานอยู่ต้องไม่ถูกทับกลางทาง รุ่นใหม่เข้าเมื่อรีเฟรช/เปิดหน้าใหม่ (หน้าใหม่สั่ง SKIP_WAITING เอง ดู boot.js) */
-  /* ไฟล์ชื่อคงที่ (นอก _next/) เก็บด้วยคีย์ที่มี ?v=<build> เพราะหน้าใหม่ขอด้วยคีย์นั้น (ไม่งั้นออฟไลน์หาไม่เจอ) | เก็บคีย์เปล่าด้วยเพื่อรองรับคำขอที่ไม่มี ?v= */
+  /* ไฟล์ชื่อคงที่ (นอก _next/) เก็บด้วยคีย์ที่มี ?v=<build> เพราะหน้าใหม่ขอด้วยคีย์นั้น (ไม่งั้นออฟไลน์หาไม่เจอ) | เก็บคีย์เปล่าด้วยเพื่อรองรับคำขอที่ไม่มี ?v=
+     icons รวมด้วย: ไฟล์โลโก้ชื่อคงที่แต่เนื้อหาเปลี่ยนตามรุ่น (?v= ใน HTML ต่างกันทุกรุ่นที่โลโก้เปลี่ยน) ต้องแคชไว้ตั้งแต่ install เพื่อออฟไลน์ */
   const BUILD = ASSET_V;
-  const fixed = u => /^\.\/(styles|fonts|vendor|js)\//.test(u);
+  const fixed = u => /^\.\/(styles|fonts|vendor|js|icons)\//.test(u);
   e.waitUntil(caches.open(VERSION).then(async c => {
     await c.addAll(CORE);
     await Promise.all(CORE.filter(fixed).map(async u => { const r = await c.match(u); if (r) await c.put(u + '?v=' + BUILD, r.clone()); }));

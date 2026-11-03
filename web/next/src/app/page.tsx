@@ -4,6 +4,9 @@
    + สแปลชบูต #ev-boot และสคริปต์เฟรมแรก: จับ token ที่กลับมาจาก Google + โชว์สแปลชทันที (กันหน้าขาว) — เนื้อหาตาม classic/index.html เป๊ะ */
 import AppBoot from '../lib/boot';
 
+/* รหัสเนื้อหาไฟล์ชื่อคงที่ (?v=) — ตัวเดียวกับ layout.tsx: โลโก้/ไอคอนชื่อคงที่เนื้อหาเปลี่ยนได้ ต้องผูก URL กับรหัส build เพื่อให้ browser ดึงของใหม่ */
+const q = (u: string) => (process.env.NEXT_PUBLIC_EVAREL_ASSET_V ? `${u}?v=${process.env.NEXT_PUBLIC_EVAREL_ASSET_V}` : u);
+
 /* สคริปต์เดียวกับ web/classic/index.html (แก้ที่ไหนแก้อีกที่ด้วย): จอด (park) token OAuth จาก hash กันหาย + โชว์สแปลชทันทีเมื่อจะเข้าสู่ระบบอัตโนมัติ
    ต้องอยู่ "หลัง" markup ของ #ev-boot (หา element ตัวเองด้วย getElementById) และ "ก่อน" โมดูลเครื่องยนต์ซึ่ง AppBoot โหลดแบบ dynamic import */
 const EV_BOOT_JS = `(function () {
@@ -39,7 +42,7 @@ export default function Page() {
   return (
     <>
       <div id="ev-boot" hidden><div className="ev-splash">
-        <img className="mark" src="icons/mark-gradient.svg" alt="" aria-hidden="true" draggable={false} />
+        <img className="mark" src={q('icons/mark-gradient.svg')} alt="" aria-hidden="true" draggable={false} />
         <b style={{ fontSize: 28, letterSpacing: -1 }}>Ordivel</b>
         <span className="ev-spin ev-spin-splash" aria-hidden="true"></span>
         <span className="ev-splash-note" role="status">กำลังโหลด…</span>
