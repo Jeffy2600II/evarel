@@ -86,6 +86,10 @@ const CORE = [
   './icons/appicon-violet-1024.png',
   './icons/circle-violet-1024.png',
   './icons/favicon-256.png',
+  './icons/favicon-128.png',
+  './icons/favicon-64.png',
+  './icons/favicon.svg',
+  './icons/apple-touch-icon-180.png',
   './icons/favicon.ico',
   './icons/mark-gradient.svg',
 ];
