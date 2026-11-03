@@ -16,7 +16,7 @@ export default function Root({ children }: { children: ReactNode }) {
     <head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
-      <meta name="theme-color" content="#4F46E5" />
+      <meta name="theme-color" content="#181142" />
       <link rel="manifest" href="manifest.webmanifest" />
       <link rel="icon" href={q('icons/favicon.ico')} sizes="16x16 32x32 48x48" />
       <link rel="icon" type="image/svg+xml" href={q('icons/favicon.svg')} />
