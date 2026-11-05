@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 const J = (x) => JSON.parse(JSON.stringify(x));
 const deq = (a, b, m) => assert.deepEqual(J(a), J(b), m);
 const here = dirname(fileURLToPath(import.meta.url));
-const mdir = join(here, '../web/classic/js/m');
+const mdir = join(here, '../../web/classic/js/m');
 /* ตรรกะความหมายของ rem ย้ายไป core/notify (ES module ที่ build สร้าง) ไฟล์ services__notify.js เหลือแต่ส่วน Web Push + import จึงโหลดใน vm เป็นสคริปต์ไม่ได้
    ที่นี่โหลด core/notify.js แทน (ตรรกะชุดเดียวกัน) โดยตัดคำว่า export ออกให้ vm รันเป็นสคริปต์ได้ | ค่าคาดหวังทุกข้อด้านล่างไม่เปลี่ยน */
 const file = join(mdir, 'core', 'notify.js');
@@ -53,7 +53,7 @@ if (N) {
   /* N17: พิสูจน์ว่าความหมายของแอปตรงกับที่ Worker ปฏิบัติจริง โดยรัน dueReminders ตัวจริงของ Worker (บันเดิลด้วย esbuild) */
   const { execSync } = await import('node:child_process'); const { pathToFileURL } = await import('node:url');
   const { tmpdir } = await import('node:os'); const outFile = join(tmpdir(), 'notify-nd-rem.mjs');
-  execSync(`"${join(here, '../node_modules/.bin/esbuild')}" "${join(here, '../backend/api/src/systems/notify/reminders.ts')}" --bundle --format=esm --outfile="${outFile}" --log-level=error`);
+  execSync(`"${join(here, '../../node_modules/.bin/esbuild')}" "${join(here, '../../backend/api/src/systems/notify/reminders.ts')}" --bundle --format=esm --outfile="${outFile}" --log-level=error`);
   const R = await import(pathToFileURL(outFile).href + '?v=' + Date.now());
   const base = { id: 1, title: 'ส่งงาน', time: '09:00', start: '2026-10-14', end: '', repeat: { unit: 'none', every: 1, days: [] }, skip: {} };
   // ตรวจ "เวลายิงจริง" (atAbs เป็นนาทีสัมบูรณ์) ไม่ผูกกับรูปแบบ key ซึ่งเปลี่ยนเป็น @เวลา ตั้งแต่ 08b7df2

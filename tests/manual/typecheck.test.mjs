@@ -4,7 +4,7 @@ import { mkdtempSync, cpSync, writeFileSync, readFileSync, rmSync, mkdirSync } f
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 let pass = 0, fail = 0;
 const t = (name, fn) => { try { fn(); pass++; console.log('ผ่าน', name); } catch (e) { fail++; console.log('ตก ', name, '->', e.message); } };
 const eq = (a, b, m) => { if (a !== b) throw new Error(`${m || ''} ได้ ${a} คาด ${b}`); };

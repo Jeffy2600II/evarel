@@ -3,7 +3,7 @@
    ครอบ 7 สถานะ: ไม่ใช่ของฉัน, กำลังเดิน, หยุดพัก, เดินข้ามชั่วโมง, ต่างวัน, เกินเป้า 100%, ชื่อมีอักขระพิเศษ
    ใช้: node tests/focus_equiv.test.mjs   ผล: exit 1 ถ้าต่างแม้ไบต์เดียว */
 import fs from 'node:fs'; import { chromium } from 'playwright'; import { fileURLToPath } from 'node:url'; import { dirname, join } from 'node:path';
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FIXED = new Date('2026-10-17T05:30:00Z'); const RD = Date;
 globalThis.Date = class extends RD { constructor(...a){ if(a.length===0) super(FIXED.getTime()); else super(...a); } static now(){ return FIXED.getTime(); } };
 globalThis.window = globalThis; globalThis.document = {}; globalThis.navigator = {};

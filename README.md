@@ -8,11 +8,25 @@ PWA ส่วนตัวสำหรับจัดการชีวิต (�
 ## โครงสร้าง
 
 จัดใหม่ตามคำสั่ง Master 31 ต.ค. 2026 (F7): เว็บคือเว็บ แอปคือแอป ตรรกะแชร์อยู่ที่เดียว ของเก่าเก็บใน archive
+(จัดระเบียบเอกสาร/เทสต์/เครื่องมือรอบใหม่ 5 พ.ย. 2026: เอกสารรวมที่ docs/ เทสต์แยกกลุ่ม equiv/manual/history)
 
 ```
+AGENTS.md           กฎเหล็กสำหรับผู้พัฒนาและ AI agent (อ่านก่อนแตะโค้ดเสมอ)
+README.md           ไฟล์นี้ (แผนที่รีโป + วิธี build/deploy)
+docs/               เอกสารทั้งหมดของระบบ
+  PRD.md              ขอบเขตผลิตภัณฑ์ + เกณฑ์ตรวจรับ (คงที่ ห้ามแก้ตามใจ)
+  DESIGN.md           ระบบดีไซน์ (โทเคน สี รัศมี ท่าที่ห้าม)
+  SITEMAP.md / USER-FLOW.md   หน้าจอและลำดับใช้งานที่ต้องคงไว้
+  ARCHITECTURE.md / DATA-MODEL.md   ชั้นโค้ดและรูปแบบข้อมูล
+  UPDATE-NOTES.md     บันทึกการปรับหน้าตาแอปยุคเดโม (ประวัติศาสตร์)
+  plan/               แผนหลัก (MASTER-PLAN.md) + แผนรายขั้น (steps/, factory-steps/) + ภาพฐาน
+  versioning.md       กติกาเลขรุ่น
+  adr/                บันทึกการตัดสินใจทางเทคนิค
+  assessment/         การประเมินโรงงาน (FACTORY-SCORECARD.md)
+  ops/                คู่มือปฏิบัติการ (เช่น DOMAIN-MIGRATION.md)
+  system-map.md / system-logic.md / FACTORY-MAP.md   แผนที่ระบบและโรงงาน (FACTORY-MAP ห้ามแก้มือ)
 web/                ทุกอย่างของฝั่งเว็บ (PWA)
-  classic/          แอปเว็บคลาสสิก + ผลคอมไพล์ที่ commit ไว้ (index.html, sw.js, js/, styles/, vendor/)
-                    ให้ web/next บันเดิลและชุดทดสอบอ่าน ไม่ใช่ของตาย
+  classic/          รันไทม์ที่เสิร์ฟจริง + ผลคอมไพล์ที่ commit ไว้ (index.html, sw.js, js/, styles/, vendor/, icons/)
   next/             Next.js (TypeScript + React) เส้นทางเสิร์ฟจริง บิลด์ออก build/web
   shell/            เปลือก Next ขั้น S3 และที่อยู่ node_modules ของ react/react-dom ที่สคริปต์บิลด์อ้าง
   src/              ซอร์สของเว็บ: engine/ (เครื่องยนต์ 27 โมดูล) และ react/ (รันไทม์)
@@ -25,11 +39,11 @@ backend/            หลังบ้านใช้ร่วมทุกแพ
     prototype/        ต้นแบบ Push รอบแรก เก็บไว้เป็นต้นแบบอ้างอิงจนกว่า S2 จะย้ายเข้า src
   db/               สคริปต์ฐานข้อมูล Supabase (schema และ migrations ตามลำดับเลข)
   edge/             Edge Function แจ้งเตือน (pg_cron ยิงทุกนาที)
+tests/              ชุดตรวจ แยกกลุ่มตาม tests/README.md (CI เฝ้าที่ราก, equiv/ = เทียบเบราว์เซอร์, manual/ = รันมือ, history/ = ยุคเก่า)
+tools/              เครื่องมือ: factory/ (ตรวจกติกาโรงงาน) typecheck plan_check dep_* และ migration/ (เครื่องมือรีแฟกเตอร์ยุคก่อน)
+scripts/            สคริปต์ build, deploy, ตรวจโน้ตรุ่น, สร้างไฟล์อ้างอิงเทียบ
+brand/              ชุดล็อโก้ทางการ (ต้นฉบับนักออกแบบ ห้ามแก้ไข ดู brand/README.md)
 archive/            ของเก่าที่ย้ายเก็บไม่ลบ: app-v13/ (เดโมฐาน S0) design/ (เดโมออกแบบของเจ้าของ)
-tools/              เครื่องมือ: factory/ (เครื่องมือโรงงาน checker mapper xray scorecard) และเครื่องมือรีแฟกเตอร์
-docs/               แผนหลัก (docs/plan/MASTER-PLAN.md) แผนรายขั้น และ ADR
-tests/              เทสต์ฝั่งแอปและเครื่องมือตรวจ
-scripts/            สคริปต์ build และรันชุดทดสอบ
 releases/           ข้อมูลรุ่นปัจจุบัน (current.json เป็นแหล่งความจริงเดียว)
 types/              ชนิด TS กลาง (dom, globals, st)
 ```

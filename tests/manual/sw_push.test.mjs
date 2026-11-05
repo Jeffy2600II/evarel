@@ -3,7 +3,7 @@
    ข้อจำกัด: ยืนยันข้อความที่ส่งให้ระบบ ไม่ใช่สิ่งที่ Android วาดบนหน้าจอ (ต้องดูบนมือถือจริง) | ใช้เซิร์ฟเวอร์ HTTPS จริงเหมือน sw_upgrade.test.mjs
    ต้อง build ก่อน: npm run build:web:forge  ต้องมี openssl */
 import { chromium } from 'playwright'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import https from 'node:https'; import { execFileSync } from 'node:child_process'; import { fileURLToPath } from 'node:url';
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-push-'));
 execFileSync('openssl', ['req','-x509','-newkey','rsa:2048','-nodes','-keyout',tmp+'/k.pem','-out',tmp+'/c.pem','-days','1','-subj','/CN=ordivel-app-forge.nontakorn2600.workers.dev','-addext','subjectAltName=DNS:ordivel-app-forge.nontakorn2600.workers.dev'],{stdio:'ignore'});
 const TLS=tmp; const HOST='ordivel-app-forge.nontakorn2600.workers.dev'; const NEW=process.env.SW_NEW_DIR||path.join(root,'build/web');

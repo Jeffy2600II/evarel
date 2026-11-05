@@ -4,7 +4,7 @@
    ไม่พึ่งเครือข่ายหรือบัญชีทดสอบ | ใช้: node tests/calendar_lifecycle_equiv.test.mjs   ผล: exit 1 ถ้ามีข้อใดไม่ตรง
    ตัวแปรสภาพแวดล้อม CAL_JS ชี้ไฟล์ calendar.js ที่จะทดสอบ (ใช้ฉีดความผิดพิสูจน์ว่าตัวเทียบจับได้) */
 import fs from 'node:fs'; import { chromium } from 'playwright'; import { fileURLToPath } from 'node:url'; import { dirname, join } from 'node:path';
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const rt = fs.readFileSync(root + '/web/classic/js/react/runtime.js', 'utf8');

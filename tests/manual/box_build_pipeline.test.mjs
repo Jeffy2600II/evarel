@@ -5,7 +5,7 @@
    (7) เครื่องตรวจอ่านบัตรจริง: บัตรอ้างไฟล์ผี/ไฟล์แอบใน parts/JSON ผิด/ชื่อลงทะเบียนผิด ตก BOX-02, เบ้าจูนสร้างกล่องที่ผ่านเองและแผ่นตรวจรับไม่ติ๊กล่วงหน้า
    ใช้: node tests/box_build_pipeline.test.mjs   ผล: exit 1 ถ้าข้อใดไม่ผ่าน */
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import { execFileSync } from 'node:child_process'; import { chromium } from 'playwright'; import { fileURLToPath } from 'node:url';
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 let fails = 0; const t = (n, ok, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${n} ${ok ? '' : extra}`); if (!ok) fails++; };
 const run = (cwd, args) => { try { return { ok: true, out: execFileSync(process.execPath, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }) }; } catch (e) { return { ok: false, out: (e.stdout || '') + (e.stderr || '') }; } };
 /* (1) ใช้รีโปจริงตรวจว่าไม่มีกล่อง = เดิมทุกไบต์ */

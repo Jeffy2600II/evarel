@@ -6,7 +6,7 @@
    กติกา: ไฟล์ทุกไฟล์ใน web/classic ต้องไปถึง build/web ตรงทุกไบต์ ยกเว้น index.html ที่ต่างได้เฉพาะบรรทัดฉีด EVAREL_API บรรทัดเดียว */
 import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto'; import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = path.join(root, 'web/classic'), OUT = path.join(root, 'build/web');
 let pass = 0, fail = 0; const t = (n, fn) => { try { fn(); pass++; console.log('PASS ' + n); } catch (e) { fail++; console.log('FAIL ' + n + ' :: ' + String(e.message).slice(0, 220)); } };
 const sha = (p) => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');

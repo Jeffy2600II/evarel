@@ -1,7 +1,7 @@
 // ts1j_scope_gate.mjs: ประตูถาวร ตัวนับการพึ่งพาต้องแยกขอบเขตท้องถิ่นถูกต้อง (evarel-ts-1j)
 // ใช้: node ts1j_scope_gate.mjs [path/to/dep_manifest.mjs]  (ค่าเริ่มต้น ../tools/dep_manifest.mjs)
 import { spawnSync } from 'child_process'; import path from 'path'; import { fileURLToPath } from 'url';
-const here = path.dirname(fileURLToPath(import.meta.url)); const tool = process.argv[2] || path.join(here, '../tools/dep_manifest.mjs');
+const here = path.dirname(fileURLToPath(import.meta.url)); const tool = process.argv[2] || path.join(here, '../../tools/dep_manifest.mjs');
 const fx = path.join(here, 'fixtures/scope');
 const MUST_COUNT = ['keepReal', 'realFn', 'viaLetBlock'];                 // ชื่อบนสุดจริง ต้องนับ (กันหลุดเส้นจริง)
 const MUST_SKIP = ['blockOnly', 'shared', 'viaCatch', 'viaDestr', 'viaFnExpr', 'viaFor', 'viaInner', 'viaParam', 'viaVarHoist']; // ท้องถิ่น ห้ามนับ

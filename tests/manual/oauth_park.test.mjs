@@ -3,7 +3,7 @@
    ทดสอบไฟล์ที่เสิร์ฟจริง web/classic/js/engine/core/authclient.js (ผล compile ของ core/authclient.ts)
    ใช้: node tests/oauth_park.test.mjs */
 import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 let pass = 0, fail = 0; const t = (name, ok, detail = '') => { if (ok) pass++; else fail++; console.log((ok ? 'PASS ' : 'FAIL ') + name + (ok ? '' : ' :: ' + detail)); };
 const AUTHCLIENT = path.join(root, 'web/classic/js/engine/core/authclient.js');
 t('มีไฟล์ authclient.js ที่คอมไพล์แล้ว', fs.existsSync(AUTHCLIENT));
