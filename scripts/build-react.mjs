@@ -22,7 +22,7 @@ const check = process.argv.includes('--check');
 const common = { absWorkingDir: root, bundle: true, format: 'iife', platform: 'browser', minify: true, target: 'es2020', write: false, logLevel: 'silent',
   define: { 'process.env.NODE_ENV': '"production"' } };
 // alias ต้องเป็นพาธสัมพัทธ์จากราก (ไม่ใช่สัมบูรณ์) ไม่งั้น esbuild ข้ามการเลือก exports ของ react-dom ไปใช้ server.node.js (ใช้ util/stream ของ Node รันในเบราว์เซอร์ไม่ได้)
-const alias = { react: './web/shell/node_modules/react', 'react-dom': './web/shell/node_modules/react-dom' };
+const alias = { react: './web/next/node_modules/react', 'react-dom': './web/next/node_modules/react-dom' };
 
 // F3.3-g13/g14: โมดูลร่วมที่ไฟล์หน้าไม่บันเดิลสำเนาของตัวเอง แต่อ่านจาก global ที่ runtime เปิดไว้ (runtime โหลดก่อนไฟล์หน้าเสมอ)
 //   shared/tray.js -> window.EvarelTray | core/dates + core/schedule -> window.EvarelCore (g14)

@@ -29,17 +29,16 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            web/shell/package-lock.json
+            web/next/package-lock.json
       - name: ตรวจโน้ตรุ่น (ทุกอัปเดตที่ส่งถึงผู้ใช้ต้องมีโน้ตใหม่)
         run: |
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
           if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then BASE="HEAD~1"; fi
           node scripts/check-release-notes.mjs "$BASE"
-      - name: ติดตั้งแพ็กเกจ (ราก = tailwind/esbuild/wrangler | web/shell = next/react แล้วทำ symlink เหมือนเครื่องพัฒนา)
+      - name: ติดตั้งแพ็กเกจ (ราก = tailwind/esbuild/wrangler | web/next = next/react ของตัวเอง ไม่ต้อง symlink)
         run: |
           npm ci
-          npm ci --prefix web/shell
-          ln -sfn ../shell/node_modules web/next/node_modules
+          npm ci --prefix web/next
       - name: ตรวจไฟล์คอมไพล์ตรงกับซอร์ส (กัน commit src แต่ลืมไฟล์ที่คอมไพล์แล้ว)
         run: |
           node scripts/build-react.mjs --check

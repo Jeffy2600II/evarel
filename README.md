@@ -27,8 +27,7 @@ docs/               เอกสารทั้งหมดของระบบ
   system-map.md / system-logic.md / FACTORY-MAP.md   แผนที่ระบบและโรงงาน (FACTORY-MAP ห้ามแก้มือ)
 web/                ทุกอย่างของฝั่งเว็บ (PWA)
   classic/          รันไทม์ที่เสิร์ฟจริง + ผลคอมไพล์ที่ commit ไว้ (index.html, sw.js, js/, styles/, vendor/, icons/)
-  next/             Next.js (TypeScript + React) เส้นทางเสิร์ฟจริง บิลด์ออก build/web
-  shell/            เปลือก Next ขั้น S3 และที่อยู่ node_modules ของ react/react-dom ที่สคริปต์บิลด์อ้าง
+  next/             Next.js (TypeScript + React) เส้นทางเสิร์ฟจริง บิลด์ออก build/web — ที่อยู่เดียวของ next/react (แทน web/shell ยุค S3 ที่ยุบแล้ว 5 พ.ย. 2026 เก็บที่ archive/web-shell-s3)
   src/              ซอร์สของเว็บ: engine/ (เครื่องยนต์ 27 โมดูล) และ react/ (รันไทม์)
   pages/ shared/ data/ styles/   โซนโรงงาน: กล่องหน้า ชิ้นร่วม ถาดข้อมูล แม่พิมพ์กลาง
 app/                สงวนไว้สำหรับแอปมือถือ (React Native ตามขั้น S7) ยังไม่มีโค้ด มีแต่ README

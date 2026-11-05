@@ -213,7 +213,7 @@ stats["live_xray_example"] = {"ok": xray["code"] == 0}
 shutil.rmtree(tmpd, ignore_errors=True)
 
 # ---------- 10) โซนอื่น ๆ (บริบท) ----------
-for z in ("backend/api", "backend/db", "backend/edge", "web/next/src", "web/shell/src", "web/data"):
+for z in ("backend/api", "backend/db", "backend/edge", "web/next/src", "web/data"):
     p = os.path.join(ROOT, z)
     stats.setdefault("other_zones", {})[z] = len(walk_files(p, lambda x: not x.endswith((".lock",)))) if os.path.isdir(p) else 0
 stats["shared_root_files"] = [f for f in os.listdir(os.path.join(ROOT, "web/shared")) if os.path.isfile(os.path.join(ROOT, "web/shared", f))]

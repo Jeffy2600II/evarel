@@ -22,7 +22,7 @@ const NEXT_DIR = join(root, 'web/next');
 const PUB = join(NEXT_DIR, 'public');
 const OUT = join(NEXT_DIR, 'out');
 
-if (!existsSync(join(NEXT_DIR, 'node_modules/next/dist/bin/next'))) { console.error('ยังไม่ได้ติดตั้งแพ็กเกจของ web/next (symlink จาก web/shell หรือ npm install)'); process.exit(2); }
+if (!existsSync(join(NEXT_DIR, 'node_modules/next/dist/bin/next'))) { console.error('ยังไม่ได้ติดตั้งแพ็กเกจของ web/next (รัน npm ci --prefix web/next)'); process.exit(2); }
 
 // คอมไพล์ .ts เป็น .js ก่อนเสมอ (บันเดิลอ่าน js/m/*.js)
 execFileSync(process.execPath, [join(root, 'scripts/compile-ts.mjs')], { cwd: root, stdio: 'inherit' });

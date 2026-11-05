@@ -16,8 +16,8 @@ const tmp = fs.mkdtempSync(path.join(process.env.TMPDIR || os.tmpdir(), 'boxpipe
 const cp = (rel) => fs.cpSync(path.join(root, rel), path.join(tmp, rel), { recursive: true });
 for (const r of ['scripts/build-react.mjs', 'web/src', 'core', 'web/shared', 'web/data', 'tools/factory', 'web/classic/js/react', 'web/classic/js/engine/19-views__settings.js', 'web/classic/sw.js', 'package.json']) { fs.mkdirSync(path.dirname(path.join(tmp, r)), { recursive: true }); cp(r); } /* F7: core/ อยู่รากแยกจาก web/src แล้ว จึงต้องคัดลอกเพิ่ม */
 fs.rmSync(path.join(tmp, 'web/pages'), { recursive: true, force: true }); fs.mkdirSync(path.join(tmp, 'web/pages'), { recursive: true }); /* สำเนาเริ่มจาก pages ว่าง: ทดสอบเฉพาะกล่องของตัวทดสอบเอง */
-fs.mkdirSync(path.join(tmp, 'web/shell/node_modules'), { recursive: true });
-for (const m of ['react', 'react-dom', 'scheduler']) fs.cpSync(path.join(root, 'web/shell/node_modules', m), path.join(tmp, 'web/shell/node_modules', m), { recursive: true });
+fs.mkdirSync(path.join(tmp, 'web/next/node_modules'), { recursive: true });
+for (const m of ['react', 'react-dom', 'scheduler']) fs.cpSync(path.join(root, 'web/next/node_modules', m), path.join(tmp, 'web/next/node_modules', m), { recursive: true });
 fs.symlinkSync(path.join(root, 'node_modules'), path.join(tmp, 'node_modules'));
 try {
   /* บัตรขั้นต่ำของกล่องทดสอบ: บิลด์อ่านมานิเฟสต์จากบัตร จึงทุกกล่องต้องมี BOX.md (ตรงกติกา BOX-02) */
