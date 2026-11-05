@@ -54,8 +54,8 @@ const sw = readFileSync(resolve(buildDir, 'sw.js'), 'utf8');
 const html = existsSync(buildHtmlPath) ? readFileSync(buildHtmlPath, 'utf8') : '';
 if (!html.includes(expectApi)) { console.error(`build นี้ฉีด API ไม่ตรงเส้นทาง (ต้องการ ${expectApi}) — รัน build:web:${mode} ก่อน`); process.exit(1); }
 
-/* deploy ด้วย wrangler (assets จาก wrangler.toml ของ web/classic) */
-const args = ['wrangler', 'deploy', '--config', resolve(ROOT, 'web/classic/wrangler.toml'), '--env', mode];
+/* deploy ด้วย wrangler (assets จาก wrangler.toml ของ web/runtime) */
+const args = ['wrangler', 'deploy', '--config', resolve(ROOT, 'web/runtime/wrangler.toml'), '--env', mode];
 console.log(`deploy ${mode} -> wrangler (${args.join(' ')})`);
 const out = execFileSync('npx', args, {
   cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'],

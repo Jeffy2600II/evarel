@@ -197,7 +197,7 @@ Ordivel is a personal life-management PWA — tasks, routines, calendar, and an 
 
 ## Colors
 
-Light is the primary theme (polished first). Dark is full parity — same structure, shipped via `prefers-color-scheme` + `[data-theme="dark"]` in `web/classic/styles/design.css`.
+Light is the primary theme (polished first). Dark is full parity — same structure, shipped via `prefers-color-scheme` + `[data-theme="dark"]` in `web/runtime/styles/design.css`.
 
 ### Light (primary)
 
@@ -360,7 +360,7 @@ DESIGN.md  ── semantic rules (this file; the ONLY place decisions are made)
     │
     ├── archive/design/*.html ────── visual reference (pixel parity target)
     │
-    ├── web/classic/styles/design.css ─ implementation values (THE single edit point;
+    ├── web/runtime/styles/design.css ─ implementation values (THE single edit point;
     │                                    build-css.mjs compiles it → app.css)
     │
     └── tailwind.config.cjs ────── utility mapping only (never edit values here)
@@ -369,7 +369,7 @@ DESIGN.md  ── semantic rules (this file; the ONLY place decisions are made)
 **Change protocol (one change, four touches, same commit):**
 1. Add the decision to the Decision Log (A2).
 2. Update the YAML token block at the top of this file.
-3. Refresh `web/classic/styles/design.css` (never the compiled `app.css`) and, if needed, the master demo.
+3. Refresh `web/runtime/styles/design.css` (never the compiled `app.css`) and, if needed, the master demo.
 4. If `tailwind.config.cjs` maps the token, remap it there too.
 
 > **Reality check (2026-11-01):** `design.css` currently contains **three** competing token layers — the TOKENS block (L7), the "v16 design pass" (~L431), and a semantic-text pass (~L532) — the later ones win the cascade (radius 32/38, spacing 10/20/28/40, softer neutrals; details in **D-006**). The YAML block above stays the decision of record; **do not paste it wholesale** into `design.css` until the D-006 consolidation — merge per the A1 protocol, keeping every var the code defines. Shipped hex deltas (line/fill/scrim/shadow/font) stay logged in D-003/D-006.
@@ -392,23 +392,23 @@ DESIGN.md  ── semantic rules (this file; the ONLY place decisions are made)
 
 | ID | Drift found | Resolution |
 |---|---|---|
-| D-001 | (2026-10-30) `tokens.css` radius 20/28 vs `tailwind.config.cjs` 26/32 | Superseded 2026-11-01: `tokens.css` dissolved into `web/classic/styles/design.css` (F7 restructure); its TOKENS block now carries 26/32, matching the Tailwind mapping. Residual conflict → D-006 |
+| D-001 | (2026-10-30) `tokens.css` radius 20/28 vs `tailwind.config.cjs` 26/32 | Superseded 2026-11-01: `tokens.css` dissolved into `web/runtime/styles/design.css` (F7 restructure); its TOKENS block now carries 26/32, matching the Tailwind mapping. Residual conflict → D-006 |
 | D-002 | `tailwind.config.cjs` cites `archive/design/master-demo-v29.html`; `archive/design/` holds v2 / v7 / v12 / v12-intended / `Evarel v24.html` only — **v29 still does not exist** (re-verified 2026-11-01) | **Resolved 2026-11-01 (citation half):** `tailwind.config.cjs` and the `design.css` headers now cite `archive/design/Evarel v24.html`. Re-issuing a fresh single-file master demo stays open as optional polish |
 | D-003 | (2026-10-30) Tailwind maps `fill` → `var(--c-fill)` but tokens never defined it | **Resolved (definition only)** — `--c-fill` exists (light `#EDEDF1`, dark `#262630`), but those hexes differ from the decision-of-record (`#F0F0F4`/`#23232C`). Reconcile one side during the D-006 consolidation |
 | D-004 | (2026-10-30) token file header cited demo **v2** — stale provenance | **Resolved 2026-11-01:** both `design.css` headers now cite `archive/design/Evarel v24.html` and note the real demo chain (v2 → v7 → v12 → v24); the phantom v3/v29 mentions are gone (tailwind.config.cjs fixed in the same commit) |
 | D-005 | Accent family mismatch across artifacts (violet in app, indigo decided) | **Resolved 2026-11-01 (one commit, four artifacts):** light `#4F46E5`/`#6366F1`/`#EEF2FF`, dark `#818CF8`/`#A5B4FC`/`#23234A`/`#8386F6`; dark `--c-on-accent:#0E0E12` added (DD-3); `--c-ink-a/b/c` hue-shifted to indigo with luminance kept — light `#3A2FF5/#473CFA/#4136FF`, dark `#232C80/#37419F/#515CCC` (white-on-gradient ≥6.37 light / ≥5.60 dark); `--shadow-fab` and the v16 `--c-accent-soft`/`--c-halo` re-tinted; `theme-color` (index.html + next layout) and manifest `theme_color` updated; MOLD-TABLE re-tinted. Residuals: launcher PNG icons replaced 2026-11-01 with the Ordivel brand set (DD-9); v17 `--c-on-ok` belongs to the D-006 consolidation |
 | D-006 | **Open (2026-11-01; extended same day):** `design.css` contains **three** competing token layers — the TOKENS block (L7: radius 26/32, spacing 8/16/24/32, `--nav-h` 60), the "v16 design pass" (L431: radius 32/38, spacing 10/20/28/40, `--nav-h` 64, softer neutrals), and a semantic-text pass (L532: `--c-ok` `#0E8A55`/`#3DD598`, `--c-muted` `#65637A`/`#A3A1B5`, `--c-line` `#E1DFEB`/`#363544`, plus text-safe tokens `--c-ok-text`/`--c-warn-text`/`--c-danger-text`/`--c-danger-fill`/`--c-line-ctl`/`--c-halo` that this doc does not yet govern). The later blocks win the cascade, so the *effective* values contradict DD-2, § Colors and § Layout | Consolidate into ONE canonical block aligned with the decision log — or re-decide via A2 if the later direction is preferred (owner's call). Introduce the missing `--r-chip`/`--r-control` tokens and adopt or retire the text-safe tokens in the same commit |
-| D-007 | **Open (2026-11-01):** navigation drift — the implemented router (`web/classic/js/route.js`) uses hash routes: tabs `#/today #/all #/calendar #/stats`, full pages `#/ai #/settings`; auth is an in-app layer (no `/login` route). SITEMAP §1 specifies path routes incl. `/tasks` and `/routines`, and § Components specifies a Today·Tasks·Calendar·AI tab bar | One reconciling decision: adopt the implemented navigation into SITEMAP/§ Components, or change the router to the spec. Until then, SITEMAP §1 carries a verified implementation note |
+| D-007 | **Open (2026-11-01):** navigation drift — the implemented router (`web/runtime/js/route.js`) uses hash routes: tabs `#/today #/all #/calendar #/stats`, full pages `#/ai #/settings`; auth is an in-app layer (no `/login` route). SITEMAP §1 specifies path routes incl. `/tasks` and `/routines`, and § Components specifies a Today·Tasks·Calendar·AI tab bar | One reconciling decision: adopt the implemented navigation into SITEMAP/§ Components, or change the router to the spec. Until then, SITEMAP §1 carries a verified implementation note |
 | D-008 | **Resolved (2026-11-01):** typography drift — this doc claimed "IBM Plex Sans Thai (already the app's `--font`)"; false on both counts. The shipped `--font` is `system-ui,…,'Noto Sans Thai',…` with the owner's system-font decision recorded in `extra.css` (2026-10-23). Body line-height ships at 1.45, not the 1.6 floor stated in § Typography | § Typography corrected to the system stack (**DD-7**); 1.45 is parity-locked through 2026-11-02, the 1.6 floor is re-decided at the D-006 consolidation. `tailwind.config.cjs` `fontFamily` now maps the DD-7 system stack |
 | D-009 | **Resolved (2026-11-01):** page-box styles `web/pages/all/all.style.css` + `web/pages/stats/stats.style.css` asked for `var(--sp-4)` (no such token) and colored text with `--c-ink-a` behind an off-token `#333` fallback | Fixed same day: `var(--s2, 16px)` + `var(--c-text, #14141A)`; the files stay unwired until factory step D |
-| D-010 | **Resolved (2026-11-01):** `tools/factory/audit_css_values.py` (the F1.2 value audit) pointed at the pre-restructure path `web/styles/` while the stylesheets live in `web/classic/styles/` — silently unrunnable since F7 | Fixed same day: path updated; run it as part of the D-006 consolidation |
+| D-010 | **Resolved (2026-11-01):** `tools/factory/audit_css_values.py` (the F1.2 value audit) pointed at the pre-restructure path `web/styles/` while the stylesheets live in `web/runtime/styles/` — silently unrunnable since F7 | Fixed same day: path updated; run it as part of the D-006 consolidation |
 
 ## A4. Sources
 
-- `web/classic/styles/design.css` — token source (TOKENS block + v16 pass + semantic-text pass; see D-006) — re-verified 2026-11-01
-- `web/classic/styles/extra.css` — app-only styles; records the system-font decision (2026-10-23) — audited 2026-11-01
+- `web/runtime/styles/design.css` — token source (TOKENS block + v16 pass + semantic-text pass; see D-006) — re-verified 2026-11-01
+- `web/runtime/styles/extra.css` — app-only styles; records the system-font decision (2026-10-23) — audited 2026-11-01
 - `web/styles/MOLD-TABLE.md` — the measured mold table (hand-patched with the DD-1 values 2026-11-01; regenerate with `tests/measure_root_vars.mjs` at the next deploy)
-- `web/classic/styles/app.css` — compiled component CSS (build artifact of `scripts/build-css.mjs`; never edit by hand)
+- `web/runtime/styles/app.css` — compiled component CSS (build artifact of `scripts/build-css.mjs`; never edit by hand)
 - `tailwind.config.cjs` — utility mapping (colors → CSS vars; radius; `--col-max:480px`; timing curves)
 - `archive/design/*.html` — visual reference chain (v2 / v7 / v12 / `Evarel v24`)
 - `brand/1-ordinal/` — the immutable Ordivel logo pack (v8 premium edition) + `ordivel-1-ordinal-full.zip` backup; shipped copies mapped in § Brand assets

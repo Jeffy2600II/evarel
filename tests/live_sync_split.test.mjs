@@ -1,6 +1,6 @@
 // พิสูจน์ F6 (แยกซิงก์ออกจาก 22-views__auth เป็น 22-views__live-sync): ในหน้าแอปจริง ผลข้างเคียงตอนโหลดและทางเรียกข้ามไฟล์ยังทำงานเหมือนเดิม
 // ตรวจ: (1) listener visibilitychange/online/focus ถูกผูกตอนโหลดและเรียก rtResume -> liveRefresh จริง (2) window มีฟังก์ชันซิงก์ครบ (ทางที่ enterApp ใช้) (3) startLiveSync/stopLiveSync ไม่พัง และสลับ rtOn ได้ (4) doSignOut ใน 22 เรียก stopLiveSync ข้ามไฟล์ได้
-// ใช้: EVAREL_WEB_DIR=<web/classic> node tests/live_sync_split.test.mjs  (ไม่ต้องพึ่ง API จริง: นับการเรียก liveRefresh ด้วยการครอบ window.liveRefresh ไม่ได้ เพราะ rtResume อ้างตัวแปรในโมดูล จึงนับผ่านการเรียก fetch /items ที่ liveRefresh ทำเมื่อ SUPA_API มีค่า)
+// ใช้: EVAREL_WEB_DIR=<web/runtime> node tests/live_sync_split.test.mjs  (ไม่ต้องพึ่ง API จริง: นับการเรียก liveRefresh ด้วยการครอบ window.liveRefresh ไม่ได้ เพราะ rtResume อ้างตัวแปรในโมดูล จึงนับผ่านการเรียก fetch /items ที่ liveRefresh ทำเมื่อ SUPA_API มีค่า)
 import { chromium } from 'playwright'; import fs from 'fs';
 import { serveLocalAs, APP_ORIGIN } from './live_user.mjs';
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';

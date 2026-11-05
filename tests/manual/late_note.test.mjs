@@ -2,7 +2,7 @@
    ค่าที่คาดคำนวณมือจากตัวอย่างจริง (ไม่ใช้สูตรเดียวกับโค้ด) | เวลาไทย = UTC+7 คงที่ */
 import fs from 'node:fs'; import vm from 'node:vm'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
-const src = fs.readFileSync(path.join(here, '../../web/classic/sw.js'), 'utf8');
+const src = fs.readFileSync(path.join(here, '../../web/runtime/sw.js'), 'utf8');
 const m = src.match(/\/\* LATE_NOTE_BEGIN \*\/([\s\S]*?)\/\* LATE_NOTE_END \*\//);
 let pass = 0, fail = 0; const t = (n, fn) => { try { fn(); pass++; console.log('PASS ' + n); } catch (e) { fail++; console.log('FAIL ' + n + ' :: ' + e.message); } };
 const eq = (a, b) => { if (a !== b) throw new Error(`ได้ ${JSON.stringify(a)} คาด ${JSON.stringify(b)}`); };

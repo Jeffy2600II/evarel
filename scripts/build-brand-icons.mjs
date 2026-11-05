@@ -13,7 +13,7 @@ import sharp from 'sharp';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC_SVG = join(root, 'brand/1-ordinal/svg/appicon-night.svg');
-const OUT = join(root, 'web/classic/icons');
+const OUT = join(root, 'web/runtime/icons');
 /* สีพื้นของแบรนด์ไนท์ (หัว/ท้ายของไล่เฉดใน SVG) */
 const BASE = '#0B0920';
 

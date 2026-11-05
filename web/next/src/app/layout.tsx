@@ -1,4 +1,4 @@
-/* S4 next-pages ไบต์ N1: root layout แทน index.html เดิม — head ทุกบรรทัดตาม classic/index.html เป๊ะ
+/* S4 next-pages ไบต์ N1: root layout แทน index.html เดิม — head ทุกบรรทัดตาม index.html ยุคก่อน Next (ชื่อยุคนั้น web/classic) เป๊ะ
    สิ่งที่ต่างจากเดิมโดยเจตนา: (1) EVAREL_API ฉีดตอน build ผ่าน NEXT_PUBLIC_EVAREL_API แทนการแก้ไฟล์หลัง build
    (2) ไม่มี script tag ของ js/m อีกต่อไป — เครื่องยนต์ทั้งหมดอยู่ในบันเดิลของ Next (src/lib/boot.ts) */
 import type { ReactNode } from 'react';

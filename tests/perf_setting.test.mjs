@@ -1,6 +1,6 @@
 /* ทดสอบการ์ดอนิเมชั่นในหน้าตั้งค่า (v24 ui/perf): เลือก auto/full/lite แล้ว data-perf เปลี่ยนทันที จำค่าข้ามการโหลดใหม่ และ "อัตโนมัติ" ล้างผลวัดเฟรมเดิม
    ค่าคาดหวังมาจากสเปกของ v24 (ACTIONS.perf) ไม่ได้คำนวณจากโค้ดแอป
-   รัน: node tests/perf_setting.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/classic) */
+   รัน: node tests/perf_setting.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/runtime) */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';

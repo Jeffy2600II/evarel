@@ -14,7 +14,7 @@ t('ผลบิลด์ที่ commit ตรงทุกไบต์ (หน�
 /* สำเนาชั่วคราว: คัดลอกเฉพาะที่บิลด์ต้องใช้ (ไม่ใช้ git worktree เพื่อไม่แตะประวัติ) */
 const tmp = fs.mkdtempSync(path.join(process.env.TMPDIR || os.tmpdir(), 'boxpipe-'));
 const cp = (rel) => fs.cpSync(path.join(root, rel), path.join(tmp, rel), { recursive: true });
-for (const r of ['scripts/build-react.mjs', 'web/src', 'core', 'web/shared', 'web/data', 'tools/factory', 'web/classic/js/react', 'web/classic/js/engine/19-views__settings.js', 'web/classic/sw.js', 'package.json']) { fs.mkdirSync(path.dirname(path.join(tmp, r)), { recursive: true }); cp(r); } /* F7: core/ อยู่รากแยกจาก web/src แล้ว จึงต้องคัดลอกเพิ่ม */
+for (const r of ['scripts/build-react.mjs', 'web/src', 'core', 'web/shared', 'web/data', 'tools/factory', 'web/runtime/js/react', 'web/runtime/js/engine/19-views__settings.js', 'web/runtime/sw.js', 'package.json']) { fs.mkdirSync(path.dirname(path.join(tmp, r)), { recursive: true }); cp(r); } /* F7: core/ อยู่รากแยกจาก web/src แล้ว จึงต้องคัดลอกเพิ่ม */
 fs.rmSync(path.join(tmp, 'web/pages'), { recursive: true, force: true }); fs.mkdirSync(path.join(tmp, 'web/pages'), { recursive: true }); /* สำเนาเริ่มจาก pages ว่าง: ทดสอบเฉพาะกล่องของตัวทดสอบเอง */
 fs.mkdirSync(path.join(tmp, 'web/next/node_modules'), { recursive: true });
 for (const m of ['react', 'react-dom', 'scheduler']) fs.cpSync(path.join(root, 'web/next/node_modules', m), path.join(tmp, 'web/next/node_modules', m), { recursive: true });
@@ -46,14 +46,14 @@ try {
   fs.writeFileSync(path.join(tmp, 'web/pages/hdirect/BOX.md'), miniCard('hdirect'));
   const bld = run(tmp, ['scripts/build-react.mjs']);
   t('บิลด์กล่องทั้งสองรูปผ่าน', bld.ok && /demobox\.js/.test(bld.out) && /hdirect\.js/.test(bld.out), bld.out.slice(-200));
-  const demoSize = fs.statSync(path.join(tmp, 'web/classic/js/react/demobox.js')).size;
+  const demoSize = fs.statSync(path.join(tmp, 'web/runtime/js/react/demobox.js')).size;
   t('ผลลัพธ์กล่องเล็ก ไม่บันเดิล React ซ้ำ (< 4000 ไบต์)', demoSize < 4000, String(demoSize));
   /* เรนเดอร์ใน Chromium */
   const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
   const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
   const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] }); const p = await b.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message.slice(0, 120)));
   await p.setContent('<!doctype html><body></body>');
-  for (const f of ['runtime', 'demobox', 'hdirect']) await p.evaluate(fs.readFileSync(path.join(tmp, 'web/classic/js/react', f + '.js'), 'utf8'));
+  for (const f of ['runtime', 'demobox', 'hdirect']) await p.evaluate(fs.readFileSync(path.join(tmp, 'web/runtime/js/react', f + '.js'), 'utf8'));
   const r = await p.evaluate(() => ({ demo: window.EvarelPages.demobox({}), hd: window.EvarelPages.hdirect({ n: 7 }) }));
   await b.close();
   t('กล่องรูปเบ้าจูนเรนเดอร์ถูกต้อง', r.demo.includes('class="box-demobox"') && r.demo.includes('Demobox Page'), r.demo.slice(0, 100));
@@ -78,11 +78,11 @@ try {
   const reg1 = run(tmp, ['scripts/build-react.mjs']);
   t('บิลด์กล่องหลายหน้า+component ผ่านและเติมบล็อกเอง', reg1.ok && /อัปเดตบล็อกลงทะเบียน/.test(reg1.out), reg1.out.slice(-200));
   t('บล็อกใน 19-views__settings.ts ใช้ชื่อไฟล์ ไม่ใช่ชื่อที่ลงทะเบียน', /"hdirect"/.test(blockTs()) && /"multi"/.test(blockTs()) && !/multiA/.test(blockTs()), blockTs());
-  const swTxt = fs.readFileSync(path.join(tmp, 'web/classic/sw.js'), 'utf8');
+  const swTxt = fs.readFileSync(path.join(tmp, 'web/runtime/sw.js'), 'utf8');
   const core = new Function(swTxt.slice(swTxt.indexOf('const CORE'), swTxt.indexOf('];', swTxt.indexOf('const CORE')) + 2) + ';return CORE')();
   t('sw.js CORE ได้ไฟล์กล่องทั้งสองและไม่ซ้ำ', core.includes('./js/react/multi.js') && core.includes('./js/react/hdirect.js') && new Set(core).size === core.length, core.filter((u) => /multi|hdirect/.test(u)).join(','));
-  t('ทุกไฟล์ react ใน CORE มีอยู่จริง (กัน addAll ล้ม)', core.filter((u) => u.includes('/react/')).every((u) => fs.existsSync(path.join(tmp, 'web/classic', u.replace('./', '')))), 'มีไฟล์หาย');
-  const compiled = fs.readFileSync(path.join(tmp, 'web/classic/js/engine/19-views__settings.js'), 'utf8');
+  t('ทุกไฟล์ react ใน CORE มีอยู่จริง (กัน addAll ล้ม)', core.filter((u) => u.includes('/react/')).every((u) => fs.existsSync(path.join(tmp, 'web/runtime', u.replace('./', '')))), 'มีไฟล์หาย');
+  const compiled = fs.readFileSync(path.join(tmp, 'web/runtime/js/engine/19-views__settings.js'), 'utf8');
   t('ผลคอมไพล์ .js สะท้อนบล็อกเดียวกับ .ts', JSON.stringify(JSON.parse(blockTs())) === JSON.stringify(eval((/REACT_BOX_PAGES = (\[[^\]]*\])/.exec(compiled) || [0, 'null'])[1])), (/REACT_BOX_PAGES = [^;]*/.exec(compiled) || [''])[0] + ' vs ' + blockTs());
   const chk2 = run(tmp, ['scripts/build-react.mjs', '--check']);
   t('--check ตรงหลังบิลด์ (idempotent)', chk2.ok && /ตรงทุกไฟล์/.test(chk2.out), chk2.out.slice(-160));

@@ -1,11 +1,11 @@
-// F6: ชั้น m/ import ตรรกะจาก core/ ผ่านไฟล์ web/classic/js/engine/core/*.js (compile-ts.mjs สร้างจาก core/*.ts) สถิต ไม่เปิดเบราว์เซอร์
-// จับ 4 อย่าง: (1) ทุก import ./core/X.js ใน js/engine/*.js มีไฟล์จริง (2) อยู่ใน CORE ของ web/classic/sw.js (ไม่งั้นออฟไลน์พังเงียบ) (3) import ภายใน core/*.js มีนามสกุล .js และไฟล์จริง
+// F6: ชั้น m/ import ตรรกะจาก core/ ผ่านไฟล์ web/runtime/js/engine/core/*.js (compile-ts.mjs สร้างจาก core/*.ts) สถิต ไม่เปิดเบราว์เซอร์
+// จับ 4 อย่าง: (1) ทุก import ./core/X.js ใน js/engine/*.js มีไฟล์จริง (2) อยู่ใน CORE ของ web/runtime/sw.js (ไม่งั้นออฟไลน์พังเงียบ) (3) import ภายใน core/*.js มีนามสกุล .js และไฟล์จริง
 // (4) ไฟล์ใน js/engine/core/ ทุกตัวมีต้นทาง core/<ชื่อ>.ts (กันไฟล์ผีค้างหลัง core ถูกลบ)
 import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const mDir = path.join(root, 'web/classic/js/engine'), cDir = path.join(mDir, 'core'), srcCore = path.join(root, 'core');
+const mDir = path.join(root, 'web/runtime/js/engine'), cDir = path.join(mDir, 'core'), srcCore = path.join(root, 'core');
 let pass = 0, fail = 0; const t = (name, ok, detail = '') => { if (ok) pass++; else fail++; console.log((ok ? 'PASS ' : 'FAIL ') + name + (ok ? '' : ' :: ' + detail)); };
-const sw = fs.readFileSync(path.join(root, 'web/classic/sw.js'), 'utf8'); const cm = /const CORE = \[([\s\S]*?)\n\s*\];/.exec(sw);
+const sw = fs.readFileSync(path.join(root, 'web/runtime/sw.js'), 'utf8'); const cm = /const CORE = \[([\s\S]*?)\n\s*\];/.exec(sw);
 const core = cm ? [...cm[1].matchAll(/'(\.\/[^']+)'/g)].map((x) => x[1]) : []; t('อ่าน CORE ของ sw.js ได้', core.length >= 20, 'ได้ ' + core.length);
 const imports = []; /* [ไฟล์ m, ชื่อ core] */
 for (const f of fs.readdirSync(mDir).filter((x) => x.endsWith('.js'))) {
@@ -22,5 +22,5 @@ for (const f of fs.existsSync(cDir) ? fs.readdirSync(cDir).filter((x) => x.endsW
   t(`core/${f} มีต้นทาง core/${f.replace(/\.js$/, '.ts')}`, fs.existsSync(path.join(srcCore, f.replace(/\.js$/, '.ts'))));
   for (const m of s.matchAll(/from\s+["'](\.[^"']+)["']/g)) t(`core/${f} import ${m[1]} มี .js และไฟล์จริง`, /\.js$/.test(m[1]) && fs.existsSync(path.join(cDir, m[1])), m[1]);
 }
-for (const c of core.filter((x) => x.startsWith('./js/engine/core/'))) t(`CORE ${c} มีไฟล์จริง`, fs.existsSync(path.join(root, 'web/classic', c.slice(2))));
+for (const c of core.filter((x) => x.startsWith('./js/engine/core/'))) t(`CORE ${c} มีไฟล์จริง`, fs.existsSync(path.join(root, 'web/runtime', c.slice(2))));
 console.log(`\nผล: ${pass} ผ่าน ${fail} ตก`); process.exit(fail ? 1 : 0);

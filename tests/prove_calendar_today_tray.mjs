@@ -4,7 +4,7 @@ import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
 import { SEED_ITEMS } from './seed_items.mjs';
 const OLD = { calendar: fs.readFileSync(process.argv[2], 'utf8'), today: fs.readFileSync(process.argv[3], 'utf8') };
-const NEW = { calendar: fs.readFileSync('web/classic/js/react/calendar.js', 'utf8'), today: fs.readFileSync('web/classic/js/react/today.js', 'utf8') };
+const NEW = { calendar: fs.readFileSync('web/runtime/js/react/calendar.js', 'utf8'), today: fs.readFileSync('web/runtime/js/react/today.js', 'utf8') };
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

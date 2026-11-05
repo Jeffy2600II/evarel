@@ -145,7 +145,7 @@ await t('S15 payload: มีเฉพาะชื่อรายการ ไม
 });
 await t('S15c สัญญาข้ามฝั่ง: atAbs จาก scheduler จริง + lateNote จริงใน sw.js ตีความเวลาตรงกัน (หน่วย/เขตเวลาไม่คลาด)', async () => {
   const fs = await import('node:fs'); const vm = await import('node:vm');
-  const swSrc = fs.readFileSync(path.join(here, '../../../../../web/classic/sw.js'), 'utf8');
+  const swSrc = fs.readFileSync(path.join(here, '../../../../../web/runtime/sw.js'), 'utf8');
   const m = swSrc.match(/\/\* LATE_NOTE_BEGIN \*\/([\s\S]*?)\/\* LATE_NOTE_END \*\//); assert.ok(m, 'ไม่พบ lateNote ใน sw.js');
   const ctx = {}; vm.createContext(ctx); vm.runInContext(m[1] + ';this.lateNote=lateNote;', ctx);
   const w = world({ items: [item({ title: 'ประชุมทีม' })], subs: [sub()] }); const sent = [];

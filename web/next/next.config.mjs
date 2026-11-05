@@ -1,3 +1,3 @@
-/* S4 next-pages: Next สร้างหน้าจริง (output export) — ignoreBuildErrors เพราะเครื่องยนต์ (classic/js/engine) เป็น window-shim โดยเจตนา
+/* S4 next-pages: Next สร้างหน้าจริง (output export) — ignoreBuildErrors เพราะเครื่องยนต์ (web/runtime/js/engine) เป็น window-shim โดยเจตนา
    การตรวจชนิดจริงอยู่ที่ tools/typecheck.mjs ของราก (baseline 0 จุด ผ่านประตูทุกไบต์) ไม่ใช่ของ Next */
 export default { output: 'export', trailingSlash: false, images: { unoptimized: true }, typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true } };

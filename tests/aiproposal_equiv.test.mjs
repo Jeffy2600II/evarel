@@ -26,7 +26,7 @@ const buildRef = (S, TODAY, nextId) => {
   return new Function('S', 'TODAY', 'find', 'mk', 'daily', 'Date', 'Math', strip(remSrc) + '\n' + strip(apSrc) + '\nreturn applyProposal;')(S, TODAY, find, mk, REF_DAILY, D, M);
 };
 
-const core = await import('file://' + root + '/web/classic/js/engine/core/aiproposal.js');
+const core = await import('file://' + root + '/web/runtime/js/engine/core/aiproposal.js');
 const inj = Number(process.env.INJECT || 0);
 const TODAY = '2026-10-30';
 const base = () => [

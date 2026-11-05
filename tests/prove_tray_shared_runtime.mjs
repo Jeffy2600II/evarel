@@ -1,7 +1,7 @@
 // พิสูจน์ F3.3-g13: ถ้า runtime ไม่ได้ตั้ง window.EvarelTray ไฟล์หน้าต้องพังดังและชี้ได้ ไม่ใช่เงียบ/ได้ HTML ผิด
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
-const NAV = fs.readFileSync('./web/classic/js/react/nav.js', 'utf8');
+const NAV = fs.readFileSync('./web/runtime/js/react/nav.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

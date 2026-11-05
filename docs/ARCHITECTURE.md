@@ -61,7 +61,7 @@ The engine itself is framework-free TypeScript compiled with esbuild (`build:ts`
 
 ```
 DESIGN.md (decisions)
-   → web/classic/styles/design.css   (values; the single edit point)
+   → web/runtime/styles/design.css   (values; the single edit point)
    → scripts/build-css.mjs           (Tailwind CLI → compiled app.css)
    → tailwind.config.cjs             (utility mapping to CSS vars — never literal values)
 ```
@@ -117,7 +117,7 @@ Commands (from `package.json`):
 
 ## 9. Performance & offline strategy
 
-- `sw.js` (`web/classic`) owns the offline shell; content data renders from cache first, then reconciles (`USER-FLOW.md` Flow 8).
+- `sw.js` (`web/runtime`) owns the offline shell; content data renders from cache first, then reconciles (`USER-FLOW.md` Flow 8).
 - Budget mindset for a real device: open → interactive on cached shell without network; writes are optimistic; the network is an enhancement, not a precondition (`PRD.md` §5).
 - No runtime framework, no polyfill bloat, no analytics in V1 — every byte is budget on a free tier.
 

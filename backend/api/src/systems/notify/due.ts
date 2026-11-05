@@ -1,6 +1,6 @@
 // ตัดสินว่ารายการถึงเวลาเตือนหรือยัง (โมดูลบริสุทธิ์ ไม่แตะฐานข้อมูล/เครือข่าย)
 // วัน/เวลาเป็นข้อความเขตเวลา Asia/Bangkok ทั้งหมด ไม่ใช้ Date ของเครื่อง จึงให้ผลเท่ากันทุกเขตเวลาที่ Worker รัน
-// เทียบกับ occursOn ของแอป (web/classic/js/m/06-services__schedule.js) ด้วย due.test.mjs
+// เทียบกับ occursOn ของแอป (web/runtime/js/m/06-services__schedule.js) ด้วย due.test.mjs
 
 export type Repeat = { unit: 'none' | 'day' | 'week' | 'month'; every: number; days: number[] };
 export type ItemLite = { start: string; end: string; repeat: Repeat };

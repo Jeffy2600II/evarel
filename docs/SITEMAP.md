@@ -13,7 +13,7 @@
 
 | ID | Screen | Route (canonical) | Module (today) | Purpose | Primary action |
 |---|---|---|---|---|---|
-| S-AUTH | Login / Register | `/login` | `web/classic/index.html` shell (auth layer) | Establish a session (email+password or Google) | Sign in |
+| S-AUTH | Login / Register | `/login` | `web/runtime/index.html` shell (auth layer) | Establish a session (email+password or Google) | Sign in |
 | S-TODAY | Today | `/today` | `web/src/engine/13-views.ts` | Answer "what's due today?" — tasks + routine occurrences + missed items | Check items off |
 | S-TASKS | Tasks | `/tasks` | `web/src/engine/13-views.ts` | Full task list; filter chips (วันนี้/สัปดาห์/ทั้งหมด/เสร็จแล้ว) | FAB "+" → SHEET-TASK |
 | S-ROUTINES | Routines | `/routines` | `web/src/engine/13-views.ts` | Manage recurring routines by day-of-week | FAB "+" → SHEET-ROUTINE |
@@ -21,12 +21,12 @@
 | S-AI | AI Assistant | `/ai` | `web/src/engine/17-views__ai.ts` | Thai commands within quota; thread history | Send command |
 | S-SETTINGS | Settings | `/settings` | `web/src/engine/19-views__settings.ts` | Account, theme, notifications, quota status | Open sub-sheets |
 
-Route note: canonical paths above are the spec. **Verified implementation (2026-11-01, `web/classic/js/route.js`):** hash routes — tabs `#/today` `#/all` `#/calendar` `#/stats`, full pages `#/ai` `#/settings`; auth is an in-app layer without its own route, and there are no separate `/tasks` or `/routines` routes (lists live under `#/all`). These differences are logged as `DESIGN.md` §15 **D-007** and must be reconciled in one decision — the router is the implementation, this table is the contract.
+Route note: canonical paths above are the spec. **Verified implementation (2026-11-01, `web/runtime/js/route.js`):** hash routes — tabs `#/today` `#/all` `#/calendar` `#/stats`, full pages `#/ai` `#/settings`; auth is an in-app layer without its own route, and there are no separate `/tasks` or `/routines` routes (lists live under `#/all`). These differences are logged as `DESIGN.md` §15 **D-007** and must be reconciled in one decision — the router is the implementation, this table is the contract.
 
 ## 2. Hierarchy
 
 ```
-PWA shell (`web/classic/index.html` + `sw.js`)
+PWA shell (`web/runtime/index.html` + `sw.js`)
 ├── S-AUTH (only without a session)
 └── Tab bar (4) ── bottom, --nav-h 64px + safe-area
     ├── S-TODAY ──── today's merged view

@@ -21,8 +21,8 @@ Ordivel is a **single-owner, Thai-language, offline-first life-management PWA** 
 
 ## 3. Design rules (short form of `docs/DESIGN.md`)
 
-- **Tokens only.** Every color, radius, spacing, shadow, and motion value comes from `web/classic/styles/design.css` via CSS vars or Tailwind aliases (`bg-surface`, `rounded-card`, …). **Never write a literal hex, px radius, or ad-hoc shadow in a component.**
-- **Single edit point.** Value changes happen in `web/classic/styles/design.css` only — the compiled `app.css` is never edited by hand — following the change protocol in `docs/DESIGN.md` Appendix A1 (decision log → tokens → demo → tailwind mapping, one commit).
+- **Tokens only.** Every color, radius, spacing, shadow, and motion value comes from `web/runtime/styles/design.css` via CSS vars or Tailwind aliases (`bg-surface`, `rounded-card`, …). **Never write a literal hex, px radius, or ad-hoc shadow in a component.**
+- **Single edit point.** Value changes happen in `web/runtime/styles/design.css` only — the compiled `app.css` is never edited by hand — following the change protocol in `docs/DESIGN.md` Appendix A1 (decision log → tokens → demo → tailwind mapping, one commit).
 - **Radius per class:** chip 12 · control 14 · card 26 · sheet 32 · pill 999 (`--r-*`; chip/control tokens are still pending in code — see docs/DESIGN.md D-006). Never improvise a radius.
 - **One accent per view;** semantic colors are dots/icons, **never body text**; states = ink text on `-soft` backgrounds (`docs/DESIGN.md` § Colors — semantic rules + measured contrast).
 - **Banned (the “AI look” list, `docs/DESIGN.md` § Do's and Don'ts):** gradients, glassmorphism, shadows on resting cards, colored body text, emoji as icons, decorative motion, all-caps, multi-column mosaics, fake content, new colors. If your output contains any of these, it is wrong by definition.

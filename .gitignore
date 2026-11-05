@@ -17,7 +17,7 @@ node_modules/
 /build/
 /.next/
 /out/
-# โฟลเดอร์ public ของ Next สร้างชั่วคราวตอน build จาก web/classic (ห้ามเก็บใน git ไม่งั้นไฟล์แอปซ้ำสองที่)
+# โฟลเดอร์ public ของ Next สร้างชั่วคราวตอน build จาก web/runtime (ห้ามเก็บใน git ไม่งั้นไฟล์แอปซ้ำสองที่)
 /web/shell/public/
 /web/shell/out/
 /web/shell/.next/

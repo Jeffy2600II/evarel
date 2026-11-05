@@ -10,7 +10,7 @@ module.exports = {
   corePlugins: { preflight: false },
   content: [
     'web/src/**/*.{ts,tsx,js,jsx}',
-    'web/classic/js/react/*.js',
+    'web/runtime/js/react/*.js',
     'web/next/src/**/*.{ts,tsx}',
   ],
   theme: {

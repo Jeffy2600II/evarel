@@ -1,6 +1,6 @@
 /* ตัวทดสอบการโต้ตอบของหน้ารายการ (VIEWS.all): กดจริงบน DOM แล้วอ่านผลจากสถานะ UI/ST และเลเยอร์ที่เปิด
    ประตู 9 ชุดมีภาพของหน้านี้แต่ไม่กดปุ่ม จึงใช้ตัวนี้จับกรณีที่ markup ตรงเป๊ะแต่ปุ่มทำงานผิด (React เป็นเจ้าของ markup ของหน้านี้)
-   ใช้: node tests/all_interact.test.mjs  (ต้องมี http.server พอร์ต 8779 เสิร์ฟ web/classic ตอบ 200)  ผล: exit 1 ถ้ามีข้อใดตก */
+   ใช้: node tests/all_interact.test.mjs  (ต้องมี http.server พอร์ต 8779 เสิร์ฟ web/runtime ตอบ 200)  ผล: exit 1 ถ้ามีข้อใดตก */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';

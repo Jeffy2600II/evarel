@@ -54,7 +54,7 @@ types/              ชนิด TS กลาง (dom, globals, st)
 | forge | ordivel-app-forge | ordivel-api-forge | พัฒนาและทดลอง (สาขา develop) |
 | production | ordivel-app | ordivel-api | ชุดทางการ (สาขา main) |
 
-ไฟล์ตั้งค่าอยู่ที่ `backend/api/wrangler.toml` และ `web/classic/wrangler.toml` แยกชุดด้วย `--env forge` หรือ `--env production`
+ไฟล์ตั้งค่าอยู่ที่ `backend/api/wrangler.toml` และ `web/runtime/wrangler.toml` แยกชุดด้วย `--env forge` หรือ `--env production`
 
 ## คำสั่ง
 
@@ -79,7 +79,7 @@ SUPABASE_URL, SUPABASE_SERVICE_KEY, SMTP_USER, SMTP_PASS, SMTP_FROM, GROQ_API_KE
 ## สถานะเทสต์ (บอกตามจริง)
 
 - ชุดทดสอบ Worker (`backend/api/src`) ผ่าน 225 ข้อ ไม่ผูกกับเครื่องใด (F7 แก้การผูก esbuild กับ /tmp/evarel-deploy ของเครื่องเก่า จึงรันได้ทุกเครื่อง)
-- เทสต์ฝั่งแอปใน `tests/` อ่านแอปจาก `web/classic` ทั้งชุดแล้ว (F7 ตัดการผูกกับ /tmp/evarel-repo) ประตูภาพ 32 ฉากใช้ .agents/.env (SUPABASE_SERVICE_KEY) และ chromium ที่ pin ไว้ (ดู tests/README และหัวไฟล์ทดสอบ)
+- เทสต์ฝั่งแอปใน `tests/` อ่านแอปจาก `web/runtime` ทั้งชุดแล้ว (F7 ตัดการผูกกับ /tmp/evarel-repo) ประตูภาพ 32 ฉากใช้ .agents/.env (SUPABASE_SERVICE_KEY) และ chromium ที่ pin ไว้ (ดู tests/README และหัวไฟล์ทดสอบ)
 - ยังไม่ได้ deploy Worker ชุดทางการ ไฟล์ตั้งค่าผ่านการจำลอง deploy แล้วเท่านั้น ส่วนเว็บและ Worker ชุด forge deploy อัตโนมัติทุก push ที่ develop
 
 ## ลำดับพัฒนา

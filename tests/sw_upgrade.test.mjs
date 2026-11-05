@@ -12,7 +12,7 @@ const HOST = 'ordivel-app-forge.nontakorn2600.workers.dev';
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-upgrade-'));
 execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', tmp + '/k.pem', '-out', tmp + '/c.pem', '-days', '1', '-subj', '/CN=' + HOST, '-addext', 'subjectAltName=DNS:' + HOST], { stdio: 'ignore' });
-fs.mkdirSync(tmp + '/old'); execFileSync('sh', ['-c', `git -C "${root}" archive ${OLD_COMMIT} web/classic | tar -x -C "${tmp}/old"`]); const OLD = tmp + '/old/web/classic';
+fs.mkdirSync(tmp + '/old'); execFileSync('sh', ['-c', `git -C "${root}" archive ${OLD_COMMIT} web/runtime | tar -x -C "${tmp}/old"`]); const OLD = tmp + '/old/web/runtime';
 const mime = { html: 'text/html; charset=utf-8', js: 'application/javascript', css: 'text/css', json: 'application/json', webmanifest: 'application/manifest+json', png: 'image/png', svg: 'image/svg+xml', ico: 'image/x-icon', txt: 'text/plain' };
 let DIR = OLD;
 const srv = https.createServer({ key: fs.readFileSync(tmp + '/k.pem'), cert: fs.readFileSync(tmp + '/c.pem') }, (q, r) => {

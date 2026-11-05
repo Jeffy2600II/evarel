@@ -9,13 +9,13 @@ globalThis.Date = class extends RD { constructor(...a){ if(a.length===0) super(F
 globalThis.window = globalThis; globalThis.document = {}; try { globalThis.navigator = {} } catch { Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true }) } /* Node 24 ขึ้นไป navigator เป็น getter ล้วน ต้อง defineProperty */
 globalThis.EVAREL_API = 'https://equiv.invalid';
 const O = globalThis;
-const M = (f) => import('file://' + root + '/web/classic/js/engine/' + f + '.js');
+const M = (f) => import('file://' + root + '/web/runtime/js/engine/' + f + '.js');
 for (const f of ['00-head','01-core__constants','02-core__dates','03-core__store','04-data__repo','05-data__auth','06-services__schedule','07-services__stats','12-ui__primitives']) await M(f);
 if (!O.S) O.S = { items: [] };
 O.S.items = []; O.UI = O.UI || {}; Object.assign(O.UI, { period:'week', date:'', weekOff:0, weekDir:0, pop:null, tab:'calendar', type:'all', animate:false, loading:false, error:null, calView:'dayGridMonth', calSel:'', calDate:null });
 await M('13-views');
-const rt = fs.readFileSync(root + '/web/classic/js/react/runtime.js', 'utf8'); (0, eval)(rt);
-const cj = fs.readFileSync(root + '/web/classic/js/react/calendar.js', 'utf8'); O.EvarelPages = {}; (0, eval)(cj);
+const rt = fs.readFileSync(root + '/web/runtime/js/react/runtime.js', 'utf8'); (0, eval)(rt);
+const cj = fs.readFileSync(root + '/web/runtime/js/react/calendar.js', 'utf8'); O.EvarelPages = {}; (0, eval)(cj);
 const R = O.EvarelPages.calendar;
 const TODAY = O.ymd(new Date());
 const cv = (id, o={}) => ({ id, type:'habit', title:'ทดสอบ '+id, subject:'', time:'09:00', timeEnd:'10:00', track:'check', target:1, unitName:'', repeat:{unit:'week', every:1, days:[6]}, start:'2026-10-01', end:'', skip:{}, log:{}, rem:[], ...o });

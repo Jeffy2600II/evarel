@@ -7,9 +7,9 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const targets = [
-  'web/classic/js/engine/22-views__auth.js',
-  'web/classic/js/engine/25-actions.js',
-  'web/classic/js/engine/24-services__legacy-import.js',
+  'web/runtime/js/engine/22-views__auth.js',
+  'web/runtime/js/engine/25-actions.js',
+  'web/runtime/js/engine/24-services__legacy-import.js',
 ];
 const banned = [
   { name: 'ข้อความเดาอีเมล', re: /หมายถึง\s*\$\{/ },

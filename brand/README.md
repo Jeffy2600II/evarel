@@ -24,7 +24,7 @@ brand/
 
 ## ตำแหน่งที่แอปใช้ (สำเนา byte-exact ผ่าน `cmp` ทุกไฟล์ — ไม่มีการแก้ไข)
 
-| ไฟล์ในแอป (web/classic/icons/) | ที่มาจาก brand/1-ordinal/ | ใช้ที่ไหน |
+| ไฟล์ในแอป (web/runtime/icons/) | ที่มาจาก brand/1-ordinal/ | ใช้ที่ไหน |
 | --- | --- | --- |
 | `favicon.ico` | `favicon.ico` | ลิงก์ฟาวิคอนใน head (index.html + layout.tsx) |
 | `favicon.svg` | `svg/favicon.svg` | ลิงก์ฟาวิคอน SVG (เบราว์เซอร์ยุคใหม่ เลือกใช้ก่อน PNG) |

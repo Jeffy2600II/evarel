@@ -1,7 +1,7 @@
 // พิสูจน์ F3.3-g4: การ์ดโควตาที่รับ resetClock/resetIn ผ่านถาด เรนเดอร์ HTML เท่ากับไฟล์เดิมทุกไบต์ (ตรึงเวลาให้เท่ากันทั้งสองฝั่ง)
 import { chromium } from 'playwright'; import fs from 'fs'; import { execSync } from 'child_process';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/classic/js/react/quota.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/runtime/js/react/quota.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });

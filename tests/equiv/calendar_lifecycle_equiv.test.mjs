@@ -7,8 +7,8 @@ import fs from 'node:fs'; import { chromium } from 'playwright'; import { fileUR
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
-const rt = fs.readFileSync(root + '/web/classic/js/react/runtime.js', 'utf8');
-const cal = fs.readFileSync(process.env.CAL_JS || (root + '/web/classic/js/react/calendar.js'), 'utf8');
+const rt = fs.readFileSync(root + '/web/runtime/js/react/runtime.js', 'utf8');
+const cal = fs.readFileSync(process.env.CAL_JS || (root + '/web/runtime/js/react/calendar.js'), 'utf8');
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
 let fails = 0; const t = (n, ok, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${n} ${ok ? '' : extra}`); if (!ok) fails++; };
 const p = await b.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message.slice(0, 140)));

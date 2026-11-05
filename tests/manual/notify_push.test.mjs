@@ -1,7 +1,7 @@
 /* ประตูสมัครรับ Web Push (15 ต.ค. 2026) | จับบั๊ก "อนุญาตแล้วแต่แจ้งเตือนไม่เด้ง" เพราะเครื่องไม่เคยลงทะเบียนกับ Worker
    ต่างจากเทสต์เดิมที่รันโหมดเดโม (ไม่มีหลังบ้าน จึงไม่เคยแตะเส้นทาง Push) เทสต์นี้ตั้ง EVAREL_API และจำลองหลังบ้านครบ
    ตรวจ "สัญญา" ระหว่างแอปกับ Worker: คำขอที่ส่งออกต้องมี endpoint + keys.p256dh + keys.auth และ Authorization: Bearer
-   รัน: node tests/notify_push.test.mjs [url] (ต้องเปิดเซิร์ฟเวอร์ไฟล์ของ build/web หรือ web/classic ที่พอร์ต 8776 ก่อน) */
+   รัน: node tests/notify_push.test.mjs [url] (ต้องเปิดเซิร์ฟเวอร์ไฟล์ของ build/web หรือ web/runtime ที่พอร์ต 8776 ก่อน) */
 import { chromium } from 'playwright'; import fs from 'fs';
 const U = process.argv[2] || 'http://localhost:8776/index.html';
 const API = 'https://api.test.invalid';

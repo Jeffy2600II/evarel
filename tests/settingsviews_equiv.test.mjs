@@ -12,9 +12,9 @@ const REF_COMMIT = 'a6c2858';
 const ref = execFileSync('git', ['show', REF_COMMIT + ':app/src/m/19-views__settings.ts'], { cwd: root, encoding: 'utf8' });
 const cut = (a, b) => { const i = ref.indexOf(a); if (i < 0) throw new Error('ไม่พบ ' + a); const j = b ? ref.indexOf(b, i) : ref.length; if (j < 0) throw new Error('ไม่พบจบ ' + b); return ref.slice(i, j); };
 const strip = (s) => s.replace(/:\s*any\b/g, '').replace(/as any/g, '');
-const quota = await import('file://' + root + '/web/classic/js/engine/core/quota.js');
-const av = await import('file://' + root + '/web/classic/js/engine/core/authviews.js');
-const core = await import('file://' + root + '/web/classic/js/engine/core/settingsviews.js');
+const quota = await import('file://' + root + '/web/runtime/js/engine/core/quota.js');
+const av = await import('file://' + root + '/web/runtime/js/engine/core/authviews.js');
+const core = await import('file://' + root + '/web/runtime/js/engine/core/settingsviews.js');
 const inj = Number(process.env.INJECT || 0);
 /* ทั้งสองฝั่งเรียก resetInAt(iso, Date.now()) — เส้นแบ่งนาทีอาจตัดระหว่างเทียบ -> ตรึงเวลาชั่วขณะให้สองฝั่งเป็นเวลาเดียวกัน */
 const REAL_NOW = Date.now; const NOW = REAL_NOW(); Date.now = () => NOW;

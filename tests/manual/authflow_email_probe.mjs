@@ -1,10 +1,10 @@
-// พิสูจน์รอบ 2026.8.1 ในเบราว์เซอร์จริง (serve web/classic + mock API ไม่ออกเน็ต):
+// พิสูจน์รอบ 2026.8.1 ในเบราว์เซอร์จริง (serve web/runtime + mock API ไม่ออกเน็ต):
 //  A) ตรวจอีเมลสดหน้าสมัคร: พิมพ์→โน้ต, ลบแล้วหยุด→ต้องตรวจใหม่ (โจทย์ Master 3 พ.ย. 2026), จำผลไม่ยิงซ้ำ, ลบจนว่าง→โน้ตหาย, focusout→ตรวจทันที
 //  B) ปุ่ม Google: จำจุดออก, กลับมาเอง (visibilitychange/pageshow) → ปุ่มคืนทันที+แจ้ง "ยกเลิก" (ไม่ใช่ error เครือข่าย), timer 5 วิ, boot เคส reload กลับมา
 // ใช้: node tests/authflow_email_probe.mjs
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http'; import path from 'path';
 
-const ROOT = path.resolve(import.meta.dirname, '..'), CL = path.join(ROOT, 'web/classic');
+const ROOT = path.resolve(import.meta.dirname, '..'), CL = path.join(ROOT, 'web/runtime');
 const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 /* mock ฝังแทนสคริปต์ EVAREL_API ว่างของ index.html: ตอบ check-email ตาม prefix "taken@" + นับคำขอ */
 const MOCK = `<script>

@@ -8,7 +8,7 @@
 |---|---|---|
 | **ต้องการแก้ไขเฉพาะหน้าใดหน้าหนึ่ง** | กล่องนั้นใน `web/pages/<ชื่อหน้า>/` | แก้ไขไฟล์ในกล่องนั้น (ห้ามแตะกล่องอื่น) |
 | **ต้องการแก้ปุ่ม / คอมโพเนนต์ที่ใช้ร่วมหลายหน้า** | โซน `web/shared/` | แก้จุดเดียวใน shared ทุกหน้าจะเปลี่ยนพร้อมกัน |
-| **ต้องการปรับเปลี่ยนสี ฟอนต์ หรือระยะห่างกลาง** | ตารางแม่พิมพ์ `web/styles/MOLD-TABLE.md` / `web/classic/styles/design.css` | แก้ตัวแปร CSS ใน design.css หรือ extra.css แล้วรัน `node scripts/build-css.mjs` |
+| **ต้องการปรับเปลี่ยนสี ฟอนต์ หรือระยะห่างกลาง** | ตารางแม่พิมพ์ `web/styles/MOLD-TABLE.md` / `web/runtime/styles/design.css` | แก้ตัวแปร CSS ใน design.css หรือ extra.css แล้วรัน `node scripts/build-css.mjs` |
 | **ต้องการเพิ่มหน้าใหม่** | เบ้าจูน (`tools/factory/tuner.mjs`) | สั่ง `node tools/factory/tuner.mjs <ชื่อหน้า>` เพื่อสร้างกล่อง 3 ชั้นใหม่ |
 | **ต้องการจัดการข้อมูล / API** | ถาดข้อมูลประจำกล่อง (`.tray.js`) หรือ `web/data/` | เพิ่ม/แก้ไข ฟังก์ชันเสิร์ฟข้อมูลในถาด |
 | **ต้องการตรวจความถูกต้องของกล่องตามกฎ** | เครื่องตรวจ (`tools/factory/checker.mjs`) | สั่ง `node tools/factory/checker.mjs <path-กล่อง>` หรือ `--all` |

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "web/src/engine",
-    "outDir": "web/classic/js/engine",
+    "outDir": "web/runtime/js/engine",
     "target": "ES2022",
     "module": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],

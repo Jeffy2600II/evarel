@@ -1,7 +1,7 @@
 /* ทดสอบพฤติกรรมท่าทางนิ้วของ sheet ด้วย touch events จริง เทียบเดโมจริง กับแอปจริง ด้วยสถานการณ์ชุดเดียวกัน
    กฎจาก v24: ปิดเมื่อลากเกิน 35% ของความสูง หรือเร็วเกิน .55 px/ms | ขยับต่ำกว่า SLOP 8px ไม่นับ | แนวนอนมากกว่าแนวตั้งไม่นับ
    กฎเลื่อนซ้อน: ถ้าเนื้อหาข้างในยังเลื่อนกลับได้ตอนเริ่มแตะ จะเลื่อนเนื้อหาและไม่ปิด | ลากที่ด้ามจับ (.ev-grab,h2) ปิดได้เสมอ
-   รัน: node tests/gesture_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/classic) ผล: exit 1 ถ้ามีสถานการณ์ใดสองฝั่งไม่ตรงกัน */
+   รัน: node tests/gesture_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/runtime) ผล: exit 1 ถ้ามีสถานการณ์ใดสองฝั่งไม่ตรงกัน */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
@@ -53,7 +53,7 @@ try {
   /* ฝั่งเดโม */
   const cd = await b.newContext(mk); const pd = await cd.newPage(); const errD = []; pd.on('pageerror', e => errD.push(String(e)));
   await pd.route(/fonts\.(googleapis|gstatic)/, r => r.abort());
-  await pd.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('./web/classic/vendor/fullcalendar.min.js') }));
+  await pd.route(/cdn\.jsdelivr\.net\/npm\/fullcalendar/, r => r.fulfill({ contentType: 'application/javascript', body: fs.readFileSync('./web/runtime/vendor/fullcalendar.min.js') }));
   await pd.goto(DEMO); await pd.waitForTimeout(500);
   await pd.evaluate(() => { const u = { id: 'u_test', name: 'Nontakorn', email: 'demo.user@gmail.com', provider: 'google' }; localStorage.setItem('evarel-demo-users', JSON.stringify([u])); localStorage.setItem('evarel-demo-session', 'u_test'); });
   await pd.reload(); await pd.waitForTimeout(1800);

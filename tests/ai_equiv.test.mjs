@@ -2,7 +2,7 @@
    เกณฑ์: DOM จริงเท่ากันทุกไบต์ (browser-serialized innerHTML) ทั้งสองฝั่ง กันความต่างที่เป็นแค่รูปเขียน attribute/style
    ครอบกรณี: หน้าทักทาย (ไม่มีแชท/แชทเปล่า), บับเบิลผู้ใช้, การ์ดเดี่ยว pending/added/cancelled,
    การ์ดเครื่องมือทุกสถานะ (pending ปุ่ม mem/ปกติ/danger, saving, added ทั้ง mem สองเครื่องมือและปกติ, failed, cancelled, sensitive)
-   รัน: node tests/ai_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/classic) */
+   รัน: node tests/ai_equiv.test.mjs  (ต้องมีเซิร์ฟเวอร์ 8779 เสิร์ฟ web/runtime) */
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 let pass = 0, fail = 0; const ok = (n, c, v = '') => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + n + (v ? ' :: ' + v : '')); };

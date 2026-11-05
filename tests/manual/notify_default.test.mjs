@@ -1,5 +1,5 @@
 /* เทสต์ตรรกะแจ้งเตือนฝั่งแอป (evarel-notify-default) | seam = notifyState / checkNotify / defaultRem / toggleOnTime / toggleAhead
-   โมดูลจริง: web/classic/js/engine/*-services__notify.js (หาจาก _order.json) (ไม่มี DOM ดึงมารันใน sandbox ได้)
+   โมดูลจริง: web/runtime/js/engine/*-services__notify.js (หาจาก _order.json) (ไม่มี DOM ดึงมารันใน sandbox ได้)
    ความหมายตามสเปก D1: rem มี {k:'before',m:0} = แจ้งเตือนตรงเวลา "เปิด" | ไม่มี = ผู้ใช้ปิด | ล่วงหน้า = before m>0
    ค่าคาดหวังทุกค่ามาจากสเปกและข้อมูลจริง 21 รายการของผู้ใช้ ไม่คำนวณซ้ำด้วยตรรกะเดียวกับโค้ด */
 import { readFileSync } from 'node:fs';
@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 const J = (x) => JSON.parse(JSON.stringify(x));
 const deq = (a, b, m) => assert.deepEqual(J(a), J(b), m);
 const here = dirname(fileURLToPath(import.meta.url));
-const mdir = join(here, '../../web/classic/js/m');
+const mdir = join(here, '../../web/runtime/js/m');
 /* ตรรกะความหมายของ rem ย้ายไป core/notify (ES module ที่ build สร้าง) ไฟล์ services__notify.js เหลือแต่ส่วน Web Push + import จึงโหลดใน vm เป็นสคริปต์ไม่ได้
    ที่นี่โหลด core/notify.js แทน (ตรรกะชุดเดียวกัน) โดยตัดคำว่า export ออกให้ vm รันเป็นสคริปต์ได้ | ค่าคาดหวังทุกข้อด้านล่างไม่เปลี่ยน */
 const file = join(mdir, 'core', 'notify.js');

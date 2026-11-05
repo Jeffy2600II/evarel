@@ -45,9 +45,10 @@ export const REFS = [
   { out: 'calendar_m20_selfcontained.js', engine: '20-services__calendar', tests: ['calstats_equiv'] },
 ];
 
-/* บ้านของไฟล์โมดูลตามยุค (F6/F7 ย้ายหลายครั้ง) เรียงใหม่ไปเก่า ไม่ต้องแก้เมื่อย้ายอีก */
-export const CANDIDATES = (n) => [`web/classic/js/engine/${n}.js`, `web/src/engine/${n}.ts`, `app/web/js/m/${n}.js`, `app/src/m/${n}.ts`];
-export const CORE_CANDIDATES = (n) => [`web/classic/js/engine/core/${n}.js`, `app/web/js/m/core/${n}.js`, `core/${n}.ts`, `app/src/core/${n}.ts`];
+/* บ้านของไฟล์โมดูลตามยุค (F6/F7 ย้ายหลายครั้ง) เรียงใหม่ไปเก่า ไม่ต้องแก้เมื่อย้ายอีก
+   web/classic คือชื่อเดิมของ web/runtime (ย้าย 5 พ.ย. 2026) คงไว้เพื่อ git log หา commit ฐานยุคนั้น */
+export const CANDIDATES = (n) => [`web/runtime/js/engine/${n}.js`, `web/classic/js/engine/${n}.js`, `web/src/engine/${n}.ts`, `app/web/js/m/${n}.js`, `app/src/m/${n}.ts`];
+export const CORE_CANDIDATES = (n) => [`web/runtime/js/engine/core/${n}.js`, `web/classic/js/engine/core/${n}.js`, `app/web/js/m/core/${n}.js`, `core/${n}.ts`, `app/src/core/${n}.ts`];
 
 const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
 const show = (rev, p) => { try { return git('show', `${rev}:${p}`); } catch { return null; } }; /* พาธที่ไม่มีใน commit นั้น = กลืน fatal ทาง stderr */

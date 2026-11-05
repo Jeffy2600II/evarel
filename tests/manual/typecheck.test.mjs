@@ -11,8 +11,8 @@ const eq = (a, b, m) => { if (a !== b) throw new Error(`${m || ''} ได้ ${a
 // สำเนาทำงาน: เฉพาะที่ตัวตรวจต้องใช้ (node_modules ลิงก์ผ่าน symlink กันคัดลอกหนัก)
 const mk = () => {
   const d = mkdtempSync(join(tmpdir(), 'evtc-'));
-  mkdirSync(join(d, 'tools')); mkdirSync(join(d, 'web/classic/js'), { recursive: true });
-  cpSync(join(root, 'web/classic/js/m'), join(d, 'web/classic/js/m'), { recursive: true });
+  mkdirSync(join(d, 'tools')); mkdirSync(join(d, 'web/runtime/js'), { recursive: true });
+  cpSync(join(root, 'web/runtime/js/m'), join(d, 'web/runtime/js/m'), { recursive: true });
   cpSync(join(root, 'types'), join(d, 'types'), { recursive: true });
   for (const f of ['tsconfig.check.json']) cpSync(join(root, f), join(d, f));
   cpSync(join(root, 'tools/typecheck.mjs'), join(d, 'tools/typecheck.mjs'));
@@ -28,17 +28,17 @@ t('T2 ไฟล์ types พัง = ล้มเหลวและบอกว�
   const r = run(d); writeFileSync(p, k); eq(r.status, 1); if (!/types พัง/.test(r.stderr)) throw new Error('ข้อความไม่บอกสาเหตุ');
 });
 t('T3 error ชนิดใหม่ที่ไม่ใช่ชื่อฟิลด์ ST = ล้มเหลว (ส่งสตริงให้พารามิเตอร์ตัวเลข)', () => {
-  const p = join(d, 'web/classic/js/engine/07-services__stats.js'); const k = readFileSync(p, 'utf8');
+  const p = join(d, 'web/runtime/js/engine/07-services__stats.js'); const k = readFileSync(p, 'utf8');
   writeFileSync(p, k + '\n/** @param {number} n */ function _tcProbe(n){return n}\n_tcProbe("x");\n');
   const r = run(d); writeFileSync(p, k); eq(r.status, 1, 'ควรจับได้');
 });
 t('T4 พิมพ์ชื่อฟิลด์ ST ผิด (ST.TMM) ถูกจับ เพราะ ST ผูกชนิดแล้ว', () => {
-  const p = join(d, 'web/classic/js/engine/15-core__timer.js'); const k = readFileSync(p, 'utf8');
+  const p = join(d, 'web/runtime/js/engine/15-core__timer.js'); const k = readFileSync(p, 'utf8');
   writeFileSync(p, k.replace('ST.TM', 'ST.TMM')); const r = run(d); writeFileSync(p, k);
   eq(r.status, 1, 'ควรจับได้');
 });
 t('T5 สะกดเมธอด DOM ผิด (e.target.cloest) ยังถูกจับ ไฟล์ types/dom.d.ts ไม่ได้ทำให้ตัวตรวจตาบอด', () => {
-  const p = join(d, 'web/classic/js/engine/25-actions.js'); const k = readFileSync(p, 'utf8');
+  const p = join(d, 'web/runtime/js/engine/25-actions.js'); const k = readFileSync(p, 'utf8');
   // ไม่ผูกกับช่องว่าง: ไฟล์ถูก format ใหม่ได้ ต้องเจอจุดนี้พอดี 1 จุดเสมอ ไม่งั้นเทสต์ล้ม (ไม่ผ่อนเกณฑ์)
   const re = /(document\.addEventListener\('click',\s*e\s*=>\s*\{\s*const el\s*=\s*e\.target\.)closest(\('\[data-act\]'\))/g;
   eq((k.match(re) || []).length, 1, 'ไม่พบจุดอ้างอิงใน 25-actions.js (โค้ดเปลี่ยน ให้แก้เทสต์ไม่ใช่ผ่อนเกณฑ์)');
@@ -46,7 +46,7 @@ t('T5 สะกดเมธอด DOM ผิด (e.target.cloest) ยังถ�
   eq(r.status, 1, 'ควรจับได้');
 });
 t('T6 เรียกเมธอดที่ไม่มีจริงบน element (el.nonexistentMethod()) ยังถูกจับ', () => {
-  const p = join(d, 'web/classic/js/engine/25-actions.js'); const k = readFileSync(p, 'utf8');
+  const p = join(d, 'web/runtime/js/engine/25-actions.js'); const k = readFileSync(p, 'utf8');
   const re = /(const el\s*=\s*e\.target\.closest\('\[data-act\]'\);\s*if \(!el\)\s*return;)/g;
   eq((k.match(re) || []).length, 1, 'ไม่พบจุดอ้างอิงใน 25-actions.js (ต้องมีพอดี 1 จุด)');
   writeFileSync(p, k.replace(re, '$1 el.nonexistentMethod();')); const r = run(d); writeFileSync(p, k);

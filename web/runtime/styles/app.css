@@ -1,4 +1,4 @@
-/* สร้างโดย scripts/build-css.mjs ห้ามแก้มือ แก้ที่ web/classic/styles/design.css */
+/* สร้างโดย scripts/build-css.mjs ห้ามแก้มือ แก้ที่ web/runtime/styles/design.css */
 
 *, ::before, ::after{
   --tw-border-spacing-x:0;
@@ -220,7 +220,7 @@
 
 .ev-dialog-card{
   display:grid;
-  width:min(100%,340px);
+  width:min(100%, 340px);
   --tw-scale-x:.95;
   --tw-scale-y:.95;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -295,10 +295,10 @@
   position:absolute;
   top:0px;
   bottom:0px;
-  left:max(0px,calc(50% - var(--col-max) / 2));
+  left:max(0px, calc(50% - var(--col-max) / 2));
   z-index:3;
   display:flex;
-  width:min(86vw,330px) !important;
+  width:min(86vw, 330px) !important;
   max-width:none !important;
   --tw-translate-x:-102%;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -426,8 +426,8 @@
   transition-duration:150ms;
 }
 
-/* Path: web/classic/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/Evarel v24.html (style type=text/tailwindcss; แก้ชื่อไฟล์อ้างอิงตาม D-004 — ไม่มีไฟล์ master-demo-v24.html)
-   Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น web/classic/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
+/* Path: web/runtime/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/Evarel v24.html (style type=text/tailwindcss; แก้ชื่อไฟล์อ้างอิงตาม D-004 — ไม่มีไฟล์ master-demo-v24.html)
+   Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น web/runtime/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
 
 /* Path: archive/design/Evarel v24.html (สายเดโม v2→v7→v12→v24; ชื่อ master-demo-v3 ที่เคยอ้างไม่มีไฟล์จริง — แก้ตาม D-004) | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนรวมอยู่ในส่วน TOKENS ของไฟล์นี้ (เดิมแยกเป็น tokens.css)
    Used by: เป็นแบบอ้างอิงให้ agent ย้ายเข้าเว็บแอป (ส่วน CSS → app.css, ส่วน JS แยกตามหัวข้อ "MODULE:") */
@@ -5387,7 +5387,7 @@ body{
   background:var(--c-accent-soft)
 }
 
-/* Path: web/classic/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
+/* Path: web/runtime/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
 
 /* ฟอนต์: ใช้ฟอนต์ระบบของเครื่อง (Master เลือก 23 ต.ค. 2026 หลังเทียบ 7 แบบ) จึงไม่มี @font-face และไม่โหลดไฟล์ฟอนต์ */
 

@@ -1,5 +1,5 @@
 // เทสต์ due.ts: รอยต่อ (seam) = occursOnStr(item, 'YYYY-MM-DD') เท่านั้น
-// แหล่งความจริงอิสระ: occursOn ตัวจริงของแอป (นิยามที่ core/schedule.ts คอมไพล์แล้วอยู่ web/classic/js/engine/core/schedule.js) ที่ผ่านประตูภาพ 0 พิกเซลมาแล้ว
+// แหล่งความจริงอิสระ: occursOn ตัวจริงของแอป (นิยามที่ core/schedule.ts คอมไพล์แล้วอยู่ web/runtime/js/engine/core/schedule.js) ที่ผ่านประตูภาพ 0 พิกเซลมาแล้ว
 // F7 หมายเหตุ: เดิมอ่าน js/m/02+js/m/01+js/m/06 ตรง ๆ ซึ่งเสียตั้งแต่ F6 ย้ายตรรกะลง core (ทั้งพาธและจุดนิยาม) จึงเปลี่ยนมาอ่านของจริงปัจจุบัน: core คอมไพล์แล้ว
 // เทสต์ดึงฟังก์ชันนั้นมารันจริง ไม่คำนวณค่าคาดหวังซ้ำด้วยตรรกะของ due.ts
 import { readFileSync } from 'node:fs';
@@ -8,9 +8,9 @@ import { dirname, join } from 'node:path';
 import vm from 'node:vm';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const appSrc = readFileSync(join(here, '../../../../../web/classic/js/engine/core/schedule.js'), 'utf8');
-const datesSrc = readFileSync(join(here, '../../../../../web/classic/js/engine/core/dates.js'), 'utf8');
-const constSrc = readFileSync(join(here, '../../../../../web/classic/js/engine/core/constants.js'), 'utf8');
+const appSrc = readFileSync(join(here, '../../../../../web/runtime/js/engine/core/schedule.js'), 'utf8');
+const datesSrc = readFileSync(join(here, '../../../../../web/runtime/js/engine/core/dates.js'), 'utf8');
+const constSrc = readFileSync(join(here, '../../../../../web/runtime/js/engine/core/constants.js'), 'utf8');
 
 // ดึง occursOn ตัวจริงของแอปด้วยการนับวงเล็บปีกกา (ทนต่อการ format ไฟล์ ไม่ผูกกับรูปแบบช่องว่าง)
 // และประกอบตัวช่วยวันที่ที่มันใช้ (pad, ymd, parse, addDays, DAY_MS) จากค่านิยามเดียวกับแอป

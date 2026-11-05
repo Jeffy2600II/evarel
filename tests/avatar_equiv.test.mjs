@@ -4,9 +4,9 @@
    ฉีดความผิดพิสูจน์ว่าเทสต์จับได้: INJECT=1..7 node tests/avatar_equiv.test.mjs ... (ต้อง exit 1 ทุกค่า) */
 import { chromium } from 'playwright'; import fs from 'fs'; import http from 'http';
 const OLDM = fs.readFileSync(process.argv[2] || '/tmp/auth_m05_at_head.js', 'utf8');
-const NEWM = fs.readFileSync('web/classic/js/engine/05-data__auth.js', 'utf8');
-const NEWCORE = fs.readFileSync('web/classic/js/engine/core/avatar.js', 'utf8');
-const CORE_DATES = fs.readFileSync('web/classic/js/engine/core/dates.js', 'utf8');
+const NEWM = fs.readFileSync('web/runtime/js/engine/05-data__auth.js', 'utf8');
+const NEWCORE = fs.readFileSync('web/runtime/js/engine/core/avatar.js', 'utf8');
+const CORE_DATES = fs.readFileSync('web/runtime/js/engine/core/dates.js', 'utf8');
 const inj = Number(process.env.INJECT || 0);
 
 function inject(src, which) {

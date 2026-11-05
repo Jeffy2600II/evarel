@@ -135,7 +135,7 @@ stats["react_layer"]["jsx_files"] = len(walk_files(os.path.join(ROOT, "web/src/r
 # ---------- 3) แม่พิมพ์: CSS ----------
 # ค่าฝังตรงที่ผิดกติกา = hex/px "นอกบรรทัดประกาศตัวแปร" (--x: ...) เท่านั้น
 css_stats = {}
-sdir = os.path.join(ROOT, "web/classic/styles")
+sdir = os.path.join(ROOT, "web/runtime/styles")
 for f in sorted(os.listdir(sdir)):
     if not f.endswith(".css"):
         continue

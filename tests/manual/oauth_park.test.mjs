@@ -1,11 +1,11 @@
 /* OAuth กลับจาก Google (2026.2.65): พฤติกรรม takeOAuthReturn ใหม่ — จอด (park) token ก่อนตรวจ กัน token หาย
    Node ล้วน ไม่เปิดเบราว์เซอร์ ไม่ยิงเน็ต: จำลอง localStorage/sessionStorage/location/history/fetch ครบ
-   ทดสอบไฟล์ที่เสิร์ฟจริง web/classic/js/engine/core/authclient.js (ผล compile ของ core/authclient.ts)
+   ทดสอบไฟล์ที่เสิร์ฟจริง web/runtime/js/engine/core/authclient.js (ผล compile ของ core/authclient.ts)
    ใช้: node tests/oauth_park.test.mjs */
 import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 let pass = 0, fail = 0; const t = (name, ok, detail = '') => { if (ok) pass++; else fail++; console.log((ok ? 'PASS ' : 'FAIL ') + name + (ok ? '' : ' :: ' + detail)); };
-const AUTHCLIENT = path.join(root, 'web/classic/js/engine/core/authclient.js');
+const AUTHCLIENT = path.join(root, 'web/runtime/js/engine/core/authclient.js');
 t('มีไฟล์ authclient.js ที่คอมไพล์แล้ว', fs.existsSync(AUTHCLIENT));
 
 /* ==== ชุดจำลองสภาพเบราว์เซอร์ (รีเซ็ตได้ทุกฉาก) ==== */

@@ -1,4 +1,4 @@
-/* Path: scripts/build-css.mjs | Purpose: คอมไพล์ web/classic/styles/app.css จาก design.css (CSS เดโมของ Master) + extra.css ด้วย Tailwind CLI จริง ไม่ใช้ Play CDN
+/* Path: scripts/build-css.mjs | Purpose: คอมไพล์ web/runtime/styles/app.css จาก design.css (CSS เดโมของ Master) + extra.css ด้วย Tailwind CLI จริง ไม่ใช้ Play CDN
    Used by: npm run build:css และ scripts/build-web.mjs | preflight ปิดตาม config เดโม ต้องมี @tailwind base เพื่อให้ตัวแปร --tw-* ออก (ไม่งั้น transform ทั้งโซ่เป็น none) */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const rd = (p) => readFileSync(join(root, p), 'utf8');
 const input = join(root, '.state/work/tailwind-input.css');
-const out = join(root, 'web/classic/styles/app.css');
+const out = join(root, 'web/runtime/styles/app.css');
 mkdirSync(dirname(input), { recursive: true });
-writeFileSync(input, '/* สร้างโดย scripts/build-css.mjs ห้ามแก้มือ แก้ที่ web/classic/styles/design.css */\n@tailwind base;\n@tailwind components;\n@tailwind utilities;\n' + rd('web/classic/styles/design.css') + '\n' + rd('web/classic/styles/extra.css'));
+writeFileSync(input, '/* สร้างโดย scripts/build-css.mjs ห้ามแก้มือ แก้ที่ web/runtime/styles/design.css */\n@tailwind base;\n@tailwind components;\n@tailwind utilities;\n' + rd('web/runtime/styles/design.css') + '\n' + rd('web/runtime/styles/extra.css'));
 execFileSync(process.execPath, [join(root, 'node_modules/tailwindcss/lib/cli.js'), '-i', input, '-o', out, '--config', join(root, 'tailwind.config.cjs')], { stdio: 'inherit' });
 const built = readFileSync(out, 'utf8');
 for (const must of ['--c-bg', '.ev-app', '.ev-sheet', '--tw-translate-x', '.ev-qchip']) if (!built.includes(must)) throw new Error('app.css ขาด ' + must + ' — build ผิด');

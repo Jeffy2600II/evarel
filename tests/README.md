@@ -19,7 +19,7 @@ tests/
 | ชุด | ตรวจอะไร |
 |---|---|
 | `aiproposal` `calendar` `core` `settingsviews` `stats_html` `today` (ชื่อไฟล์ `*_equiv.test.mjs`) | เทียบตรรกะ/HTML ปัจจุบันกับตัวอ้างอิงจาก git commit ฐาน (Node ล้วน ไม่เปิดเบราว์เซอร์ ไม่ยิงเน็ต) |
-| `m_core_import.test.mjs` | เกตแคช: ทุก import `./core/` ต้องอยู่ใน CORE ของ `web/classic/sw.js` ไม่งั้นออฟไลน์พังเงียบ |
+| `m_core_import.test.mjs` | เกตแคช: ทุก import `./core/` ต้องอยู่ใน CORE ของ `web/runtime/sw.js` ไม่งั้นออฟไลน์พังเงียบ |
 | `build_integrity.test.mjs` | ความครบของผลบิลด์: ไฟล์ที่ index.html อ้างมีจริง สคริปต์ parse ได้ ไม่มี js/m กล่องครบ แคช sw ไม่อ้างไฟล์ผี |
 | `no-email-guessing.test.mjs` | ห้ามมีระบบเดา/ชี้ทางอีเมลกลับมา (กันความเป็นส่วนตัว) |
 | `domains.test.mjs` | โดเมนทั้งระบบเป็น ordivel-* (กันชื่อยุคเก่าหลุดกลับมา) |
@@ -44,7 +44,7 @@ tests/
 | กรณีศึกษายุคก่อนโรงงาน (อ่านอย่างเดียว) | `_ts1b_*` `_ts1c_probe` `_ts1f..i` `_ts1n_authflow` `_ovf_*` `_supa_*` `_abuse_browser` `_formprobe` `_addshot` `_addtxt` `_esm1a_tool_unit` `authfix-probe` `authflow_email_probe` | ไฟล์ประกอบการแก้บั๊กรอบก่อน เก็บไว้เป็นหลักฐานวิธีคิด |
 | ประตูภาพเสริม | `visual-parity.mjs` `xss-guard.mjs` `quota-unit.mjs` | เทียบภาพ/กัน XSS ตามจุดประสงค์ในหัวไฟล์ |
 
-หมายเหตุ: `notify_default.test.mjs` อ้าง `web/classic/js/m` ซึ่งหมดไปตั้งแต่ F6 — ไฟล์นี้เก็บไว้เป็นหลักฐานสเปก D1 ยังไม่รันได้จนกว่าจะอ้างโมดูลใหม่
+หมายเหตุ: `notify_default.test.mjs` อ้าง `web/runtime/js/m` ซึ่งหมดไปตั้งแต่ F6 — ไฟล์นี้เก็บไว้เป็นหลักฐานสเปก D1 ยังไม่รันได้จนกว่าจะอ้างโมดูลใหม่
 
 ## tests/history/ — ชุดตรวจยุคเก่า (ไม่อัปเดตต่อ)
 

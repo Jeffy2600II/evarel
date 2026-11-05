@@ -1,7 +1,7 @@
 // สร้าง React bundle ของ Evarel ด้วย esbuild (ชั้น 4): runtime ร่วม 1 ไฟล์ + หน้าละ 1 ไฟล์เล็ก
-//   web/src/react/runtime.js        -> web/classic/js/react/runtime.js   (มี React ทั้งก้อน เปิดเป็น window.EvarelReact)
-//   web/src/react/<ชื่อ>.jsx        -> web/classic/js/react/<ชื่อ>.js    (ไม่มี React ในไฟล์ ใช้ของ runtime ร่วม ลงทะเบียน window.EvarelPages.<ชื่อ>)
-// ผลลัพธ์ commit ไว้ใน web/classic (เหมือน js/m) เพื่อให้ build ปกติและประตูเห็นไฟล์เดียวกัน | ทำซ้ำได้ไบต์เดิม
+//   web/src/react/runtime.js        -> web/runtime/js/react/runtime.js   (มี React ทั้งก้อน เปิดเป็น window.EvarelReact)
+//   web/src/react/<ชื่อ>.jsx        -> web/runtime/js/react/<ชื่อ>.js    (ไม่มี React ในไฟล์ ใช้ของ runtime ร่วม ลงทะเบียน window.EvarelPages.<ชื่อ>)
+// ผลลัพธ์ commit ไว้ใน web/runtime (เหมือน js/m) เพื่อให้ build ปกติและประตูเห็นไฟล์เดียวกัน | ทำซ้ำได้ไบต์เดิม
 // ใช้: node scripts/build-react.mjs         (สร้างทั้งหมด)   node scripts/build-react.mjs --check  (ไม่เขียน เทียบกับที่ commit ไว้ ต่างก็ exit 1)
 import { readdirSync, mkdirSync, readFileSync, existsSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(root, 'package.json'));
 const esbuild = require('esbuild');
-const SRC = join(root, 'web/src/react'), OUT = join(root, 'web/classic/js/react');
+const SRC = join(root, 'web/src/react'), OUT = join(root, 'web/runtime/js/react');
 const PAGES = join(root, 'web/pages'); /* F4-A: กล่อง 3 ชั้น (web/pages/<ชื่อ>/<Pascal>Page.jsx) */
 /* F6: โซนที่มีกล่อง = pages/ (หน้า) และ shared/ (ชิ้นร่วม: nav sheet dialog item-row) | กล่องหน้าตาเหมือนกันทุกโซน ผลบิลด์ชื่อ <ชื่อ>.js เหมือนเดิม
    shared/ มีไฟล์เดี่ยว (tray.js, README.md) ที่ไม่ใช่กล่อง จึงนับเป็นกล่องเฉพาะโฟลเดอร์ที่มี BOX.md */
@@ -164,12 +164,12 @@ for (const j of boxJobs) {
 
 /* ===== F4-ลงทะเบียนเอง: บิลด์เป็นเจ้าของบล็อกลงทะเบียนใน 2 ไฟล์ (ห้ามแก้มือ) =====
    (1) web/src/engine/19-views__settings.ts  -> REACT_BOX_PAGES   (ลำดับโหลด: หน้าเดิมคงเดิมเป๊ะ แล้วตามด้วยกล่องที่เรียงตาม after)
-   (2) web/classic/sw.js                    -> รายการแคชของกล่อง
-   ผลคอมไพล์ web/classic/js/engine/19-views__settings.js ถูก commit ด้วย จึงคอมไพล์คู่ด้วย tsc ตัวเดียวกับ evarel_gate_group.sh (ไม่ให้ผลล้าหลังเงียบๆ)
+   (2) web/runtime/sw.js                    -> รายการแคชของกล่อง
+   ผลคอมไพล์ web/runtime/js/engine/19-views__settings.js ถูก commit ด้วย จึงคอมไพล์คู่ด้วย tsc ตัวเดียวกับ evarel_gate_group.sh (ไม่ให้ผลล้าหลังเงียบๆ)
    โหมด --check: เทียบอย่างเดียว ไม่เขียนอะไร */
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-const SETTINGS_TS = join(root, 'web/src/engine/19-views__settings.ts'), SETTINGS_JS = join(root, 'web/classic/js/engine/19-views__settings.js'), SW = join(root, 'web/classic/sw.js');
+const SETTINGS_TS = join(root, 'web/src/engine/19-views__settings.ts'), SETTINGS_JS = join(root, 'web/runtime/js/engine/19-views__settings.js'), SW = join(root, 'web/runtime/sw.js');
 const BLOCK = (file, txt) => { const m = /(\/\* BOXES:START[^*]*\*\/)([\s\S]*?)(\/\* BOXES:END \*\/)/.exec(txt); if (!m) throw new Error(file + ': ไม่มีเครื่องหมายบล็อก BOXES:START/END (ห้ามลบ)'); return m; };
 export function renderSettingsBlock(names) { return `const REACT_BOX_PAGES:string[]=${JSON.stringify(names)};`; }
 export function renderSwBlock(names) { return names.length ? '\n' + names.map((n) => `  './js/react/${n}.js',`).join('\n') + '\n  ' : '\n  '; }

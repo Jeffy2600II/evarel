@@ -44,9 +44,9 @@ jobs:
           node scripts/build-react.mjs --check
           node scripts/gen-m-globals.mjs --check
           node scripts/compile-ts.mjs > /dev/null
-          if ! git diff --quiet -- web/classic/js; then
-            echo "ไฟล์ใน web/classic/js ไม่ตรงกับ web/src: รัน npm run build:ts และ npm run build:react แล้ว commit ไฟล์ที่เปลี่ยน"
-            git diff --stat -- web/classic/js
+          if ! git diff --quiet -- web/runtime/js; then
+            echo "ไฟล์ใน web/runtime/js ไม่ตรงกับ web/src: รัน npm run build:ts และ npm run build:react แล้ว commit ไฟล์ที่เปลี่ยน"
+            git diff --stat -- web/runtime/js
             exit 1
           fi
       - name: ห้ามมีระบบเดา/ชี้ทางอีเมล (กันข้อบกพร่องด้านความเป็นส่วนตัวกลับมา)

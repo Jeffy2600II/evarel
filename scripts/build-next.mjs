@@ -17,7 +17,7 @@ const API = {
 const env = process.argv[2] || 'forge';
 if (!Object.hasOwn(API, env)) { console.error('ระบุสภาพแวดล้อม: local | forge | production'); process.exit(2); }
 
-const SRC = join(root, 'web/classic');
+const SRC = join(root, 'web/runtime');
 const NEXT_DIR = join(root, 'web/next');
 const PUB = join(NEXT_DIR, 'public');
 const OUT = join(NEXT_DIR, 'out');
@@ -54,7 +54,7 @@ try {
   // ตัวตรวจข้อ 6: ห้ามมีโมดูลแอปแบบ window ในเส้นทางเสิร์ฟ
   if (existsSync(join(OUT, 'js/m'))) { console.error('out/js/m หลุดเข้าเส้นทางเสิร์ฟ — ตรวจ build'); process.exit(1); }
 
-  // N3: เจน sw.js ของ build นี้จากตรรกะเดิมของ web/classic/sw.js — เปลี่ยนเฉพาะ VERSION (แฮชของ build) กับ CORE (ไฟล์จริงใน out/)
+  // N3: เจน sw.js ของ build นี้จากตรรกะเดิมของ web/runtime/sw.js — เปลี่ยนเฉพาะ VERSION (แฮชของ build) กับ CORE (ไฟล์จริงใน out/)
   // รายการแคชสแกนจากดิสก์จริงทุกครั้ง กัน drift รายการแคชกับไฟล์ที่เสิร์ฟ (ชื่อ chunk ของ Next เปลี่ยนทุก build)
   const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
   const rel = (f) => './' + f.slice(OUT.length + 1).split('\\').join('/');
@@ -69,7 +69,7 @@ try {
   const fixedBody = files.filter(f => !f.startsWith('./_next/') && f !== './index.html' && f !== './release.json')
     .map(f => f + ':' + createHash('sha256').update(readFileSync(join(OUT, f.slice(2)))).digest('hex')).join('\n');
   const digest = createHash('sha256').update(CORE.join('\n') + '\n--fixed--\n' + fixedBody + '\n--asset--\n' + ASSET_V + '\n--release--\n' + relRaw).digest('hex').slice(0, 12);
-  const swSrc = readFileSync(join(root, 'web/classic/sw.js'), 'utf8');
+  const swSrc = readFileSync(join(root, 'web/runtime/sw.js'), 'utf8');
   const sw = swSrc
     .replace(/const VERSION = '[^']*';/, `const VERSION = 'evarel-next-${digest}';`)
     .replace(/const CORE = \[[\s\S]*?\];/, 'const CORE = ' + JSON.stringify(CORE, null, 2).replace(/\n/g, '\n  ') + ';');

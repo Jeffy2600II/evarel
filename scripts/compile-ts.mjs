@@ -1,4 +1,4 @@
-// คอมไพล์ web/src/engine/*.ts -> web/classic/js/engine/*.js ด้วย tsc (ไม่ bundle คงชื่อและลำดับไฟล์เดิม) | F6 จบ: โมดูลย้ายจาก web/src/m มาที่นี่ (31 ต.ค. 2026) เส้นทางเดิม js/m เลิกใช้
+// คอมไพล์ web/src/engine/*.ts -> web/runtime/js/engine/*.js ด้วย tsc (ไม่ bundle คงชื่อและลำดับไฟล์เดิม) | F6 จบ: โมดูลย้ายจาก web/src/m มาที่นี่ (31 ต.ค. 2026) เส้นทางเดิม js/m เลิกใช้
 // tsc คืน exit 2 เมื่อมี error ชนิด (ราว 300 จุดที่ตรวจแล้วว่าไม่ส่งผลตอนรัน) แต่ยังปล่อยไฟล์ครบ (noEmitOnError=false)
 // จึงตัดสินจากสิ่งที่ตรวจได้จริง: ไฟล์ออกครบ 26 ไฟล์, ไม่มี error ไวยากรณ์ (TS1xxx), และทุกไฟล์ผ่าน node --check
 // ใช้: node scripts/compile-ts.mjs
@@ -13,9 +13,9 @@ if (!existsSync(tsc)) { console.error('ยังไม่ได้ติดต�
 /* ===== ชั้น core -> m (F6): m/ import ตรรกะบริสุทธิ์จาก core/ ได้ =====
    tsc ของชั้น app/ ถูกล็อก rootDir=web/src/engine จึงเห็น core/*.ts ไม่ได้ (TS6059) และ core/ import กันเองแบบไม่มี .js (เบราว์เซอร์โหลดไม่ได้)
    ทางที่พิสูจน์แล้ว: (1) สร้าง .d.ts จาก core ไว้ใต้ web/src/engine/core/ (อยู่ใน rootDir ไม่มี .ts ชื่อซ้ำ ไม่ commit: ดู .gitignore) ให้ tsc รู้ชนิด
-   (2) esbuild แปลง core/*.ts ทีละไฟล์ (ไม่ bundle) เป็น web/classic/js/engine/core/*.js แล้วเติม .js ให้ import ภายใน (ไฟล์นี้ commit เหมือน js/m/*.js)
+   (2) esbuild แปลง core/*.ts ทีละไฟล์ (ไม่ bundle) เป็น web/runtime/js/engine/core/*.js แล้วเติม .js ให้ import ภายใน (ไฟล์นี้ commit เหมือน js/m/*.js)
    m/ เขียน import ด้วยพาธ './core/<ชื่อ>.js' */
-const coreSrcDir = join(root, 'core'), coreDeclDir = join(root, 'web/src/engine/core'), coreOutDir = join(root, 'web/classic/js/engine/core');
+const coreSrcDir = join(root, 'core'), coreDeclDir = join(root, 'web/src/engine/core'), coreOutDir = join(root, 'web/runtime/js/engine/core');
 const coreFiles = readdirSync(coreSrcDir).filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts'));
 mkdirSync(coreDeclDir, { recursive: true }); mkdirSync(coreOutDir, { recursive: true });
 for (const f of readdirSync(coreDeclDir)) if (f.endsWith('.d.ts')) rmSync(join(coreDeclDir, f)); /* ล้างของเก่า กันไฟล์ค้างจาก core ที่ถูกลบ */
@@ -36,10 +36,10 @@ const out = (r.stdout || '') + (r.stderr || '');
 const syntax = out.split('\n').filter((l) => /error TS1\d{3}:/.test(l));
 if (r.status !== 0 && r.status !== 2) { console.error('tsc ล้มเหลวผิดปกติ exit=' + r.status + '\n' + out.slice(0, 600)); process.exit(1); }
 if (syntax.length) { console.error('พบ error ไวยากรณ์ ' + syntax.length + ' จุด:\n' + syntax.slice(0, 5).join('\n')); process.exit(1); }
-const missing = srcs.filter((f) => !existsSync(join(root, 'web/classic/js/engine', f.replace(/\.ts$/, '.js'))));
+const missing = srcs.filter((f) => !existsSync(join(root, 'web/runtime/js/engine', f.replace(/\.ts$/, '.js'))));
 if (missing.length) { console.error('ไฟล์ผลหาย: ' + missing.join(', ')); process.exit(1); }
 for (const f of srcs) {
-  const c = spawnSync(process.execPath, ['--check', join(root, 'web/classic/js/engine', f.replace(/\.ts$/, '.js'))], { encoding: 'utf8' });
+  const c = spawnSync(process.execPath, ['--check', join(root, 'web/runtime/js/engine', f.replace(/\.ts$/, '.js'))], { encoding: 'utf8' });
   if (c.status !== 0) { console.error('node --check ไม่ผ่าน: ' + f + '\n' + c.stderr.slice(0, 300)); process.exit(1); }
 }
 const n = (out.match(/error TS\d+/g) || []).length;

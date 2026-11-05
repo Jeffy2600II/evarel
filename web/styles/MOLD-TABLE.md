@@ -2,7 +2,7 @@
 
 สร้างจาก tests/measure_root_vars.mjs อ่านค่า computed ของตัวแปร CSS บน :root ในเบราว์เซอร์จริงทั้งสองโหมด ไม่เขียนมือ
 ทาง A (Master ตัดสิน 26 ต.ค. 2026): ไม่แตะชั้นประกาศซ้ำใน design.css ตารางนี้เป็นบันทึกอ้างอิง
-แก้ค่า: แก้ที่ web/classic/styles/design.css หรือ extra.css แล้วสั่ง node scripts/build-css.mjs แล้วสร้างตารางนี้ใหม่
+แก้ค่า: แก้ที่ web/runtime/styles/design.css หรือ extra.css แล้วสั่ง node scripts/build-css.mjs แล้วสร้างตารางนี้ใหม่
 
 > 1 พ.ย. 2026 (DD-1): แก้มือเฉพาะแถวครอบครัว accent/ink/halo/shadow-fab และ --c-on-accent มืด — ยังไม่ได้รัน tests/measure_root_vars.mjs ใหม่ ให้รันยืนยันครั้งถัดไปที่ deploy
 

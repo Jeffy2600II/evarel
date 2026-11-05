@@ -1,13 +1,13 @@
 /* S4 next-pages ไบต์ N1: หน้าเดียวของแอป (SPA hash route #/today ฯลฯ) — containers ทั้งหมดตาม body ของ index.html เดิมเป๊ะ
    แอปทั้งเรื่องเรนเดอร์ด้วยส่วนประกอบ React ผ่าน EvarelComponents (ทุก route: วันนี้ รายการ ปฏิทิน สถิติ ผู้ช่วย AI ตั้งค่า)
    <AppBoot /> เป็น client component ที่บันเดิลเครื่องยนต์ (26 โมดูล + react runtime + route + boot) ตามลำดับเดิม
-   + สแปลชบูต #ev-boot และสคริปต์เฟรมแรก: จับ token ที่กลับมาจาก Google + โชว์สแปลชทันที (กันหน้าขาว) — เนื้อหาตาม classic/index.html เป๊ะ */
+   + สแปลชบูต #ev-boot และสคริปต์เฟรมแรก: จับ token ที่กลับมาจาก Google + โชว์สแปลชทันที (กันหน้าขาว) — เนื้อหาตาม index.html ยุคก่อน Next (ชื่อยุคนั้น web/classic) เป๊ะ */
 import AppBoot from '../lib/boot';
 
 /* รหัสเนื้อหาไฟล์ชื่อคงที่ (?v=) — ตัวเดียวกับ layout.tsx: โลโก้/ไอคอนชื่อคงที่เนื้อหาเปลี่ยนได้ ต้องผูก URL กับรหัส build เพื่อให้ browser ดึงของใหม่ */
 const q = (u: string) => (process.env.NEXT_PUBLIC_EVAREL_ASSET_V ? `${u}?v=${process.env.NEXT_PUBLIC_EVAREL_ASSET_V}` : u);
 
-/* สคริปต์เดียวกับ web/classic/index.html (แก้ที่ไหนแก้อีกที่ด้วย): จอด (park) token OAuth จาก hash กันหาย + โชว์สแปลชทันทีเมื่อจะเข้าสู่ระบบอัตโนมัติ
+/* สคริปต์เดียวกับ web/runtime/index.html (แก้ที่ไหนแก้อีกที่ด้วย): จอด (park) token OAuth จาก hash กันหาย + โชว์สแปลชทันทีเมื่อจะเข้าสู่ระบบอัตโนมัติ
    ต้องอยู่ "หลัง" markup ของ #ev-boot (หา element ตัวเองด้วย getElementById) และ "ก่อน" โมดูลเครื่องยนต์ซึ่ง AppBoot โหลดแบบ dynamic import */
 const EV_BOOT_JS = `(function () {
   var PARK = 'evarel-oauth-park', OERR = 'evarel-oauth-error', back = false;

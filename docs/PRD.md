@@ -10,7 +10,7 @@
 | Primary device | Real Android device, installed as PWA (direct-file distribution, not Google Play) |
 | Target date | **2026-11-02** (first day of semester) — hard deadline |
 | Doc set | `PRD.md` · `DESIGN.md` · `USER-FLOW.md` · `SITEMAP.md` · `ARCHITECTURE.md` · `DATA-MODEL.md` · `AGENTS.md` |
-| Sources of truth | `README.md`, `docs/plan/MASTER-PLAN.md` (phases S0–S7), `web/classic/styles/design.css`, `tailwind.config.cjs`, `package.json` |
+| Sources of truth | `README.md`, `docs/plan/MASTER-PLAN.md` (phases S0–S7), `web/runtime/styles/design.css`, `tailwind.config.cjs`, `package.json` |
 
 ---
 
@@ -109,9 +109,9 @@ Deployment status: `forge` (web + Worker) auto-deploys on every push to `develop
 
 | Risk | Severity | Mitigation |
 |---|---|---|
-| **1 day to deadline (2026-11-01); S5–S6 not started** | Critical | Ship on the existing CSS/token pipeline (`web/classic/styles/design.css` already works; `forge` auto-deploys on push). Treat S5 (page-by-page Tailwind) as post-deadline polish, as the plan already allows |
+| **1 day to deadline (2026-11-01); S5–S6 not started** | Critical | Ship on the existing CSS/token pipeline (`web/runtime/styles/design.css` already works; `forge` auto-deploys on push). Treat S5 (page-by-page Tailwind) as post-deadline polish, as the plan already allows |
 | Production deploy still pending (forge is automated) | Critical | Run the `production` deploy as the first calm task after the deadline; never demo from a local build |
-| Design-token drift (`design.css` ↔ `tailwind.config.cjs` ↔ master demo disagree) | High | Governed by `DESIGN.md` (§1 governance + §15 drift log). One edit point: `web/classic/styles/design.css` |
+| Design-token drift (`design.css` ↔ `tailwind.config.cjs` ↔ master demo disagree) | High | Governed by `DESIGN.md` (§1 governance + §15 drift log). One edit point: `web/runtime/styles/design.css` |
 | Free-tier quota exhaustion (Groq / Supabase / Cloudflare) | Medium | Quota system + abuse prevention are in scope (§5); monitor usage in-app |
 | Offline write conflicts (duplicate sync) | Medium | Reconciliation rule is specified in `DATA-MODEL.md` §6 — idempotent upserts by client-generated id |
 | Single maintainer | Structural | This doc set exists so any AI agent (or a future contributor) can continue the work without oral history |

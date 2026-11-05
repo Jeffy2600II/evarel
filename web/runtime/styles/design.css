@@ -1,5 +1,5 @@
-/* Path: web/classic/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/Evarel v24.html (style type=text/tailwindcss; แก้ชื่อไฟล์อ้างอิงตาม D-004 — ไม่มีไฟล์ master-demo-v24.html)
-   Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น web/classic/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
+/* Path: web/runtime/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/Evarel v24.html (style type=text/tailwindcss; แก้ชื่อไฟล์อ้างอิงตาม D-004 — ไม่มีไฟล์ master-demo-v24.html)
+   Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น web/runtime/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
 /* Path: archive/design/Evarel v24.html (สายเดโม v2→v7→v12→v24; ชื่อ master-demo-v3 ที่เคยอ้างไม่มีไฟล์จริง — แก้ตาม D-004) | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนรวมอยู่ในส่วน TOKENS ของไฟล์นี้ (เดิมแยกเป็น tokens.css)
    Used by: เป็นแบบอ้างอิงให้ agent ย้ายเข้าเว็บแอป (ส่วน CSS → app.css, ส่วน JS แยกตามหัวข้อ "MODULE:") */
 

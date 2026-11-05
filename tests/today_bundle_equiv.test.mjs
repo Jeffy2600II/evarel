@@ -1,10 +1,10 @@
 // พิสูจน์ F6 หน้าวันนี้: Pages.today และ Components.today (ผลบิลด์ใหม่จากกล่อง shared/today) เรนเดอร์ HTML เท่า bundle เดิมทุกไบต์ ทุกสาขา
-// ใช้: node tests/today_bundle_equiv.test.mjs <today.js เดิม>   (ไฟล์ใหม่อ่านจาก web/classic/js/react/today.js)
+// ใช้: node tests/today_bundle_equiv.test.mjs <today.js เดิม>   (ไฟล์ใหม่อ่านจาก web/runtime/js/react/today.js)
 // สาขาที่ครอบ: ไม่มีรายการ | ไม่มีสิ่งต้องติ๊ก | ยังไม่ครบ | ครบทุกอย่าง | มีค้าง (overdue) | มีถัดไป (next) | ย้อนดู (ds ไม่ใช่วันนี้) | หลายกลุ่มเวลา
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 import { SEED_ITEMS } from './seed_items.mjs';
-const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/classic/js/react/today.js', 'utf8');
+const OLD = fs.readFileSync(process.argv[2], 'utf8'), NEW = fs.readFileSync('web/runtime/js/react/today.js', 'utf8');
 const d = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe = d + fs.readdirSync(d).find(x => x.startsWith('chrome')) + '/chrome-headless-shell';
 const b = await chromium.launch({ executablePath: exe, args: ['--disable-gpu'] });
