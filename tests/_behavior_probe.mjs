@@ -1,7 +1,7 @@
 /* Behavior probe v4: เทียบพฤติกรรมจริง เดโม vs web/runtime(รุ่นเก่า) vs build/web(Next ตัวรันจริง) */
-import { chromium } from './node_modules/playwright/index.mjs';
+import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
-import { makeTestUser, openAsUser, APP_ORIGIN } from './tests/live_user.mjs';
+import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 
 const out = {};
 const snap = () => {

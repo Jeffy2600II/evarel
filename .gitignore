@@ -17,13 +17,12 @@ node_modules/
 /build/
 /.next/
 /out/
-# โฟลเดอร์ public ของ Next สร้างชั่วคราวตอน build จาก web/runtime (ห้ามเก็บใน git ไม่งั้นไฟล์แอปซ้ำสองที่)
-/web/shell/public/
-/web/shell/out/
-/web/shell/.next/
-/web/shell/node_modules/
-/web/shell/next-env.d.ts
-/web/shell/tsconfig.tsbuildinfo
+# โฟลเดอร์ public/out/.next ของ web/next สร้างชั่วคราวตอน build จาก web/runtime (ห้ามเก็บใน git ไม่งั้นไฟล์แอปซ้ำสองที่)
+# ประกาศที่ web/next/.gitignore เป็นหลัก (node_modules .next out public next-env.d.ts) ที่นี่กันเหนียวเผื่อคอนฟิกเก่าของเครื่องอื่น
+/web/next/public/
+/web/next/out/
+/web/next/.next/
+/web/next/tsconfig.tsbuildinfo
 
 # F6: .d.ts ของ core ที่ compile-ts.mjs สร้างตอนบิลด์ให้ tsc ของชั้น app/ รู้ชนิด (ไม่ commit กันสองสำเนา)
 /web/src/engine/core/

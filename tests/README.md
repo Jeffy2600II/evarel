@@ -40,11 +40,11 @@ tests/
 |---|---|---|
 | ท่อบิลด์/เกตโครงสร้าง | `box_build_pipeline.test.mjs` `typecheck.test.mjs` `esm_readiness_gate.mjs` `ts1c_state_behavior.mjs` `ts1j_scope_gate.mjs` | ตรวจกติกากล่อง ชนิด และกราฟพึ่งพาเมื่อแตะโครงสร้าง |
 | ตรรกะ Node ล้วน | `late_note.test.mjs` `notify_default.test.mjs` `version_rules.test.mjs` | ตรวจสูตร/กติกาเลขรุ่นโดยไม่เปิดเบราว์เซอร์ |
-| ระบบแจ้งเตือน/แอปจริง | `notify_push.test.mjs` `sw_push.test.mjs` `oauth_park.test.mjs` `refresh_once.test.mjs` `s3_next_wrap.test.mjs` | ทดสอบบน forge จริง (ต้องมีคีย์ใน .agents/.env) |
-| กรณีศึกษายุคก่อนโรงงาน (อ่านอย่างเดียว) | `_ts1b_*` `_ts1c_probe` `_ts1f..i` `_ts1n_authflow` `_ovf_*` `_supa_*` `_abuse_browser` `_formprobe` `_addshot` `_addtxt` `_esm1a_tool_unit` `authfix-probe` `authflow_email_probe` | ไฟล์ประกอบการแก้บั๊กรอบก่อน เก็บไว้เป็นหลักฐานวิธีคิด |
+| ระบบแจ้งเตือน/แอปจริง | `notify_push.test.mjs` `sw_push.test.mjs` `oauth_park.test.mjs` `refresh_once.test.mjs` | ทดสอบบน forge จริง (ต้องมีคีย์ใน .agents/.env) |
+| กรณีศึกษายุคก่อนโรงงาน (อ่านอย่างเดียว) | `_ts1b_*` `_ts1c_probe` `_ts1f..i` `_ts1n_authflow` `_ovf_*` `_supa_*` `_abuse_browser` `_formprobe` `_addshot` `_addtxt` `_esm1a_tool_unit` `authfix-probe` `authflow_email_probe` `s3_next_wrap` | ไฟล์ประกอบการแก้บั๊กรอบก่อน เก็บไว้เป็นหลักฐานวิธีคิด |
 | ประตูภาพเสริม | `visual-parity.mjs` `xss-guard.mjs` `quota-unit.mjs` | เทียบภาพ/กัน XSS ตามจุดประสงค์ในหัวไฟล์ |
 
-หมายเหตุ: `notify_default.test.mjs` อ้าง `web/runtime/js/m` ซึ่งหมดไปตั้งแต่ F6 — ไฟล์นี้เก็บไว้เป็นหลักฐานสเปก D1 ยังไม่รันได้จนกว่าจะอ้างโมดูลใหม่
+หมายเหตุ: `notify_default.test.mjs` อ้าง `web/runtime/js/m` ซึ่งหมดไปตั้งแต่ F6 — ไฟล์นี้เก็บไว้เป็นหลักฐานสเปก D1 ยังไม่รันได้จนกว่าจะอ้างโมดูลใหม่ | `s3_next_wrap.test.mjs` ปลดระวางตั้งแต่ S4 (ดูหัวไฟล์) ล็อกกติกายุค web/shell ที่ยุบเข้า web/next แล้ว 5 พ.ย. 2026 จึงอ่านอย่างเดียว ไม่มีสคริปต์หรือ CI เรียก
 
 ## tests/history/ — ชุดตรวจยุคเก่า (ไม่อัปเดตต่อ)
 
@@ -59,7 +59,7 @@ tests/
 | `seed_items.mjs` | ข้อมูลตัวอย่างรายการสำหรับผู้ใช้ทดสอบ |
 | `_env.mjs` | อ่านความลับ/ตั้งค่าจาก .agents/.env อย่างปลอดภัย |
 | `_constants_inline.mjs` | ดึงค่าคงที่จากเอนจินมารันใน Node ล้วน |
-| `baseline_shots.mjs` | ตัวถ่ายภาพพิมพ์ 32 ฉากของประตูภาพ (เรียกโดย scripts/run_shots_gate.sh) |
+| `baseline_shots.mjs` | ตัวถ่ายภาพพิมพ์ 32 ฉากของประตูภาพ (เรียกโดย scripts/run-shots-gate.sh) |
 | `import-legacy.mjs` | เครื่องมือนำเข้าข้อมูลเก่า |
 
 ## ไฟล์อ้างอิงของเทสต์เทียบ (`/tmp/*.js`) - สร้างใหม่ได้เสมอ

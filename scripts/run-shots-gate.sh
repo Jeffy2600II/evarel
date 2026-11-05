@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ประตูภาพ 32 ฉาก (เพิ่มฉากสถิติว่าง 31 ต.ค. 2026): ผ่านก็ต่อเมื่อเครื่องถ่ายภาพพิมพ์ "ALL OK 32" เองและนับ PASS ได้ 32 | EXIT=0 ที่ต่อท้ายด้วยเชลล์ไม่ใช่หลักฐาน (timeout ตัดกลางทางก็ได้ 0)
-# ใช้: bash scripts/run_shots_gate.sh <ไฟล์log>   ผลสุดท้ายในบรรทัด GATE= PASS30 | INCOMPLETE n/30 | FAIL n
+# ใช้: bash scripts/run-shots-gate.sh <ไฟล์log>   ผลสุดท้ายในบรรทัด GATE= PASS30 | INCOMPLETE n/30 | FAIL n
 cd "$(dirname "$0")/.." || exit 2
 LOG="${1:-/tmp/shots-gate.log}"; : > "$LOG"
 timeout 1500 node tests/baseline_shots.mjs --compare docs/plan/baseline/shots >> "$LOG" 2>&1

@@ -5,7 +5,7 @@
 | Product | Ordivel — personal life-management PWA |
 | Document | `PRD.md` · V1 |
 | Status | Living document — the single source of truth for product scope |
-| Scope of this doc set | `web/` PWA (classic runtime + React page boxes, served by `web/next`) with `core/` and its Worker API / Supabase `backend/` (this repository) |
+| Scope of this doc set | `web/` PWA (the `web/runtime` app + React page boxes, served by `web/next`) with `core/` and its Worker API / Supabase `backend/` (this repository) |
 | UI language | Thai (code identifiers, comments, and all docs in English) |
 | Primary device | Real Android device, installed as PWA (direct-file distribution, not Google Play) |
 | Target date | **2026-11-02** (first day of semester) — hard deadline |

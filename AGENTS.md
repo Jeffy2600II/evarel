@@ -16,7 +16,7 @@ Ordivel is a **single-owner, Thai-language, offline-first life-management PWA** 
 
 ## 2. Scope
 
-- **In scope:** the `web/` PWA (classic runtime + React page boxes, served by `web/next`), the shared `core/` logic, and the `backend/` Worker API + Supabase assets.
+- **In scope:** the `web/` PWA (the `web/runtime` app + React page boxes, served by `web/next`), the shared `core/` logic, and the `backend/` Worker API + Supabase assets.
 - **Out of scope:** `archive/` (retired builds and design demos), `app/` (reserved for the React Native phase S7 — empty by design), `backend/api/prototype/`, any marketing site (`docs/PRD.md` §6). Do not touch them, do not "helpfully" extend them.
 
 ## 3. Design rules (short form of `docs/DESIGN.md`)
@@ -43,7 +43,7 @@ Run and pass:
 
 1. `npm test` — Worker suite (225 cases at baseline)
 2. `npm run test:notify` — notify systems
-3. Front end: the route and feature suites (`tests/history/v11route.mjs`, `tests/history/v11feat.mjs`), the browser equiv suites (`node tests/equiv/<name>_equiv.test.mjs`), and the visual parity gate `scripts/run_shots_gate.sh` — **32 scenes, 0-pixel rule** — plus **offline usage** (`docs/PRD.md` §4 item 5)
+3. Front end: the route and feature suites (`tests/history/v11route.mjs`, `tests/history/v11feat.mjs`), the browser equiv suites (`node tests/equiv/<name>_equiv.test.mjs`), and the visual parity gate `scripts/run-shots-gate.sh` — **32 scenes, 0-pixel rule** — plus **offline usage** (`docs/PRD.md` §4 item 5)
 
 If you cannot run a suite, say so explicitly instead of claiming it passed.
 

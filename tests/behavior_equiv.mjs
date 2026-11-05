@@ -2,9 +2,9 @@
    เดโม v24: AI → settings ซ้อน 2 ชั้น, ย้อนกลับปิดทีละชั้น, ไม่มี pageerror
    วิธีรัน: node tests/behavior_equiv.mjs  (สภาพแวดล้อมเหมือน _parity_bands: เซิร์ฟเวอร์ 8779 + API forge จริง)
    ผ่าน = ทุก PASS ... errs demo 0 app 0 */
-import { chromium } from './node_modules/playwright/index.mjs';
+import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
-import { makeTestUser, openAsUser, APP_ORIGIN } from './tests/live_user.mjs';
+import { makeTestUser, openAsUser, APP_ORIGIN } from './live_user.mjs';
 
 const WEB_DIR = process.env.EVAREL_WEB_DIR || './build/web';
 let fails = 0, errsDemo = 0, errsApp = 0;

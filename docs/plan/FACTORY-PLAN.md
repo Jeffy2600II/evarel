@@ -29,7 +29,7 @@ web/
 ├─ shared/                 โซนชิ้นร่วม (เดิม app/shared)
 ├─ styles/                 โซนแม่พิมพ์กลาง (เดิม app/styles)
 ├─ data/                   โซนถาดข้อมูล (เดิม app/data)
-└─ (classic/ next/ shell/ src/ = ตัวแอปเว็บเอง ดู README ราก)
+└─ (runtime/ next/ src/ = ตัวแอปเว็บเอง ดู README ราก)
 tools/factory/             โซนเบ้าจูน เครื่องตรวจ ตัววาดแผนที่ (เดิม app/tools)
 core/                      ตรรกะแชร์กับแอปมือถืออนาคต (เดิม app/src/core)
 backend/                   หลังบ้านใช้ร่วมทุกแพลตฟอร์ม (เดิม app/api app/db app/edge)
@@ -68,7 +68,7 @@ archive/                   ของเก่าย้ายเก็บไม�
 | quota.jsx, aiShell.jsx | 2,416 / 5,067 | `pages/ai/parts/` | ยืนยันแล้ว: aiShell ถูกเรียกจาก `17-views__ai` เท่านั้น quota ถูกเปิดจาก `16-services__ai-quota` เท่านั้น ไม่มีหน้าอื่นเรียก |
 | `core/*.ts` (dates, schedule, stats, today) | 4 ไฟล์ | `data/` | ตรรกะคำนวณบริสุทธิ์ที่หน้ารับผ่านถาด |
 | `m/*.ts` 26 ไฟล์ | รวม 217,563 ไบต์ | แยกตามหน้าที่เข้า `pages/` `shared/` `data/` | ดูไฟล์ F6 |
-| `web/classic/styles/*.css` | design.css, app.css, extra.css | `styles/` + `<หน้า>.style` | ดูไฟล์ F3 |
+| `web/runtime/styles/*.css` | design.css, app.css, extra.css | `styles/` + `<หน้า>.style` | ดูไฟล์ F3 |
 
 ## 4. ข้อเท็จจริงเส้นฐานที่วัดแล้ว
 

@@ -1,6 +1,6 @@
 /* เทสไลฟ์บน forge จริง (ไม่มีการ intercept): ล็อกอินผู้ใช้ทดสอบ → เปิด AI → เปิด settings ซ้อน → ย้อนกลับ */
-import { chromium } from './node_modules/playwright/index.mjs';
-import { makeTestUser, APP_ORIGIN } from './tests/live_user.mjs';
+import { chromium } from 'playwright';
+import { makeTestUser, APP_ORIGIN } from './live_user.mjs';
 
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 412, height: 915 }, timezoneId: 'Asia/Bangkok' });

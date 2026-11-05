@@ -113,7 +113,7 @@ Commands (from `package.json`):
 | `npm run build:react` / `check:react` | Compile / check the React page boxes |
 | `npm run plan:check` | Plan consistency check (`tools/plan_check.py`); Node ≥ 20 required |
 
-**Merge gate (no exceptions):** the visual parity gate (`scripts/run_shots_gate.sh`, 32 scenes, 0-pixel rule), the route and feature suites (`tests/v11route.mjs`, `tests/v11feat.mjs`), the browser equiv suites, and **offline usage**. These are the PRD acceptance criteria in executable form; see `AGENTS.md` for how agents must run them.
+**Merge gate (no exceptions):** the visual parity gate (`scripts/run-shots-gate.sh`, 32 scenes, 0-pixel rule), the route and feature suites (`tests/history/v11route.mjs`, `tests/history/v11feat.mjs`), the browser equiv suites, and **offline usage**. These are the PRD acceptance criteria in executable form; see `AGENTS.md` for how agents must run them.
 
 ## 9. Performance & offline strategy
 
