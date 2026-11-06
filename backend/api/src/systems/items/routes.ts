@@ -36,6 +36,14 @@ export function errorResponse(message: string, status = 400, env?: Env): Respons
   return jsonResponse({ error: message }, status, env);
 }
 
+/* ระยะ 0.3 (PLATFORM-UPGRADE-PLAN): deadline 8 วินาทีทุกการเรียกฐานข้อมูล (เดิม fetch เปล่า — ติดค้าง = คำขอผู้ใช้ค้างตลอดไป) */
+const DB_TIMEOUT_MS = 8000;
+export async function fetchT(fetchImpl: typeof fetch, url: string, init: RequestInit): Promise<Response> {
+  const ctl = new AbortController();
+  const tm = setTimeout(() => ctl.abort(), DB_TIMEOUT_MS);
+  try { return await fetchImpl(url, { ...init, signal: ctl.signal }); } finally { clearTimeout(tm); }
+}
+
 export async function authenticate(request: Request, env: Env): Promise<{ sub: string; email?: string } | Response> {
   const token = extractBearer(request);
   if (!token) {
@@ -46,7 +54,8 @@ export async function authenticate(request: Request, env: Env): Promise<{ sub: s
     const user = await verifyJWT(token, env, customFetch);
     return user;
   } catch (err: any) {
-    return errorResponse(err.message || 'Unauthorized', 401, env);
+    /* ระยะ 0.1: เลิกส่ง err.message ดิบถึง client (เคยรั่ว URL ภายใน/kid) ใช้ code สั้นแทน */
+    return errorResponse(err?.message === 'Token expired' ? 'token_expired' : 'invalid_token', 401, env);
   }
 }
 
@@ -76,17 +85,17 @@ export async function handleGetItems(request: Request, env: Env): Promise<Respon
 
   // Fetch items
   const itemsUrl = `${baseUrl}/rest/v1/items?select=*`;
-  const itemsRes = await fetchImpl(itemsUrl, { headers });
+  const itemsRes = await fetchT(fetchImpl, itemsUrl, { headers });
   if (!itemsRes.ok) {
-    return errorResponse(`Failed to fetch items: ${itemsRes.statusText}`, itemsRes.status, env);
+    return errorResponse('items_unavailable', itemsRes.status, env);
   }
   const itemRows = await itemsRes.json();
 
   // Fetch logs
   const logsUrl = `${baseUrl}/rest/v1/item_logs?select=item_id,date,value`;
-  const logsRes = await fetchImpl(logsUrl, { headers });
+  const logsRes = await fetchT(fetchImpl, logsUrl, { headers });
   if (!logsRes.ok) {
-    return errorResponse(`Failed to fetch item logs: ${logsRes.statusText}`, logsRes.status, env);
+    return errorResponse('logs_unavailable', logsRes.status, env);
   }
   const logRows = await logsRes.json();
 
@@ -182,10 +191,10 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
 
   /* เพดานจำนวน items ต่อคน: ตรวจเฉพาะ id ที่ยังไม่มี (แก้ของเดิมต้องทำได้เสมอ) */
   try {
-    const exist = await fetchImpl(`${baseUrl}/rest/v1/items?select=id&id=eq.${idNum}&limit=1`, { headers });
+    const exist = await fetchT(fetchImpl, `${baseUrl}/rest/v1/items?select=id&id=eq.${idNum}&limit=1`, { headers });
     const isNew = exist.ok ? ((await exist.json()) as any[]).length === 0 : false;
     if (isNew) {
-      const cnt = await fetchImpl(`${baseUrl}/rest/v1/items?select=id&limit=1`, { headers: { ...headers, Prefer: 'count=exact' } });
+      const cnt = await fetchT(fetchImpl, `${baseUrl}/rest/v1/items?select=id&limit=1`, { headers: { ...headers, Prefer: 'count=exact' } });
       const total = Number((cnt.headers.get('content-range') || '').split('/')[1]);
       if (cnt.ok && Number.isFinite(total) && total >= LIMITS.ITEMS_PER_USER) {
         return errorResponse(`Item limit reached (${LIMITS.ITEMS_PER_USER})`, 403, env);
@@ -211,7 +220,7 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
     rem: body.rem ?? []
   };
 
-  const itemRes = await fetchImpl(`${baseUrl}/rest/v1/items?on_conflict=user_id,id`, {
+  const itemRes = await fetchT(fetchImpl, `${baseUrl}/rest/v1/items?on_conflict=user_id,id`, {
     method: 'POST',
     headers: {
       ...headers,
@@ -221,7 +230,7 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
   });
 
   if (!itemRes.ok) {
-    return errorResponse(`Failed to upsert item: ${itemRes.statusText}`, itemRes.status, env);
+    return errorResponse('item_save_failed', itemRes.status, env);
   }
 
   if (body.log && Object.keys(body.log).length > 0) {
@@ -232,7 +241,7 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
       value: val
     }));
 
-    const logRes = await fetchImpl(`${baseUrl}/rest/v1/item_logs?on_conflict=user_id,item_id,date`, {
+    const logRes = await fetchT(fetchImpl, `${baseUrl}/rest/v1/item_logs?on_conflict=user_id,item_id,date`, {
       method: 'POST',
       headers: {
         ...headers,
@@ -242,7 +251,7 @@ export async function handlePutItem(request: Request, env: Env, idParam: string)
     });
 
     if (!logRes.ok) {
-      return errorResponse(`Failed to upsert logs: ${logRes.statusText}`, logRes.status, env);
+      return errorResponse('logs_save_failed', logRes.status, env);
     }
   }
 
@@ -281,13 +290,13 @@ export async function handleDeleteItem(request: Request, env: Env, idParam: stri
   const baseUrl = env.SUPABASE_URL.replace(/\/+$/, '');
   const headers = getSupabaseHeaders(token, env);
 
-  const res = await fetchImpl(`${baseUrl}/rest/v1/items?id=eq.${idNum}`, {
+  const res = await fetchT(fetchImpl, `${baseUrl}/rest/v1/items?id=eq.${idNum}`, {
     method: 'DELETE',
     headers
   });
 
   if (!res.ok) {
-    return errorResponse(`Failed to delete item: ${res.statusText}`, res.status, env);
+    return errorResponse('item_delete_failed', res.status, env);
   }
 
   return jsonResponse({ success: true }, 200, env);
@@ -317,9 +326,9 @@ export async function handleGetLogs(request: Request, env: Env): Promise<Respons
   if (from) query += `&date=gte.${from}`;
   if (to) query += `&date=lte.${to}`;
 
-  const res = await fetchImpl(query, { headers });
+  const res = await fetchT(fetchImpl, query, { headers });
   if (!res.ok) {
-    return errorResponse(`Failed to fetch logs: ${res.statusText}`, res.status, env);
+    return errorResponse('logs_unavailable', res.status, env);
   }
 
   const rows = await res.json();
@@ -377,7 +386,7 @@ export async function handlePostLog(request: Request, env: Env): Promise<Respons
     value: body.value
   };
 
-  const res = await fetchImpl(`${baseUrl}/rest/v1/item_logs?on_conflict=user_id,item_id,date`, {
+  const res = await fetchT(fetchImpl, `${baseUrl}/rest/v1/item_logs?on_conflict=user_id,item_id,date`, {
     method: 'POST',
     headers: {
       ...headers,
@@ -387,7 +396,7 @@ export async function handlePostLog(request: Request, env: Env): Promise<Respons
   });
 
   if (!res.ok) {
-    return errorResponse(`Failed to upsert log: ${res.statusText}`, res.status, env);
+    return errorResponse('logs_save_failed', res.status, env);
   }
 
   return jsonResponse({ item_id: itemId, date: body.date, value: body.value }, 200, env);

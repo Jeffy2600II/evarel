@@ -14,6 +14,13 @@ export const RULES = {
   mailEmail:    { bucket: 'mail_email',     limit: 3,  windowSec: 3600 },  // ส่งเมลถึงอีเมลเดียว (กันถล่มกล่องเหยื่อ/กินโควตา SMTP)
   refreshIp:    { bucket: 'refresh_ip',     limit: 120, windowSec: 300 },
   quotaUser:    { bucket: 'ai_quota_user',  limit: 30,  windowSec: 60 },     // อ่านโควตา AI ต่อผู้ใช้ (UI ถามไม่เกิน ~3 ครั้ง/นาที เผื่อ 10 เท่า)
+  /* ระยะ 0.2 (PLATFORM-UPGRADE-PLAN): ครอบเส้นทางที่แพง (DB subrequest / บริการภายนอก) ที่เดิมไม่มีด่านเลย
+     คีย์ = user id จาก JWT ที่ตรวจแล้ว (ไม่ใช่ไอพี) เพราะผู้ใช้คนเดียวยิงถี่ได้แม้ไอพีเดียวกับคนอื่น (CGNAT) */
+  itemsReadUser:  { bucket: 'items_read_user',  limit: 240, windowSec: 60 }, // GET items/logs (UI ดึงตอนบูต+live sync ~ไม่กี่ครั้ง/นาที)
+  itemsWriteUser: { bucket: 'items_write_user', limit: 120, windowSec: 60 }, // PUT/DELETE item + POST log (ทุกการติ๊ก/บันทึก)
+  aiChatUser:     { bucket: 'ai_chat_user',     limit: 30,  windowSec: 60 }, // ต่อเนื่องกับโควตาประจำวัน (AI_DAILY_CALLS) กันถี่ผิดปกติ
+  aiMemoryUser:   { bucket: 'ai_memory_user',   limit: 20,  windowSec: 60 }, // เขียนไปบริการภายนอก (MemoryLake) ทุกครั้ง
+  pushWriteUser:  { bucket: 'push_write_user',  limit: 20,  windowSec: 60 }, // subscribe/unsubscribe อุปกรณ์
 } as const satisfies Record<string, Rule>;
 
 export function clientIp(request: Request): string {
@@ -60,8 +67,17 @@ export function tooMany(retryAfter: number, env: any, jsonResponse: (d: any, s?:
 }
 
 /* สถานะด่าน (ข้อ1 Pre-Mortem): ไม่ให้ fail-open ล้มเงียบ -- Master ดูได้ที่ GET /api/health
-   active = rl_hit ใช้ได้ | inactive = ยังไม่รัน migration 003 (ไม่มีฟังก์ชัน) | unknown = ติดต่อฐานข้อมูลไม่ได้ */
+   active = rl_hit ใช้ได้ | inactive = ยังไม่รัน migration 003 (ไม่มีฟังก์ชัน) | unknown = ติดต่อฐานข้อมูลไม่ได้
+   ระยะ 0.5: ตรวจจริงสูงสุด 1 ครั้ง/นาที/isolate (เดิมยิง rl_hit = INSERT+UPDATE ทุกคำขอ ทำให้ health เองเป็นช่อง write amplification โดยไม่มีขอบเขต) */
+let healthProbe: { at: number; status: 'active' | 'inactive' | 'unknown' } = { at: 0, status: 'unknown' };
+export function _resetHealthProbe() { healthProbe = { at: 0, status: 'unknown' }; }
 export async function status(env: any): Promise<'active' | 'inactive' | 'unknown'> {
+  if (Date.now() - healthProbe.at < 60_000) return healthProbe.status;
+  const s = await probeOnce(env);
+  healthProbe = { at: Date.now(), status: s };
+  return s;
+}
+async function probeOnce(env: any): Promise<'active' | 'inactive' | 'unknown'> {
   try {
     const f: typeof fetch = env.CUSTOM_FETCH || fetch;
     const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 2500);

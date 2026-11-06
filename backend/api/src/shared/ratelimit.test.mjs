@@ -5,7 +5,8 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
 const here = path.dirname(fileURLToPath(import.meta.url));
 execSync(`node_modules/.bin/esbuild ${path.resolve(here, '../index.ts')} --bundle --format=esm --outfile=/tmp/rl-bundle.mjs --log-level=error`);
-const W = (await import(pathToFileURL('/tmp/rl-bundle.mjs').href + '?v=' + Date.now())).default;
+const _M = await import(pathToFileURL('/tmp/rl-bundle.mjs').href + '?v=' + Date.now());
+const W = _M.default; const resetHealthProbe = _M._resetHealthProbe;
 let pass = 0, fail = 0;
 const t = async (name, fn) => { try { await fn(); pass++; console.log('PASS', name); } catch (e) { fail++; console.log('FAIL', name, '::', String(e.stack || e.message).slice(0, 220).replace(/\n/g, ' ')); } };
 const json = (d, s = 200) => new Response(JSON.stringify(d), { status: s });
@@ -109,10 +110,18 @@ await t('R1 body ใหญ่ที่ /api/auth/login: ด่านต้อง
 await t('ข้อ1 /api/health รายงานสถานะด่าน: active เมื่อ rl_hit มี, inactive เมื่อยังไม่รัน migration', async () => {
   const a = world(); globalThis.fetch = a.f; const ra = await W.fetch(new Request('https://w/api/health'), a.env); const ja = await ra.json();
   assert.equal(ra.status, 200); assert.equal(ja.rate_limit, 'active');
+  resetHealthProbe(); /* ระยะ 0.5: ตัวจริงแคชผลไว้ 1 นาที/isolate — เทสต์สลับโลกจำลอง จึงรีเซ็ตแคชระหว่างเคส */
   const b = world({ noFn: true }); globalThis.fetch = b.f; const jb = await (await W.fetch(new Request('https://w/api/health'), b.env)).json();
   assert.equal(jb.rate_limit, 'inactive', 'ต้องไม่ล้มเงียบ');
+  resetHealthProbe();
   const c = world({ rlDown: true }); globalThis.fetch = c.f; const jc = await (await W.fetch(new Request('https://w/api/health'), c.env)).json();
   assert.equal(jc.rate_limit, 'unknown');
+});
+await t('ระยะ 0.5 /api/health ไม่ยิง rl_hit ทุกคำขอ (แคช 1 นาที/isolate กัน write amplification)', async () => {
+  resetHealthProbe();
+  const w = world(); globalThis.fetch = w.f; w.rpc = 0;
+  for (let i = 0; i < 10; i++) await W.fetch(new Request('https://w/api/health'), w.env);
+  assert.equal(w.rpc, 1, 'ยิง rl_hit ' + w.rpc + ' ครั้ง (ต้องยิงครั้งเดียวแรก ที่เหลือใช้แคช)');
 });
 await t('ข้อ1 /api/health ไม่เปิดเผยความลับ (ไม่มีกุญแจ/URL ใน body)', async () => {
   const w = world(); globalThis.fetch = w.f; const txt = await (await W.fetch(new Request('https://w/api/health'), w.env)).text();

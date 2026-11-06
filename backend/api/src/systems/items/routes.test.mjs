@@ -369,7 +369,8 @@ async function runTests() {
   console.log('✓ PUT 4 sample items passed');
 
   // Verify headers sent to PostgREST in outbound calls
-  const restCalls = outboundCalls.filter(c => String(c.url).includes('/rest/v1/'));
+  // (แยก RPC ระดับแอดมินออก: rl_hit ของด่าน rate limit ระยะ 0.2 ใช้ service key โดยชอบ — การเรียก "ข้อมูล" เท่านั้นที่ต้องเป็น user JWT เพื่อ RLS)
+  const restCalls = outboundCalls.filter(c => String(c.url).includes('/rest/v1/') && !String(c.url).includes('/rpc/'));
   assert.ok(restCalls.length > 0, 'Rest calls were made');
   for (const call of restCalls) {
     const apiKey = getHeaderValue(call.options.headers, 'apikey');

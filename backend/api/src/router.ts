@@ -9,21 +9,52 @@ import {
   handlePostLog
 } from './systems/items/routes';
 import { handleAiChat, handleAiMemory, handleAiQuota } from './systems/ai/routes';
-import { RULES, clientIp, emailKey, check, tooMany, status as rlStatus, maybeCleanup, withForwardedIp } from './shared/ratelimit';
+import { RULES, Rule, clientIp, emailKey, check, tooMany, status as rlStatus, maybeCleanup, withForwardedIp } from './shared/ratelimit';
 import { jsonResponse } from './systems/items/routes';
 import { handleLogin, handleRefresh } from './systems/auth/routes';
 import { handlePushKey, handlePushSubscribe, handlePushUnsubscribe } from './systems/notify/push-routes';
 import { handleSignup, handleForgot, handleVerify, handleResend, handleSetPassword, handleDeleteAccount, handleOAuthSession , handleCheckEmail } from './systems/auth/account';
+import { extractBearer, verifyJWT } from './shared/auth';
 
 const AUTH_BODY_MAX = 2048;
 
+/* ระยะ 0.2 (PLATFORM-UPGRADE-PLAN): เส้นทางที่แพงต่อคำขอ (DB subrequest / บริการภายนอก) ต้องมีด่านต่อผู้ใช้
+   คืนกฎที่ใช้ หรือ undefined = ไม่ต้องด่าน (เดิมเส้นทางกลุ่มนี้ไม่มีขอบเขตการเรียกเลย) */
+function userLimitRule(method: string, path: string, isItemPath: boolean): Rule | undefined {
+  if (method === 'GET' && (path === '/api/items' || path === '/api/logs')) return RULES.itemsReadUser;
+  if ((isItemPath && (method === 'PUT' || method === 'DELETE')) || (method === 'POST' && path === '/api/logs')) return RULES.itemsWriteUser;
+  if (method === 'POST' && path === '/api/ai/chat') return RULES.aiChatUser;
+  if (method === 'POST' && path === '/api/ai/memory') return RULES.aiMemoryUser;
+  if (method === 'POST' && (path === '/api/push/subscribe' || path === '/api/push/unsubscribe')) return RULES.pushWriteUser;
+  return undefined;
+}
+
+/* จุดเข้าเดียวของทุกคำขอ (ระยะ 0.1): request id + error boundary + บันทึกหนึ่งบรรทัดต่อคำขอ
+   - เดิม exception ที่ handler โยน หลุดออกเป็น 500 ของแพลตฟอร์ม "ไม่มี CORS headers" เบราว์เซอร์จึงเห็น opaque error แยก network กับ server ไม่ได้
+   - log เป็น JSON บรรทัดเดียว ไม่มี PII (ไม่เก็บ query/อีเมล/โทเคน) ตามแนวปฏิบัติ structured logging */
 export async function handleRequest(request: Request, baseEnv: Env, ctx?: any): Promise<Response> {
+  const started = Date.now();
+  const rid = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
   /* สำเนา env ต่อคำขอ: เก็บ origin ของคำขอนี้ไว้ใช้ตอบ CORS (ไม่แชร์สถานะข้ามคำขอ) */
   const env: Env = { ...baseEnv, __origin: request.headers.get('Origin') };
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method.toUpperCase();
 
+  let res: Response;
+  try {
+    res = await route(request, env, ctx, path, method);
+  } catch (e: any) {
+    /* รายละเอียดจริงอยู่ใน console ฝั่งเซิร์ฟเวอร์เท่านั้น ตอบ client แบบไม่รั่วรายละเอียดภายใน */
+    console.warn(JSON.stringify({ ev: 'unhandled', rid, m: method, p: path, err: String(e?.message || e).slice(0, 200) }));
+    res = jsonResponse({ code: 'internal', request_id: rid }, 500, env);
+  }
+  try { res.headers.set('X-Request-Id', rid); } catch { /* response บางรูป (เช่น opaque) ห้ามแต้ม header — ไม่ให้พังเพราะสิ่งนี้ */ }
+  console.log(JSON.stringify({ ev: 'req', rid, m: method, p: path, s: res.status, ms: Date.now() - started }));
+  return res;
+}
+
+async function route(request: Request, env: Env, ctx: any, path: string, method: string): Promise<Response> {
   // CORS preflight
   if (method === 'OPTIONS') {
     return new Response(null, {
@@ -56,6 +87,21 @@ export async function handleRequest(request: Request, baseEnv: Env, ctx?: any): 
     else if (path === '/api/auth/forgot' || path === '/api/auth/resend') { checks.push([RULES.mailIp, ip]); if (who) checks.push([RULES.mailEmail, who]); }
     else if (path === '/api/auth/refresh') checks.push([RULES.refreshIp, ip]);
     if (checks.length) { maybeCleanup(env); const v = await check(env, checks); if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse); }
+  }
+
+  /* ระยะ 0.2: ด่านต่อผู้ใช้สำหรับเส้นทางแพง — ตรวจ JWT หนึ่งครั้งที่นี่ (JWKS แคชร่วมกับ handler จึงไม่โหลดซ้ำ)
+     โทเคนเสีย/ไม่มี = ปล่อยต่อให้ handler ตอบ 401 ตามเดิม ไม่ลงโทษ bucket ของใคร */
+  const isItemPath = /^\/api\/items\/[^/]+$/.test(path);
+  const ul = userLimitRule(method, path, isItemPath);
+  if (ul) {
+    const token = extractBearer(request);
+    if (token) {
+      try {
+        const u = await verifyJWT(token, env, (env as any).CUSTOM_FETCH);
+        const v = await check(env, [[ul, u.sub]]);
+        if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse);
+      } catch { /* โทเคนไม่ผ่าน: handler เป็นผู้ตอบ 401 */ }
+    }
   }
 
   /* handler บัญชีทั้งหมดใช้ env ที่ส่งไอพีผู้ใช้จริงต่อให้ Supabase Auth */

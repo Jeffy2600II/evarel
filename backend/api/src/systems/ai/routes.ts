@@ -1,4 +1,4 @@
-import { Env, errorResponse, jsonResponse } from '../items/routes';
+import { Env, errorResponse, jsonResponse, fetchT } from '../items/routes';
 import { extractBearer, verifyJWT } from '../../shared/auth';
 import { check as rlCheck, RULES, tooMany } from '../../shared/ratelimit';
 import { runAgent } from './agent';
@@ -16,7 +16,7 @@ export async function handleAiChat(request: Request, env: Env): Promise<Response
   if (!token) return errorResponse('Missing authorization token', 401, env);
   let userId = '';
   try { userId = (await verifyJWT(token, env, (env as any).CUSTOM_FETCH)).sub; }
-  catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
+  catch { return errorResponse('invalid_token', 401, env); }
 
   let body: any;
   { const p = await readJsonLimited(request, AI_BODY_BYTES); if (!p.ok) return errorResponse(p.msg, p.status, env); body = p.body; }
@@ -40,13 +40,21 @@ export async function handleAiChat(request: Request, env: Env): Promise<Response
     const base = env.SUPABASE_URL.replace(/\/+$/, '');
     // อ่านรายการด้วย JWT ของผู้ใช้เอง -> RLS กันข้อมูลคนอื่นให้อีกชั้น
     const h = { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${token}`, Accept: 'application/json' };
-    const [ir, memFacts] = await Promise.all([
-      f(`${base}/rest/v1/items?select=*&limit=300`, { headers: h }),
+    const [ir, lr, memFacts] = await Promise.all([
+      fetchT(f, `${base}/rest/v1/items?select=*&limit=300`, { headers: h }),
+      /* ระยะ 0.7 แก้ D1: ดึง log ล่าสุดให้ agent เห็นสถานะ "ทำแล้ว/ยังไม่ทำ" (เดิมส่ง {} เปล่าเสมอ = AI ตาบอด)
+         1,000 แถวล่าสุด (เพดานต่อคำขอของ PostgREST): ครอบ "วันนี้/เมื่อวาน" สบาย เพราะผู้ใช้หนึ่งคนมีได้ ≤500 รายการ = ≤500 แถว/วัน
+         ล้ม = ใช้ {} เหมือนเดิม ไม่ให้บล็อกแชท (log เป็นของเสริม ไม่ใช่ทางผ่าน) */
+      fetchT(f, `${base}/rest/v1/item_logs?select=item_id,date,value&order=date.desc&limit=1000`, { headers: h }),
       recall(env as any, userId, text), // ล้ม/ช้า = คืน [] ไม่ขวางแชท (timeout 2.5 วินาทีในตัว)
     ]);
     if (!ir.ok) throw new Error('items_unavailable');
     const rows: any[] = await ir.json();
-    const items = rows.map((r) => ({ id: Number(r.id), type: r.type, title: r.title, subject: r.subject, time: r.time, timeEnd: r.timeEnd, track: r.track, target: r.target, repeat: r.repeat, start: r.start, end: r.end, log: {} as Record<string, number> }));
+    const logMap: Record<string, Record<string, number>> = {};
+    if (lr.ok) {
+      try { const lrows: any[] = await lr.json(); if (Array.isArray(lrows)) for (const r of lrows) { const k = String(r.item_id); (logMap[k] = logMap[k] || {})[r.date] = Number(r.value); } } catch { /* log เสีย = ทำงานแบบเดิม */ }
+    }
+    const items = rows.map((r) => ({ id: Number(r.id), type: r.type, title: r.title, subject: r.subject, time: r.time, timeEnd: r.timeEnd, track: r.track, target: r.target, repeat: r.repeat, start: r.start, end: r.end, log: logMap[Number(r.id)] || {} as Record<string, number> }));
 
     const out = await runAgent(env, text, history, items, new Date(), memFacts);
     // memory_save ที่โดนตัวกรองอ่อนไหว: ติดป้ายให้แอปเตือนก่อนกดยืนยัน (ข้อมูลจะออกไปบริการภายนอก)
@@ -70,7 +78,7 @@ export async function handleAiMemory(request: Request, env: Env): Promise<Respon
   if (!token) return errorResponse('Missing authorization token', 401, env);
   let userId = '';
   try { userId = (await verifyJWT(token, env, (env as any).CUSTOM_FETCH)).sub; }
-  catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
+  catch { return errorResponse('invalid_token', 401, env); }
   let body: any;
   { const p = await readJsonLimited(request, AI_BODY_BYTES); if (!p.ok) return errorResponse(p.msg, p.status, env); body = p.body; }
 
@@ -102,7 +110,7 @@ export async function handleAiQuota(request: Request, env: Env): Promise<Respons
   if (!token) return errorResponse('Missing authorization token', 401, env);
   let userId = '';
   try { userId = (await verifyJWT(token, env, (env as any).CUSTOM_FETCH)).sub; }
-  catch (err: any) { return errorResponse(err?.message || 'Unauthorized', 401, env); }
+  catch { return errorResponse('invalid_token', 401, env); }
   const v = await rlCheck(env, [[RULES.quotaUser, userId]]);
   if (!v.ok) return tooMany(v.retryAfter, env, jsonResponse);
   const now = Date.now(), hit = quotaCache.get(userId);

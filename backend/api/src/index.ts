@@ -22,3 +22,6 @@ export default {
     ctx?.waitUntil(job); await job;
   },
 };
+
+/* export ชื่อเพื่อการทดสอบเท่านั้น (wrangler ใช้แค่ default): ให้ชุดเทสต์รีเซ็ตแคช probe ของ /api/health ระหว่างเคส */
+export { _resetHealthProbe } from './shared/ratelimit';

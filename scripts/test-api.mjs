@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'backend/api/src');
 const files = [
-  'shared/auth.test.mjs', 'shared/ratelimit.test.mjs',
+  'shared/auth.test.mjs', 'shared/ratelimit.test.mjs', 'shared/router.gate.test.mjs',
   'systems/ai/memory.test.mjs', 'systems/ai/quota-read.test.mjs', 'systems/ai/quota-wire.test.mjs',
   'systems/ai/quota.test.mjs', 'systems/ai/routes.test.mjs',
   'systems/items/abuse.test.mjs', 'systems/items/routes.test.mjs',

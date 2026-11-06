@@ -91,6 +91,9 @@
 
 ## ความคืบหน้า
 
-- [x] ระยะ 0.7 สำเร็จล่วงหน้าบางส่วน? — ไม่ ยังไม่เริ่ม (อัปเดตช่องนี้เมื่อลงมือ)
-- [ ] ระยะ 0 — ยังไม่เริ่ม
-- [ ] ระยะ 1-5 — รอระยะก่อนหน้า
+- [x] **ระยะ 0 เสร็จทั้งหมด (6 พ.ย. 2026)** — 0.1 boundary+request id+envelope | 0.2 ด่านต่อผู้ใช้ 5 ชุดใหม่ | 0.3 timeout ครบทุก fetch ข้อมูล+JWKS | 0.4 kid-miss refetch | 0.5 health แคช 1 นาที/isolate | 0.6 CI job `backend` (เทสต์ 232 เคส + deploy API forge + ตรวจ health หลัง deploy) | 0.7 AI เห็น completion (โน้ตรุ่น 2026.9.1) | 0.8 baseline รีเซ็ต 273 จุด | เทสต์ผ่าน 232/0
+- [ ] ระยะ 1 — security headers/CSP/supply-chain (ถัดไป)
+- [ ] ระยะ 2 — observability
+- [ ] ระยะ 3 — data plane
+- [ ] ระยะ 4 — AI platform
+- [ ] ระยะ 5 — hardening

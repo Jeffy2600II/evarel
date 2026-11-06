@@ -70,10 +70,11 @@ export function extractBearer(
 
 async function fetchJWKS(
   supabaseUrl: string,
-  customFetch?: typeof fetch | { fetch?: typeof fetch }
+  customFetch?: typeof fetch | { fetch?: typeof fetch },
+  force = false
 ): Promise<JWK[]> {
   const now = Date.now();
-  if (jwksCache && (now - jwksCache.fetchedAt < CACHE_TTL_MS)) {
+  if (!force && jwksCache && (now - jwksCache.fetchedAt < CACHE_TTL_MS)) {
     return jwksCache.keys;
   }
 
@@ -90,9 +91,17 @@ async function fetchJWKS(
   const baseUrl = supabaseUrl.replace(/\/+$/, '');
   const jwksUrl = `${baseUrl}/auth/v1/.well-known/jwks.json`;
 
-  const res = await fetchImpl(jwksUrl);
+  /* deadline 5 วินาที: ไม่มีตัวนี้ JWKS ค้าง = คำขอผู้ใช้ค้างตาม (ทุกทางอื่นในระบบมี AbortController แล้ว) */
+  const ctl = new AbortController();
+  const tm = setTimeout(() => ctl.abort(), 5000);
+  let res: Response;
+  try {
+    res = await fetchImpl(jwksUrl, { signal: ctl.signal });
+  } finally {
+    clearTimeout(tm);
+  }
   if (!res.ok) {
-    throw new Error(`Failed to fetch JWKS from ${jwksUrl}: ${res.status} ${res.statusText}`);
+    throw new Error(`Failed to fetch JWKS: ${res.status}`);
   }
 
   const data = (await res.json()) as JWKSResponse;
@@ -155,7 +164,8 @@ export async function verifyJWT(
 
   const expectedIss = `${env.SUPABASE_URL.replace(/\/+$/, '')}/auth/v1`;
   if (payload.iss !== expectedIss) {
-    throw new Error(`Invalid issuer: expected ${expectedIss}, got ${payload.iss}`);
+    /* ไม่ใส่ค่าที่คาดหวังในข้อความ (เคยรั่ว URL ภายในออกไปถึง client) */
+    throw new Error('Invalid issuer');
   }
 
   const isAudValid = Array.isArray(payload.aud)
@@ -171,9 +181,14 @@ export async function verifyJWT(
 
   // Fetch JWKS and find matching key
   const keys = await fetchJWKS(env.SUPABASE_URL, customFetch);
-  const matchingKey = keys.find(k => k.kid === header.kid);
+  let matchingKey = keys.find(k => k.kid === header.kid);
   if (!matchingKey) {
-    throw new Error(`Key with kid '${header.kid}' not found in JWKS`);
+    /* kid ไม่เจอในแคช = อาจเป็น Supabase หมุนคีย์: บังคับดึงใหม่ครั้งเดียวก่อนปฏิเสธ (เดิมโดน 401 ทั้งระบบนานถึง 10 นาที) */
+    const fresh = await fetchJWKS(env.SUPABASE_URL, customFetch, true);
+    matchingKey = fresh.find(k => k.kid === header.kid);
+    if (!matchingKey) {
+      throw new Error('Key not found in JWKS');
+    }
   }
 
   // Import key using WebCrypto

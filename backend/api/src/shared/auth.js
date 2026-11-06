@@ -37,9 +37,9 @@ function extractBearer(request) {
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   return match ? match[1].trim() : null;
 }
-async function fetchJWKS(supabaseUrl, customFetch) {
+async function fetchJWKS(supabaseUrl, customFetch, force = false) {
   const now = Date.now();
-  if (jwksCache && now - jwksCache.fetchedAt < CACHE_TTL_MS) {
+  if (!force && jwksCache && now - jwksCache.fetchedAt < CACHE_TTL_MS) {
     return jwksCache.keys;
   }
   const fetchImpl = typeof customFetch === "function" ? customFetch : customFetch && typeof customFetch === "object" && typeof customFetch.fetch === "function" ? customFetch.fetch : globalThis.fetch;
@@ -48,9 +48,16 @@ async function fetchJWKS(supabaseUrl, customFetch) {
   }
   const baseUrl = supabaseUrl.replace(/\/+$/, "");
   const jwksUrl = `${baseUrl}/auth/v1/.well-known/jwks.json`;
-  const res = await fetchImpl(jwksUrl);
+  const ctl = new AbortController();
+  const tm = setTimeout(() => ctl.abort(), 5e3);
+  let res;
+  try {
+    res = await fetchImpl(jwksUrl, { signal: ctl.signal });
+  } finally {
+    clearTimeout(tm);
+  }
   if (!res.ok) {
-    throw new Error(`Failed to fetch JWKS from ${jwksUrl}: ${res.status} ${res.statusText}`);
+    throw new Error(`Failed to fetch JWKS: ${res.status}`);
   }
   const data = await res.json();
   if (!data || !Array.isArray(data.keys)) {
@@ -95,7 +102,7 @@ async function verifyJWT(token, env, customFetch) {
   }
   const expectedIss = `${env.SUPABASE_URL.replace(/\/+$/, "")}/auth/v1`;
   if (payload.iss !== expectedIss) {
-    throw new Error(`Invalid issuer: expected ${expectedIss}, got ${payload.iss}`);
+    throw new Error("Invalid issuer");
   }
   const isAudValid = Array.isArray(payload.aud) ? payload.aud.includes("authenticated") : payload.aud === "authenticated";
   if (!isAudValid) {
@@ -105,9 +112,13 @@ async function verifyJWT(token, env, customFetch) {
     throw new Error("Missing sub claim");
   }
   const keys = await fetchJWKS(env.SUPABASE_URL, customFetch);
-  const matchingKey = keys.find((k) => k.kid === header.kid);
+  let matchingKey = keys.find((k) => k.kid === header.kid);
   if (!matchingKey) {
-    throw new Error(`Key with kid '${header.kid}' not found in JWKS`);
+    const fresh = await fetchJWKS(env.SUPABASE_URL, customFetch, true);
+    matchingKey = fresh.find((k) => k.kid === header.kid);
+    if (!matchingKey) {
+      throw new Error("Key not found in JWKS");
+    }
   }
   let cryptoKey;
   try {
