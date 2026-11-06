@@ -88,7 +88,6 @@ const ACTIONS={
  theme:id=>{applyTheme(id);settingsRepaint();return NR},
  perf:id=>{try{localStorage.setItem(PERF_PREF_KEY,id);if(id==='auto')localStorage.removeItem(PERF_AUTO_KEY)}catch(e){console.warn('perf',e)}perfApply();settingsRepaint();return NR},
  notify:()=>{pushSubscribe(true).then(r=>{settingsRepaint();toast(r.ok?'เครื่องนี้พร้อมรับการแจ้งเตือนแล้ว':pushWhyText(r.why))});return NR},
- 'haptic-test':()=>{haptic(HAPTIC_TEST_PATTERN);settingsRepaint();return NR},
  dopen:id=>{ST.D.open=ST.D.open===id?'':id;sheet.querySelectorAll('.ev-panel').forEach(p=>{p.dataset.open=String(p.dataset.key===ST.D.open)});sheet.querySelectorAll('[data-act="dopen"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===ST.D.open)));
   setTimeout(()=>sheet.querySelector('.ev-panel[data-open="true"]')?.scrollIntoView({block:'nearest',behavior:'smooth'}),320);return NR},
  dunit:id=>{ST.D.unit=id;if(id==='week'&&!ST.D.days.length)ST.D.days=[parse(ST.D.start).getDay()];renderForm();return NR},
