@@ -10,18 +10,37 @@ export const TODAY = ymd(new Date());
    รุ่นนี้จึงกลับมาเรียกตรงทุกกรณีเหมือนเดิม ส่วนการ์ดตั้งค่าตรวจ 'vibrate' in navigator สด ๆ ตอน render แทน (ดู 19-views__settings) */
 const HAPTIC_DEDUPE_MS = 200;
 let lastHapticAt = 0;
-export const haptic = () => {
-    const now = Date.now();
-    if (now - lastHapticAt < HAPTIC_DEDUPE_MS)
-        return;
-    lastHapticAt = now;
+export const hapticDiag = { has: false, secure: false, framed: false, ua: '', lastResult: null, lastError: null, lastAt: 0 };
+function hapticFire(ms) {
+    const d = hapticDiag;
     try {
-        navigator.vibrate?.(HAPTIC_MS);
+        d.has = typeof navigator?.vibrate === 'function';
+        d.secure = typeof isSecureContext !== 'undefined' ? isSecureContext : true;
+        d.framed = typeof window !== 'undefined' && window.top !== window;
+        d.ua = String(navigator?.userAgent || '').slice(0, 44);
+        if (!d.has) {
+            d.lastResult = 'ไม่มี API';
+            d.lastError = null;
+            d.lastAt = Date.now();
+            return false;
+        }
+        const r = navigator.vibrate(ms);
+        d.lastResult = r === true ? 'true' : r === false ? 'false (ถูกบล็อก)' : String(r);
+        d.lastError = null;
+        d.lastAt = Date.now();
+        return r === true;
     }
     catch (e) {
-        console.warn('haptic', e);
+        d.lastError = String(e && e.message || e).slice(0, 40);
+        d.lastAt = Date.now();
+        return false;
     }
-};
+}
+export const haptic = () => { const now = Date.now(); if (now - lastHapticAt < HAPTIC_DEDUPE_MS)
+    return; lastHapticAt = now; hapticFire(HAPTIC_MS); };
+/* ปุ่ม "ทดสอบสั่น" ในหน้าตั้งค่า: บังคับยิงทันที (ไม่ผ่านตัวกันสั่นซ้ำ) แล้วบอกผลจริงบนหน้าจอ
+   ใช้ค่าที่เห็นในผลลัพธ์แยกได้ว่า "เครื่องไม่มี API" กับ "มีแต่ถูกบล็อก" ซึ่งแก้คนละทาง */
+export const hapticTest = () => { hapticFire(30); return { ...hapticDiag }; };
 /* สั่นเมื่อแตะสิ่งที่กดได้ — ทำครั้งเดียวที่ระดับกลไก (Master สั่ง 6 พ.ย. 2026)
    สาเหตุที่ของเดิมหาย: หลังย้ายหน้าจอส่วนใหญ่ไปเรนเดอร์ด้วย React ตัวจัดการคลิกย้ายออกจากเอนจิน
    ทำให้ปุ่มในหน้าจอใหม่ไม่เรียก haptic เลย (เดิมทุก handler ในเอนจินเรียกเอง)
@@ -55,4 +74,4 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
 }
 /* moved by move_defs (evarel-ts-1f) */
 export const dayLab = ds => ds === TODAY ? 'วันนี้' : ds === ymd(addDays(new Date(), -1)) ? 'เมื่อวาน' : ds === ymd(addDays(new Date(), 1)) ? 'พรุ่งนี้' : fmtDate(ds);
-Object.assign(window, { pad, ymd, parse, addDays, TODAY, fmtDate, nowHM, esc, fmtClock, haptic, dayLab });
+Object.assign(window, { pad, ymd, parse, addDays, TODAY, fmtDate, nowHM, esc, fmtClock, haptic, dayLab, hapticDiag, hapticTest });
