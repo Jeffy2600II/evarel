@@ -8,7 +8,7 @@ import { SettingsBar, SettingsUser, SettingsAccount, html } from './parts/Settin
 import { prepareSettings } from './settings.tray.js';
 
 export default function SettingsPage(p) {
-  const { user, notif, total, themeSegHTML, perfSegHTML, backIconHTML, avatarText, avatarBg, avatarName, showNotifyBtn, notifyBtnLabel } = p;
+  const { user, notif, haptic, total, themeSegHTML, perfSegHTML, backIconHTML, avatarText, avatarBg, avatarName, showNotifyBtn, notifyBtnLabel } = p;
   return h(Fragment, null, [
     h(SettingsBar, { key: 'bar', backIconHTML }),
     h('div', { key: 'scroll', className: 'ev-page-scroll' }, [
@@ -16,6 +16,9 @@ export default function SettingsPage(p) {
       h('section', { key: 'usage', className: 'ev-card', id: 'usageWrap', ...html(p.usageHTML) }),
       h('section', { key: 'theme', className: 'ev-card' }, h('b', null, 'ธีม'), h('div', { style: { marginTop: '12px' }, ...html(themeSegHTML) })),
       h('section', { key: 'perf', className: 'ev-card' }, h('b', null, 'อนิเมชั่น'), h('p', { className: 'ev-sub' }, 'อัตโนมัติจะลดเอฟเฟกต์เองเมื่อเครื่องไม่ลื่น'), h('div', { style: { marginTop: '12px' }, ...html(perfSegHTML) })),
+      h('section', { key: 'haptic', className: 'ev-card' },
+        h('div', { className: 'ev-stat' }, h('div', null, h('b', null, 'การสั่น'), h('p', { className: 'ev-sub' }, haptic.note)), h('span', { className: 'ev-chip' }, haptic.state)),
+        h('button', { className: 'ev-btn-ghost ev-btn-block', style: { marginTop: '12px' }, 'data-act': 'haptic-test' }, 'ทดสอบการสั่น')),
       h('section', { key: 'notify', className: 'ev-card' },
         h('div', { className: 'ev-stat' }, h('div', null, h('b', null, 'การแจ้งเตือน'), h('p', { className: 'ev-sub' }, notif.note)), h('span', { className: 'ev-chip' }, notif.state)),
         showNotifyBtn ? h('button', { className: 'ev-btn-primary ev-btn-block', style: { marginTop: '12px' }, 'data-act': 'notify' }, notifyBtnLabel) : null,

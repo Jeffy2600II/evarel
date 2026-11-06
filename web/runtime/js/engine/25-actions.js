@@ -174,6 +174,7 @@ const ACTIONS = {
         console.warn('perf', e);
     } perfApply(); settingsRepaint(); return NR; },
     notify: () => { pushSubscribe(true).then(r => { settingsRepaint(); toast(r.ok ? 'เครื่องนี้พร้อมรับการแจ้งเตือนแล้ว' : pushWhyText(r.why)); }); return NR; },
+    'haptic-test': () => { haptic(HAPTIC_TEST_PATTERN); settingsRepaint(); return NR; },
     dopen: id => {
         ST.D.open = ST.D.open === id ? '' : id;
         sheet.querySelectorAll('.ev-panel').forEach(p => { p.dataset.open = String(p.dataset.key === ST.D.open); });

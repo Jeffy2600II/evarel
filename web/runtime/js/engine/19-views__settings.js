@@ -9,6 +9,9 @@ function notifInfo() { if (!('Notification' in window))
     return ['ถูกปิดไว้', 'ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์']; if (p === 'granted')
     return pushSavedState() ? ['อนุญาตแล้ว', 'เครื่องนี้พร้อมรับการแจ้งเตือน'] : ['อนุญาตแล้ว แต่ยังไม่ได้ลงทะเบียน', 'กดปุ่มเพื่อลงทะเบียนเครื่องนี้กับระบบ']; return ['ยังไม่ได้ขอ', 'กดปุ่มเพื่อให้เครื่องนี้รับการแจ้งเตือนได้']; }
 const themeNow = () => document.documentElement.dataset.theme || 'auto';
+/* การสั่น: อ่านสถานะจาก hapticState (02-core__dates) เพื่อให้ผู้ใช้วินิจฉัยเองได้ว่าเครื่องนี้สั่นได้ไหม (เดิม fail เงียบเหมือนระบบสั่นหายไป) */
+const hapticChip = () => hapticState.supported ? 'รองรับ' : 'ไม่รองรับ';
+const hapticNote = () => hapticState.supported ? 'มือถือ Android จะสั่นสั้นเบา ๆ ตอนกดปุ่ม เลื่อนแท็บ และบันทึกผล (iPhone/iPad และคอมพิวเตอร์ไม่มีระบบนี้) · ผลทดสอบล่าสุด: ' + hapticState.last : 'เครื่องนี้ไม่มี Vibration API (iPhone/iPad และเดสก์ท็อป) การสั่นสั้นตอนกดใช้ได้เฉพาะ Android';
 function settingsHTMLClassic() {
     const [st, note] = notifInfo(), total = countNotifiable(S.items);
     return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
@@ -16,6 +19,7 @@ function settingsHTMLClassic() {
  <section class="ev-card" id="usageWrap">${usageCardHTML()}</section>
  <section class="ev-card"><b>ธีม</b><div style="margin-top:12px">${seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow())}</div></section>
   <section class="ev-card"><b>อนิเมชั่น</b><p class="ev-sub">อัตโนมัติจะลดเอฟเฟกต์เองเมื่อเครื่องไม่ลื่น</p><div style="margin-top:12px">${seg('perf', [['auto', 'อัตโนมัติ'], ['full', 'เต็มรูปแบบ'], ['lite', 'ประหยัดเครื่อง']], perfPref())}</div></section>
+ <section class="ev-card"><div class="ev-stat"><div><b>การสั่น</b><p class="ev-sub">${hapticNote()}</p></div><span class="ev-chip">${hapticChip()}</span></div><button class="ev-btn-ghost ev-btn-block" style="margin-top:12px" data-act="haptic-test">ทดสอบการสั่น</button></section>
  <section class="ev-card"><div class="ev-stat"><div><b>การแจ้งเตือน</b><p class="ev-sub">${note}</p></div><span class="ev-chip">${st}</span></div>${'Notification' in window && (Notification.permission === 'default' || (Notification.permission === 'granted' && !pushSavedState())) ? `<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">${Notification.permission === 'granted' ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน'}</button>` : ''}
   <p class="ev-sub" style="margin-top:12px">ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ (รายการใหม่เปิด "ตรงเวลา" ให้อัตโนมัติ และต้องมีเวลา) · เวลาที่ตั้งไว้บันทึกกับบัญชีของคุณและส่งถึงเครื่องนี้ตามเวลา</p></section>
  
@@ -27,7 +31,7 @@ function settingsHTMLClassic() {
 function settingsProps() {
     const [st, note] = notifInfo(), granted = 'Notification' in window && Notification.permission === 'granted', canBtn = 'Notification' in window && (Notification.permission === 'default' || (granted && !pushSavedState()));
     const pf = profileOf();
-    return { usageHTML: usageCardHTML(), versionHTML: versionCardHTML(), googleChipInner: GLOGO + 'Google', avatarBg: pf.bg, avatarName: pf.name || 'โปรไฟล์', user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), perfSegHTML: seg('perf', [['auto', 'อัตโนมัติ'], ['full', 'เต็มรูปแบบ'], ['lite', 'ประหยัดเครื่อง']], perfPref()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' };
+    return { usageHTML: usageCardHTML(), versionHTML: versionCardHTML(), googleChipInner: GLOGO + 'Google', avatarBg: pf.bg, avatarName: pf.name || 'โปรไฟล์', user: { name: ST.USER?.name || 'ผู้ใช้', email: ST.USER?.email || '', provider: ST.USER?.provider }, notif: { state: st, note }, haptic: { state: hapticChip(), note: hapticNote() }, total: countNotifiable(S.items), themeSegHTML: seg('theme', [['auto', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']], themeNow()), perfSegHTML: seg('perf', [['auto', 'อัตโนมัติ'], ['full', 'เต็มรูปแบบ'], ['lite', 'ประหยัดเครื่อง']], perfPref()), backIconHTML: icon('back'), avatarText: initial(), showNotifyBtn: canBtn, notifyBtnLabel: granted ? 'ลงทะเบียนเครื่องนี้' : 'อนุญาตการแจ้งเตือน' };
 }
 function settingsHTML() {
     const R = window.EvarelPages?.settings;

@@ -13,6 +13,7 @@ const settingsProps = tray('settings', {
   avatarBg: T.string, avatarName: T.string, avatarText: T.string,
   user: T.shape({ name: T.string, email: T.string, provider: T.optional(T.string) }),
   notif: T.shape({ state: T.string, note: T.string }),
+  haptic: T.shape({ state: T.string, note: T.string }),
   total: T.number, showNotifyBtn: T.boolean, notifyBtnLabel: T.string,
 });
 
