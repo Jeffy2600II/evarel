@@ -6,25 +6,12 @@ const versionCardHTML=()=>versionCardHTMLOf((ST as any).APPVER||{});
 const providerChip=(u:any)=>providerChipOf(u);
 function notifInfo(){if(!('Notification' in window))return ['ไม่รองรับ','เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'];const p=Notification.permission;if(p==='denied')return ['ถูกปิดไว้','ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์'];if(p==='granted')return pushSavedState()?['อนุญาตแล้ว','เครื่องนี้พร้อมรับการแจ้งเตือน']:['อนุญาตแล้ว แต่ยังไม่ได้ลงทะเบียน','กดปุ่มเพื่อลงทะเบียนเครื่องนี้กับระบบ'];return ['ยังไม่ได้ขอ','กดปุ่มเพื่อให้เครื่องนี้รับการแจ้งเตือนได้']}
 const themeNow=()=>document.documentElement.dataset.theme||'auto';
-/* การสั่น: ตรวจสด ๆ ตอน render ด้วย 'vibrate' in navigator (เดิม 2026.9.0 อ่าน snapshot จาก hapticState ตอนโหลดโมดูลครั้งเดียว
-   snapshot ไม่ใช่ความจริงตอนใช้ ทำให้การ์ดรายงาน "เครื่องไม่รองรับ" ทั้งที่เครื่องสั่นได้) ตัวสั่นจริงยังเป็น haptic() ของเดิมใน 02-core__dates เป๊ะ */
-const hapticSupported=()=>typeof navigator!=='undefined'&&typeof (navigator as any).vibrate==='function';
-const hapticChip=()=>hapticSupported()?'รองรับ':'ไม่รองรับ';
-/* ข้อความต้องตรงความจริง: ไม่มี API สั่น ≠ เครื่องเป็น iPhone (Android ในเบราว์เซอร์/แอปที่ปิด API ก็เจอได้)
-   และมีปุ่มทดสอบที่ยิงจริงแล้วรายงานผลให้เห็น ไม่ต้องเดา */
-const hapticNote=()=>hapticSupported()
-  ?'แตะปุ่มขวาเพื่อทดสอบระบบสั่นของเครื่องนี้ ถ้าสั่นปกติแสดงว่าพร้อมใช้'
-  :'เบราว์เซอร์ที่เปิดอยู่นี้ไม่ให้เว็บเรียกการสั่น (เกิดได้กับบางเบราว์เซอร์/แอปที่เปิดลิงก์) ลองเปิดเว็บนี้ด้วย Chrome โดยตรง';
-const hapticDiagLine=()=>{const d=(window as any).hapticDiag||{};if(!d.lastAt)return '';
- const proto=(typeof location!=='undefined'?location.protocol:'');const host=(typeof location!=='undefined'?location.host:'');
- return `<p class="ev-sub" style="margin-top:6px;font-size:11px">ผลทดสอบล่าสุด: ${esc(String(d.lastResult))} · ความปลอดภัย: ${d.secure?'secure':'ไม่ secure'} (${esc(proto)}) · กรอบซ้อน: ${d.framed?'ใช่':'ไม่'} · ${esc(host)}</p><p class="ev-sub" style="font-size:11px">${esc(String(d.ua||''))}</p>`};
 function settingsHTMLClassic(){const [st,note]=notifInfo(),total=countNotifiable(S.items);
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
  <section class="ev-card ev-row" style="gap:14px">${avatarHTML({size:56})}<div class="grow"><b>${esc(ST.USER?.name||'ผู้ใช้')}</b><p class="ev-sub" style="overflow:hidden;text-overflow:ellipsis">${esc(ST.USER?.email||'')}</p></div>${providerChip(ST.USER)}</section>
  <section class="ev-card" id="usageWrap">${usageCardHTML()}</section>
  <section class="ev-card"><b>ธีม</b><div style="margin-top:12px">${seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow())}</div></section>
   <section class="ev-card"><b>อนิเมชั่น</b><p class="ev-sub">อัตโนมัติจะลดเอฟเฟกต์เองเมื่อเครื่องไม่ลื่น</p><div style="margin-top:12px">${seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref())}</div></section>
- <section class="ev-card"><div class="ev-stat"><div><b>การสั่น</b><p class="ev-sub">${hapticNote()}</p></div><button class="ev-chip" data-act="haptic-test" type="button">${hapticSupported()?'ทดสอบสั่น':hapticChip()}</button></div>${hapticDiagLine()}</section>
  <section class="ev-card"><div class="ev-stat"><div><b>การแจ้งเตือน</b><p class="ev-sub">${note}</p></div><span class="ev-chip">${st}</span></div>${'Notification' in window&&(Notification.permission==='default'||(Notification.permission==='granted'&&!pushSavedState()))?`<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">${Notification.permission==='granted'?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}</button>`:''}
   <p class="ev-sub" style="margin-top:12px">ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ (รายการใหม่เปิด "ตรงเวลา" ให้อัตโนมัติ และต้องมีเวลา) · เวลาที่ตั้งไว้บันทึกกับบัญชีของคุณและส่งถึงเครื่องนี้ตามเวลา</p></section>
  
@@ -34,7 +21,7 @@ function settingsHTMLClassic(){const [st,note]=notifInfo(),total=countNotifiable
 /* ชั้น 4: หน้าตั้งค่าผลิตโดย React (runtime ร่วม + ไฟล์หน้า โหลดแบบ lazy หลัง load) ถ้ายังโหลดไม่ครบหรือโหลดไม่ได้ ใช้ template เดิมแทนทันที ผู้ใช้เห็นเหมือนเดิม */
 function settingsProps(){const [st,note]=notifInfo(),granted='Notification' in window&&Notification.permission==='granted',canBtn='Notification' in window&&(Notification.permission==='default'||(granted&&!pushSavedState()));
  const pf=profileOf();
- return {usageHTML:usageCardHTML(),versionHTML:versionCardHTML(),googleChipInner:GLOGO+'Google',avatarBg:pf.bg,avatarName:pf.name||'โปรไฟล์',user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},haptic:{state:hapticChip(),note:hapticNote()},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),perfSegHTML:seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}}
+ return {usageHTML:usageCardHTML(),versionHTML:versionCardHTML(),googleChipInner:GLOGO+'Google',avatarBg:pf.bg,avatarName:pf.name||'โปรไฟล์',user:{name:ST.USER?.name||'ผู้ใช้',email:ST.USER?.email||'',provider:ST.USER?.provider},notif:{state:st,note},total:countNotifiable(S.items),themeSegHTML:seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow()),perfSegHTML:seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref()),backIconHTML:icon('back'),avatarText:initial(),showNotifyBtn:canBtn,notifyBtnLabel:granted?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}}
 function settingsHTML(){
  const R=(window as any).EvarelPages?.settings;
  if(typeof R!=='function')return settingsHTMLClassic();
