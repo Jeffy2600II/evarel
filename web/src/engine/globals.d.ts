@@ -127,6 +127,8 @@ declare var formBody: any;
 declare var gBtn: any;
 declare var habits: any;
 declare var haptic: any;
+declare var hapticDiag: any;
+declare var hapticTest: any;
 declare var hashStr: any;
 declare var header: any;
 declare var icon: any;
