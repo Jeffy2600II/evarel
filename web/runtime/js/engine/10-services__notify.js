@@ -6,7 +6,8 @@ import { AHEAD_PRESETS, defaultRem, notifyState, checkNotify, toggleOnTime, togg
    สาเหตุที่แจ้งเตือนไม่เด้ง: เดิมปุ่มขอแค่สิทธิ์ของเบราว์เซอร์ ไม่เคยสมัครเครื่องกับ Worker (push_subscriptions ว่าง)
    ลำดับ: สิทธิ์ -> กุญแจ VAPID -> pushManager.subscribe -> POST /push/subscribe -> จำสถานะ
    คืนรหัสผลลัพธ์เป็นข้อความ ไม่ throw (ให้ UI บอกผู้ใช้ตามจริง) */
-const PUSH_KEY = 'evarel-push-sub';
+/* v2: เปลี่ยนกุญแจ VAPID 6 พ.ย. 2026 -> สถานะเดิมใน localStorage อ้างกุญแจเก่า ต้องให้ซิงก์ใหม่เอง (permission ที่ให้ไว้ยังใช้ได้) */
+const PUSH_KEY = 'evarel-push-sub-v2';
 const pushSupported = () => typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 const pushSavedState = () => { try {
     return JSON.parse(localStorage.getItem(PUSH_KEY) || 'null');
