@@ -1777,10 +1777,11 @@ async function registerPushReal(){
   if(!sr.ok)return 'server';
   return 'ok';
 }
+const registerPush=()=>registerPushReal();
 
 const pushSaved=()=>{try{return LS.getItem(uk(PUSH_KEY))==='1'}catch(e){console.warn('push',e);return false}};
 const countNotifiable=items=>items.filter(it=>Array.isArray(it.rem)&&it.rem.some(r=>r.k==='at'||r.k==='on'||(r.k==='before'&&r.m>=0&&it.time))).length;
-async function registerPush(){if(!('Notification' in window))return 'unsupported';const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(p!=='granted')return 'denied';await wait(500);try{LS.setItem(uk(PUSH_KEY),'1')}catch(e){console.warn('push',e)}return 'ok'}
+async function registerPushMock(){if(!('Notification' in window))return 'unsupported';const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(p!=='granted')return 'denied';await wait(500);try{LS.setItem(uk(PUSH_KEY),'1')}catch(e){console.warn('push',e)}return 'ok'}
 
 /* ===== MODULE: views/settings ===== */
 function notifInfo(){if(!('Notification' in window))return ['ไม่รองรับ','เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'];const p=Notification.permission;if(p==='denied')return ['ถูกปิดไว้','ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์'];if(p==='granted')return pushSaved()?['พร้อมรับ','เครื่องนี้ลงทะเบียนรับการแจ้งเตือนแล้ว']:['ยังไม่ได้ลงทะเบียน','อนุญาตแล้ว แต่ยังไม่ได้ลงทะเบียนเครื่องนี้กับระบบ'];return ['ยังไม่ได้ขอ','กดปุ่มเพื่อให้เครื่องนี้รับการแจ้งเตือนได้']}
