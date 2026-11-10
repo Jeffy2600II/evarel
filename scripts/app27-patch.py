@@ -170,6 +170,42 @@ out = out.replace("async function aiSend(text){text=text.trim();if(!text||AI.bus
 # ================= ระยะ "ทำเป็นของจริง" (Master สั่ง 10 พ.ย. 2026): ตัดของที่เป็นของเดโมออกจากแอปจริง =================
 import re as _re
 
+
+def _drop_declarator(src, name):
+    """ถอดตัวแปรตัวเดียวออกจากประกาศที่คั่นด้วยจุลภาค (const A=1,B=2,C=3;) โดยไม่พา B/C หายไปด้วย
+       คืน (ข้อความใหม่, ถอดได้หรือไม่)"""
+    import re as _r
+    m = _r.search(r'(?:const|let|var)\s+' + _re.escape(name) + r'\s*=', src)
+    if not m: return src, False
+    # หาเริ่มstatement: ถอยไปจนชน ; หรือจุดขึ้นบรรทัดใหม่ที่ไม่ใช่การต่อเนื่อง
+    start = m.start()
+    while start > 0 and src[start-1] not in ';\n': start -= 1
+    # หาจุดจบ statement: ; ตัวแรกที่ระดับลึก 0
+    i = m.end(); d = 0
+    while i < len(src):
+        c = src[i]
+        if c in '([{': d += 1
+        elif c in ')]}': d -= 1
+        elif c == ';' and d == 0: break
+        i += 1
+    stmt = src[start:i+1]
+    head = _r.match(r'\s*(?:const|let|var)\s+', stmt).group(0)
+    body = stmt[len(head):].rstrip(';')
+    # แยก declarator ที่ระดับลึก 0
+    parts, cur, d = [], '', 0
+    for c in body:
+        if c in '([{': d += 1
+        elif c in ')]}': d -= 1
+        if c == ',' and d == 0:
+            parts.append(cur); cur = ''
+        else:
+            cur += c
+    parts.append(cur)
+    keep = [p2 for p2 in parts if not _r.match(r'\s*' + _re.escape(name) + r'\s*=', p2)]
+    if len(keep) == len(parts): return src, False
+    new = (head + ', '.join(p2.lstrip() for p2 in keep) + ';') if keep else ''
+    return src[:start] + new + src[i+1:], True
+
 def _span(src, name):
     """ช่วงของประกาศ top-level หนึ่งชื่อ (รองรับ const/let/var และ function ที่มีปีกกาในพารามิเตอร์)"""
     m = _re.search(r'(?:const|let|var)\s+' + _re.escape(name) + r'\s*=', src)
@@ -263,6 +299,11 @@ for _pass in range(8):
     gone_now = []
     for nm in DEMO_ONLY:
         if nm in removed: continue
+        rest_try, ok = _drop_declarator(out, nm)
+        if ok:
+            if not _re.search(r'\b' + _re.escape(nm) + r'\b', rest_try):
+                out = rest_try; gone_now.append(nm)
+            continue
         sp = _span(out, nm)
         if not sp: continue
         rest = out[:sp[0]] + out[sp[1]:]
@@ -322,7 +363,11 @@ import json as _json, os as _os
 COPY_MAP = _os.path.join(_os.path.dirname(__file__), 'app27-copy.json')
 _copy_hit = _copy_miss = 0
 if _os.path.exists(COPY_MAP):
-    for _old, _new in _json.load(open(COPY_MAP, encoding='utf8'))['pairs']:
+    # คู่ที่อ้างคำเดิมซ้ำ: ตัวหลังสุดชนะ (ให้แก้คำแปลซ้ำได้โดยไม่ต้องลบของเก่า)
+    _pairs = {}
+    for _o, _n in _json.load(open(COPY_MAP, encoding='utf8'))['pairs']:
+        _pairs[_o] = _n
+    for _old, _new in _pairs.items():
         if _old == _new:
             continue
         if _old in out:
@@ -331,6 +376,34 @@ if _os.path.exists(COPY_MAP):
             _copy_miss += 1
             print('  ! คำเดิมไม่พบ:', _old[:70])
     print(f'ข้อความผู้ใช้ที่เขียนใหม่: {_copy_hit} จุด | ไม่พบคำเดิม: {_copy_miss}')
+
+# 1.89) กล่องแจ้งเวอร์ชันใหม่ (คืนมาแบบผู้ใช้กดอัปเดตเองได้) — ต้องมีตัวช่วยเปิดจากตัวตรวจรุ่นเดิมด้วย
+UPDATE_UI = """
+<style>#evUpd{position:fixed;left:12px;right:12px;bottom:calc(12px + var(--kb,0px));z-index:9999;display:none;gap:10px;align-items:center;
+padding:12px 14px;border-radius:16px;background:var(--c-surface,#fff);box-shadow:0 8px 30px rgba(0,0,0,.18);border:1px solid var(--c-line,#e6e6ea);
+font-family:inherit}#evUpd[data-open="true"]{display:flex}#evUpd .t{flex:1;min-width:0}#evUpd b{display:block;font-size:15px;color:var(--c-text,#111)}
+#evUpd span{display:block;font-size:13px;color:var(--c-muted,#666);margin-top:2px}#evUpd button{border:0;border-radius:12px;padding:9px 14px;font-size:14px;font-weight:600;font-family:inherit}
+#evUpd .go{background:var(--c-accent,#181142);color:#fff}#evUpd .later{background:transparent;color:var(--c-muted,#666)}</style>
+<div id="evUpd" role="status" aria-live="polite"><div class="t"><b>มีเวอร์ชันใหม่</b><span>อัปเดตเพื่อใช้งานเวอร์ชันล่าสุด</span></div>
+<button class="later" type="button" data-ev="later">ภายหลัง</button><button class="go" type="button" data-ev="go">อัปเดตเลย</button></div>
+<script>(function(){var box=document.getElementById('evUpd');if(!box)return;
+function show(){try{if(sessionStorage.getItem('ev_upd_later')==='1')return}catch(e){}box.dataset.open='true'}
+window.__evShowUpdate=show;
+async function apply(){box.dataset.open='false';
+ try{var r=await navigator.serviceWorker.getRegistration();if(r&&r.waiting)r.waiting.postMessage({type:'SKIP_WAITING'});}catch(e){}
+ try{var ks=await caches.keys();await Promise.all(ks.map(function(k){return caches.delete(k)}));}catch(e){}
+ setTimeout(function(){location.reload()},350);}
+box.addEventListener('click',function(e){var a=e.target.closest('[data-ev]');if(!a)return;
+ if(a.dataset.ev==='go')apply();else{try{sessionStorage.setItem('ev_upd_later','1')}catch(err){}box.dataset.open='false'}});
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistration().then(function(r){if(!r)return;
+  if(r.waiting)show();r.addEventListener('updatefound',function(){var w=r.installing;if(!w)return;
+   w.addEventListener('statechange',function(){if(w.state==='installed'&&navigator.serviceWorker.controller)show()})})}).catch(function(){})}
+})();</script>
+"""
+if 'id="evUpd"' not in out:
+    out = out.replace('</body>', UPDATE_UI + '</body>', 1) if '</body>' in out else out + UPDATE_UI
+# ตัวตรวจรุ่นเดิมเคยขึ้นแค่ข้อความลอย ๆ: ให้เรียกกล่องนี้แทน
+out = out.replace("toast('มีรุ่นใหม่แล้ว กำลังเปิดให้')", "window.__evShowUpdate?window.__evShowUpdate():toast('มีเวอร์ชันใหม่ พร้อมอัปเดต')")
 
 # 1.9) อัปเดตตัวเองได้: รุ่นใหม่ต้องเข้าเครื่องเอง ไม่ค้างรอ "ปิดทุกแท็บ"
 UPDATE_JS = """

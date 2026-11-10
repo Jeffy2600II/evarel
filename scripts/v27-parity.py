@@ -125,6 +125,14 @@ def main() -> int:
     lost = sorted(fd - fa - set(ALLOW_REMOVE))
     check('STRUCT', f'ฟังก์ชันเดโมอยู่ครบ ({len(fd)})', not lost, f'หาย {len(lost)}: {", ".join(lost[:8])}' if lost else '')
 
+    # 4.5 ด่านอ้างถึงของที่ถอดไปแล้ว: ชื่อที่เดโมประกาศไว้ หายจากแอป แต่ยังถูกเรียกใช้ = แอปพังตอนผู้ใช้กด (เกิดจริง 11 พ.ย. 2026: TRACK_OPTS)
+    import re as _re2
+    demo_src = read(ROOT.parent / 'archive' / 'design' / 'Ordivel-v27.html') if hasattr(ROOT, 'parent') else ''
+    if demo_src:
+        declared = set(_re2.findall(r'(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=', demo_src)) | set(_re2.findall(r'function\s+([A-Za-z_$][\w$]*)\s*\(', demo_src))
+        broken = sorted([n for n in declared if not _re2.search(r'\b' + _re2.escape(n) + r'\b', app) is None and _re2.search(r'(?:const|let|var|function)\s+' + _re2.escape(n) + r'\b', app) is None])
+        check('STRUCT', 'ไม่มีชื่อที่ถูกถอดแต่ยังถูกเรียกใช้', not broken, 'ยังเรียกใช้อยู่แต่ไม่มีประกาศ: ' + ', '.join(broken[:6]) if broken else '')
+
     # 5 REGRESS
     for label, pat in REGRESS_KEYS:
         hit = bool(re.search(pat, app, re.I))
