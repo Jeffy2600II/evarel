@@ -15,7 +15,8 @@ const refs = [...html.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1])
 const missing = refs.filter((u) => !exists(u));
 /* 10 พ.ย. 2026: หน้าแรกเป็นแอปเดโม v27 ไฟล์เดียว (CSS/JS ฝังในตัว) จึงอ้างไฟล์ภายนอกน้อยโดยตั้งใจ
    ตัวตรวจเดิมบังคับ >=5 รายการซึ่งใช้กับเชลล์ Next — แยกเงื่อนไขตามชนิดหน้า และบังคับสิ่งที่ v27 ต้องมีแทน */
-const isV27 = /Ordivel v27/.test(html);
+/* ตัวระบุหน้า v27 ต้องไม่ผูกกับข้อความบนจอ (ชื่อหน้าเปลี่ยนได้ตามการตัดสินใจผลิตภัณฑ์) ใช้รอยฝังของบิลด์แทน */
+const isV27 = /__EV_VERSION__/.test(html) && /master-demo-v3/.test(html);
 t(`index.html อ้างไฟล์ ${refs.length} รายการ มีครบ`, (isV27 || refs.length >= 5) && !missing.length, 'ขาด: ' + missing.slice(0, 4).join(', ') + (refs.length < 5 && !isV27 ? ' (อ้างน้อยผิดปกติ)' : ''));
 /* (2) js/m ต้องไม่อยู่ในบิลด์ (โหลดเป็นบันเดิลแล้ว) และไม่ถูกอ้าง */
 t('ไม่มีโฟลเดอร์ js/m และไม่ถูกอ้างใน index.html', !fs.existsSync(path.join(dir, 'js/m')) && !/\/js\/m\//.test(html));

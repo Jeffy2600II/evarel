@@ -284,6 +284,54 @@ out = _re.sub(r'(?m)^\s*,\s*(?=[A-Za-z_$][\w$]*\s*=)', 'const ', out)
 out = _re.sub(r'const\s*;', '', out)
 out = _re.sub(r',\s*;', ';', out)
 
+# 1.85) ข้อความที่ยังเป็นของเดโมแต่ผู้ใช้เห็นบนหน้าเว็บจริง -> เปลี่ยนเป็นความจริงของระบบจริง
+REAL_TEXT = [
+  # หน้าแรก (ตั้งค่า) เคยบอกว่าข้อมูลอยู่แต่ในเครื่อง ซึ่งผิดแล้ว: ข้อมูลซิงก์กับบัญชีผ่าน API
+  ('ข้อมูลเก็บในเครื่องนี้เท่านั้น ล้างข้อมูลเบราว์เซอร์แล้วจะหาย',
+   'ข้อมูลซิงก์กับบัญชีของคุณ เปิดเครื่องไหนก็เห็นรายการเดียวกัน'),
+  # เดโมบอกว่า Push ยังไม่ทำงานจริง ซึ่งไม่จริงแล้ว
+  (' · เดโมยังไม่ส่ง Push จริง ต้องเชื่อม Worker', ''),
+  # การ์ดเกี่ยวกับ: เลขรุ่นต้องเป็นรุ่นบิลด์จริง ไม่ใช่ v27 ของเดโม
+  ('<div style="font-size:20px;font-weight:700;letter-spacing:-.01em">v27</div><p class="ev-sub">เดโม v27 · ฟอร์มแยกการ์ด · แจ้งเตือนสองแบบ · สถิติรายวัน · ธีมสว่างนุ่ม</p>',
+   '<div style="font-size:20px;font-weight:700;letter-spacing:-.01em">${window.__EV_VERSION__||""}</div><p class="ev-sub">Ordivel · รายการและปฏิทินซิงก์กับบัญชี · แจ้งเตือนตามเวลาที่ตั้ง</p>'),
+  # ชื่อหน้าบนแท็บ/ตอนติดตั้ง ต้องเป็นชื่อผลิตภัณฑ์ ไม่ใช่เลขรุ่นของเดโม
+  ('<title>Ordivel v27</title>', '<title>Ordivel</title>'),
+  # เอกสารกฎหมายที่เป็นข้อความตัวอย่างของเดโม
+  ('เอกสารตัวอย่างสำหรับเดโม ใส่ข้อความจริงก่อนเปิดใช้งาน',
+   'ฉบับเต็มจะประกาศก่อนเปิดใช้งานทั่วไป ตอนนี้ใช้เพื่อทดสอบระบบ'),
+]
+for a, b in REAL_TEXT:
+    out = out.replace(a, b)
+# ร่องรอยรหัสยืนยันแบบเดโม (ของจริงส่งทางอีเมล ไม่มีรหัสบนจอ)
+out = _re.sub(r"UI\.auth\.demoCode\s*=\s*r\?\.demoCode\s*\|\|\s*'';", '', out)
+out = _re.sub(r"UI\.auth\.demoCode\s*=\s*r\?\.demoCode\s*\|\|\s*'';?", '', out)
+out = _re.sub(r"demoCode:r\.demoCode\s*\|\|\s*'',?", '', out)
+out = _re.sub(r"const n=\$\('demoCode'\);if\(n\)n\.textContent=UI\.auth\.demoCode;", '', out)
+
+# 1.87) ถอดกล่อง "ข้อมูลของคุณ" (ส่งออก/นำเข้าไฟล์) ออกจากหน้าตั้งค่า: ผู้ใช้จริงไม่ต้องจัดการไฟล์เอง ข้อมูลอยู่กับบัญชีแล้ว
+out = _re.sub(r'<h2 class="ev-group">ข้อมูล</h2><section class="ev-card"><b>ข้อมูลของคุณ</b>.*?</section>', '', out, flags=_re.S)
+out = _re.sub(r'<input type="file" id="importFile"[^>]*hidden>', '', out)
+out = _re.sub(r"\n?\s*export:\(\)=>\{exportData\(\);return NR\},import:\(\)=>\{\$\('importFile'\)\.click\(\);return NR\},", '', out)
+
+# 1.875) เก็บโค้ดตายที่ผูกกับกล่องข้อมูล (ฟังก์ชันส่งออก/นำเข้า + ตัวดักไฟล์)
+out = _re.sub(r"function exportData\(\)\{[\s\S]*?\nfunction importData\(file\)\{[\s\S]*?fr\.readAsText\(file\)\}\n", '', out)
+out = _re.sub(r"if\(e\.target\.id==='importFile'&&e\.target\.files\[0\]\)\{importData\(e\.target\.files\[0\]\);e\.target\.value=''\}", '', out)
+
+# 1.88) ข้อความที่ผู้ใช้เห็นทั้งแอป: อ่านจาก scripts/app27-copy.json (เขียนจากมุมมองผู้ใช้จริง)
+import json as _json, os as _os
+COPY_MAP = _os.path.join(_os.path.dirname(__file__), 'app27-copy.json')
+_copy_hit = _copy_miss = 0
+if _os.path.exists(COPY_MAP):
+    for _old, _new in _json.load(open(COPY_MAP, encoding='utf8'))['pairs']:
+        if _old == _new:
+            continue
+        if _old in out:
+            out = out.replace(_old, _new); _copy_hit += 1
+        else:
+            _copy_miss += 1
+            print('  ! คำเดิมไม่พบ:', _old[:70])
+    print(f'ข้อความผู้ใช้ที่เขียนใหม่: {_copy_hit} จุด | ไม่พบคำเดิม: {_copy_miss}')
+
 # 1.9) อัปเดตตัวเองได้: รุ่นใหม่ต้องเข้าเครื่องเอง ไม่ค้างรอ "ปิดทุกแท็บ"
 UPDATE_JS = """
 <script>(function(){if(!('serviceWorker' in navigator))return;var K='__ev_upd';function reloadOnce(){try{var t=+sessionStorage.getItem(K)||0;if(Date.now()-t<15000)return;sessionStorage.setItem(K,String(Date.now()));}catch(e){}location.reload();}

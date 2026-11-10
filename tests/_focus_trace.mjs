@@ -1,0 +1,14 @@
+import { chromium } from 'playwright'; import fs from 'fs';
+import { makeTestUser, openAsUser, seedItems, APP_ORIGIN } from './live_user.mjs';
+const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
+const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
+const b=await chromium.launch({executablePath:exe});
+const user=await makeTestUser('ftrace'); await seedItems(user.session,[]);
+const ctx=await openAsUser(b,user,{colorScheme:'light'}); const p=await ctx.newPage();
+await p.addInitScript(()=>{const of=HTMLElement.prototype.focus;HTMLElement.prototype.focus=function(...a){console.log('FOCUSTRACE '+(new Error().stack||'').split('\n').slice(1,5).join(' || ').slice(0,500));return of.apply(this,a)}});
+p.on('console',m=>{if(m.text().startsWith('FOCUSTRACE'))console.log(m.text())});
+await p.goto(APP_ORIGIN+'/index.html'); await p.waitForTimeout(2600);
+await p.click('[data-act="add"]'); await p.waitForTimeout(700);
+await p.click('[data-act="dtype"][data-id="event"]'); await p.waitForSelector('#addForm'); await p.waitForTimeout(600);
+console.log('ACTIVE',await p.evaluate(()=>document.activeElement?.className));
+await b.close();
