@@ -110,6 +110,13 @@ if 'async function registerPush(){' in out:
     out = out.replace('async function registerPush(){','async function registerPushMock(){',1)
     out = out.replace('return \'ok\';\n}', 'return \'ok\';\n}\nconst registerPush=()=>registerPushReal();',1)
 out = out.replace('USER=await Auth.session()', 'USER=(Auth.takeOAuthReturn?await Auth.takeOAuthReturn().catch(()=>null):null)||await Auth.session()', 1)
+out = out.replace('</body>', '<script>'+'''
+/* PWA: ลงทะเบียน service worker ของบิลด์ (จำเป็นต่อ Web Push + แคช) */
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+  addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})});
+}
+'''+'</script></body>',1)
+out = out.replace('<meta name=viewport', '<link rel="manifest" href="manifest.webmanifest">\n<meta name=viewport', 1)
 out = out.replace('<title>Ordivel v26</title>','<title>Ordivel v27</title>',1)
 # แทรกบล็อก API ก่อนบรรทัด Repo (หลัง patch แล้วต้องหาใหม่)
 anchor = '/* Repo = API จริง'

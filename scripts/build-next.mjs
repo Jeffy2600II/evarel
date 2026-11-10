@@ -109,6 +109,21 @@ try {
       cpSync(join(OUT, 'release.json'), join(A, 'release.json'));
     }
   }
+  /* ===== หน้าแรก = แอปเดโม v27 (Master สั่ง 10 พ.ย. 2026: ยึดเดโม v27 เป็นเว็บจริง ไม่ใช่แค่ CSS) =====
+     บิลด์ Next ยังทำหน้าที่ผลิต sw.js/ไอคอน/manifest แต่ index.html ที่เสิร์ฟเป็นตัวแอป v27 ที่ต่อ API จริงแล้ว */
+  if (process.env.APP27_ROOT !== '0') {
+    const SRC27 = join(root, 'web/app27/index.html');
+    if (existsSync(SRC27)) {
+      const html = readFileSync(SRC27, 'utf8').replace(/https:\/\/ordivel-api-forge\.nontakorn2600\.workers\.dev\/api/, API[env] + '/api');
+      writeFileSync(join(OUT, 'index.html'), html);
+      const A = join(OUT, 'app27');
+      mkdirSync(A, { recursive: true });
+      writeFileSync(join(A, 'index.html'), html);
+      if (existsSync(join(PUB, 'icons'))) cpSync(join(PUB, 'icons'), join(A, 'icons'), { recursive: true });
+      if (existsSync(join(OUT, 'sw.js'))) cpSync(join(OUT, 'sw.js'), join(A, 'sw.js'));
+      cpSync(join(OUT, 'release.json'), join(A, 'release.json'));
+    }
+  }
   console.log(`NEXT-BUILD OK (${env}) -> ${OUT} | sw evarel-next-${digest} | แคช ${CORE.length} ไฟล์`);
 } finally {
   rmSync(PUB, { recursive: true, force: true });
