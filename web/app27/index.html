@@ -14,7 +14,7 @@
 <!-- Ordivel Master Demo v27 (ต่อจาก v26: ฟอร์มแยกการ์ด · แจ้งเตือนสองแบบ · สถิติรายวัน) · v25 (ต่อจาก Evarel v24): ยี่ห้อใหม่ Ordivel (ชื่อ/โลโก้ใช้ตามระบบจริง 2026.2.66) · สีหลักเปลี่ยนม่วง→indigo #4F46E5 ทั้งสว่าง/มืด ตัวอักษรบนปุ่มหลักโหมดมืดเป็นหมึกเข้ม (2026.2.63) · ฟอนต์ของเครื่อง ไม่โหลดฟอนต์ภายนอก (2026.2.9) · ตรวจรูปแบบอีเมลสดทุกการแก้ไข + ยกเลิกการเดาอีเมลพิมพ์ผิด (2026.7.0/8.0/8.1) · กด Google ขึ้นสแปลช "กำลังเข้าสู่ระบบด้วย Google…" (2026.2.65) · ข้อความ AI เรนเดอร์ Markdown (หนา/เอียง/ลิสต์/โค้ด/ตาราง ตามระบบจริง) · หน้าตั้งค่าเพิ่มการ์ด "เกี่ยวกับ" (2026.1.0) · หน้าเต็มมีชื่อสำหรับโปรแกรมอ่านหน้าจอ (2026.2.6) · การเก็บข้อมูล/คีย์/seed ทุกอย่างเหมือน v24 เดิม · · ของเดิม v24 (ต่อจาก v23): แถบปุ่มล่าง bottom sheet ไม่เลื่อนขึ้นซ้ำ · แก้วงกลมวันที่ซ้อนกันในปฏิทิน · v23 (ต่อจาก v22): ครอบคลุมอนิเมชั่นเล่นซ้ำ: ปิดอนิเมชั่นเข้าหลังเล่นจบทั้งแอป · เคลียร์อนิเมชั่นติ๊ก (pop) · v22 (ต่อจาก v21): แก้อนิเมชั่นเล่นซ้ำ (ไอคอน/ลูกศร/องค์ประกอบเล็กไม่เล่นเข้าใหม่, ปิดอนิเมชั่นเข้าหน้าหลังเล่นจบ) · เปลี่ยนฟอนต์เป็น Anuphan · v21 (ต่อจาก v20): เติมสถานะว่างของเวลาในช่องเตือน/หน้ารายละเอียด/ครั้งถัดไป · v20 (ต่อจาก v19): ช่องเวลาแสดงสถานะ "ยังไม่ได้ตั้งเวลา" + ปุ่มเพิ่ม/ล้าง · ปฏิทินโปร่งแบบ native · หน้า Today/สถิติ นิ่งและมีพื้นที่มากขึ้น · v19 (ต่อจาก v18): ปรับความสูง bottom sheet แบบมี transition · อวาตาร์โปรไฟล์เป็นระบบกลาง · v18 (ต่อจาก v17): bottom sheet ไม่เปิดคีย์บอร์ดอัตโนมัติ · v17: แก้ปุ่มแนะนำ/การส่งข้อความหน้า AI · ปรับขนาดตัวอักษร · เพิ่ม contrast -->
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script>
-/* Tailwind: เก็บ reset เดิมไว้ (preflight ปิด) เพื่อให้หน้าตาไม่เปลี่ยนระหว่างย้ายทีละส่วน — เมื่อย้ายครบให้เปิด preflight แล้วคอมไพล์ด้วย Tailwind CLI/Vite (Play CDN ใช้เฉพาะเดโม) */
+/* Tailwind: เก็บ reset เดิมไว้ (preflight ปิด) เพื่อให้หน้าตาไม่เปลี่ยนระหว่างย้ายทีละส่วน — เมื่อย้ายครบให้เปิด preflight แล้วคอมไพล์ด้วย Tailwind CLI/Vite */
 tailwind.config={corePlugins:{preflight:false},theme:{extend:{
  colors:{bg:'var(--c-bg)',surface:'var(--c-surface)',ink:'var(--c-text)',muted:'var(--c-muted)',line:'var(--c-line)',fill:'var(--c-fill)',accent:'var(--c-accent)','accent-soft':'var(--c-accent-soft)',ok:'var(--c-ok)',warn:'var(--c-warn)',danger:'var(--c-danger)','danger-soft':'var(--c-danger-soft)','warn-soft':'var(--c-warn-soft)'},
  borderRadius:{card:'26px',sheet:'32px'},maxWidth:{col:'480px'},fontFamily:{sans:['system-ui','Roboto','Noto Sans Thai','sans-serif']},
@@ -1103,14 +1103,14 @@ button,[role="button"],[data-act]{min-height:24px}
 /* ===== MODULE: core/constants ===== */
 document.documentElement.lang='th';
 const LS=(()=>{try{const k='__ev_t';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m=new Map();return {getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>{m.set(k,String(v))},removeItem:k=>{m.delete(k)}}}})();
-const STORE_KEY='evarel-demo-v3',TIMER_KEY='evarel-timer-v3',THEME_KEY='evarel-theme-v3';
+
 const DAY_MS=86400000,TOAST_MS=5000,SKELETON_MS=450,STREAK_LOOKBACK=365,STAT_DAYS=30,DRAG_CLOSE_PX=110,DRAG_CLOSE_V=.6,HAPTIC_MS=10,LONG_PRESS_MS=450,LP_MOVE_PX=10,TOAST_SWIPE_PX=24,LAYER_ANIM_MS=420,MAX_REM=8;
 const TYPES={habit:'กิจวัตร',task:'งาน',event:'กิจกรรม',class:'คาบเรียน'};
 const TABS=[['today','วันนี้','home'],['all','รายการ','tasks'],['calendar','ปฏิทิน','cal'],['stats','สถิติ','chart']];
 const WD=['อา','จ','อ','พ','พฤ','ศ','ส'],WEEK_OPTS=WD.map((l,i)=>[i,l]);
 const TH_MON=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],TH_DAY=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
 const UNIT_TH={day:'วัน',week:'สัปดาห์',month:'เดือน'};
-const REM_PRESETS=[0,5,10,30,60,1440],TRACK_OPTS=[['check','ติ๊ก'],['count','นับเป้า'],['timer','ระยะเวลา']];
+
 const REM_DEFAULT_CLOCK='08:00';
 const HHMM=/^([01]\d|2[0-3]):[0-5]\d$/;
 const ICONS={home:'M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',tasks:'M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',chart:'M5 20V10M12 20V4M19 20v-7',spark:'M12 4l2 6 6 2-6 2-2 6-2-6-6-2 6-2z',plus:'M12 5v14M5 12h14',x:'M6 6l12 12M18 6L6 18',check:'M6.5 12.5l3.5 3.5 7.5-8',play:'M7.5 5l10 7-10 7z',search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4',pause:'M8 5v14M16 5v14',stop:'M7 7h10v10H7z',more:'M12 5.5v.01M12 12v.01M12 18.5v.01',edit:'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',copy:'M9 9h11v11H9zM5 15V5h10',trash:'M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13',skip:'M5 5l10 7-10 7zM19 5v14',bell:'M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4',back:'M14.5 5l-7 7 7 7',chev:'M9 6l6 6-6 6',pin:'M9 4h6l-1 5 3 4H7l3-4zM12 13v7',chat:'M5 6h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-7l-4 3v-3H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z',list:'M4 7h16M4 12h16M4 17h10',send:'M4 12l16-8-6 16-3-7z',mail:'M4 6h16v12H4zM4 7.5l8 6 8-6',eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z',eyeoff:'M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c6 0 10 6 10 6a17 17 0 0 1-3.2 3.7M6.6 6.7C3.9 8.5 2 12 2 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2',alert:'M12 8.5v4.5M12 16.4v.01M12 3.5l9.5 16.5h-19z',thumbup:'M7 11v9H4v-9zM7 11l3.5-7a2 2 0 0 1 2.3 2.4L12.2 10H19a2 2 0 0 1 2 2.3l-1.3 6.4A2 2 0 0 1 17.7 20H7',thumbdown:'M7 13V4H4v9zM7 13l3.5 7a2 2 0 0 0 2.3-2.4L12.2 14H19a2 2 0 0 0 2-2.3l-1.3-6.4A2 2 0 0 0 17.7 4H7',gear:'M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.5 7.5 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4z',clock:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 7v5l3 2',inbox:'M4 13l2-8h12l2 8v6H4zM4 13h5l1 2h4l1-2h5'};
@@ -1145,7 +1145,7 @@ const seed=()=>({items:[
 /* ===== MODULE: data/ai-api — จุดต่อ AI + ขีดจำกัดการใช้งาน =====
    UsageView (ตรงกับ GET /api/ai/quota ของ backend): {unknown:true} | {resetAt,blocked,reason?:'calls'|'tokens',calls:{used,limit,remaining},tokens:{used,limit,remaining}}
    chat(text): สำเร็จ → {text,card?,usage?} · ถึงขีดจำกัด (HTTP 429 quota_exceeded) → throw limitErr(reason:'calls'|'tokens'|'global',resetAt) · อื่นๆ → throw {code:'network'} */
-const USAGE_LIMITS={calls:40,tokens:60000},USAGE_LOW=.2,USAGE_KEY='evarel-demo-usage',AI_REPLY_MS=750;
+const USAGE_LOW=.2;
 const limitErr=(reason,resetAt)=>Object.assign(new Error('limit'),{code:'limit',reason,resetAt});
 function nextBkkMidnightISO(now=new Date()){const b=new Date(+now+7*3600000);return new Date(Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate()+1)-7*3600000).toISOString()}
 
@@ -1155,11 +1155,7 @@ function nextBkkMidnightISO(now=new Date()){const b=new Date(+now+7*3600000);ret
 
 
 
-const HttpAi=base=>({
- async usage(){const r=await fetch(`${base}/ai/quota`,{credentials:'include'});if(!r.ok)return {unknown:true};const j=await r.json();return j&&j.calls&&j.tokens?j:{unknown:true}},
- async chat(text){const r=await fetch(`${base}/ai/chat`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})}).catch(()=>{throw Object.assign(new Error('network'),{code:'network'})});
-  if(r.status===429){const j=await r.json().catch(()=>({}));throw limitErr(j.reason||'calls',j.quota?.resetAt||nextBkkMidnightISO())}
-  if(!r.ok)throw Object.assign(new Error('chat_failed'),{code:'network'});return r.json()}});
+
 /* AiApi = ของจริงผ่าน Worker (/api/ai/quota, /api/ai/chat) — ตัวจำลองใน localStorage ถูกถอดออก */
 /* ความจำ AI: เก็บข้อเท็จจริงฝั่งเซิร์ฟเวอร์ (คืนชีพความสามารถของระบบเดิม) */
 const aiMemory=async fact=>{try{const r=await apiFetch('/ai/memory',{method:'POST',body:JSON.stringify({op:'save',fact})});return r.ok}catch(err){return false}};
@@ -1240,9 +1236,7 @@ const authErr=code=>Object.assign(new Error(code),{code});
 
 
 
-const HttpAuth=base=>{const call=(p,o={})=>fetch(`${base}${p}`,{credentials:'include',headers:{'Content-Type':'application/json'},...o}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw authErr(j.code||'unknown');return j}).catch(err=>{throw err.code?err:authErr('network')});
- const post=(p,b)=>call(p,{method:'POST',body:b?JSON.stringify(b):undefined});
- return {session:()=>fetch(`${base}/auth/me`,{credentials:'include'}).then(r=>r.ok?r.json():null),signInGoogle:idToken=>post('/auth/google',{idToken}),signInEmail:(email,password)=>post('/auth/login',{email,password}),signUp:b=>post('/auth/signup',b),sendReset:email=>post('/auth/forgot',{email}),verifyCode:(email,code,type)=>post('/auth/verify',{email,code,type}),resend:(email,type)=>post('/auth/resend',{email,type}),resetPassword:(email,code,password)=>post('/auth/reset',{email,code,password}),signOut:()=>post('/auth/logout'),deleteAccount:()=>call('/auth/me',{method:'DELETE'})}};
+
 /* Auth = บัญชีจริงผ่าน Worker (/api/auth/*) · เก็บ token ใน localStorage · ต่ออายุอัตโนมัติเมื่อ 401 */
 const RealAuth={
  async session(){const t=Tok.get();if(!t)return null;
@@ -1312,7 +1306,7 @@ const isDone=(it,ds)=>val(it,ds)>=target(it),skipped=(it,ds)=>!!it.skip[ds],isFu
 const onDate=ds=>S.items.filter(it=>occursOn(it,ds)).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
 const overdue=()=>S.items.filter(it=>it.type==='task'&&it.start<TODAY&&!isDone(it,it.start)).sort((a,b)=>a.start.localeCompare(b.start));
 function streak(it){let n=0;for(let i=0;i<STREAK_LOOKBACK;i++){const ds=ymd(addDays(new Date(),-i));if(!occursOn(it,ds)||skipped(it,ds))continue;if(isDone(it,ds))n++;else if(i>0)break}return n}
-function rate(it){let t=0,ok=0;for(let i=0;i<STAT_DAYS;i++){const ds=ymd(addDays(new Date(),-i));if(ds<it.start||!occursOn(it,ds)||skipped(it,ds))continue;t++;if(isDone(it,ds))ok++}return t?Math.round(100*ok/t):0}
+
 const remText=r=>r.k==='on'?`${fmtDate(r.d)} ${r.t} น.`:r.k==='at'?`เวลา ${r.t} น.`:r.m===0?'เมื่อถึงเวลา':r.m%1440===0?`ก่อน ${r.m/1440} วัน`:r.m%60===0?`ก่อน ${r.m/60} ชม.`:`ก่อน ${r.m} นาที`;
 function repeatText(it){const r=it.repeat,tail=it.end?` · ถึง ${fmtDate(it.end)}`:'';if(r.unit==='none')return `ครั้งเดียว · ${fmtDate(it.start)}`;
  const one=r.every===1,u=UNIT_TH[r.unit];return (r.unit==='week'?(one?'ทุกสัปดาห์':`ทุก ${r.every} สัปดาห์`)+` · ${[...r.days].sort().map(d=>WD[d]).join(' ')}`:one?`ทุก${u}`:`ทุก ${r.every} ${u}`)+tail}
@@ -1469,7 +1463,7 @@ function habitTile(it,ds,i){const tg=target(it),v=val(it,ds),done=tracked(it)&&i
 
 /* ===== MODULE: views ===== */
 const VIEWS={
- today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button><button class="ev-btn-ghost ev-btn-block" data-act="seed-demo">ลองด้วยข้อมูลตัวอย่าง</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
+ today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
   const start=addDays(new Date(),-new Date().getDay()+7*UI.weekOff),week=Array.from({length:7},(_,i)=>ymd(addDays(start,i)));
   const nextId=ds===TODAY?(list.find(it=>it.time&&it.time>=nowHM()&&!(tracked(it)&&isDone(it,ds))))?.id:null;const nextIt=list.find(it=>it.id===nextId);let idx=0;
   const groups=PERIODS.map((n,g)=>[n,list.filter(it=>it.type!=='habit'&&periodOf(it)===g)]).filter(([,l])=>l.length);
@@ -1620,7 +1614,7 @@ function mdInline(src){
  s=s.replace(/(`+)([\s\S]*?[^`])\1(?!`)/g,(_,__,c)=>hold('<code class="ev-md-code">'+MD_ESC(c.trim())+'</code>'));
  s=MD_ESC(s);
  s=s.replace(/\[([^\]\n]+)\]\(\s*([^\s)]+)(?:\s+&quot;([^&]*)&quot;)?\s*\)/g,(m,t,u,ti)=>{const url=u.replace(/&amp;/g,'&');if(!MD_SAFE_URL.test(url))return t;return hold('<a class="ev-md-a" href="'+MD_ESC(url)+'" target="_blank" rel="noopener noreferrer"'+(ti?' title="'+ti+'"':'')+'>'+t+'</a>')});
- s=s.replace(/(^|[\s(])((?:https?:\/\/)[^\s<)]+[^\s<).,;:!?])/g,(m,p,u)=>p+hold('<a class="ev-md-a" href="'+u+'" target="_blank" rel="noopener noreferrer">'+u+'</a>'));
+ s=s.replace(/(^|[\s(])((?:https?:\/\/)[^\s<)]+[^\s<).;:!?])/g,(m,p,u)=>p+hold('<a class="ev-md-a" href="'+u+'" target="_blank" rel="noopener noreferrer">'+u+'</a>'));
  s=s.replace(/\*\*\*([^\s*][\s\S]*?[^\s*]|[^\s*])\*\*\*/g,'<strong><em>$1</em></strong>');
  s=s.replace(/\*\*([^\s*][\s\S]*?[^\s*]|[^\s*])\*\*/g,'<strong>$1</strong>');
  s=s.replace(/__([^\s_][\s\S]*?[^\s_]|[^\s_])__/g,'<strong>$1</strong>');
@@ -1676,13 +1670,7 @@ const CHATS_KEY='evarel-chats-v3',SUGG=['สรุปวันนี้ให้
 let CH={list:[],cur:null};const loadChats=()=>{try{const j=JSON.parse(LS.getItem(uk(CHATS_KEY)));return j&&Array.isArray(j.list)?j:{list:[],cur:null}}catch(e){console.warn('chat load',e);return {list:[],cur:null}}};
 const saveCH=()=>{try{LS.setItem(uk(CHATS_KEY),JSON.stringify(CH))}catch(e){console.warn('chat save',e)}};
 const curChat=()=>CH.list.find(c=>c.id===CH.cur)||null;
-function aiReply(t){const m=t.match(/เพิ่ม(งาน|กิจวัตร|กิจกรรม|นัด)\s*(.*)/);
- if(m){const rest=m[2];let date=TODAY;if(/มะรืน/.test(rest))date=ymd(addDays(new Date(),2));else if(/พรุ่งนี้/.test(rest))date=ymd(addDays(new Date(),1));
-  const tm=rest.match(/(\d{1,2})[:.](\d{2})/),time=tm&&HHMM.test(`${pad(tm[1])}:${tm[2]}`)?`${pad(tm[1])}:${tm[2]}`:'';
-  const title=rest.replace(/มะรืนนี้|มะรืน|พรุ่งนี้|(\d{1,2})[:.](\d{2})/g,'').trim()||'รายการใหม่',type=m[1]==='งาน'?'task':m[1]==='กิจวัตร'?'habit':'event';
-  return {text:'เข้าใจแล้ว ตรวจรายละเอียดก่อนเพิ่มนะ',card:{status:'pending',p:{type,title,start:date,time,repeat:type==='habit'?daily():{unit:'none',every:1,days:[]},track:type==='habit'||type==='task'?'check':'none'}}}}
- const tr=onDate(TODAY).filter(tracked),done=tr.filter(it=>isDone(it,TODAY)).length,nx=onDate(TODAY).find(it=>it.time&&it.time>=nowHM()&&!(tracked(it)&&isDone(it,TODAY))),od=overdue().length;
- return {text:`วันนี้ทำแล้ว ${done} จาก ${tr.length} รายการ${od?`\nมีงานค้าง ${od} งาน ควรเคลียร์ก่อน`:''}${nx?`\nถัดไป: ${nx.title} (${nx.time})`:'\nไม่มีรายการเหลือตามเวลาแล้ว'}`}}
+
 const cardHTML=(m,i)=>{if(!m.card)return '';const p=m.card.p,st=m.card.status;return `<div class="ev-card" data-tone="soft" style="max-width:88%;animation:rise .35s var(--ease)"><b>${esc(p.title)}</b><p class="ev-sub">${TYPES[p.type]} · ${fmtDate(p.start)}${p.time?` · ${p.time}`:''}</p>
  ${st==='pending'?`<div class="ev-row" style="margin-top:12px;gap:8px"><button class="ev-btn-primary ev-btn-sm" data-act="ai-ok" data-id="${i}">ยืนยัน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-edit" data-id="${i}">แก้ก่อน</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-no" data-id="${i}">ยกเลิก</button></div>`:`<span class="ev-chip" style="display:inline-block;margin-top:8px">${st==='added'?'เพิ่มแล้ว':'ยกเลิกแล้ว'}</span>`}</div>`};
 const AI={busy:false,typing:false,notice:null,draft:'',usageT:null};
@@ -1790,7 +1778,7 @@ const registerPush=()=>registerPushReal();
 
 const pushSaved=()=>{try{return LS.getItem(uk(PUSH_KEY))==='1'}catch(e){console.warn('push',e);return false}};
 const countNotifiable=items=>items.filter(it=>Array.isArray(it.rem)&&it.rem.some(r=>r.k==='at'||r.k==='on'||(r.k==='before'&&r.m>=0&&it.time))).length;
-async function registerPushMock(){if(!('Notification' in window))return 'unsupported';const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(p!=='granted')return 'denied';await wait(500);try{LS.setItem(uk(PUSH_KEY),'1')}catch(e){console.warn('push',e)}return 'ok'}
+
 
 /* ===== MODULE: views/settings ===== */
 function notifInfo(){if(!('Notification' in window))return ['ไม่รองรับ','เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'];const p=Notification.permission;if(p==='denied')return ['ถูกปิดไว้','ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์'];if(p==='granted')return pushSaved()?['พร้อมรับ','เครื่องนี้ลงทะเบียนรับการแจ้งเตือนแล้ว']:['ยังไม่ได้ลงทะเบียน','อนุญาตแล้ว แต่ยังไม่ได้ลงทะเบียนเครื่องนี้กับระบบ'];return ['ยังไม่ได้ขอ','กดปุ่มเพื่อให้เครื่องนี้รับการแจ้งเตือนได้']}
@@ -1804,7 +1792,7 @@ function settingsHTML(){const [st,note]=notifInfo(),total=countNotifiable(S.item
   <section class="ev-card"><b>อนิเมชั่น</b><p class="ev-sub">อัตโนมัติจะลดเอฟเฟกต์เองเมื่อเครื่องไม่ลื่น</p><div style="margin-top:12px">${seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref())}</div></section>
  <h2 class="ev-group">การใช้งาน</h2><section class="ev-card"><div class="ev-stat"><div><b>การแจ้งเตือน</b><p class="ev-sub">${note}</p></div><span class="ev-chip" data-state="${st==='พร้อมรับ'?'done':''}">${st}</span></div>${canReg?`<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">${Notification.permission==='granted'?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}</button>`:''}
   <p class="ev-sub" style="margin-top:12px">ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ (ค่าเริ่มต้นปิดไว้ เปิดเองได้ในแต่ละรายการ) · เดโมยังไม่ส่ง Push จริง ต้องเชื่อม Worker</p></section>
- <h2 class="ev-group">ข้อมูล</h2><section class="ev-card"><b>ข้อมูลของคุณ</b><p class="ev-sub">ข้อมูลเก็บในเครื่องนี้เท่านั้น ล้างข้อมูลเบราว์เซอร์แล้วจะหาย</p><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="export">ดาวน์โหลดไฟล์สำรอง</button><button class="ev-btn-ghost ev-btn-block" data-act="import">นำเข้าจากไฟล์</button><button class="ev-btn-danger ev-btn-block" data-act="reset-ask">รีเซ็ตข้อมูลทั้งหมด</button></div></section>
+ <h2 class="ev-group">ข้อมูล</h2><section class="ev-card"><b>ข้อมูลของคุณ</b><p class="ev-sub">ข้อมูลเก็บในเครื่องนี้เท่านั้น ล้างข้อมูลเบราว์เซอร์แล้วจะหาย</p><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="export">ดาวน์โหลดไฟล์สำรอง</button><button class="ev-btn-ghost ev-btn-block" data-act="import">นำเข้าจากไฟล์</button></div></section>
  <section class="ev-card"><b>เกี่ยวกับ</b><div class="ev-stat" style="margin-top:12px"><div><div style="font-size:20px;font-weight:700;letter-spacing:-.01em">v27</div><p class="ev-sub">เดโม v27 · ฟอร์มแยกการ์ด · แจ้งเตือนสองแบบ · สถิติรายวัน · ธีมสว่างนุ่ม</p></div></div></section>
  <h2 class="ev-group">บัญชี</h2><section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div><input type="file" id="importFile" accept="application/json,.json" hidden></section></div>`}
 function exportData(){const json=JSON.stringify(S,null,2);
@@ -1943,8 +1931,7 @@ const ACTIONS={
  'cal-nav':id=>{FCS.main?.[id]?.();return NR},
  wk:id=>{UI.weekOff+=+id;UI.weekDir=+id},today:()=>{UI.date=TODAY;UI.weekOff=0},
  retry:()=>{boot();return NR},
- 'seed-demo':()=>{commit('',()=>{S.items=seed().items},true);return NR},
- 'au-go':id=>{stopCool();UI.auth.screen=id;renderAuthRoot();return NR},
+  'au-go':id=>{stopCool();UI.auth.screen=id;renderAuthRoot();return NR},
  'au-google':(id,el)=>{authGoogle(el.closest('button'));return NR},
  'au-eye':(id,el)=>{const i=$(id),show=i.type==='password';i.type=show?'text':'password';el.innerHTML=icon(show?'eyeoff':'eye');el.setAttribute('aria-pressed',String(show));el.setAttribute('aria-label',show?'ซ่อนรหัสผ่าน':'แสดงรหัสผ่าน');return NR},
  'au-terms':id=>{openDialog(`<h3>${id==='terms'?'ข้อกำหนดการใช้งาน':'นโยบายความเป็นส่วนตัว'}</h3><p class="ev-sub">เอกสารตัวอย่างสำหรับเดโม ใส่ข้อความจริงก่อนเปิดใช้งาน</p><div class="ev-dlg-actions" style="grid-template-columns:1fr"><button class="ev-btn-primary" data-act="close">เข้าใจแล้ว</button></div>`);return NR},
@@ -1984,8 +1971,7 @@ const ACTIONS={
  perf:id=>{try{LS.setItem(PERF_PREF_KEY,id);if(id==='auto')LS.removeItem(PERF_AUTO_KEY)}catch(e){console.warn('perf',e)}perfApply();paintSettings();return NR},
  notify:()=>{registerPush().catch(()=>'denied').then(r=>{if(r==='denied')toast('เบราว์เซอร์ปิดการแจ้งเตือนไว้ ต้องเปิดที่ตั้งค่าเว็บไซต์');paintSettings()});return NR},
  export:()=>{exportData();return NR},import:()=>{$('importFile').click();return NR},
- 'reset-ask':()=>{confirmDialog({title:'รีเซ็ตข้อมูลทั้งหมด?',msg:'ข้อมูลทั้งหมดจะถูกแทนที่ด้วยข้อมูลตัวอย่าง',ok:'รีเซ็ต',fn:()=>commit('รีเซ็ตเป็นข้อมูลตัวอย่างแล้ว',()=>{Object.assign(S,seed())})});return NR},
- dopen:id=>{D.open=D.open===id?'':id;sheet.querySelectorAll('.ev-panel').forEach(p=>{p.dataset.open=String(p.dataset.key===D.open)});sheet.querySelectorAll('[data-act="dopen"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===D.open)));
+  dopen:id=>{D.open=D.open===id?'':id;sheet.querySelectorAll('.ev-panel').forEach(p=>{p.dataset.open=String(p.dataset.key===D.open)});sheet.querySelectorAll('[data-act="dopen"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===D.open)));
   setTimeout(()=>sheet.querySelector('.ev-panel[data-open="true"]')?.scrollIntoView({block:'nearest',behavior:'smooth'}),320);return NR},
  dunit:id=>{D.unit=id;if(id==='week'&&!D.days.length)D.days=[parse(D.start).getDay()];renderForm();return NR},
  devery:id=>{D.every=Math.max(1,(+D.every||1)+(+id));renderForm();return NR},

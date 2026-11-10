@@ -215,6 +215,12 @@ def _drop_tpl(src, start_pat):
     return src[:i] + src[j+5:]
 
 out = _drop_tpl(out, '${DEMO?`<section class="ev-card"><b>จำลองสถานะ')
+out = out.replace('<button class="ev-btn-ghost ev-btn-block" data-act="seed-demo">ลองด้วยข้อมูลตัวอย่าง</button>', '')
+out = _re.sub(r'<button[^>]*data-act="reset-ask"[^>]*>[^<]*</button>', '', out)
+# เก็บซากเครื่องหมายจากการถอดประกาศที่อยู่ในชุดเดียว (const A=...,B=...;)
+out = _re.sub(r'const\s*;', '', out)
+out = _re.sub(r',\s*;', ';', out)
+out = _re.sub(r'(?m)^\s*,\s*', '', out)
 out = out.replace("""${DEMO?'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-demo-reset">รีเซ็ต</button>':""", '')
 out = out.replace("""${DEMO?'<button class="ev-btn-primary ev-btn-sm" data-act="ai-demo-reset">รีเซ็ตเดโม</button>':''}""", '')
 out = out.replace('const demoCodeNote=()=>DEMO&&UI.auth.demoCode?', 'const demoCodeNote=()=>false?')
@@ -233,7 +239,7 @@ def _drop_entry(src, key):
             return src[:i] + src[k+2:]
     return src
 
-for _k in ['ai-demo-reset', 'sim-set', 'ai-demo-restart']:
+for _k in ['ai-demo-reset', 'sim-set', 'ai-demo-restart', 'seed-demo', 'reset-ask']:
     out = _drop_entry(out, _k)
 
 # 1.6) ถอนแบนเนอร์โชว์รหัสทดสอบและธงเดโมที่หมดหน้าที่
@@ -244,11 +250,14 @@ if _i >= 0:
         out = out[:_i] + out[_j+3:]
 out = out.replace('${demoCodeNote()}', '')
 out = out.replace('const DEMO=false; /* แอปจริง: ไม่มีโหมดเดโม */', '')
+out = out.replace(' (Play CDN ใช้เฉพาะเดโม)', '')
+out = out.replace('จำลองสถานะ (เฉพาะเดโม)', '')
+out = out.replace(",USAGE_KEY='evarel-demo-usage',AI_REPLY_MS=750", '')
 
 # 2) ถอนโค้ดจำลองที่ไม่ถูกอ้างถึงแล้ว (ตัวนับอ้างอิงเป็นตัวตัดสิน ไม่ใช่ความหวัง)
 DEMO_ONLY = ['USERS_KEY','SESSION_KEY','AUTH_DELAY_MS','readUsers','writeUsers','pubUser','DEMO_GOOGLE',
              'newId','CODE_TTL_MS','CODE_MAX_TRIES','PENDING','hashPw','issueCode','genCode','MockAuth',
-             'MockAi','SIM_PRESETS','freshUsage','mockUsage','saveMockUsage','usageView','bkkDay','USAGE_KEY','AI_REPLY_MS']
+             'MockAi','SIM_PRESETS','freshUsage','mockUsage','saveMockUsage','usageView','bkkDay','USAGE_KEY','AI_REPLY_MS','seed','HttpAuth','HttpAi','REM_PRESETS','STORE_KEY','USAGE_LIMITS','aiReply','rate','registerPushMock']
 removed, kept = [], []
 for _pass in range(8):
     gone_now = []
@@ -270,6 +279,10 @@ if _oi > 0:
 
 kept = [nm for nm in DEMO_ONLY if nm not in removed and _re.search(r'\b' + _re.escape(nm) + r'\b', out)]
 print('ตัดโค้ดจำลองออก:', len(removed), 'ตัว | ยังถูกอ้างถึง:', kept)
+# เก็บซากหลังถอด (ทำหลังสุดเสมอ ไม่งั้นซากยังไม่เกิด)
+out = _re.sub(r'(?m)^\s*,\s*(?=[A-Za-z_$][\w$]*\s*=)', 'const ', out)
+out = _re.sub(r'const\s*;', '', out)
+out = _re.sub(r',\s*;', ';', out)
 
 open('web/app27/index.html','w',encoding='utf8').write(out)
 print('สร้าง web/app27/index.html:', len(out), 'ตัวอักษร')
