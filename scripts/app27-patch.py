@@ -284,5 +284,16 @@ out = _re.sub(r'(?m)^\s*,\s*(?=[A-Za-z_$][\w$]*\s*=)', 'const ', out)
 out = _re.sub(r'const\s*;', '', out)
 out = _re.sub(r',\s*;', ';', out)
 
+# 1.9) อัปเดตตัวเองได้: รุ่นใหม่ต้องเข้าเครื่องเอง ไม่ค้างรอ "ปิดทุกแท็บ"
+UPDATE_JS = """
+<script>(function(){if(!('serviceWorker' in navigator))return;var K='__ev_upd';function reloadOnce(){try{var t=+sessionStorage.getItem(K)||0;if(Date.now()-t<15000)return;sessionStorage.setItem(K,String(Date.now()));}catch(e){}location.reload();}
+navigator.serviceWorker.addEventListener('controllerchange',reloadOnce);
+function check(){navigator.serviceWorker.getRegistration().then(function(r){if(!r)return;if(r.update)r.update();if(r.waiting)r.waiting.postMessage({type:'SKIP_WAITING'});}).catch(function(){});}
+window.addEventListener('load',check);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check();});
+setInterval(check,60000);})();</script>
+"""
+if 'SKIP_WAITING' not in out:
+    out = out.replace('</body>', UPDATE_JS + '</body>', 1) if '</body>' in out else out + UPDATE_JS
+
 open('web/app27/index.html','w',encoding='utf8').write(out)
 print('สร้าง web/app27/index.html:', len(out), 'ตัวอักษร')
