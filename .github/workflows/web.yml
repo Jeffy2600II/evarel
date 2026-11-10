@@ -79,10 +79,11 @@ jobs:
           if(!/^\d{4}\.[1-9]\d*\.(0|[1-9]\d*)-forge\$/.test(r.version)){console.error('เลขรุ่นบน forge ต้องเป็น ปี.รอบ.แพตช์-forge ได้',r.version);process.exit(1)}
           const as=sw.match(/const ASSET_V = '([0-9a-f]+)'/); const html=fs.readFileSync('build/web/index.html','utf8');
           if(!as||as[1]!==r.assets){console.error('release.assets != sw ASSET_V',r.assets,as&&as[1]);process.exit(1)}
-          if(/Ordivel v27/.test(html)){
-            if(!/manifest\.webmanifest/.test(html)){console.error('หน้า v27 ไม่มี manifest');process.exit(1)}
-            if(!/serviceWorker\.register/.test(html)){console.error('หน้า v27 ไม่ได้ลงทะเบียน service worker');process.exit(1)}
-            const h27=html.match(/__EV_VERSION__\s*=\s*\"([^\"]+)\"/); if(!h27||h27[1]!==r.version){console.error('หน้า v27 __EV_VERSION__ != release.version',h27&&h27[1],r.version);process.exit(1)}
+          /* ชนิดหน้า: รุ่นที่เสิร์ฟคือหน้าแอป Ordivel (มี manifest + service worker + __EV_VERSION__) ไม่ได้อ้างด้วยชื่อรุ่นเดโมอีกแล้ว (11 พ.ย. 2026) */
+          if(/manifest\.webmanifest/.test(html)){
+            if(!/manifest\.webmanifest/.test(html)){console.error('หน้าแอป ไม่มี manifest');process.exit(1)}
+            if(!/serviceWorker\.register/.test(html)){console.error('หน้าแอป ไม่ได้ลงทะเบียน service worker');process.exit(1)}
+            const h27=html.match(/__EV_VERSION__\s*=\s*\"([^\"]+)\"/); if(!h27||h27[1]!==r.version){console.error('หน้าแอป __EV_VERSION__ != release.version',h27&&h27[1],r.version);process.exit(1)}
           } else {
           if(!html.includes('styles/app.css?v='+r.assets)){console.error('index.html ไม่ได้ผูก ?v= ตรงกับ release.assets');process.exit(1)}
           const hv=html.match(/__EV_VERSION__ = \"([^\"]+)\"/); if(!hv||hv[1]!==r.version){console.error('index.html __EV_VERSION__ != release.version',hv&&hv[1],r.version);process.exit(1)} }

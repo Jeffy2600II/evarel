@@ -1,6 +1,6 @@
 import { chromium } from 'playwright'; import fs from 'fs';
 import { makeTestUser, API } from './live_user.mjs';
-const LIVE='https://evarel-app-forge.nontakorn2600.workers.dev';
+const LIVE='https://ordivel-app-forge.nontakorn2600.workers.dev';
 const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
 const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
 const b=await chromium.launch({executablePath:exe});
