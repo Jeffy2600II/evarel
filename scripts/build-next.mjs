@@ -2,7 +2,7 @@
 // ผลลัพธ์ที่ web/next/out แยกจาก build/web เดิม (S3 passthrough) — ทั้งสองอยู่ร่วมกันจนกว่า parity ของของใหม่ผ่านครบจึงสลับ
 // ใช้: node scripts/build-next.mjs <forge|production|local>
 import { parseVersion } from './version-rules.mjs';
-import { cpSync, rmSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, rmSync, existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
@@ -94,6 +94,21 @@ try {
   /* ตรวจว่าต้นทาง (layout) ใส่ ?v= และประกาศ __EV_BUILD__ ครบ: ไม่แก้ HTML ทีหลัง (กัน hydration mismatch) */
   const idx = readFileSync(join(OUT, 'index.html'), 'utf8');
   if (!idx.includes('styles/app.css?v=' + ASSET_V) || !idx.includes('__EV_BUILD__') || !idx.includes(JSON.stringify(REL_VERSION))) { console.error('layout ไม่ได้ใส่ ?v= / __EV_BUILD__ ตามรหัสไฟล์ชื่อคงที่'); process.exit(1); }
+  /* ===== แอปเดโม v27 (พรีวิว /app27) — Master สั่ง 10 พ.ย. 2026 ให้ยึดเดโม v27 เป็นมาตรฐาน =====
+     ต้นทางเก็บที่ web/app27/index.html (เดโมที่ต่อ API จริงแล้ว) แล้วคัดลอกเข้า out/app27 พร้อมไอคอน + sw ของบิลด์นี้
+     ไม่ทับหน้าแรกเดิม: เปิดเฉพาะ /app27/ เพื่อให้ตรวจก่อนสลับ */
+  {
+    const SRC27 = join(root, 'web/app27/index.html');
+    if (existsSync(SRC27)) {
+      const A = join(OUT, 'app27');
+      mkdirSync(A, { recursive: true });
+      const html = readFileSync(SRC27, 'utf8').replace(/https:\/\/ordivel-api-forge\.nontakorn2600\.workers\.dev\/api/, API[env]);
+      writeFileSync(join(A, 'index.html'), html);
+      if (existsSync(join(PUB, 'icons'))) cpSync(join(PUB, 'icons'), join(A, 'icons'), { recursive: true });
+      if (existsSync(join(OUT, 'sw.js'))) cpSync(join(OUT, 'sw.js'), join(A, 'sw.js'));
+      cpSync(join(OUT, 'release.json'), join(A, 'release.json'));
+    }
+  }
   console.log(`NEXT-BUILD OK (${env}) -> ${OUT} | sw evarel-next-${digest} | แคช ${CORE.length} ไฟล์`);
 } finally {
   rmSync(PUB, { recursive: true, force: true });
