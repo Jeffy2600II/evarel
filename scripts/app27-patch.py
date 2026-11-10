@@ -1,3 +1,4 @@
+import re
 src = open('archive/design/Ordivel-v27.html', encoding='utf8').read()
 out = src
 
@@ -26,8 +27,29 @@ REPO_NEW = r"""/* Repo = API จริง (สัญญาเดียวกั�
 const Repo={async load(){const r=await apiFetch('/items');if(!r.ok)throw new Error('load '+r.status);const j=await r.json();return {items:Array.isArray(j.items)?j.items:[]}},
  async apply({upserts,removes}){const jobs=[...upserts.map(it=>apiFetch('/items/'+encodeURIComponent(it.id),{method:'PUT',body:JSON.stringify(it)})),
   ...removes.map(id=>apiFetch('/items/'+encodeURIComponent(id),{method:'DELETE'}))];
-  const res=await Promise.all(jobs);const bad=res.find(r=>!r.ok);if(bad)throw new Error('save '+bad.status)}};"""
+  const res=await Promise.all(jobs);const bad=res.find(r=>!r.ok);if(bad)throw new Error('save '+bad.status)}};
+/* ===== ซิงก์ข้ามอุปกรณ์ + ตรวจรุ่นใหม่ ===== */
+let liveBusy=false,liveTimer=null,liveBc=null;
+const sigOf=items=>JSON.stringify((items||[]).map(i=>[i.id,i.title,i.type,i.time,i.timeEnd,i.track,i.target,i.log,i.skip]).sort());
+async function liveRefresh(){
+  if(liveBusy||!USER||document.hidden||UI.form||UI.detail)return;
+  const ae=document.activeElement; if(ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName))return;
+  liveBusy=true;
+  try{const r=await Repo.load();if(sigOf(r.items)!==sigOf(S.items)){S.items=r.items;render()}}catch(err){console.warn('live',err)}
+  finally{liveBusy=false}}
+function liveStart(){clearInterval(liveTimer);liveTimer=setInterval(liveRefresh,30000);
+  addEventListener('visibilitychange',()=>{if(!document.hidden)liveRefresh()});
+  addEventListener('online',()=>liveRefresh());
+  try{liveBc=new BroadcastChannel('ordivel-items');liveBc.onmessage=()=>liveRefresh()}catch(err){}}
+function liveNotify(){try{liveBc&&liveBc.postMessage('changed')}catch(err){}}
+let APP_VER='';
+async function checkUpdate(){try{const r=await fetch('./release.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();const v=j&&j.version;
+  if(!v)return;if(!APP_VER){APP_VER=v;return}if(v!==APP_VER){APP_VER=v;toast('มีเวอร์ชันใหม่แล้ว ปิด-เปิดแอปอีกครั้งเพื่ออัปเดต')}}catch(err){}}
+setInterval(checkUpdate,900000);
+"""
 
+AI_OLD = "const AiApi=MockAi;/* backend จริง: const AiApi=HttpAi('/api'); */"
+AI_NEW = "/* AiApi = ของจริงผ่าน Worker (/api/ai/quota, /api/ai/chat) — ตัวจำลองใน localStorage ถูกถอดออก */\nconst AiApi={\n async usage(){const r=await apiFetch('/ai/quota');if(!r.ok)return {unknown:true};const j=await r.json().catch(()=>({}));return (j&&j.calls&&j.tokens)?j:{unknown:true}},\n async chat(text){const r=await apiFetch('/ai/chat',{method:'POST',body:JSON.stringify({message:text})});\n   if(r.status===429){const j=await r.json().catch(()=>({}));throw limitErr(j.reason||'calls',(j.quota&&j.quota.resetAt)||nextBkkMidnightISO())}\n   if(!r.ok)throw Object.assign(new Error('chat_failed'),{code:'network'});\n   return r.json()},\n async setSim(){return {}} /* ปุ่มจำลองในเดโม: ไม่มีของจริงให้ตั้งค่าแล้ว */\n};"
 AUTH_OLD = "const Auth=MockAuth;/* backend จริง: const Auth=HttpAuth('/api'); แล้วให้ปุ่ม Google เรียก Google Identity Services เพื่อได้ idToken ส่งให้ Server ตรวจสอบ */"
 AUTH_NEW = r"""/* Auth = บัญชีจริงผ่าน Worker (/api/auth/*) · เก็บ token ใน localStorage · ต่ออายุอัตโนมัติเมื่อ 401 */
 const RealAuth={
@@ -105,11 +127,20 @@ def must_replace(text, old, new, label):
     return text.replace(old, new, 1)
 
 out = must_replace(out, REPO_OLD, REPO_NEW, 'Repo')
+out = must_replace(out, AI_OLD, AI_NEW, 'AiApi')
 out = must_replace(out, AUTH_OLD, AUTH_NEW, 'Auth')
 if 'async function registerPush(){' in out:
     out = out.replace('async function registerPush(){','async function registerPushMock(){',1)
     out = out.replace('return \'ok\';\n}', 'return \'ok\';\n}\nconst registerPush=()=>registerPushReal();',1)
+out = out.replace('if(USER){', 'if(USER){liveStart();', 1)
 out = out.replace('USER=await Auth.session()', 'USER=(Auth.takeOAuthReturn?await Auth.takeOAuthReturn().catch(()=>null):null)||await Auth.session()', 1)
+out = out.replace('</body>', '<script>'+'''
+/* PWA: ลงทะเบียน service worker ของบิลด์ (จำเป็นต่อ Web Push + แคช) */
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+  addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})});
+}
+'''+'</script></body>',1)
+out = out.replace('<meta name=viewport', '<link rel="manifest" href="manifest.webmanifest">\n<meta name=viewport', 1)
 out = out.replace('<title>Ordivel v26</title>','<title>Ordivel v27</title>',1)
 # แทรกบล็อก API ก่อนบรรทัด Repo (หลัง patch แล้วต้องหาใหม่)
 anchor = '/* Repo = API จริง'
@@ -118,5 +149,22 @@ out = out[:i] + API_BLOCK + '\n' + out[i:]
 # แทรกฟังก์ชันลงทะเบียนเครื่องจริงไว้ก่อนสิ้นสุดสคริปต์แรก
 j = out.find('window.__ordivel') 
 out = out.replace('const PUSH_KEY=\'evarel-push-sub\';', 'const PUSH_KEY=\'evarel-push-sub-v2\';'+PUSH_HOOK, 1)
+
+out = out.replace('async function enterApp(user){USER=user;', 'async function enterApp(user){USER=user;liveStart();', 1)
+out = out.replace('if(bad)throw new Error(\'save \'+bad.status)}};', 'if(bad)throw new Error(\'save \'+bad.status);liveNotify()}};', 1)
+out = out.replace('const LocalAdapter={ async load(){try{const r=LS.getItem(uk(STORE_KEY)),s=r?JSON.parse(r):{items:[]};if(!Array.isArray(s.items))throw new Error(\'bad shape\');return s}catch(err){console.warn(\'โหลดข้อมูลไม่สำเร็จ\',err);return {items:[]}}}, async apply(changes,full){LS.setItem(uk(STORE_KEY),JSON.stringify(full))}};', '', 1)
+
+
+# --- แก้ 2: ถอด LocalAdapter (เก็บข้อมูลลงเครื่อง) ด้วย regex และต่อความจำ AI ---
+out = re.sub(r'const LocalAdapter=\{[\s\S]*?\}\};', '', out, count=1)
+MEM = r"""/* ความจำ AI: เก็บข้อเท็จจริงฝั่งเซิร์ฟเวอร์ (คืนชีพความสามารถของระบบเดิม) */
+const aiMemory=async fact=>{try{const r=await apiFetch('/ai/memory',{method:'POST',body:JSON.stringify({op:'save',fact})});return r.ok}catch(err){return false}};"""
+out = out.replace("const AiApi={", MEM + "\nconst AiApi={", 1)
+out = out.replace("async setSim(){return {}} /* ปุ่มจำลองในเดโม: ไม่มีของจริงให้ตั้งค่าแล้ว */",
+                  "async setSim(){return {}}, memory:aiMemory", 1)
+# คำสั่งลัด: พิมพ์ "จำ ..." ในช่องถาม AI = บันทึกความจำ
+out = out.replace("async function aiSend(text){text=text.trim();if(!text||AI.busy)return;",
+  "async function aiSend(text){text=text.trim();if(!text||AI.busy)return;\n if(/^\\/?(จำ|remember)\\s+/i.test(text)){const fact=text.replace(/^\\/?(จำ|remember)\\s+/i,'').trim();await aiMemory(fact);toast('จำไว้แล้ว');return}", 1)
+
 open('web/app27/index.html','w',encoding='utf8').write(out)
 print('สร้าง web/app27/index.html:', len(out), 'ตัวอักษร')

@@ -99,16 +99,16 @@ for (const per of ['week','month']) { O.UI.period = per; eq('chartData_'+per, O.
     const fnSrc = 'return function ' + v.slice(st, end + 1);
     /* O.icon ถูกสต็อบเป็น () => '' ในหมวด buildStatsProps ที่อยู่ก่อนหน้า ต้องสร้างใหม่จากตาราง ICONS จริง ไม่งั้นไอคอนว่างหมดแล้วตัวเทียบมองไม่เห็นความผิดเรื่องไอคอน */
     O.icon = (nm) => `<svg class="ev-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${O.ICONS[nm]}"/></svg>`;
-    O.header = () => ''; O.pills = () => ''; O.allClassic = () => { throw new Error('ตกไป allClassic: เส้นทาง React ไม่ถูกเข้า'); };
+    let fellBack = false; O.header = () => ''; O.pills = () => ''; O.allClassic = () => { fellBack = true; return ''; };
     for (const type of ['all', 'habit', 'task', 'event', 'class']) {
-      O.UI.type = type; O.S.items = ITEMS; let got = null;
+      O.UI.type = type; O.S.items = ITEMS; let got = null; fellBack = false;
       O.EvarelPages = { all: (p) => { got = p; return '<ul><li></li></ul>'; } };
       O.window = { ...(O.window || {}), EvarelPages: O.EvarelPages }; /* ในบราวเซอร์จริงโค้ดอ่าน window.EvarelPages — จำลองให้ตรง ไม่ใช่ผ่อนเกณฑ์ */
       const run = new Function('O', 'with(O){ ' + fnSrc + ' }');
       let threw = null; try { run(O).call({}); } catch (e) { threw = e; }
       const want = T.buildAllProps(ITEMS, type, O.icon);
-      if (!want.sections.length) { n++; if (got !== null || !threw) { fail++; console.log('FAIL buildAllProps_' + type + ': ชนิดว่างต้องตกไป allClassic'); } continue; }
-      if (threw || !got) { n++; fail++; console.log('FAIL buildAllProps_' + type + ': ' + (threw ? threw.message : 'ไม่ส่ง props')); }
+      if (!want.sections.length) { n++; if (got !== null || !fellBack) { fail++; console.log('FAIL buildAllProps_' + type + ': ชนิดว่างต้องตกไป allClassic'); } continue; }
+      if (fellBack || threw || !got) { n++; fail++; console.log('FAIL buildAllProps_' + type + ': ' + (threw ? threw.message : fellBack ? 'ตกไป allClassic: เส้นทาง React ไม่ถูกเข้า' : 'ไม่ส่ง props')); }
       else eq('buildAllProps_' + type, got, want);
     }
     O.S.items = [];

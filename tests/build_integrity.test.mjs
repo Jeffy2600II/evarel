@@ -13,7 +13,10 @@ const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
 /* (1) ทุกสคริปต์/สไตล์/manifest ที่ index.html อ้างต้องมีจริง */
 const refs = [...html.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]).concat([...html.matchAll(/<link[^>]*\shref="([^"]+)"/g)].map((m) => m[1])).filter((u) => !/^(https?:)?\/\//.test(u));
 const missing = refs.filter((u) => !exists(u));
-t(`index.html อ้างไฟล์ ${refs.length} รายการ มีครบ`, refs.length >= 5 && !missing.length, 'ขาด: ' + missing.slice(0, 4).join(', ') + (refs.length < 5 ? ' (อ้างน้อยผิดปกติ)' : ''));
+/* 10 พ.ย. 2026: หน้าแรกเป็นแอปเดโม v27 ไฟล์เดียว (CSS/JS ฝังในตัว) จึงอ้างไฟล์ภายนอกน้อยโดยตั้งใจ
+   ตัวตรวจเดิมบังคับ >=5 รายการซึ่งใช้กับเชลล์ Next — แยกเงื่อนไขตามชนิดหน้า และบังคับสิ่งที่ v27 ต้องมีแทน */
+const isV27 = /Ordivel v27/.test(html);
+t(`index.html อ้างไฟล์ ${refs.length} รายการ มีครบ`, (isV27 || refs.length >= 5) && !missing.length, 'ขาด: ' + missing.slice(0, 4).join(', ') + (refs.length < 5 && !isV27 ? ' (อ้างน้อยผิดปกติ)' : ''));
 /* (2) js/m ต้องไม่อยู่ในบิลด์ (โหลดเป็นบันเดิลแล้ว) และไม่ถูกอ้าง */
 t('ไม่มีโฟลเดอร์ js/m และไม่ถูกอ้างใน index.html', !fs.existsSync(path.join(dir, 'js/m')) && !/\/js\/m\//.test(html));
 /* (3) sw.js: CORE ทุกรายการมีจริง */
