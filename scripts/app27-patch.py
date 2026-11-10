@@ -166,5 +166,110 @@ out = out.replace("async setSim(){return {}} /* ปุ่มจำลองใ�
 out = out.replace("async function aiSend(text){text=text.trim();if(!text||AI.busy)return;",
   "async function aiSend(text){text=text.trim();if(!text||AI.busy)return;\n if(/^\\/?(จำ|remember)\\s+/i.test(text)){const fact=text.replace(/^\\/?(จำ|remember)\\s+/i,'').trim();await aiMemory(fact);toast('จำไว้แล้ว');return}", 1)
 
+
+# ================= ระยะ "ทำเป็นของจริง" (Master สั่ง 10 พ.ย. 2026): ตัดของที่เป็นของเดโมออกจากแอปจริง =================
+import re as _re
+
+def _span(src, name):
+    """ช่วงของประกาศ top-level หนึ่งชื่อ (รองรับ const/let/var และ function ที่มีปีกกาในพารามิเตอร์)"""
+    m = _re.search(r'(?:const|let|var)\s+' + _re.escape(name) + r'\s*=', src)
+    if m:
+        i, j = m.start(), m.end()
+    else:
+        fn = _re.search(r'(?:async\s+)?function\s+' + _re.escape(name) + r'\s*\(', src)
+        if not fn: return None
+        i = fn.start()
+        k = src.index('(', fn.start()); d = 0; j = None
+        for t in range(k, len(src)):
+            if src[t] == '(': d += 1
+            elif src[t] == ')':
+                d -= 1
+                if d == 0: j = t + 1; break
+        if j is None: return None
+    while j < len(src) and src[j] in ' \t\r\n': j += 1
+    if j < len(src) and src[j] == '{':
+        d = 0
+        for k in range(j, len(src)):
+            if src[k] == '{': d += 1
+            elif src[k] == '}':
+                d -= 1
+                if d == 0:
+                    return (i, k + 2 if src[k+1:k+2] == ';' else k + 1)
+        return None
+    d = 0
+    for k in range(j, len(src)):
+        c = src[k]
+        if c in '([{': d += 1
+        elif c in ')]}': d -= 1
+        elif c == ';' and d == 0: return (i, k + 1)
+    return None
+
+# 1) ปิดธงเดโมและถอน UI ที่เป็นของเดโม (ทำก่อน เพื่อให้ตัวนับการอ้างอิงไม่เห็นมัน)
+out = out.replace('const DEMO=Auth===MockAuth;', 'const DEMO=false; /* แอปจริง: ไม่มีโหมดเดโม */', 1)
+
+def _drop_tpl(src, start_pat):
+    i = src.find(start_pat)
+    if i < 0: return src
+    j = src.find("`:''}", i)
+    if j < 0: return src
+    return src[:i] + src[j+5:]
+
+out = _drop_tpl(out, '${DEMO?`<section class="ev-card"><b>จำลองสถานะ')
+out = out.replace("""${DEMO?'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-demo-reset">รีเซ็ต</button>':""", '')
+out = out.replace("""${DEMO?'<button class="ev-btn-primary ev-btn-sm" data-act="ai-demo-reset">รีเซ็ตเดโม</button>':''}""", '')
+out = out.replace('const demoCodeNote=()=>DEMO&&UI.auth.demoCode?', 'const demoCodeNote=()=>false?')
+
+# 1.5) ถอนตัวจัดการปุ่มที่เป็นของเดโม (ตัวเรียกของโค้ดจำลอง)
+def _drop_entry(src, key):
+    i = src.find("'" + key + "':")
+    if i < 0: return src
+    j = i + len(key) + 3
+    d = 0
+    for k in range(j, len(src)):
+        c = src[k]
+        if c in '([{': d += 1
+        elif c in ')]}': d -= 1
+        elif c == ',' and d == 0:
+            return src[:i] + src[k+2:]
+    return src
+
+for _k in ['ai-demo-reset', 'sim-set', 'ai-demo-restart']:
+    out = _drop_entry(out, _k)
+
+# 1.6) ถอนแบนเนอร์โชว์รหัสทดสอบและธงเดโมที่หมดหน้าที่
+_i = out.find('const demoCodeNote=()=>')
+if _i >= 0:
+    _j = out.find("'';", _i)          # ประกาศนี้เป็นบรรทัดเดียว ปิดท้ายด้วย :'';
+    if _j > 0:
+        out = out[:_i] + out[_j+3:]
+out = out.replace('${demoCodeNote()}', '')
+out = out.replace('const DEMO=false; /* แอปจริง: ไม่มีโหมดเดโม */', '')
+
+# 2) ถอนโค้ดจำลองที่ไม่ถูกอ้างถึงแล้ว (ตัวนับอ้างอิงเป็นตัวตัดสิน ไม่ใช่ความหวัง)
+DEMO_ONLY = ['USERS_KEY','SESSION_KEY','AUTH_DELAY_MS','readUsers','writeUsers','pubUser','DEMO_GOOGLE',
+             'newId','CODE_TTL_MS','CODE_MAX_TRIES','PENDING','hashPw','issueCode','genCode','MockAuth',
+             'MockAi','SIM_PRESETS','freshUsage','mockUsage','saveMockUsage','usageView','bkkDay','USAGE_KEY','AI_REPLY_MS']
+removed, kept = [], []
+for _pass in range(8):
+    gone_now = []
+    for nm in DEMO_ONLY:
+        if nm in removed: continue
+        sp = _span(out, nm)
+        if not sp: continue
+        rest = out[:sp[0]] + out[sp[1]:]
+        if not _re.search(r'\b' + _re.escape(nm) + r'\b', rest):
+            out = rest; gone_now.append(nm)
+    removed += gone_now
+    if not gone_now: break
+# 1.7) เก็บซากที่ค้างจากการตัด (ถ้ามี) — ตรวจด้วย node --check ภายหลัง
+_orphan = ' return {resetAt:nextBkkMidnightISO()'
+_oi = out.find(_orphan)
+if _oi > 0:
+    _oj = out.find('\nconst ', _oi)
+    if _oj > 0: out = out[:_oi] + '\n' + out[_oj:]
+
+kept = [nm for nm in DEMO_ONLY if nm not in removed and _re.search(r'\b' + _re.escape(nm) + r'\b', out)]
+print('ตัดโค้ดจำลองออก:', len(removed), 'ตัว | ยังถูกอ้างถึง:', kept)
+
 open('web/app27/index.html','w',encoding='utf8').write(out)
 print('สร้าง web/app27/index.html:', len(out), 'ตัวอักษร')
