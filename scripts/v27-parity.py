@@ -26,10 +26,17 @@ ROUTER = ROOT / 'backend/api/src/router.ts'
 EP_RE = re.compile(r"""(?:apiFetch|fetch)\(\s*[`'"](?:API\s*\+\s*)?[`'"]?\s*\$\{?[^`'"]*?[`'"]?""")
 
 # ความสามารถที่ระบบเดิม (engine) มี — ต้องมีร่องรอยในแอปใหม่ ไม่งั้นคือของหาย
+# สิ่งที่ตั้งใจถอดออกแล้ว (Master สั่ง 10 พ.ย. 2026): ต้องไม่กลับมาในแอปจริง
+REMOVED_KEYS = [
+    ('กล่องส่งออก/นำเข้าไฟล์', r'exportData|importData|importFile'),
+    ('ข้อความเดโมบนหน้าจริง', r'เก็บในเครื่องนี้เท่านั้น|เดโมยังไม่ส่ง Push|เดโม v27 ·|เอกสารตัวอย่างสำหรับเดโม'),
+]
+
 REGRESS_KEYS = [
     ('live sync ข้ามแท็บ/เครื่อง', r'live-?sync|BroadcastChannel|storage\s*event'),
     ('ตรวจรุ่นใหม่/อัปเดตแอป', r'release\.json|updateReady|skipWaiting'),
-    ('ส่งออก/นำเข้าข้อมูล', r'exportData|importData'),
+    # 10 พ.ย. 2026: Master สั่งถอดกล่องส่งออก/นำเข้าไฟล์ออกจากหน้าตั้งค่า (ข้อมูลอยู่กับบัญชีแล้ว)
+    # จึงย้ายจากการตรวจ "ต้องมี" ไปเป็นการตรวจ "ต้องไม่มี" ที่ REMOVED_KEYS ด้านล่าง
     ('ลบบัญชี', r'deleteAccount|/auth/account'),
     ('แจ้งเตือนถึงเครื่อง', r'push/subscribe|registerPush'),
     ('ความจำ AI', r'/ai/memory|aiMemory'),
@@ -86,7 +93,11 @@ def main() -> int:
     check('STRUCT', f'จำนวนโมดูลครบ ({len(mods_demo)})', len(mods_app) >= len(mods_demo), f'แอปมี {len(mods_app)}')
     fd, fa = funcs(demo), funcs(app)
     # ฟังก์ชันที่ตั้งใจถอด (ตัวจำลองของเดโม) — ต้องประกาศไว้ ไม่ใช่เงียบ ๆ
-    ALLOW_REMOVE = {'LocalAdapter': 'ตัวเก็บข้อมูลลง localStorage ถูกถอดตามดีไซน์ (ข้อมูลอยู่ที่เซิร์ฟเวอร์)',
+    ALLOW_REMOVE = {'json': 'ตัวแปรภายในของการ์ดส่งออกไฟล์ที่ถอดออกแล้ว',
+                    'save': 'ตัวแปรภายในของการ์ดส่งออกไฟล์ที่ถอดออกแล้ว',
+                    'exportData': 'ถอดกล่องส่งออกไฟล์ตามคำสั่ง Master 10 พ.ย. 2026 (ข้อมูลอยู่กับบัญชี)',
+                    'importData': 'ถอดกล่องนำเข้าไฟล์ตามคำสั่งเดียวกัน',
+                    'LocalAdapter': 'ตัวเก็บข้อมูลลง localStorage ถูกถอดตามดีไซน์ (ข้อมูลอยู่ที่เซิร์ฟเวอร์)',
                     'MockAuth': 'บัญชีจำลอง', 'MockAi': 'AI จำลอง',
                     'USERS_KEY': 'ที่เก็บบัญชีจำลอง', 'SESSION_KEY': 'session ของบัญชีจำลอง',
                     'AUTH_DELAY_MS': 'หน่วงเวลาปลอมของบัญชีจำลอง', 'readUsers': 'อ่านบัญชีจำลอง',
@@ -101,6 +112,11 @@ def main() -> int:
                     'usageView': 'แปลงค่าการใช้ของเดโม', 'bkkDay': 'วันของเดโม',
                     'USAGE_KEY': 'กุญแจเก็บค่าการใช้ปลอม', 'AI_REPLY_MS': 'หน่วงคำตอบ AI ของเดโม',
                     'demoCodeNote': 'แบนเนอร์โชว์รหัสยืนยันบนจอ (ของจริงส่งทางอีเมล)',
+                    'demoDataClaim': 'ข้อความว่าข้อมูลอยู่แต่ในเครื่อง (ของจริงซิงก์กับบัญชี)',
+                    'demoPushClaim': 'ข้อความว่าเดโมยังไม่ส่ง Push จริง',
+                    'demoAboutCard': 'การ์ดเกี่ยวกับที่โชว์เลขรุ่นของเดโม',
+                    'demoLegalText': 'ข้อความกฎหมายตัวอย่างของเดโม',
+                    'demoTitle': 'ชื่อหน้าที่เป็นเลขรุ่นเดโม',
                     'HttpAuth': 'โครง adapter ตัวอย่างของเดโม', 'HttpAi': 'โครง adapter ตัวอย่างของเดโม',
                     'REM_PRESETS': 'ชุดค่าเตือนตัวอย่างของเดโม', 'STORE_KEY': 'กุญแจเก็บข้อมูลเดิมของเดโม',
                     'USAGE_LIMITS': 'เพดานโควตาของเดโม (ของจริงอ่านจากเซิร์ฟเวอร์)', 'aiReply': 'ตัวสร้างคำตอบ AI ปลอม',
@@ -116,6 +132,14 @@ def main() -> int:
         if not hit:
             warns.append(label)
 
+
+    # ของที่ถอดออกแล้วต้องไม่กลับมา
+    for label, pat in REMOVED_KEYS:
+        found = bool(re.search(pat, app, re.I))
+        rows.append({'axis': 'REMOVED', 'name': label, 'ok': not found,
+                     'detail': '' if not found else 'ยังพบอยู่ในแอป'})
+        if found:
+            fails.append(label)
     if as_json:
         print(json.dumps({'rows': rows, 'fails': fails, 'warns': warns}, ensure_ascii=False, indent=1))
     else:

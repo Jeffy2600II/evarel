@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><link rel="manifest" href="manifest.webmanifest">
 <meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffffff"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ordivel"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 </style></head><body>
-<title>Ordivel v27</title>
+<title>Ordivel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <!-- v26: ยกเครื่องดีไซน์ทั้งแอป อ้างอิงตัวอย่างจริงจากแอป/ฐานข้อมูลรวมสกรีน (Mobbin·screensdesign) ตามไฟล์ design-protocol ที่แนบมา:
   1) ฟอร์มสร้างกิจวัตร (bottom sheet): เพิ่มแถว "เริ่มวันที่" เป็นช่องหลักที่เห็นชัด ไม่ต้องเปิดพับ "ช่วงเวลา" + ชิปด่วน วันนี้/พรุ่งนี้/+7 วัน
@@ -433,7 +433,7 @@ body[data-auth="out"] .ev-app,body[data-auth="out"] .ev-nav,body[data-auth="out"
 .ev-sugg button,.ev-btn-primary,.ev-btn-ghost,.ev-btn-danger,.ev-navrow{transition:transform .18s var(--ease),opacity .18s,background-color .18s}
 .ev-sugg button:active,.ev-btn-primary:active,.ev-btn-ghost:active,.ev-btn-danger:active,.ev-navrow:active{transform:scale(.97)}
 
-/* โหมดประหยัดเครื่อง */
+/* โหมดเบาเครื่อง */
 html[data-perf="lite"] .ev-page{transform:none;transition:opacity .16s linear}
 html[data-perf="lite"] .ev-page[data-open="true"]{transition:opacity .2s cubic-bezier(0,0,.2,1)}
 html[data-perf="lite"] .ev-page[data-exit="x"]:not([data-open="true"]){transition:transform .22s ease-out}
@@ -841,7 +841,7 @@ body{font-size:14.5px}
 
 /* ============ v19: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ · อวาตาร์โปรไฟล์ระบบกลาง ============
    ความสูง: JS วัดก่อน/หลังเปลี่ยนเนื้อหา แล้ว transition เฉพาะ height ชั่วครู่ (.34s) แล้วคืนเป็น auto — ไม่มี animation ค้างตลอดเวลา
-   เนื้อหา: เปลี่ยนขั้นตอน (เลือกประเภท ↔ ฟอร์ม) แต่ละรายการไหลเข้าทีละนิดด้วย transform+opacity เท่านั้น · โหมดประหยัดเครื่องตัดทั้งหมด */
+   เนื้อหา: เปลี่ยนขั้นตอน (เลือกประเภท ↔ ฟอร์ม) แต่ละรายการไหลเข้าทีละนิดด้วย transform+opacity เท่านั้น · โหมดเบาเครื่องตัดทั้งหมด */
 .ev-sheet[data-resize]{transition:transform .46s cubic-bezier(.05,.7,.1,1),height .34s cubic-bezier(.22,1,.36,1)}
 .ev-sheet[data-resize] .ev-sheet-body{overflow:hidden}
 @keyframes sheetIn{from{opacity:0;transform:translate3d(0,12px,0)}}
@@ -1086,8 +1086,8 @@ button,[role="button"],[data-act]{min-height:24px}
 .ev-addrow{min-height:44px;font-size:14.5px}
 </style>
 <div class="ev-app" id="app"></div>
-<button class="ev-live" id="live" data-show="false" aria-label="เปิดหน้าจับเวลา"></button>
-<nav class="ev-nav" aria-label="เมนูหลัก"><ul id="nav"></ul></nav>
+<button class="ev-live" id="live" data-show="false" aria-label="จับเวลา"></button>
+<nav class="ev-nav" aria-label="เมนู"><ul id="nav"></ul></nav>
 <div class="ev-toast" id="toast" role="status" aria-live="polite" data-open="false"></div>
 <div class="ev-scrim" id="scrim"></div>
 <div class="ev-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden></div>
@@ -1216,7 +1216,7 @@ function liveStart(){clearInterval(liveTimer);liveTimer=setInterval(liveRefresh,
 function liveNotify(){try{liveBc&&liveBc.postMessage('changed')}catch(err){}}
 let APP_VER='';
 async function checkUpdate(){try{const r=await fetch('./release.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();const v=j&&j.version;
-  if(!v)return;if(!APP_VER){APP_VER=v;return}if(v!==APP_VER){APP_VER=v;toast('มีเวอร์ชันใหม่แล้ว ปิด-เปิดแอปอีกครั้งเพื่ออัปเดต')}}catch(err){}}
+  if(!v)return;if(!APP_VER){APP_VER=v;return}if(v!==APP_VER){APP_VER=v;toast('มีรุ่นใหม่แล้ว กำลังเปิดให้')}}catch(err){}}
 setInterval(checkUpdate,900000);
 
 function diffItems(prev,next){const m=new Map(prev.map(x=>[x.id,JSON.stringify(x)])),ids=new Set(next.map(x=>x.id));return {upserts:next.filter(x=>m.get(x.id)!==JSON.stringify(x)),removes:prev.filter(x=>!ids.has(x.id)).map(x=>x.id)}}
@@ -1384,7 +1384,7 @@ dialog.addEventListener('click',e=>{if(e.target===dialog)closeTop()});
 const EDGE_BACK_PX=24;
 const pageOf=name=>LAYERS.find(l=>l.name===name)?.el,hasPage=name=>LAYERS.some(l=>l.name===name);
 /* หน้าเต็มจอเป็นสแต็ก: เปิดซ้อนกันได้ไม่จำกัด กดกลับ/ปัดกลับทีละชั้น หน้าข้างล่างยังอยู่ครบ */
-function openPage(html,onClose,name){const el=document.createElement('section');el.className='ev-page';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.dataset.page=name||'';/* v25: ชื่อหน้าสำหรับโปรแกรมอ่านหน้าจอ (ตรงกับระบบจริง 2026.2.6) */el.setAttribute('aria-label',{detail:'รายละเอียด',settings:'ตั้งค่า',ai:'ผู้ช่วย AI',focus:'จับเวลา'}[name]||name||'');el.innerHTML=html;el.style.zIndex=String(22+LAYERS.length);document.body.appendChild(el);
+function openPage(html,onClose,name){const el=document.createElement('section');el.className='ev-page';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.dataset.page=name||'';/* v25: ชื่อหน้าสำหรับโปรแกรมอ่านหน้าจอ (ตรงกับระบบจริง 2026.2.6) */el.setAttribute('aria-label',{detail:'รายละเอียด',settings:'ตั้งค่า',ai:'ผู้ช่วย',focus:'จับเวลา'}[name]||name||'');el.innerHTML=html;el.style.zIndex=String(22+LAYERS.length);document.body.appendChild(el);
  if(name!=='ai')attachGesture(el,{axis:'x',dir:1,size:()=>el.offsetWidth,canStart:p=>p.x<=EDGE_BACK_PX&&LAYERS[LAYERS.length-1]?.el===el,onStart:()=>{el.dataset.drag='true'},onMove:x=>{el.style.transform=`translateX(${x}px)`},onEnd:c=>{el.dataset.drag='false';if(c)el.dataset.exit='x';if(!(c&&closeTop())){delete el.dataset.exit;el.style.transform=''}}});
  el.dataset.enter='true';setTimeout(()=>{delete el.dataset.enter},800);perfProbe();
  pushLayer({kind:'page',name,el,remove:true,onClose:()=>{onClose?.()}});return el}
@@ -1453,7 +1453,7 @@ function itemRow(it,ds,i,opts={}){const v=val(it,ds),tg=target(it),done=tracked(
  return `<li class="ev-list-item" data-act="rowtap" data-lp="1" data-id="${it.id}" data-date="${ds}" data-key="${it.id}-${ds}-${opts.late?'l':'n'}" style="--i:${i}" data-state="${done?'done':'todo'}" ${opts.next?'data-next="true"':''}>${lead}<div class="grow"><b>${esc(it.title)}</b><span class="ev-sub">${sub}</span>${multi?`<div class="ev-bar"><i data-full="${v>=tg}" data-k="b-${it.id}-${ds}" data-to="${Math.min(100,Math.round(v/tg*100))}"></i></div>`:''}</div>${tail}</li>`}
 
 /* ===== v26: ไทล์กิจวัตรติ๊กวงใหญ่ (Streaks: big-button check-in) + เปลวไฟ streak =====
-   ติ๊ก = วง 64px (check) · นับเป้า = กดวงเพิ่ม 1 มีวงแหวนความคืบหน้า (− อยู่มุมไทล์) · จับเวลา = กดเปิดหน้าจับเวลา */
+   ติ๊ก = วง 64px (check) · นับเป้า = กดวงเพิ่ม 1 มีวงแหวนความคืบหน้า (− อยู่มุมไทล์) · จับเวลา = กดจับเวลา */
 const FLAME='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.6 2c.7 3.6-3.6 5.3-3.6 9.4a4.8 4.8 0 0 0 9.6 0c0-1.7-.8-3.1-1.8-4.5-.5 1.2-1.3 1.9-2.5 2.1.9-2.4.3-5-1.7-7z"/></svg>';
 function habitTile(it,ds,i){const tg=target(it),v=val(it,ds),done=tracked(it)&&isDone(it,ds),fut=isFuture(ds),multi=it.track!=='check',p=done?100:multi?Math.min(100,Math.round(v/tg*100)):0,st=streak(it);
  const lead=it.track==='timer'?`<button class="ev-tilebtn" style="--p:${p}" data-act="timeropen" data-id="${it.id}" data-date="${ds}" aria-label="จับเวลา: ${esc(it.title)}">${icon('play')}</button>`
@@ -1463,7 +1463,7 @@ function habitTile(it,ds,i){const tg=target(it),v=val(it,ds),done=tracked(it)&&i
 
 /* ===== MODULE: views ===== */
 const VIEWS={
- today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรกของคุณ')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
+ today(){if(!S.items.length)return `${header(fmtDate(TODAY),'ยินดีต้อนรับ')}<main class="ev-main"><section class="ev-card">${empty('inbox','ยังไม่มีอะไรเลย','เริ่มจากสร้างกิจวัตรแรก')}<div class="ev-form"><button class="ev-btn-primary ev-btn-block" data-act="add">สร้างรายการแรก</button></div></section></main>`;const ds=UI.date,list=onDate(ds),tr=list.filter(tracked),done=tr.filter(it=>isDone(it,ds)).length,p=tr.length?Math.round(100*done/tr.length):0,od=ds===TODAY?overdue():[];
   const start=addDays(new Date(),-new Date().getDay()+7*UI.weekOff),week=Array.from({length:7},(_,i)=>ymd(addDays(start,i)));
   const nextId=ds===TODAY?(list.find(it=>it.time&&it.time>=nowHM()&&!(tracked(it)&&isDone(it,ds))))?.id:null;const nextIt=list.find(it=>it.id===nextId);let idx=0;
   const groups=PERIODS.map((n,g)=>[n,list.filter(it=>it.type!=='habit'&&periodOf(it)===g)]).filter(([,l])=>l.length);
@@ -1472,20 +1472,20 @@ const VIEWS={
   return `${header(fmtDate(ds),ds===TODAY?hello:'ย้อนดู/วางแผน')}
   <div class="ev-weekbar"><b>${TH_MONTH[parse(week[3]).getMonth()]} ${parse(week[3]).getFullYear()+543}</b><div class="ev-row" style="gap:4px">${UI.date!==TODAY||UI.weekOff?'<button class="ev-chip-btn" data-act="today">วันนี้</button>':''}<button class="ev-icon-btn" data-flat data-act="wk" data-id="-1" aria-label="สัปดาห์ก่อน">${icon('back')}</button><button class="ev-icon-btn ev-flip" data-flat data-act="wk" data-id="1" aria-label="สัปดาห์ถัดไป">${icon('back')}</button></div></div>
   <div class="ev-week" role="group" aria-label="เลือกวัน" data-dir="${UI.weekDir}">${week.map(d=>`<button aria-pressed="${UI.date===d}" data-today="${d===TODAY}" data-act="date" data-id="${d}">${WD[parse(d).getDay()]}<b>${parse(d).getDate()}</b></button>`).join('')}</div>
-  <main class="ev-main" id="main"><section class="ev-card ev-sum" data-tone="ink"><div class="ev-sum-row" style="gap:20px"><div class="ev-sum-ring"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="rg-bg" cx="50" cy="50" r="42"/><circle class="rg" data-kind="arc" data-k="ring-today" data-to="${p}" cx="50" cy="50" r="42" stroke-dasharray="${ARC_C}" stroke-dashoffset="${ARC_C}"/></svg><div class="ev-sum-ringnum"><span><span data-count="${p}">0</span><small>%</small></span></div></div><div class="grow"><div class="ev-sum-num"><span data-count="${done}">0</span><small>/${tr.length}</small></div><div class="ev-sum-lab">${tr.length?(p===100?`<span class="ev-cheer">${icon('spark')}ครบทุกอย่างแล้ว เยี่ยมมาก!</span>`:'ทำแล้ววันนี้'):'วันนี้ไม่มีสิ่งต้องติ๊ก'}</div>${nextIt?`<div class="ev-next" data-act="detail" data-id="${nextIt.id}"><span class="ev-chip">ถัดไป</span>${nextIt.time} · ${esc(nextIt.title)}</div>`:''}</div></div></section>
+  <main class="ev-main" id="main"><section class="ev-card ev-sum" data-tone="ink"><div class="ev-sum-row" style="gap:20px"><div class="ev-sum-ring"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="rg-bg" cx="50" cy="50" r="42"/><circle class="rg" data-kind="arc" data-k="ring-today" data-to="${p}" cx="50" cy="50" r="42" stroke-dasharray="${ARC_C}" stroke-dashoffset="${ARC_C}"/></svg><div class="ev-sum-ringnum"><span><span data-count="${p}">0</span><small>%</small></span></div></div><div class="grow"><div class="ev-sum-num"><span data-count="${done}">0</span><small>/${tr.length}</small></div><div class="ev-sum-lab">${tr.length?(p===100?`<span class="ev-cheer">${icon('spark')}ครบทุกอย่างแล้ว เยี่ยมมาก!</span>`:'ทำแล้ววันนี้'):'วันนี้ยังไม่มีอะไรต้องทำ'}</div>${nextIt?`<div class="ev-next" data-act="detail" data-id="${nextIt.id}"><span class="ev-chip">ถัดไป</span>${nextIt.time} · ${esc(nextIt.title)}</div>`:''}</div></div></section>
   ${hb.length?`<section class="ev-flat"><div class="ev-sec-head"><h2 class="ev-group" style="padding:0">กิจวัตรวันนี้<span class="cnt">${hbDone}/${hb.length}</span></h2></div><div class="ev-tiles">${hb.map((it,i)=>habitTile(it,ds,i)).join('')}</div>${ds!==TODAY?'<p class="ev-sub" style="margin-top:10px">ย้อนดูวันอื่น แตะวงเพื่อบันทึกย้อนหลังได้</p>':''}</section>`:''}
   ${od.length?`<section class="ev-flat" data-tone="late"><div class="ev-sec-head"><h2 class="ev-group" style="padding:0">ค้างอยู่<span class="cnt" data-late>${od.length}</span></h2></div><p class="ev-hint">ยังไม่เสร็จและเลยกำหนดส่งแล้ว แตะที่งานเพื่อทำให้เสร็จ</p><ul class="ev-cards">${od.map((it,k)=>itemRow(it,it.start,k,{late:true})).join('')}</ul></section>`:''}
-  ${list.length?groups.map(([n,l])=>`<section class="ev-card"><div class="ev-sec-head"><h2 class="ev-group" style="padding:0">${n}<span class="cnt">${l.length}</span></h2></div><ul>${l.map(it=>itemRow(it,ds,idx++,{next:it.id===nextId})).join('')}</ul></section>`).join(''):`<section class="ev-card">${empty('inbox','วันนี้ยังว่างอยู่','กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากทำ')}</section>`}</main>`},
+  ${list.length?groups.map(([n,l])=>`<section class="ev-card"><div class="ev-sec-head"><h2 class="ev-group" style="padding:0">${n}<span class="cnt">${l.length}</span></h2></div><ul>${l.map(it=>itemRow(it,ds,idx++,{next:it.id===nextId})).join('')}</ul></section>`).join(''):`<section class="ev-card">${empty('inbox','วันนี้ยังไม่มีอะไร','แตะ + เพื่อเพิ่มรายการแรก')}</section>`}</main>`},
  all(){const types=UI.type==='all'?Object.keys(TYPES):[UI.type];
   const row=it=>`<li class="ev-list-item" data-act="detail" data-lp="1" data-id="${it.id}" data-date="${TODAY}" data-key="a-${it.id}"><span class="ev-badge" data-t="${it.type}">${icon(typeIcon(it))}</span><div class="grow"><b>${esc(it.title)}</b><span class="ev-sub">${repeatText(it)}${it.time?` · ${timeText(it)}`:''}</span></div>${icon('chev')}</li>`;
   const sec=k=>{const g=S.items.filter(it=>it.type===k);return g.length?`<section class="ev-card"><div class="ev-sec-head"><h2 class="ev-group">${TYPES[k]}<span class="cnt">${g.length}</span></h2><button class="ev-link-btn" data-act="add-type" data-id="${k}" aria-label="เพิ่ม${TYPES[k]}">${icon('plus')}</button></div><ul>${g.map(row).join('')}</ul></section>`:''};
   const body=types.map(sec).join('');
-  return `${header(`${S.items.length} รายการที่ตั้งไว้`,'รายการ')}${pills('type',[['all','ทั้งหมด'],...Object.entries(TYPES)],UI.type)}<main class="ev-main">${body||`<section class="ev-card">${empty('inbox','ยังไม่มีรายการ','กดปุ่ม + เพื่อสร้างรายการแรก')}</section>`}</main>`},
+  return `${header(`${S.items.length} รายการที่ตั้งไว้`,'รายการ')}${pills('type',[['all','ทั้งหมด'],...Object.entries(TYPES)],UI.type)}<main class="ev-main">${body||`<section class="ev-card">${empty('inbox','ยังไม่มีรายการ','แตะ + เพื่อเริ่มต้น')}</section>`}</main>`},
  calendar(){const isM=UI.calView==='dayGridMonth';
   return `${header('ทุกอย่างในที่เดียว','ปฏิทิน')}<div class="ev-main" style="padding-bottom:12px"><div class="ev-cal-top"><div class="ev-row" style="gap:2px"><button class="ev-icon-btn" data-flat data-act="cal-nav" data-id="prev" aria-label="ก่อนหน้า">${icon('back')}</button><b id="calTitle" class="ev-cal-title">&nbsp;</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-nav" data-id="next" aria-label="ถัดไป">${icon('back')}</button></div><button class="ev-chip-btn" data-act="cal-nav" data-id="today">วันนี้</button></div>${seg('cal-view',[['dayGridMonth','เดือน'],['timeGridWeek','สัปดาห์']],UI.calView)}</div>
   <main class="ev-main"><section class="ev-card ev-fc-wrap"><div id="fcMain" data-keep></div></section><div id="agenda">${isM?agendaHTML(UI.calSel):''}</div></main>`},
-  stats(){const hs=habits(),isM=UI.period==='month',n=isM?STAT_GRID_M:STAT_GRID_W,hdr=header('ความต่อเนื่องของคุณ','สถิติ');
-  if(!hs.length)return `${hdr}<main class="ev-main">${empty('chart','ยังไม่มีกิจวัตร','สร้างกิจวัตรเพื่อดูสถิติและ streak')}</main>`;
+  stats(){const hs=habits(),isM=UI.period==='month',n=isM?STAT_GRID_M:STAT_GRID_W,hdr=header('ทำต่อเนื่อง','สถิติ');
+  if(!hs.length)return `${hdr}<main class="ev-main">${empty('chart','ยังไม่มีกิจวัตร','สร้างกิจวัตรแล้วกลับมาดูความก้าวหน้า')}</main>`;
   const cnt=off=>{let f=0,t=0;for(let i=0;i<n;i++){const s=dayAgg(ymd(addDays(new Date(),-(i+off)))).state;if(s==='off'||s==='future')continue;t++;if(s==='full')f++}return {f,t}};
   const cur=cnt(0),prev=cnt(n),dl=cur.f-prev.f,lbl=isM?'4 สัปดาห์':'7 วัน';
   const cmp=prev.t?(dl>0?`ดีขึ้นจากช่วงก่อนหน้า ${dl} วัน`:dl<0?`ลดลงจากช่วงก่อนหน้า ${-dl} วัน`:'เท่ากับช่วงก่อนหน้า'):'';
@@ -1497,7 +1497,7 @@ const VIEWS={
   const wd=Array.from({length:7},()=>({t:0,k:0}));hs.forEach(h=>days.forEach(({d,ds})=>{if(ds>TODAY||ds<h.start||!occursOn(h,ds)||skipped(h,ds))return;const w=wd[d.getDay()];w.t++;if(isDone(h,ds))w.k++}));
   const rk=wd.map((w,i)=>({i,...w,r:w.t?w.k/w.t:-1})).filter(w=>w.t>=2).sort((a,b)=>b.r-a.r),hi=rk[0],lo=rk[rk.length-1];
   const ins=isM&&rk.length>=2&&hi.r!==lo.r?`<section class="ev-card"><h2 class="ev-group" style="padding-top:0">จังหวะของคุณ</h2><ul><li class="ev-list-item"><div class="grow"><b>ทำได้ดีที่สุด · วัน${TH_DAY[hi.i]}</b><span class="ev-sub">ทำ ${hi.k} จาก ${hi.t} ครั้ง</span></div></li><li class="ev-list-item"><div class="grow"><b>พลาดบ่อยที่สุด · วัน${TH_DAY[lo.i]}</b><span class="ev-sub">ทำ ${lo.k} จาก ${lo.t} ครั้ง</span></div></li></ul></section>`:'';
-  const row=h=>{const s=periodStats(h,n),st=streak(h);return `<li class="ev-list-item" data-act="detail" data-lp="1" data-id="${h.id}" data-date="${TODAY}" data-key="s-${h.id}"><div class="grow"><b>${esc(h.title)}</b><span class="ev-sub">${s.t?`ทำ ${s.ok} จาก ${s.t} วัน`:'ไม่มีกำหนดในช่วงนี้'}${st?` · ต่อเนื่อง ${st} วัน`:''}</span><div class="ev-trail" data-m="${isM}">${days.map(({ds})=>{const k=dayState(h,ds);return `<i data-s="${k==='done'?'full':k==='skip'?'off':k}"></i>`}).join('')}</div></div>${icon('chev')}</li>`};
+  const row=h=>{const s=periodStats(h,n),st=streak(h);return `<li class="ev-list-item" data-act="detail" data-lp="1" data-id="${h.id}" data-date="${TODAY}" data-key="s-${h.id}"><div class="grow"><b>${esc(h.title)}</b><span class="ev-sub">${s.t?`ทำ ${s.ok} จาก ${s.t} วัน`:'ช่วงนี้ไม่มีกำหนด'}${st?` · ต่อเนื่อง ${st} วัน`:''}</span><div class="ev-trail" data-m="${isM}">${days.map(({ds})=>{const k=dayState(h,ds);return `<i data-s="${k==='done'?'full':k==='skip'?'off':k}"></i>`}).join('')}</div></div>${icon('chev')}</li>`};
   return `${hdr}<div class="ev-main" style="padding-bottom:12px">${seg('period',[['week','7 วันล่าสุด'],['month','4 สัปดาห์ล่าสุด']],UI.period)}</div>
   <main class="ev-main"><section class="ev-card ev-sum" data-tone="ink"><div class="ev-sum-num"><span data-count="${cur.f}">0</span><small>/${cur.t} วัน</small></div><div class="ev-sum-lab">วันที่ทำกิจวัตรครบทุกอย่าง ใน ${lbl} ที่ผ่านมา</div>${cmp?`<div class="ev-next">${cmp}</div>`:''}</section>
   <section class="ev-card"><h2 class="ev-group" style="padding-top:0">แต่ละวัน</h2>${grid}</section>
@@ -1506,7 +1506,7 @@ const VIEWS={
 
 /* ===== MODULE: ui/form (เพิ่ม/แก้ไข) — ขั้นที่ 1 เลือกประเภท, ขั้นที่ 2 กรอกเฉพาะที่จำเป็น ตัวเลือกขั้นสูงพับเก็บ ===== */
 let D={};
-const TYPE_INFO={habit:['clock','ทำซ้ำเป็นประจำ เช่น ดื่มน้ำ อ่านหนังสือ'],task:['tasks','มีวันส่ง เช่น การบ้าน รายงาน'],event:['bell','นัดหมายที่มีเวลาเริ่มและจบ'],class:['cal','คาบเรียนประจำสัปดาห์']};
+const TYPE_INFO={habit:['clock','ทำเป็นประจำ เช่น ดื่มน้ำ อ่านหนังสือ'],task:['tasks','มีกำหนดส่ง เช่น การบ้าน รายงาน'],event:['bell','นัดที่มีเวลาเริ่มและจบ'],class:['cal','คาบเรียนประจำสัปดาห์']};
 const startBase=()=>{const d=UI.tab==='calendar'?UI.calSel:UI.date;return d>=TODAY?d:TODAY};
 const newDraft=t=>{const tm=t==='event'||t==='class';return {id:null,step:'form',open:'',type:t,title:'',subject:'',start:startBase(),end:'',endMode:'never',time:tm?'09:00':'',timeEnd:tm?'10:00':'',timed:tm,unit:t==='habit'?'day':'none',every:1,days:[],track:'check',target:1,unitName:'',rem:[],cn:15,cu:'m',err:''}};
 const draftFrom=it=>({id:it.id,step:'form',open:'',type:it.type,title:it.title,subject:it.subject,start:it.start,end:it.end,endMode:it.end?'date':'never',time:it.time,timeEnd:it.timeEnd,timed:!!it.time,unit:it.repeat.unit,every:it.repeat.every,days:[...it.repeat.days],track:it.track==='none'?'check':it.track,target:it.target,unitName:it.unitName,rem:it.rem.map(r=>({...r})),remOn:it.rem.length>0,cn:15,cu:'m',err:''});
@@ -1519,7 +1519,7 @@ const tf=(name,label)=>{const v=D[name]||'';return `<label class="ev-tf"><span>$
 const stepper=(l,act,v,u)=>`<div class="ev-stepper"><span>${l}</span><div class="ev-step"><button type="button" data-act="${act}" data-id="-1" aria-label="ลด" ${v<=1?'disabled':''}>−</button><b>${v}</b><button type="button" data-act="${act}" data-id="1" aria-label="เพิ่ม">+</button></div>${u}</div>`;
 const dbox=(name,label)=>{const v=D[name]||'';return `<label class="ev-dbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS.cal}"/></svg><span>${v?fmtDate(v):label}</span><input name="${name}" type="date" value="${esc(v)}" aria-label="${label}"></label>`};
 const qdate=()=>{const t0=parse(TODAY);return `<div class="ev-qd">${[[0,'วันนี้'],[1,'พรุ่งนี้'],[7,'สัปดาห์หน้า']].map(([n,l])=>{const d=ymd(addDays(t0,n));return `<button type="button" aria-pressed="${D.start===d}" data-act="dquick" data-id="${d}">${l}</button>`}).join('')}</div>`};
-const endBody=()=>seg('dend',[['never','ไม่มีวันจบ'],['date','ถึงวันที่']],D.endMode)+(D.endMode==='date'?`<div>${dbox('end','เลือกวันสิ้นสุด')}</div>`:'');
+const endBody=()=>seg('dend',[['never','ไม่กำหนดวันจบ'],['date','สิ้นสุดวันที่']],D.endMode)+(D.endMode==='date'?`<div>${dbox('end','เลือกวันสิ้นสุด')}</div>`:'');
 const whenSect=T=>{const lab={habit:'เริ่มวันที่',task:'วันครบกำหนด',event:'วันที่จัด',class:'เริ่มภาคเรียนวันที่'}[T],two=T==='event'||T==='class';
  const times=D.timed?`<div class="${two?'ev-two':''}">${tf('time',two?'เริ่ม':T==='task'?'เวลาส่ง':'เวลา')}${two?tf('timeEnd','สิ้นสุด'):''}</div>`:'';
  return sect('เมื่อไหร่','',ffld(lab,dbox('start','เลือกวัน')+qdate())+(T==='class'?times:ffld('เวลา',seg('dtimed',[['0','ทั้งวัน'],['1','ระบุเวลา']],D.timed?'1':'0')+times)))};
@@ -1546,7 +1546,7 @@ const repView=()=>{const u=D.unit,T=D.type,end=u!=='none'||T==='class'?ffld('ส
   +(u==='week'?ffld('วันไหนบ้าง',chips('dday',WEEK_OPTS,D.days)):'')+end};
 function formBody(){const T=D.type,multi=D.track!=='check',ph={habit:'เช่น ดื่มน้ำ',task:'เช่น การบ้านคณิต',event:'เช่น ประชุมชมรม',class:'ชื่อวิชา'}[T];
  let h=`<input class="ev-title-input" name="title" value="${esc(D.title)}" placeholder="${ph}" maxlength="80" aria-label="ชื่อ">${D.err?`<div class="ev-form-err" role="alert">${esc(D.err)}</div>`:''}`;
- if(T==='habit')h+=sect('ติดตามผล','เลือกวิธีบันทึกว่าทำแล้ว',seg('dtrack',TRACK_OPTS,D.track)+(multi?stepper('เป้าหมายต่อวัน','dtarget',D.target,`<input class="ev-unit" name="unitName" value="${esc(D.unitName)}" placeholder="${D.track==='timer'?'นาที':'หน่วย'}" maxlength="12" aria-label="หน่วย">`):''));
+ if(T==='habit')h+=sect('นับผลอย่างไร','เลือกวิธีนับว่าทำแล้ว',seg('dtrack',TRACK_OPTS,D.track)+(multi?stepper('เป้าหมายต่อวัน','dtarget',D.target,`<input class="ev-unit" name="unitName" value="${esc(D.unitName)}" placeholder="${D.track==='timer'?'นาที':'หน่วย'}" maxlength="12" aria-label="หน่วย">`):''));
  if(T==='class')h+=sect('เรียนวันไหน','',chips('dday',WEEK_OPTS,D.days));
  if(T==='task')h+=sect('วิชา/หมวด','ไม่บังคับ',`<input class="ev-in2" name="subject" value="${esc(D.subject)}" placeholder="เช่น คณิตศาสตร์" maxlength="30" aria-label="วิชา">`);
  h+=whenSect(T);if(T!=='task')h+=repeatSect(T);return h+remSect()}
@@ -1584,16 +1584,16 @@ const tmMs=()=>TM?TM.acc+(TM.startedAt?Date.now()-TM.startedAt:0):0;
 let focusId=null;
 function focusBody(it){const mine=TM&&TM.id==it.id,run=mine&&!!TM.startedAt,ms=mine?tmMs():0,goal=it.target*60000,base=val(it,mine?TM.date:UI.fdate)*60000,p=Math.min(100,(base+ms)/goal*100);
  const btn=(a,ic,l,big)=>`<div style="display:grid;gap:6px;justify-items:center"><button class="ev-round" ${big?'data-big="true"':''} data-act="${a}" data-id="${it.id}" aria-label="${l}">${icon(ic)}</button><span class="ev-sub">${l}</span></div>`;
- const acts=!mine?btn('tstart','play','เริ่ม',true):run?btn('tpause','pause','หยุดชั่วคราว',true)+btn('tfinish','stop','จบและบันทึก'):btn('tresume','play','ต่อ',true)+btn('tfinish','stop','จบและบันทึก');
+ const acts=!mine?btn('tstart','play','เริ่ม',true):run?btn('tpause','pause','หยุดพัก',true)+btn('tfinish','stop','จบและบันทึก'):btn('tresume','play','ต่อ',true)+btn('tfinish','stop','จบและบันทึก');
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>จับเวลา</h2>${mine?`<button class="ev-btn-danger ev-btn-sm" data-act="tcancel">ยกเลิก</button>`:''}</div>
  <div class="ev-page-scroll" style="text-align:center"><div><h1 class="ev-title" style="padding:0">${esc(it.title)}</h1><p class="ev-sub">เป้าหมาย ${it.target} ${esc(it.unitName||'นาที')} · ${dayLab(UI.fdate)}ทำแล้ว ${val(it,UI.fdate)}</p></div>
- <div class="ev-dial" id="dial" data-run="${run}" style="--p:${p}"><div class="ev-dial-face"><div class="ev-digits" id="digits">${fmtClock(ms)}</div><span class="ev-sub">${!mine?'พร้อมเริ่ม':run?'กำลังจับเวลา':'หยุดชั่วคราว'}</span></div></div><div class="ev-focus-actions">${acts}</div>
+ <div class="ev-dial" id="dial" data-run="${run}" style="--p:${p}"><div class="ev-dial-face"><div class="ev-digits" id="digits">${fmtClock(ms)}</div><span class="ev-sub">${!mine?'พร้อมเริ่ม':run?'กำลังจับเวลา':'หยุดพัก'}</span></div></div><div class="ev-focus-actions">${acts}</div>
  <p class="ev-sub">ปิดแอปแล้วเวลายังเดินต่อ เพราะเก็บเวลาเริ่มไว้ ไม่ได้นับวินาทีในหน้านี้</p></div>`}
 function openFocus(id){const it=find(id);if(!it)return;if(TM&&TM.id!=id){toast('มีตัวจับเวลาอื่นทำงานอยู่ ต้องจบก่อน');return openFocus(TM.id)}
  if(focusId!==null){const p=pageOf('focus');if(p)patch(p,focusBody(it));return}focusId=id;openPage(focusBody(it),()=>{focusId=null;updateLive()},'focus')}
 const refreshFocus=()=>{const it=find(focusId),p=pageOf('focus');if(it&&p)patch(p,focusBody(it))};
 function updateLive(){const l=$('live'),it=TM&&find(TM.id);if(!it||focusId!==null){l.dataset.show='false';return}l.dataset.show='true';l.dataset.run=String(!!TM.startedAt);l.dataset.id=it.id;
- l.innerHTML=`<i></i><span>${TM.startedAt?'กำลังจับเวลา':'หยุดชั่วคราว'} · ${esc(it.title)}</span><b>${fmtClock(tmMs())}</b>`}
+ l.innerHTML=`<i></i><span>${TM.startedAt?'กำลังจับเวลา':'หยุดพัก'} · ${esc(it.title)}</span><b>${fmtClock(tmMs())}</b>`}
 function tick(){if(!TM)return;const it=find(TM.id);if(!it){TM=null;saveTM();return updateLive()}
  const d=$('digits');if(d&&focusId!==null){d.textContent=fmtClock(tmMs());$('dial').style.setProperty('--p',Math.min(100,(val(it,TM.date)*60000+tmMs())/(it.target*60000)*100))}else updateLive()}
 setInterval(tick,1000);
@@ -1682,24 +1682,24 @@ const resetIn=iso=>{const ms=+new Date(iso)-Date.now();if(!(ms>0))return 'อี
 const whenText=iso=>'ใน'+resetIn(iso);
 function lockInfo(){if(AI.notice?.kind==='limit')return AI.notice;const v=UI.usage;return usageState(v)==='out'?{reason:v.reason||'calls',resetAt:v.resetAt}:null}
 function limitBanner(){const L=lockInfo();if(!L)return '';const g=L.reason==='global';
- const title=g?'ตอนนี้มีผู้ใช้จำนวนมาก':L.reason==='tokens'?'บทสนทนายาวถึงขีดจำกัดของวันนี้แล้ว':'ถึงขีดจำกัดการถามของวันนี้แล้ว';
- const sub=g?'ระบบเต็มชั่วคราว ลองใหม่อีกครั้งในอีกสักครู่':`ใช้ได้อีกครั้ง${whenText(L.resetAt)} (${bkkClock(L.resetAt)} น.)`;
+ const title=g?'ตอนนี้มีคนใช้งานเยอะ':L.reason==='tokens'?'บทสนทนายาวถึงขีดจำกัดของวันนี้แล้ว':'ถึงขีดจำกัดการถามของวันนี้แล้ว';
+ const sub=g?'ตอนนี้คนใช้เยอะ ลองใหม่อีกสักครู่':`ใช้ได้อีกครั้ง${whenText(L.resetAt)} (${bkkClock(L.resetAt)} น.)`;
  return `<div class="ev-limit" role="status" data-key="limit"><span class="ev-limit-ic">${icon('clock')}</span><div class="grow"><b>${title}</b><span>${sub}</span></div>g?'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-retry-global">ลองใหม่</button>':'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">รายละเอียด</button>'}</div>`}
 function noticeHTML(){const n=AI.notice;if(!n)return '';
- if(n.kind==='error')return `<div class="ev-notice" data-key="notice"><b>ส่งข้อความไม่สำเร็จ</b><span>ตรวจสอบการเชื่อมต่อแล้วลองใหม่ ข้อความของคุณยังอยู่ในช่องพิมพ์</span><div><button class="ev-btn-primary ev-btn-sm" data-act="ai-retry">ส่งอีกครั้ง</button></div></div>`;
- const g=n.reason==='global';return `<div class="ev-notice" data-key="notice"><b>ข้อความนี้ยังไม่ได้ส่ง</b><span>${g?'ระบบเต็มชั่วคราว ข้อความของคุณยังอยู่ในช่องพิมพ์ ลองส่งใหม่ในอีกสักครู่':`ถึงขีดจำกัดการใช้งานแล้ว ข้อความของคุณยังอยู่ในช่องพิมพ์ ส่งได้อีกครั้ง${whenText(n.resetAt)}`}</span><div class="ev-row" style="gap:8px;flex-wrap:wrap"><button class="ev-btn-ghost ev-btn-sm" data-act="add">เพิ่มรายการเอง</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">ดูการใช้งาน</button></div></div>`}
-function composerHTML(){const L=lockInfo(),ph=L?(L.reason==='global'?'ระบบเต็มชั่วคราว ลองใหม่ในอีกสักครู่':`ใช้ได้อีกครั้ง ${bkkClock(L.resetAt)} น.`):'ถาม AI…';
- return `${limitBanner()}<textarea id="aiText" rows="1" placeholder="${ph}" aria-label="ข้อความถึง AI" ${L?'disabled':''}></textarea><div class="ev-composer-bar"><button type="button" class="ev-plus" data-act="ai-plus" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวช่วยพิมพ์" ${L?'disabled':''}>${icon('plus')}</button><button class="ev-send" data-empty="true" aria-label="ส่ง" ${L?'disabled':''}>${icon('send')}</button></div>`}
+ if(n.kind==='error')return `<div class="ev-notice" data-key="notice"><b>ส่งไม่สำเร็จ</b><span>ลองเชื่อมต่อใหม่แล้วส่งอีกครั้ง ข้อความยังอยู่ในช่องพิมพ์</span><div><button class="ev-btn-primary ev-btn-sm" data-act="ai-retry">ส่งอีกครั้ง</button></div></div>`;
+ const g=n.reason==='global';return `<div class="ev-notice" data-key="notice"><b>ข้อความนี้ยังไม่ถูกส่ง</b><span>${g?'ระบบเต็มชั่วคราว ข้อความของคุณยังอยู่ในช่องพิมพ์ ลองส่งใหม่ในอีกสักครู่':`วันนี้ใช้ครบจำนวนแล้ว ข้อความยังอยู่ในช่องพิมพ์ ส่งได้อีกครั้ง${whenText(n.resetAt)}`}</span><div class="ev-row" style="gap:8px;flex-wrap:wrap"><button class="ev-btn-ghost ev-btn-sm" data-act="add">เพิ่มรายการเอง</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">ดูการใช้งาน</button></div></div>`}
+function composerHTML(){const L=lockInfo(),ph=L?(L.reason==='global'?'ตอนนี้คนใช้เยอะ ลองใหม่อีกสักครู่':`ใช้ได้อีกครั้ง ${bkkClock(L.resetAt)} น.`):'พิมพ์ข้อความ…';
+ return `${limitBanner()}<textarea id="aiText" rows="1" placeholder="${ph}" aria-label="ข้อความถึงผู้ช่วย" ${L?'disabled':''}></textarea><div class="ev-composer-bar"><button type="button" class="ev-plus" data-act="ai-plus" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวช่วย" ${L?'disabled':''}>${icon('plus')}</button><button class="ev-send" data-empty="true" aria-label="ส่ง" ${L?'disabled':''}>${icon('send')}</button></div>`}
 function paintComposer(){const f=$('aiForm');if(!f)return;f.dataset.locked=String(!!lockInfo());patch(f,composerHTML());const t=$('aiText');if(t&&AI.draft&&!t.value)t.value=AI.draft;aiAutosize()}
 const AI_MARK='<svg class="ev-ai-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="5" fill="currentColor" stroke="none"/></svg>';
 const msgActions=(m,i)=>`<div class="ev-msg-actions"><button data-act="ai-copy" data-id="${i}" aria-label="คัดลอก">${icon('copy')}</button><button data-act="ai-vote" data-id="${i}:up" aria-pressed="${m.vote==='up'}" aria-label="ชอบ">${icon('thumbup')}</button><button data-act="ai-vote" data-id="${i}:down" aria-pressed="${m.vote==='down'}" aria-label="ไม่ชอบ">${icon('thumbdown')}</button></div>`;
 function aiBodyHTML(){const c=curChat();
  if((!c||!c.msgs.length)&&!AI.typing)return `<div class="ev-ai-hello" data-key="hello">${AI_MARK}<h3>${firstName()?`สวัสดี ${esc(firstName())}`:'สวัสดี'}</h3><p class="ev-sub" style="margin-top:-6px">มีอะไรให้ช่วยวันนี้</p><div class="ev-sugg">${SUGG.map((s,i)=>`<button type="button" data-act="sugg" data-id="${i}">${esc(s)}</button>`).join('')}</div></div>${noticeHTML()}`;
  const ms=c?c.msgs:[],lastA=ms.map(m=>m.who).lastIndexOf('a');
- return `<div class="ev-chat">${ms.map((m,i)=>m.who==='u'?`<div class="ev-bubble-user" data-key="m${i}">${esc(m.text)}</div>`:`<div class="ev-bubble-ai ev-md" data-key="m${i}">${mdToHtml(m.text)}</div>${cardHTML(m,i)}${msgActions(m,i)}${i===lastA&&!AI.typing?'<p class="ev-disc">AI อาจผิดพลาดได้ ตรวจสอบคำตอบอีกครั้ง</p>':''}`).join('')}${AI.typing?'<div class="ev-bubble-ai ev-typing" data-key="typing"><i></i><i></i><i></i></div>':''}${noticeHTML()}</div>`}
+ return `<div class="ev-chat">${ms.map((m,i)=>m.who==='u'?`<div class="ev-bubble-user" data-key="m${i}">${esc(m.text)}</div>`:`<div class="ev-bubble-ai ev-md" data-key="m${i}">${mdToHtml(m.text)}</div>${cardHTML(m,i)}${msgActions(m,i)}${i===lastA&&!AI.typing?'<p class="ev-disc">ผู้ช่วยอาจตอบผิดได้ ตรวจสอบก่อนนำไปใช้</p>':''}`).join('')}${AI.typing?'<div class="ev-bubble-ai ev-typing" data-key="typing"><i></i><i></i><i></i></div>':''}${noticeHTML()}</div>`}
 function aiRefresh(smooth){const sc=$('aiScroll');if(!sc)return;patch($('aiBody'),aiBodyHTML());$('aiTitle').textContent=curChat()?.title||'AI';if(smooth)sc.scrollTo({top:sc.scrollHeight,behavior:'smooth'})}
 function aiRenderDrawer(q=''){const box=$('drawerList');if(!box)return;const k=q.trim().toLowerCase(),list=CH.list.filter(c=>!k||c.title.toLowerCase().includes(k)||c.msgs.some(m=>m.text.toLowerCase().includes(k))).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.t-a.t);
- if(!list.length){patch(box,`<div class="ev-empty" data-key="empty"><p>${k?'ไม่พบแชทที่ค้นหา':'ยังไม่มีประวัติแชท'}</p></div>`);return}
+ if(!list.length){patch(box,`<div class="ev-empty" data-key="empty"><p>${k?'ไม่พบแชทที่ค้นหา':'ยังไม่มีบทสนทนา'}</p></div>`);return}
  let last='',h='';for(const c of list){const g=c.pinned?'ปักหมุด':'ล่าสุด';if(g!==last){h+=`<div class="ev-drawer-grp" data-key="g-${g}">${g}</div>`;last=g}
   h+=`<div class="ev-chat-row" data-key="c${c.id}" data-cur="${c.id===CH.cur}"><button data-act="ai-open" data-id="${c.id}">${icon(c.pinned?'pin':'chat')}<b>${esc(c.title||'แชทใหม่')}</b></button><button class="ev-icon-btn" data-flat data-act="ai-opts" data-id="${c.id}" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวเลือกแชท">${icon('more')}</button></div>`}
  patch(box,h)}
@@ -1712,12 +1712,12 @@ const drawerOpen=on=>{const d=$('drawer');if(!d)return;d.dataset.open=String(on)
 const aiAutosize=()=>{const t=$('aiText');if(!t)return;t.style.height='auto';t.style.height=Math.min(120,t.scrollHeight)+'px';const s=$('aiForm')?.querySelector('.ev-send');if(s)s.dataset.empty=String(!t.value.trim())};
 /* --- การใช้งาน AI (การ์ดในตั้งค่า / แผ่นรายละเอียด) --- */
 function usageCardHTML(){const v=UI.usage,st=usageState(v);
- if(st==='unknown')return `<b>การใช้งาน AI วันนี้</b><p class="ev-sub" style="margin-top:6px">${v?'ดูข้อมูลการใช้งานไม่ได้ในขณะนี้ แต่ยังใช้ AI ได้ตามปกติ':'กำลังโหลด…'}</p>${v?'<button class="ev-btn-ghost ev-btn-sm" style="margin-top:10px" data-act="usage-refresh">ลองใหม่</button>':''}`;
+ if(st==='unknown')return `<b>การใช้ผู้ช่วยวันนี้</b><p class="ev-sub" style="margin-top:6px">${v?'ดูยอดการใช้งานไม่ได้ตอนนี้ แต่ยังใช้ผู้ช่วยได้ตามปกติ':'กำลังโหลด…'}</p>${v?'<button class="ev-btn-ghost ev-btn-sm" style="margin-top:10px" data-act="usage-refresh">ลองใหม่</button>':''}`;
  const c=v.calls,t=v.tokens,cp=Math.min(100,Math.round(100*c.used/c.limit)),tp=Math.min(100,Math.round(100*t.used/t.limit)),lab={ok:'ปกติ',low:'ใกล้ถึงขีดจำกัด',out:'ถึงขีดจำกัดแล้ว'}[st];
- return `<div class="ev-stat"><b>การใช้งาน AI วันนี้</b><span class="ev-chip" data-state="${st==='out'?'late':st==='low'?'soon':'done'}">${lab}</span></div>
-  <div class="ev-use"><div class="ev-stat"><span>จำนวนครั้งที่ถาม</span><b>${c.used} / ${c.limit}</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-calls" data-to="${cp}" data-lv="${st}"></i></div></div>
-  <div class="ev-use"><div class="ev-stat"><span>ความยาวบทสนทนา</span><b>${tp}%</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-tok" data-to="${tp}" data-lv="${st}"></i></div></div>
-  <p class="ev-sub" style="margin-top:14px">รีเซ็ตทุกเที่ยงคืน (00:00 น.) · ${resetIn(v.resetAt)}</p>`}
+ return `<div class="ev-stat"><b>การใช้ผู้ช่วยวันนี้</b><span class="ev-chip" data-state="${st==='out'?'late':st==='low'?'soon':'done'}">${lab}</span></div>
+  <div class="ev-use"><div class="ev-stat"><span>คำถามที่ใช้</span><b>${c.used} / ${c.limit}</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-calls" data-to="${cp}" data-lv="${st}"></i></div></div>
+  <div class="ev-use"><div class="ev-stat"><span>พื้นที่บทสนทนา</span><b>${tp}%</b></div><div class="ev-bar ev-bar-lg"><i data-k="u-tok" data-to="${tp}" data-lv="${st}"></i></div></div>
+  <p class="ev-sub" style="margin-top:14px">เริ่มนับใหม่ทุกเที่ยงคืน · ${resetIn(v.resetAt)}</p>`}
 function paintUsage(){['usageWrap','usageSheet'].forEach(id=>{const e=$(id);if(e)patch(e,usageCardHTML())});growBars(document)}
 async function refreshUsage(){try{UI.usage=await AiApi.usage()}catch(err){console.warn('usage',err);UI.usage={unknown:true}}paintUsage();if(hasPage('ai'))paintComposer()}
 function startUsageTimer(){stopUsageTimer();AI.usageT=setInterval(()=>{if(!hasPage('ai')){stopUsageTimer();return}const L=lockInfo();if(L&&L.reason!=='global'&&+new Date(L.resetAt)<=Date.now()){AI.notice=null;refreshUsage();aiRefresh();return}if(L)paintComposer()},USAGE_TICK_MS)}
@@ -1781,7 +1781,7 @@ const countNotifiable=items=>items.filter(it=>Array.isArray(it.rem)&&it.rem.some
 
 
 /* ===== MODULE: views/settings ===== */
-function notifInfo(){if(!('Notification' in window))return ['ไม่รองรับ','เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'];const p=Notification.permission;if(p==='denied')return ['ถูกปิดไว้','ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์'];if(p==='granted')return pushSaved()?['พร้อมรับ','เครื่องนี้ลงทะเบียนรับการแจ้งเตือนแล้ว']:['ยังไม่ได้ลงทะเบียน','อนุญาตแล้ว แต่ยังไม่ได้ลงทะเบียนเครื่องนี้กับระบบ'];return ['ยังไม่ได้ขอ','กดปุ่มเพื่อให้เครื่องนี้รับการแจ้งเตือนได้']}
+function notifInfo(){if(!('Notification' in window))return ['เครื่องนี้ไม่รองรับ','เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'];const p=Notification.permission;if(p==='denied')return ['ถูกปิดไว้','ต้องเปิดที่ตั้งค่าเว็บไซต์ของเบราว์เซอร์'];if(p==='granted')return pushSaved()?['เปิดอยู่','เครื่องนี้พร้อมรับการแจ้งเตือน']:['ยังไม่เปิด','อนุญาตแล้ว แต่ยังไม่ได้เปิดบนเครื่องนี้'];return ['ยังไม่เปิด','กดปุ่มด้านล่างเพื่อเปิดรับการแจ้งเตือน']}
 const themeNow=()=>document.documentElement.dataset.theme||'auto';
 function settingsHTML(){const [st,note]=notifInfo(),total=countNotifiable(S.items),canReg='Notification' in window&&(Notification.permission==='default'||(Notification.permission==='granted'&&!pushSaved()));
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
@@ -1789,18 +1789,12 @@ function settingsHTML(){const [st,note]=notifInfo(),total=countNotifiable(S.item
  <section class="ev-card" id="usageWrap">${usageCardHTML()}</section>
  
  <h2 class="ev-group">การแสดงผล</h2><section class="ev-card"><b>ธีม</b><div style="margin-top:12px">${seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow())}</div></section>
-  <section class="ev-card"><b>อนิเมชั่น</b><p class="ev-sub">อัตโนมัติจะลดเอฟเฟกต์เองเมื่อเครื่องไม่ลื่น</p><div style="margin-top:12px">${seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref())}</div></section>
- <h2 class="ev-group">การใช้งาน</h2><section class="ev-card"><div class="ev-stat"><div><b>การแจ้งเตือน</b><p class="ev-sub">${note}</p></div><span class="ev-chip" data-state="${st==='พร้อมรับ'?'done':''}">${st}</span></div>${canReg?`<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">${Notification.permission==='granted'?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}</button>`:''}
-  <p class="ev-sub" style="margin-top:12px">ตั้งเวลาแจ้งเตือนไว้ ${total} รายการ (ค่าเริ่มต้นปิดไว้ เปิดเองได้ในแต่ละรายการ) · เดโมยังไม่ส่ง Push จริง ต้องเชื่อม Worker</p></section>
- <h2 class="ev-group">ข้อมูล</h2><section class="ev-card"><b>ข้อมูลของคุณ</b><p class="ev-sub">ข้อมูลเก็บในเครื่องนี้เท่านั้น ล้างข้อมูลเบราว์เซอร์แล้วจะหาย</p><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="export">ดาวน์โหลดไฟล์สำรอง</button><button class="ev-btn-ghost ev-btn-block" data-act="import">นำเข้าจากไฟล์</button></div></section>
- <section class="ev-card"><b>เกี่ยวกับ</b><div class="ev-stat" style="margin-top:12px"><div><div style="font-size:20px;font-weight:700;letter-spacing:-.01em">v27</div><p class="ev-sub">เดโม v27 · ฟอร์มแยกการ์ด · แจ้งเตือนสองแบบ · สถิติรายวัน · ธีมสว่างนุ่ม</p></div></div></section>
- <h2 class="ev-group">บัญชี</h2><section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div><input type="file" id="importFile" accept="application/json,.json" hidden></section></div>`}
-function exportData(){const json=JSON.stringify(S,null,2);
- const save=()=>{try{const url=URL.createObjectURL(new Blob([json],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`ordivel-backup-${TODAY}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('สร้างไฟล์สำรองแล้ว')}catch(err){console.warn('export',err);toast('ดาวน์โหลดไม่ได้ในหน้านี้')}};
- (navigator.clipboard?.writeText(json)||Promise.reject(new Error('no clipboard'))).then(()=>toast('คัดลอกข้อมูลสำรองแล้ว วางเก็บไว้ได้เลย'),save)}
-function importData(file){const fr=new FileReader();fr.onerror=()=>toast('อ่านไฟล์ไม่สำเร็จ');fr.onload=()=>{try{const j=JSON.parse(fr.result);if(!Array.isArray(j.items))throw new Error('no items');
- const items=j.items.filter(x=>x&&TYPES[x.type]&&typeof x.title==='string'&&x.id!=null).map(x=>mk({...x,repeat:{unit:'none',every:1,days:[],...x.repeat},log:{...x.log},skip:{...x.skip},rem:Array.isArray(x.rem)?x.rem:[]}));
- if(!items.length)throw new Error('empty');confirmDialog({title:'แทนที่ข้อมูลปัจจุบัน?',msg:`ไฟล์นี้มี ${items.length} รายการ ข้อมูลที่มีอยู่จะถูกแทนที่`,ok:'แทนที่',fn:()=>commit(`นำเข้า ${items.length} รายการแล้ว`,()=>{S.items=items})})}catch(err){console.warn('import',err);toast('ไฟล์ไม่ถูกต้อง นำเข้าไม่ได้')}};fr.readAsText(file)}
+  <section class="ev-card"><b>อนิเมชั่น</b><p class="ev-sub">จะลดเอฟเฟกต์ให้เองเมื่อเครื่องช้าหรือร้อน</p><div style="margin-top:12px">${seg('perf',[['auto','อัตโนมัติ'],['full','เต็มที่'],['lite','เบาเครื่อง']],perfPref())}</div></section>
+ <h2 class="ev-group">การแจ้งเตือน</h2><section class="ev-card"><div class="ev-stat"><div><b>แจ้งเตือนเมื่อถึงเวลา</b><p class="ev-sub">${note}</p></div><span class="ev-chip" data-state="${st==='เปิดอยู่'?'done':''}">${st}</span></div>${canReg?`<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">${Notification.permission==='granted'?'เปิดการแจ้งเตือนบนเครื่องนี้':'เปิดการแจ้งเตือน'}</button>`:''}
+  <p class="ev-sub" style="margin-top:12px">ตั้งเวลาไว้ ${total} รายการ เปิดหรือปิดได้ทีละรายการ</p></section>
+ 
+ <h2 class="ev-group">เกี่ยวกับ</h2><section class="ev-card"><b>Ordivel</b><div class="ev-stat" style="margin-top:12px"><div><div style="font-size:20px;font-weight:700;letter-spacing:-.01em">${window.__EV_VERSION__||""}</div><p class="ev-sub">Ordivel · กิจวัตร ตาราง และการแจ้งเตือนของคุณ</p></div></div></section>
+ <h2 class="ev-group">บัญชี</h2><section class="ev-card"><b>บัญชี</b><div class="ev-form" style="margin-top:12px"><button class="ev-btn-ghost ev-btn-block" data-act="au-signout-ask">ออกจากระบบ</button><button class="ev-btn-danger ev-btn-block" data-act="au-delete-ask">ลบบัญชี</button></div></section></div>`}
 /* ===== MODULE: ui/native (ความรู้สึกแอปจริง): ยกช่องพิมพ์พ้นคีย์บอร์ด + สีแถบสถานะตามธีม ===== */
 const kbSync=()=>{const v=window.visualViewport;if(!v)return;document.documentElement.style.setProperty('--kb',Math.max(0,Math.round(innerHeight-v.height-v.offsetTop))+'px')};
 window.visualViewport?.addEventListener('resize',kbSync);window.visualViewport?.addEventListener('scroll',kbSync);
@@ -1835,7 +1829,7 @@ function syncMainCal(){const el=$('fcMain'),cal=FCS.main;if(!el)return;
  if(cal&&cal.el===el){if(cal.view.type!==UI.calView)cal.changeView(UI.calView,UI.calDate||undefined);cal.setOption('dayCellContent',mainDayContent());cal.setOption('dayCellClassNames',mainDayClasses());cal.refetchEvents();return}
  mountMain()}
 function selectDay(ds){UI.calSel=ds;const el=$('fcMain');el?.querySelectorAll('.fc-daygrid-day.is-sel').forEach(x=>x.classList.remove('is-sel'));el?.querySelector(`.fc-daygrid-day[data-date="${ds}"]`)?.classList.add('is-sel');const box=$('agenda');if(box)box.innerHTML=agendaHTML(ds)}
-function agendaHTML(ds){const list=onDate(ds);return `<section class="ev-card"><div class="ev-sec-head"><h2 class="ev-group">${dayLab(ds)}<span>${fmtDate(ds)}</span></h2></div>${list.length?`<ul>${list.map((it,i)=>itemRow(it,ds,i)).join('')}</ul>`:empty('inbox','ไม่มีรายการในวันนี้','กดปุ่ม + เพื่อเพิ่มรายการ')}</section>`}
+function agendaHTML(ds){const list=onDate(ds);return `<section class="ev-card"><div class="ev-sec-head"><h2 class="ev-group">${dayLab(ds)}<span>${fmtDate(ds)}</span></h2></div>${list.length?`<ul>${list.map((it,i)=>itemRow(it,ds,i)).join('')}</ul>`:empty('inbox','วันนี้ยังไม่มีรายการ','แตะ + เพื่อเพิ่ม')}</section>`}
 const habitDayClasses=it=>a=>['ev-fcday',`st-${dayState(it,ymd(a.date))}`];
 function mountHabit(){const it=find(DETAIL),el=$('fcHabit');if(!el||!it||it.type!=='habit')return;
  mountCal('habit',el,{initialView:'dayGridMonth',initialDate:new Date(UI.cal.y,UI.cal.m,1),dayCellContent:a=>({html:`<span class="ev-dnum">${a.date.getDate()}</span>`}),dayCellClassNames:habitDayClasses(it),dateClick:i=>calDayTap(i.dateStr,i.dayEl)})}
@@ -1856,7 +1850,7 @@ function detailHabit(it){const {y,m}=UI.cal,pad0=new Date(y,m,1).getDay(),dim=ne
  for(let d=1;d<=dim;d++){const ds=ymd(new Date(y,m,d)),st=dayState(it,ds);if(ds<=TODAY&&scheduled(it,ds)&&!skipped(it,ds)){t++;if(isDone(it,ds))ok++}}
  return `<section class="ev-card"><div class="ev-stats3"><div><b>${FLAME}${streak(it)}</b><span>วันต่อเนื่อง</span></div><div><b>${totalDone(it)}</b><span>ทำแล้วทั้งหมด (ครั้ง)</span></div><div><b>${ok}<small>/${t}</small></b><span>วันที่ทำ เดือนนี้</span></div></div></section>
  <section class="ev-card"><div class="ev-cal-head"><button class="ev-icon-btn" data-flat data-act="cal-prev" aria-label="เดือนก่อน">${icon('back')}</button><b>${TH_MONTH[m]} ${y+543}</b><button class="ev-icon-btn ev-flip" data-flat data-act="cal-next" aria-label="เดือนถัดไป" ${isNow?'disabled':''}>${icon('back')}</button></div><div id="fcHabit" data-keep></div>
-  <div class="ev-legend"><span><i data-state="done"></i>ทำแล้ว</span><span><i data-state="part"></i>ทำบางส่วน</span><span><i></i>ยังไม่ทำ</span><span><i data-state="off"></i>ไม่มีกำหนด</span></div><p class="ev-sub" style="margin-top:12px">${it.track==='check'?'แตะวันที่เพื่อติ๊ก/เลิกติ๊ก':'แตะวันที่เพื่อปรับจำนวน'} · กดค้างเพื่อตัวเลือกอื่น (ข้ามวัน)</p></section>`}
+  <div class="ev-legend"><span><i data-state="done"></i>ทำแล้ว</span><span><i data-state="part"></i>ทำบางส่วน</span><span><i></i>ยังไม่ทำ</span><span><i data-state="off"></i>ไม่มีกำหนด</span></div><p class="ev-sub" style="margin-top:12px">${it.track==='check'?'แตะวันที่เพื่อติ๊กหรือเลิกติ๊ก':'แตะวันที่เพื่อปรับจำนวน'} · แตะค้างเพื่อดูตัวเลือกอื่น (ข้ามวัน)</p></section>`}
 function detailTask(it){const done=isDone(it,it.start),late=!done&&it.start<TODAY;
  return `<section class="ev-card"><span class="ev-cap">สถานะ</span><div style="margin:10px 0 14px">${seg('h-task',[['0','ยังไม่เสร็จ'],['1','เสร็จแล้ว']],done?'1':'0')}</div>
   <div class="ev-list-item"><span class="ev-badge">${icon('cal')}</span><div class="grow"><b>กำหนดส่ง ${fmtDate(it.start)}</b><span class="ev-sub">${it.time||'ไม่ระบุเวลา'}${it.subject?` · ${esc(it.subject)}`:''}</span></div>${late?'<span class="ev-chip" data-state="late">เลยกำหนด</span>':done?'<span class="ev-chip" data-state="done">เสร็จแล้ว</span>':''}</div></section>`}
@@ -1887,7 +1881,7 @@ const bump=(id,n,d=UI.date)=>{const it=find(id);if(!it)return;const v=Math.max(0
 const aiMsg=id=>curChat()?.msgs[+id];
 const closeAnyDrawer=()=>{const d=$('drawer');if(d&&d.dataset.open==='true'&&LAYERS[LAYERS.length-1]?.name==='ai'){drawerOpen(false);return true}return false};
 function itemMenu(it,ds){const id=it.id,can=tracked(it)&&occursOn(it,ds)&&!isFuture(ds),k=`${id}|${ds}`,out=[{act:'detail',id,icon:'chart',label:'ดูรายละเอียดและประวัติ'},{act:'m-edit',id,icon:'edit',label:'แก้ไข'},{act:'m-dup',id,icon:'copy',label:'ทำสำเนา'}];
- if(it.track==='timer')out.push({act:'timeropen',id,icon:'clock',label:'เปิดหน้าจับเวลา'});
+ if(it.track==='timer')out.push({act:'timeropen',id,icon:'clock',label:'จับเวลา'});
  if(can&&val(it,ds)>0)out.push({act:'m-reset',id:k,icon:'x',label:`ล้างบันทึก (${dayLab(ds)})`});
  if(can&&it.type==='habit'&&!isDone(it,ds)&&!skipped(it,ds))out.push({act:'m-skip',id:k,icon:'skip',label:`ข้าม (${dayLab(ds)})`});
  if(can&&skipped(it,ds))out.push({act:'m-unskip',id:k,icon:'x',label:'ยกเลิกการข้าม'});
@@ -1934,10 +1928,10 @@ const ACTIONS={
   'au-go':id=>{stopCool();UI.auth.screen=id;renderAuthRoot();return NR},
  'au-google':(id,el)=>{authGoogle(el.closest('button'));return NR},
  'au-eye':(id,el)=>{const i=$(id),show=i.type==='password';i.type=show?'text':'password';el.innerHTML=icon(show?'eyeoff':'eye');el.setAttribute('aria-pressed',String(show));el.setAttribute('aria-label',show?'ซ่อนรหัสผ่าน':'แสดงรหัสผ่าน');return NR},
- 'au-terms':id=>{openDialog(`<h3>${id==='terms'?'ข้อกำหนดการใช้งาน':'นโยบายความเป็นส่วนตัว'}</h3><p class="ev-sub">เอกสารตัวอย่างสำหรับเดโม ใส่ข้อความจริงก่อนเปิดใช้งาน</p><div class="ev-dlg-actions" style="grid-template-columns:1fr"><button class="ev-btn-primary" data-act="close">เข้าใจแล้ว</button></div>`);return NR},
+ 'au-terms':id=>{openDialog(`<h3>${id==='terms'?'ข้อกำหนดการใช้งาน':'นโยบายความเป็นส่วนตัว'}</h3><p class="ev-sub">ฉบับเต็มจะประกาศก่อนเปิดใช้งานทั่วไป ตอนนี้ใช้เพื่อทดสอบระบบ</p><div class="ev-dlg-actions" style="grid-template-columns:1fr"><button class="ev-btn-primary" data-act="close">เข้าใจแล้ว</button></div>`);return NR},
  'au-resend':()=>{resendReset();return NR},
- 'au-signout-ask':()=>{confirmDialog({title:'ออกจากระบบ?',msg:'ข้อมูลของคุณยังอยู่ และเข้าสู่ระบบกลับมาได้เสมอ',keep:'อยู่ต่อ',ok:'ออกจากระบบ',tone:'primary',fn:()=>doSignOut(false)});return NR},
- 'au-delete-ask':()=>{confirmDialog({title:'ลบบัญชีถาวร?',msg:'บัญชีและข้อมูลทั้งหมดของคุณจะถูกลบ และกู้คืนไม่ได้',ok:'ลบบัญชี',fn:()=>doSignOut(true)});return NR},
+ 'au-signout-ask':()=>{confirmDialog({title:'ออกจากระบบ?',msg:'ข้อมูลของคุณยังอยู่ครบ เข้าสู่ระบบกลับมาเมื่อไรก็ได้',keep:'อยู่ต่อ',ok:'ออกจากระบบ',tone:'primary',fn:()=>doSignOut(false)});return NR},
+ 'au-delete-ask':()=>{confirmDialog({title:'ลบบัญชีนี้ถาวร?',msg:'บัญชีและข้อมูลทั้งหมดจะหายไป และกู้คืนไม่ได้',ok:'ลบบัญชี',fn:()=>doSignOut(true)});return NR},
  close:()=>{if(!closeAnyDrawer())closeTop();return NR},undo:()=>{toastEl._undo?.();toastEl._undo=null;toastEl.dataset.open='false';return NR},
  'cf-ok':()=>{const f=CONFIRM.fn;closeTop();setTimeout(()=>f?.(),200);return NR},
  ai:()=>{openAI();return NR},
@@ -1951,7 +1945,7 @@ const ACTIONS={
  'ai-search':()=>{const w=$('dSearchWrap');w.hidden=!w.hidden;if(w.hidden){$('dSearch').value='';aiRenderDrawer('')}else $('dSearch').focus();return NR},
  'ai-pin':id=>{const c=CH.list.find(x=>x.id==id);if(c){c.pinned=!c.pinned;saveCH();aiSync()}return NR},
  'ai-rename':id=>{promptRename(id);return NR},
- 'ai-delask':id=>{const c=CH.list.find(x=>x.id==id);if(c)confirmDialog({title:'ลบแชทนี้?',msg:`“${esc(c.title||'แชทใหม่')}” จะถูกลบออกจากประวัติ`,ok:'ลบ',fn:()=>{const snap=JSON.stringify(CH);CH.list=CH.list.filter(x=>x.id!=id);if(CH.cur==id)CH.cur=null;saveCH();aiSync();toast('ลบแชทแล้ว',()=>{CH=JSON.parse(snap);saveCH();aiSync()})}});return NR},
+ 'ai-delask':id=>{const c=CH.list.find(x=>x.id==id);if(c)confirmDialog({title:'ลบบทสนทนานี้?',msg:`“${esc(c.title||'แชทใหม่')}” จะถูกลบออกจากประวัติ`,ok:'ลบ',fn:()=>{const snap=JSON.stringify(CH);CH.list=CH.list.filter(x=>x.id!=id);if(CH.cur==id)CH.cur=null;saveCH();aiSync();toast('ลบบทสนทนาแล้ว',()=>{CH=JSON.parse(snap);saveCH();aiSync()})}});return NR},
  'ai-plus':(id,el)=>{openPop(el,aiPlusItems,{prefer:'up',align:'left'});return NR},
  'ai-q':id=>{fillComposer(id);return NR},
  'ai-copy':id=>{const m=aiMsg(id);if(m){(navigator.clipboard?.writeText(m.text)||Promise.reject(new Error('no clipboard'))).then(()=>toast('คัดลอกแล้ว'),err=>{console.warn('copy',err);toast('คัดลอกไม่สำเร็จ')})}return NR},
@@ -1963,14 +1957,13 @@ const ACTIONS={
   'ai-ok':id=>{const m=aiMsg(id);if(!m?.card)return NR;const p=m.card.p;commit('',()=>S.items.push(mk({...p,id:Date.now()})),true);m.card.status='added';saveCH();aiRefresh();return NR},
  'ai-no':id=>{const m=aiMsg(id);if(m?.card){m.card.status='cancelled';saveCH();aiRefresh()}return NR},
  'ai-edit':id=>{const p=aiMsg(id)?.card?.p;if(!p)return NR;openForm(p.type);Object.assign(D,{title:p.title,start:p.start,time:p.time});renderForm();return NR},
- tstart:id=>{const it=find(id);if(!it||isFuture(UI.fdate)){toast('ยังไม่ถึงวัน จึงจับเวลาไม่ได้');return NR}TM={id:it.id,date:UI.fdate,startedAt:Date.now(),acc:0};saveTM();refreshFocus();haptic();return NR},
+ tstart:id=>{const it=find(id);if(!it||isFuture(UI.fdate)){toast('วันนี้ยังไม่ถึงกำหนด จับเวลาไม่ได้');return NR}TM={id:it.id,date:UI.fdate,startedAt:Date.now(),acc:0};saveTM();refreshFocus();haptic();return NR},
  tpause:()=>{TM.acc=tmMs();TM.startedAt=null;saveTM();refreshFocus();return NR},tresume:()=>{TM.startedAt=Date.now();saveTM();refreshFocus();return NR},
  tfinish:()=>{tmFinish();return NR},
- tcancel:()=>{const drop=()=>{TM=null;saveTM();refreshFocus()};if(tmMs()<60000)drop();else confirmDialog({title:'ทิ้งเวลาที่จับไว้?',msg:`เวลา ${fmtClock(tmMs())} จะไม่ถูกบันทึก`,keep:'จับเวลาต่อ',ok:'ทิ้งเวลา',fn:drop});return NR},
+ tcancel:()=>{const drop=()=>{TM=null;saveTM();refreshFocus()};if(tmMs()<60000)drop();else confirmDialog({title:'ทิ้งเวลาที่จับไว้?',msg:`เวลา ${fmtClock(tmMs())} จะไม่ถูกบันทึก`,keep:'จับต่อ',ok:'ทิ้งเวลา',fn:drop});return NR},
  theme:id=>{applyTheme(id);paintSettings();return NR},
  perf:id=>{try{LS.setItem(PERF_PREF_KEY,id);if(id==='auto')LS.removeItem(PERF_AUTO_KEY)}catch(e){console.warn('perf',e)}perfApply();paintSettings();return NR},
- notify:()=>{registerPush().catch(()=>'denied').then(r=>{if(r==='denied')toast('เบราว์เซอร์ปิดการแจ้งเตือนไว้ ต้องเปิดที่ตั้งค่าเว็บไซต์');paintSettings()});return NR},
- export:()=>{exportData();return NR},import:()=>{$('importFile').click();return NR},
+ notify:()=>{registerPush().catch(()=>'denied').then(r=>{if(r==='denied')toast('คุณปิดการแจ้งเตือนไว้ เปิดได้ที่ตั้งค่าเบราว์เซอร์');paintSettings()});return NR},
   dopen:id=>{D.open=D.open===id?'':id;sheet.querySelectorAll('.ev-panel').forEach(p=>{p.dataset.open=String(p.dataset.key===D.open)});sheet.querySelectorAll('[data-act="dopen"]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.id===D.open)));
   setTimeout(()=>sheet.querySelector('.ev-panel[data-open="true"]')?.scrollIntoView({block:'nearest',behavior:'smooth'}),320);return NR},
  dunit:id=>{D.unit=id;if(id==='week'&&!D.days.length)D.days=[parse(D.start).getDay()];renderForm();return NR},
@@ -2005,7 +1998,7 @@ document.addEventListener('submit',e=>{e.preventDefault();
  if(e.target.id==='renameForm'){const f=e.target,c=CH.list.find(x=>x.id==f.dataset.id),v=(f.querySelector('[name=rname]')?.value||'').trim();if(!v){if(!f.querySelector('.ev-form-err'))f.insertAdjacentHTML('afterbegin','<div class="ev-form-err" role="alert">ชื่อแชทต้องไม่ว่าง</div>');return}if(c){c.title=v;saveCH();aiSync()}closeTop();return}
  if(e.target.id!=='addForm')return;D.err=validate();if(D.err){renderForm();return}
  const it=buildItem(),isEdit=!!D.id;D.dirty=false;closeTop();setTimeout(()=>commit('',()=>{isEdit?S.items.splice(S.items.findIndex(x=>x.id===it.id),1,it):S.items.push(it)},true),200)});
-document.addEventListener('change',e=>{const el=e.target;if(el.closest?.('#addForm,#dlgForm')&&el.name&&el.name in D&&['date','time'].includes(el.type)){D[el.name]=el.value;D.dirty=true;renderForm();return}if(e.target.id==='importFile'&&e.target.files[0]){importData(e.target.files[0]);e.target.value=''}});
+document.addEventListener('change',e=>{const el=e.target;if(el.closest?.('#addForm,#dlgForm')&&el.name&&el.name in D&&['date','time'].includes(el.type)){D[el.name]=el.value;D.dirty=true;renderForm();return}});
 $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b||b.dataset.tab===UI.tab)return;UI.tab=b.dataset.tab;UI.animate=true;haptic();render();scrollTo(0,0)});
 
 const LP={t:null,fired:false};
@@ -2024,7 +2017,7 @@ document.addEventListener('pointerout',e=>{const d=e.target.closest?.('.ev-fcday
 document.addEventListener('contextmenu',e=>{if(e.target.closest?.('.ev-fcday'))e.preventDefault()});
 
 /* ===== MODULE: views/auth (เข้าสู่ระบบ / สร้างบัญชี / ลืมรหัสผ่าน) ===== */
-const AU_MSG={invalid_credentials:'อีเมลหรือรหัสผ่านไม่ถูกต้อง',email_taken:'อีเมลนี้มีบัญชีอยู่แล้ว ลองเข้าสู่ระบบแทน',network:'เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',code_invalid:'รหัสไม่ถูกต้อง ลองตรวจอีกครั้ง',code_expired:'รหัสหมดอายุแล้ว กดส่งรหัสใหม่',code_locked:'ลองผิดหลายครั้งเกินไป กดส่งรหัสใหม่',code_none:'ไม่พบคำขอรหัส กดส่งรหัสใหม่',unknown:'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง'};
+const AU_MSG={invalid_credentials:'อีเมลหรือรหัสผ่านไม่ถูกต้อง',email_taken:'อีเมลนี้มีบัญชีอยู่แล้ว เข้าสู่ระบบได้เลย',network:'เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง',code_invalid:'รหัสไม่ถูกต้อง ลองดูอีกครั้ง',code_expired:'รหัสหมดอายุ กดส่งรหัสใหม่',code_locked:'ใส่ผิดหลายครั้งเกินไป กดส่งรหัสใหม่',code_none:'ไม่พบคำขอรหัส กดส่งรหัสใหม่',unknown:'มีบางอย่างผิดพลาด ลองอีกครั้ง'};
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,PW_MIN=8,RESEND_SEC=30;
 /* v25: ยกเลิกการเดาอีเมลพิมพ์ผิด (ตรงกับระบบจริง 2026.8.0) — เปลี่ยนเป็นตรวจรูปแบบอีเมลสดทุกการแก้ไขแทน */
 const GLOGO='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
@@ -2032,7 +2025,7 @@ const EV_MARK='<svg class="mark" viewBox="0 0 48 48" fill="none" stroke="current
 const RINGS=`<svg class="ev-rings" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${[46,86,126,166,206,246].map((r,i)=>`<circle cx="200" cy="130" r="${r}" stroke-width="1" stroke-opacity="${(.34-i*.05).toFixed(2)}" style="animation-delay:${i*90}ms"/>`).join('')}</svg>`;
 const heroS=to=>`<div class="ev-hero ev-hero-s">${RINGS}<div class="ev-brand">${EV_MARK}<b>Ordivel</b></div><button class="ev-icon-btn" data-flat data-act="au-go" data-id="${to}" aria-label="ย้อนกลับ">${icon('back')}</button></div>`;
 const gBtn=t=>`<button type="button" class="ev-btn-auth" data-kind="google" data-act="au-google">${GLOGO}<span>${t}</span></button>`;
-const legal='<p class="ev-legal">การดำเนินการต่อ ถือว่าคุณยอมรับ <button type="button" data-act="au-terms" data-id="terms">ข้อกำหนด</button> และ <button type="button" data-act="au-terms" data-id="privacy">นโยบายความเป็นส่วนตัว</button></p>';
+const legal='<p class="ev-legal">เมื่อดำเนินการต่อ ถือว่าคุณยอมรับ <button type="button" data-act="au-terms" data-id="terms">ข้อกำหนด</button> และ <button type="button" data-act="au-terms" data-id="privacy">นโยบายความเป็นส่วนตัว</button></p>';
 const eyeBtn=id=>`<button type="button" class="ev-icon-btn" data-flat data-act="au-eye" data-id="${id}" aria-label="แสดงรหัสผ่าน" aria-pressed="false">${icon('eye')}</button>`;
 const fld=(label,name,type,extra='',after='')=>`<div class="ev-ifield"><label for="f-${name}">${label}</label><div class="ev-pw"><input class="ev-input" id="f-${name}" name="${name}" type="${type}" ${extra}>${after}</div><div class="ev-field-err" id="e-${name}" hidden></div></div>`;
 const EMAIL_X='autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="name@gmail.com"';
@@ -2040,15 +2033,15 @@ const submitBtn=l=>`<button class="ev-btn-auth" data-kind="accent" type="submit"
 
 const AUTH_VIEWS={
  welcome:()=>`<div class="ev-hero">${RINGS}<div class="ev-brand">${EV_MARK}<b>Ordivel</b><span class="ev-tag">จัดการกิจวัตรและชีวิตให้ง่ายขึ้น</span></div></div>
-  <div class="ev-auth-body"><div><h1 class="ev-auth-title">เริ่มต้นใช้งาน</h1><p class="ev-sub" style="margin-top:6px">ติ๊ก นับ จับเวลา และดูความต่อเนื่องของนิสัย ทั้งหมดในที่เดียว</p></div>
-  <div class="ev-stack">${gBtn('ดำเนินการต่อด้วย Google')}<button class="ev-btn-auth" data-kind="ink" data-act="au-go" data-id="signup">${icon('mail')}<span>สร้างบัญชีด้วยอีเมล</span></button></div>
+  <div class="ev-auth-body"><div><h1 class="ev-auth-title">เริ่มใช้งาน</h1><p class="ev-sub" style="margin-top:6px">ติ๊ก นับ จับเวลา และดูความต่อเนื่อง ทั้งหมดในที่เดียว</p></div>
+  <div class="ev-stack">${gBtn('ดำเนินการต่อด้วย Google')}<button class="ev-btn-auth" data-kind="ink" data-act="au-go" data-id="signup">${icon('mail')}<span>สมัครด้วยอีเมล</span></button></div>
   <p class="ev-auth-sw">มีบัญชีอยู่แล้ว? <button data-act="au-go" data-id="login">เข้าสู่ระบบ</button></p></div>${legal}`,
  login:()=>`${heroS('welcome')}<div><h1 class="ev-auth-title">เข้าสู่ระบบ</h1><p class="ev-sub" style="margin-top:6px">ยินดีต้อนรับกลับมา</p></div>${gBtn('เข้าสู่ระบบด้วย Google')}<div class="ev-or">หรือใช้อีเมล</div>
   <form class="ev-form ev-authform" data-kind="login" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('อีเมล','email','email',EMAIL_X)}${fld('รหัสผ่าน','password','password','autocomplete="current-password" placeholder="รหัสผ่าน"',eyeBtn('f-password'))}
   <button type="button" class="ev-link" style="justify-self:end;padding:0" data-act="au-go" data-id="forgot">ลืมรหัสผ่าน?</button>${submitBtn('เข้าสู่ระบบ')}</form><p class="ev-auth-sw">ยังไม่มีบัญชี? <button data-act="au-go" data-id="signup">สร้างบัญชี</button></p>${legal}`,
  signup:()=>`${heroS('welcome')}<div><h1 class="ev-auth-title">สร้างบัญชี</h1><p class="ev-sub" style="margin-top:6px">ใช้เวลาไม่ถึงหนึ่งนาที</p></div>${gBtn('สมัครด้วย Google')}<div class="ev-or">หรือใช้อีเมล</div>
   <form class="ev-form ev-authform" data-kind="signup" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('ชื่อที่ใช้แสดง','name','text','autocomplete="name" maxlength="40" placeholder="ชื่อของคุณ"')}${fld('อีเมล','email','email',EMAIL_X)}
-  <div class="ev-ifield">${fld('รหัสผ่าน','password','password',`autocomplete="new-password" placeholder="อย่างน้อย ${PW_MIN} ตัวอักษร"`,eyeBtn('f-password'))}<div class="ev-meter" id="pwMeter" data-lv="0"><i></i><i></i><i></i><i></i></div><span class="ev-sub" id="pwLabel">ใช้ตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ผสมกันจะปลอดภัยขึ้น</span></div>
+  <div class="ev-ifield">${fld('รหัสผ่าน','password','password',`autocomplete="new-password" placeholder="อย่างน้อย ${PW_MIN} ตัวอักษร"`,eyeBtn('f-password'))}<div class="ev-meter" id="pwMeter" data-lv="0"><i></i><i></i><i></i><i></i></div><span class="ev-sub" id="pwLabel">ผสมตัวพิมพ์เล็ก ใหญ่ ตัวเลข และสัญลักษณ์ จะปลอดภัยขึ้น</span></div>
   <div class="ev-ifield"><label class="ev-check-row"><input type="checkbox" class="ev-cb" name="terms"><span>ฉันยอมรับ <button type="button" data-act="au-terms" data-id="terms">ข้อกำหนด</button> และ <button type="button" data-act="au-terms" data-id="privacy">นโยบายความเป็นส่วนตัว</button></span></label><div class="ev-field-err" id="e-terms" hidden></div></div>${submitBtn('สร้างบัญชี')}</form><p class="ev-auth-sw">มีบัญชีอยู่แล้ว? <button data-act="au-go" data-id="login">เข้าสู่ระบบ</button></p>`,
  forgot:()=>`${heroS('login')}<div><h1 class="ev-auth-title">ลืมรหัสผ่าน</h1><p class="ev-sub" style="margin-top:6px">ใส่อีเมลที่ใช้สมัคร เราจะส่งรหัส 6 หลักไปให้</p></div>
   <form class="ev-form ev-authform" data-kind="forgot" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('อีเมล','email','email',EMAIL_X)}${submitBtn('ส่งรหัส')}</form>`,
@@ -2067,22 +2060,22 @@ let coolT=null;
 function paintCool(){const b=$('resendBtn');if(!b)return;const n=UI.auth.cool;b.disabled=n>0;b.innerHTML=n>0?`<span>ส่งอีกครั้งได้ใน ${n} วินาที</span>`:'<span>ส่งรหัสอีกครั้ง</span>'}
 function startCool(){stopCool();UI.auth.cool=RESEND_SEC;paintCool();coolT=setInterval(()=>{UI.auth.cool=Math.max(0,UI.auth.cool-1);paintCool();if(!UI.auth.cool)stopCool()},1000)}
 function stopCool(){clearInterval(coolT);coolT=null}
-async function resendReset(){if(UI.auth.cool>0)return;const b=$('resendBtn');b.disabled=true;b.innerHTML='<span class="ev-spin"></span>';try{const r=await Auth.resend(UI.auth.email,UI.auth.codeType);UI.auth.demoCode=r?.demoCode||'';const n=$('demoCode');if(n)n.textContent=UI.auth.demoCode;toast('ส่งรหัสอีกครั้งแล้ว')}catch(err){toast(AU_MSG[err.code]||AU_MSG.unknown)}startCool()}
+async function resendReset(){if(UI.auth.cool>0)return;const b=$('resendBtn');b.disabled=true;b.innerHTML='<span class="ev-spin"></span>';try{const r=await Auth.resend(UI.auth.email,UI.auth.codeType);toast('ส่งรหัสใหม่แล้ว')}catch(err){toast(AU_MSG[err.code]||AU_MSG.unknown)}startCool()}
 const fieldErr=(form,name,msg)=>{const inp=form.querySelector(`[name="${name}"]`),box=form.querySelector(`#e-${name}`);if(inp&&inp.type!=='checkbox')inp.setAttribute('aria-invalid',String(!!msg));if(box){box.hidden=!msg;box.removeAttribute('data-tone');box.innerHTML=msg?`${icon('alert')}<span>${esc(msg)}</span>`:''}};
 function clearErrs(form){form.querySelectorAll('.ev-input').forEach(i=>i.setAttribute('aria-invalid','false'));form.querySelectorAll('.ev-field-err').forEach(b=>{b.hidden=true;b.innerHTML=''});const fe=form.querySelector('#form-err');if(fe){fe.hidden=true;fe.textContent=''}}
 function setBusy(form,on){const b=form.querySelector('button[type="submit"]');b.disabled=on;b.innerHTML=on?'<span class="ev-spin"></span>':`<span>${b.dataset.label}</span>`;form.querySelectorAll('input').forEach(i=>{i.readOnly=on})}
 function authValidate(kind,v){const e={};
- if(['login','signup','forgot'].includes(kind)){const em=(v.email||'').trim();if(!em)e.email='กรุณากรอกอีเมล';else if(!EMAIL_RE.test(em))e.email='รูปแบบอีเมลไม่ถูกต้อง (เช่น name@gmail.com)'}
+ if(['login','signup','forgot'].includes(kind)){const em=(v.email||'').trim();if(!em)e.email='กรุณากรอกอีเมล';else if(!EMAIL_RE.test(em))e.email='อีเมลไม่ถูกต้อง (ตัวอย่าง name@gmail.com)'}
  if(kind==='signup'){if(!(v.name||'').trim())e.name='กรุณากรอกชื่อ';if((v.password||'').length<PW_MIN)e.password=`รหัสผ่านอย่างน้อย ${PW_MIN} ตัวอักษร`;if(!v.terms)e.terms='ต้องยอมรับข้อกำหนดก่อนสร้างบัญชี'}
  if(kind==='newpw'&&(v.password||'').length<PW_MIN)e.password=`รหัสผ่านอย่างน้อย ${PW_MIN} ตัวอักษร`;
  if(kind==='login'&&!v.password)e.password='กรุณากรอกรหัสผ่าน';
- if(kind==='code'&&!/^\d{6}$/.test(v.code||''))e.code='ใส่รหัส 6 หลักที่ได้รับทางอีเมล';return e}
+ if(kind==='code'&&!/^\d{6}$/.test(v.code||''))e.code='กรอกรหัส 6 หลักจากอีเมล';return e}
 async function authSubmit(kind,form){clearErrs(form);const v=Object.fromEntries(new FormData(form)),errs=authValidate(kind,v),keys=Object.keys(errs);
  if(keys.length){keys.forEach(k=>fieldErr(form,k,errs[k]));form.querySelector(`[name="${keys[0]}"]`)?.focus();haptic();return}
  setBusy(form,true);
  try{
   if(kind==='forgot'||kind==='signup'){const email=v.email.trim(),r=kind==='signup'?await Auth.signUp({name:v.name.trim(),email,password:v.password}):await Auth.sendReset(email);
-   Object.assign(UI.auth,{email:r.email||email,codeType:kind==='signup'?'signup':'recovery',demoCode:r.demoCode||'',screen:'code'});renderAuthRoot();return}
+   Object.assign(UI.auth,{email:r.email||email,codeType:kind==='signup'?'signup':'recovery',screen:'code'});renderAuthRoot();return}
   if(kind==='code'){const user=await Auth.verifyCode(UI.auth.email,v.code,UI.auth.codeType);if(UI.auth.codeType==='signup'){await enterApp(user);return}UI.auth.code=v.code;UI.auth.screen='newpw';renderAuthRoot();return}
   if(kind==='newpw'){await Auth.resetPassword(UI.auth.email,UI.auth.code,v.password);UI.auth.screen='login';renderAuthRoot();toast('ตั้งรหัสผ่านใหม่แล้ว เข้าสู่ระบบได้เลย');return}
   await enterApp(await Auth.signInEmail(v.email.trim(),v.password))}
@@ -2090,11 +2083,11 @@ async function authSubmit(kind,form){clearErrs(form);const v=Object.fromEntries(
 async function authGoogle(btn){const root=$('auth'),old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="ev-spin"></span>';root.innerHTML=GOOGLE_SPLASH;await new Promise(r=>setTimeout(r,900));
  try{await enterApp(await Auth.signInGoogle())}catch(err){renderAuthRoot();toast(AU_MSG[err.code]||AU_MSG.unknown);btn.disabled=false;btn.innerHTML=old}}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t.closest('[data-kind="signup"]')){const p=t.value,s=[p.length>=PW_MIN,p.length>=12,/[a-z]/.test(p)&&/[A-Z]/.test(p),/\d/.test(p),/[^\w]/.test(p)].filter(Boolean).length,lv=p.length<PW_MIN?(p?1:0):Math.min(4,Math.max(1,s-1));
- $('pwMeter').dataset.lv=lv;$('pwLabel').textContent=p?(p.length<PW_MIN?`อีก ${PW_MIN-p.length} ตัวอักษรจึงจะใช้ได้`:['','อ่อน','พอใช้','ดี','แข็งแรง'][lv]):'ใช้ตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ผสมกันจะปลอดภัยขึ้น'}
+ $('pwMeter').dataset.lv=lv;$('pwLabel').textContent=p?(p.length<PW_MIN?`อีก ${PW_MIN-p.length} ตัวอักษรจึงจะใช้ได้`:['','อ่อน','พอใช้','ดี','แข็งแรง'][lv]):'ผสมตัวพิมพ์เล็ก ใหญ่ ตัวเลข และสัญลักษณ์ จะปลอดภัยขึ้น'}
  if(t.closest('.ev-authform')&&t.getAttribute('aria-invalid')==='true'){t.setAttribute('aria-invalid','false');const b=$('e-'+t.name);if(b){b.hidden=true;b.innerHTML=''}}});
 /* v25: ตรวจรูปแบบอีเมลสดทุกการแก้ไข (พิมพ์/ลบ/วาง/autofill — ตรงกับระบบจริง 2026.7.0/8.1) */
 document.addEventListener('input',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const b=$('e-email');if(!b)return;const v=t.value.trim();
- if(!v||EMAIL_RE.test(v)){b.hidden=true;b.dataset.tone='';b.innerHTML=''}else{b.hidden=false;b.dataset.tone='hint';b.innerHTML='<span>รูปแบบอีเมลไม่ถูกต้อง (เช่น name@gmail.com)</span>'}});
+ if(!v||EMAIL_RE.test(v)){b.hidden=true;b.dataset.tone='';b.innerHTML=''}else{b.hidden=false;b.dataset.tone='hint';b.innerHTML='<span>อีเมลไม่ถูกต้อง (ตัวอย่าง name@gmail.com)</span>'}});
 document.addEventListener('input',e=>{const t=e.target;if(t.id!=='f-code')return;t.value=t.value.replace(/\D/g,'').slice(0,6);if(t.value.length===6)t.form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))});
 async function enterApp(user){USER=user;liveStart();await loadApp()}
 async function doSignOut(del){try{if(del)await Auth.deleteAccount();else await Auth.signOut()}catch(err){console.warn('signout',err);toast(AU_MSG.unknown);return}

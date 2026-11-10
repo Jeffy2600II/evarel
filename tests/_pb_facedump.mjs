@@ -1,0 +1,20 @@
+import { chromium } from 'playwright'; import fs from 'fs';
+const exe=(()=>{const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';return d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell'})();
+const b=await chromium.launch({executablePath:exe});
+const css=fs.readFileSync('/tmp/evarel-repo/app/web/styles/app.css','utf8')+'\n'+fs.readFileSync('/tmp/evarel-repo/app/web/styles/extra.css','utf8');
+const blocks=(css.match(/@font-face\s*\{[^}]*\}/g)||[]).filter(x=>/font-family:\s*['"]?(Anuphan|Noto Sans Thai)['"]?/.test(x));
+const body=blocks.join('\n').replace(/url\(\s*['"]?\.\.\/fonts\//g,'url(http://localhost:8779/fonts/');
+const p=await b.newPage({viewport:{width:412,height:915}});
+await p.route(/fonts\.(googleapis|gstatic)/,async r=>{const u=r.request().url();
+  if(/fonts\.googleapis\.com\/css/.test(u)) return r.fulfill({headers:{'Content-Type':'text/css','Access-Control-Allow-Origin':'*'},body});
+  return r.abort();});
+await p.goto('file:///tmp/evarel-repo/design/master-demo-v24.html'); await p.waitForTimeout(1200);
+await p.addStyleTag({content:body}); 
+const dump=await p.evaluate(async()=>{await document.fonts.ready;
+  const mine=[...document.styleSheets].map(sh=>{try{return {href:(sh.href||'inline').slice(0,40),rules:sh.cssRules.length,ff:[...sh.cssRules].filter(r=>r.constructor.name==='CSSFontFaceRule').length}}catch(e){return {href:(sh.href||'inline').slice(0,40),err:1}}});
+  return JSON.stringify({faces:[...document.fonts].map(f=>f.family+' '+f.status).join('|'),sheets:mine});});
+console.log('แฟซทั้งหมด:',dump);
+// ขอโหลดฟอนต์จาก localhost ตรงๆ ในหน้า
+const fetchTest=await p.evaluate(async()=>{ try{const r=await fetch('http://localhost:8779/fonts/Anuphan-thai.woff2');const t=await r.text();return 'fetch ok '+r.status+' bytes '+t.length;}catch(e){return 'fetch ERR '+e.message.slice(0,100);} });
+console.log('fetch 7779 จากหน้า:',fetchTest);
+await b.close();

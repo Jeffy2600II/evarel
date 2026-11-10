@@ -1,0 +1,20 @@
+import { chromium } from 'playwright'; import fs from 'fs';
+const d=process.env.HOME+'/.cache/ms-playwright/chromium_headless_shell-1243/';
+const exe=d+fs.readdirSync(d).find(x=>x.startsWith('chrome'))+'/chrome-headless-shell';
+const b=await chromium.launch({executablePath:exe});
+const p=await b.newPage({viewport:{width:412,height:915},timezoneId:'Asia/Bangkok'});
+await p.goto('file:///tmp/evarel-repo/design/master-demo-v24.html');
+await p.waitForTimeout(800);
+await p.evaluate(()=>{const u={id:'u_test',name:'N',email:'d@g.com',provider:'google'};localStorage.setItem('evarel-demo-users',JSON.stringify([u]));localStorage.setItem('evarel-demo-session','u_test');localStorage.setItem('evarel-demo-v3:u_test',JSON.stringify({items:[]}))});
+await p.reload(); await p.waitForTimeout(2500);
+await p.click('[data-act="add"]'); await p.waitForTimeout(400);
+await p.click('[data-act="dtype"][data-id="task"]'); await p.waitForSelector('#addForm'); await p.waitForTimeout(400);
+await p.click('[data-act="dopen"][data-id="rem"]'); await p.waitForTimeout(400);
+await p.evaluate(()=>{window._ev={input:0,change:0,rf:0};document.addEventListener('input',()=>window._ev.input++,true);document.addEventListener('change',e=>{window._ev.change++;if(e.target.closest&&e.target.closest('.ev-tbox'))window._ev.rf++},true)});
+// เลือกเวลาใน remTime แบบเหมือนผู้ใช้ (fill จะยิง input+change)
+await p.fill('#remTime','07:30'); await p.waitForTimeout(500);
+const afterFill=await p.evaluate(()=>{const l=document.querySelector('label.ev-tbox:has(#remTime)')||[...document.querySelectorAll('.ev-tbox')].find(x=>x.querySelector('#remTime'));return {label:l?.querySelector('.ev-tbox-t')?.textContent,empty:l?.dataset.empty,val:document.querySelector('#remTime')?.value,ev:{...window._ev}}});
+await p.click('[data-act="remadd"]'); await p.waitForTimeout(400);
+const afterAdd=await p.evaluate(()=>({tags:[...document.querySelectorAll('.ev-rem-tag')].map(x=>x.textContent.trim()),label:document.querySelector('.ev-tbox .ev-tbox-t')?.textContent,val:document.querySelector('#remTime')?.value}));
+console.log(JSON.stringify({afterFill,afterAdd}));
+await b.close();
