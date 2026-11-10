@@ -1167,15 +1167,23 @@ const HttpAi=base=>({
  async chat(text){const r=await fetch(`${base}/ai/chat`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})}).catch(()=>{throw Object.assign(new Error('network'),{code:'network'})});
   if(r.status===429){const j=await r.json().catch(()=>({}));throw limitErr(j.reason||'calls',j.quota?.resetAt||nextBkkMidnightISO())}
   if(!r.ok)throw Object.assign(new Error('chat_failed'),{code:'network'});return r.json()}});
-const AiApi=MockAi;/* backend จริง: const AiApi=HttpAi('/api'); */
+/* AiApi = ของจริงผ่าน Worker (/api/ai/quota, /api/ai/chat) — ตัวจำลองใน localStorage ถูกถอดออก */
+/* ความจำ AI: เก็บข้อเท็จจริงฝั่งเซิร์ฟเวอร์ (คืนชีพความสามารถของระบบเดิม) */
+const aiMemory=async fact=>{try{const r=await apiFetch('/ai/memory',{method:'POST',body:JSON.stringify({op:'save',fact})});return r.ok}catch(err){return false}};
+const AiApi={
+ async usage(){const r=await apiFetch('/ai/quota');if(!r.ok)return {unknown:true};const j=await r.json().catch(()=>({}));return (j&&j.calls&&j.tokens)?j:{unknown:true}},
+ async chat(text){const r=await apiFetch('/ai/chat',{method:'POST',body:JSON.stringify({message:text})});
+   if(r.status===429){const j=await r.json().catch(()=>({}));throw limitErr(j.reason||'calls',(j.quota&&j.quota.resetAt)||nextBkkMidnightISO())}
+   if(!r.ok)throw Object.assign(new Error('chat_failed'),{code:'network'});
+   return r.json()},
+ async setSim(){return {}}, memory:aiMemory
+};
 
 /* ===== MODULE: data/repo — จุดต่อ backend: เปลี่ยน `Repo` ตัวเดียว (UI ไม่รู้ว่าข้อมูลมาจากไหน) =====
    สัญญา adapter: load():Promise<{items}> · apply({upserts:Item[],removes:id[]},fullState):Promise<void> (โยน error เมื่อบันทึกไม่สำเร็จ) */
 let USER=null;const uk=k=>`${k}:${USER?.id||'anon'}`;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const LocalAdapter={
- async load(){try{const r=LS.getItem(uk(STORE_KEY)),s=r?JSON.parse(r):{items:[]};if(!Array.isArray(s.items))throw new Error('bad shape');return s}catch(err){console.warn('โหลดข้อมูลไม่สำเร็จ',err);return {items:[]}}},
- async apply(changes,full){LS.setItem(uk(STORE_KEY),JSON.stringify(full))}};
+
 const HttpAdapter=base=>{const call=(url,o)=>fetch(url,{credentials:'include',headers:{'Content-Type':'application/json'},...o}).then(r=>{if(!r.ok)throw new Error(`${o?.method||'GET'} ${url} ${r.status}`);return r});
  return {async load(){return {items:(await (await call(`${base}/items`)).json()).items}},
   async apply({upserts,removes}){await Promise.all([...upserts.map(it=>call(`${base}/items/${it.id}`,{method:'PUT',body:JSON.stringify(it)})),...removes.map(id=>call(`${base}/items/${id}`,{method:'DELETE'}))])}}};
@@ -1202,7 +1210,26 @@ async function apiFetch(path,opt={}){
 const Repo={async load(){const r=await apiFetch('/items');if(!r.ok)throw new Error('load '+r.status);const j=await r.json();return {items:Array.isArray(j.items)?j.items:[]}},
  async apply({upserts,removes}){const jobs=[...upserts.map(it=>apiFetch('/items/'+encodeURIComponent(it.id),{method:'PUT',body:JSON.stringify(it)})),
   ...removes.map(id=>apiFetch('/items/'+encodeURIComponent(id),{method:'DELETE'}))];
-  const res=await Promise.all(jobs);const bad=res.find(r=>!r.ok);if(bad)throw new Error('save '+bad.status)}};
+  const res=await Promise.all(jobs);const bad=res.find(r=>!r.ok);if(bad)throw new Error('save '+bad.status);liveNotify()}};
+/* ===== ซิงก์ข้ามอุปกรณ์ + ตรวจรุ่นใหม่ ===== */
+let liveBusy=false,liveTimer=null,liveBc=null;
+const sigOf=items=>JSON.stringify((items||[]).map(i=>[i.id,i.title,i.type,i.time,i.timeEnd,i.track,i.target,i.log,i.skip]).sort());
+async function liveRefresh(){
+  if(liveBusy||!USER||document.hidden||UI.form||UI.detail)return;
+  const ae=document.activeElement; if(ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName))return;
+  liveBusy=true;
+  try{const r=await Repo.load();if(sigOf(r.items)!==sigOf(S.items)){S.items=r.items;render()}}catch(err){console.warn('live',err)}
+  finally{liveBusy=false}}
+function liveStart(){clearInterval(liveTimer);liveTimer=setInterval(liveRefresh,30000);
+  addEventListener('visibilitychange',()=>{if(!document.hidden)liveRefresh()});
+  addEventListener('online',()=>liveRefresh());
+  try{liveBc=new BroadcastChannel('ordivel-items');liveBc.onmessage=()=>liveRefresh()}catch(err){}}
+function liveNotify(){try{liveBc&&liveBc.postMessage('changed')}catch(err){}}
+let APP_VER='';
+async function checkUpdate(){try{const r=await fetch('./release.json',{cache:'no-store'});if(!r.ok)return;const j=await r.json();const v=j&&j.version;
+  if(!v)return;if(!APP_VER){APP_VER=v;return}if(v!==APP_VER){APP_VER=v;toast('มีเวอร์ชันใหม่แล้ว ปิด-เปิดแอปอีกครั้งเพื่ออัปเดต')}}catch(err){}}
+setInterval(checkUpdate,900000);
+
 function diffItems(prev,next){const m=new Map(prev.map(x=>[x.id,JSON.stringify(x)])),ids=new Set(next.map(x=>x.id));return {upserts:next.filter(x=>m.get(x.id)!==JSON.stringify(x)),removes:prev.filter(x=>!ids.has(x.id)).map(x=>x.id)}}
 async function syncChanges(prev,next){const ch=diffItems(prev,next);if(!ch.upserts.length&&!ch.removes.length)return;await Repo.apply(ch,{items:next})}
 /* ===== MODULE: data/auth — จุดต่อระบบบัญชี: เปลี่ยน `Auth` ตัวเดียว (UI ไม่รู้ว่าล็อกอินทำงานอย่างไร) =====
@@ -1737,7 +1764,8 @@ function openAI(){openPage(`<div class="ev-aibar"><button class="ev-roundbtn" da
   <label class="ev-search" id="dSearchWrap" hidden>${icon('search')}<input id="dSearch" type="search" placeholder="ค้นหาแชท" aria-label="ค้นหาแชท"></label></div>
   <div class="ev-drawer-list" id="drawerList"></div><div class="ev-drawer-foot">${avatarHTML({tag:'button',size:38})}<span class="ev-foot-name">${esc(USER?.name||'')}</span><button class="ev-icon-btn" data-flat data-act="settings" aria-label="ตั้งค่า">${icon('gear')}</button></div></aside>`,stopUsageTimer,'ai');
  const pg=pageOf('ai');attachDrawerGestures(pg);aiRefresh();paintComposer();aiRenderDrawer();refreshUsage();startUsageTimer()}
-async function aiSend(text){text=text.trim();if(!text||AI.busy)return;if(lockInfo()){paintComposer();return}
+async function aiSend(text){text=text.trim();if(!text||AI.busy)return;
+ if(/^\/?(จำ|remember)\s+/i.test(text)){const fact=text.replace(/^\/?(จำ|remember)\s+/i,'').trim();await aiMemory(fact);toast('จำไว้แล้ว');return}if(lockInfo()){paintComposer();return}
  let c=curChat();if(!c){c={id:Date.now(),title:text.slice(0,AI_TITLE_MAX),t:Date.now(),msgs:[]};CH.list.unshift(c);CH.cur=c.id}
  c.msgs.push({who:'u',text});c.t=Date.now();AI.busy=true;AI.typing=true;AI.notice=null;AI.draft='';saveCH();
  const paint=smooth=>{try{aiRefresh(smooth);aiRenderDrawer($('dSearch')?.value||'');paintComposer()}catch(err){console.warn('ai paint',err)}};
@@ -2104,7 +2132,7 @@ document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-password'&&t
 document.addEventListener('input',e=>{const t=e.target;if(t.name!=='email'||!t.closest?.('.ev-authform'))return;const b=$('e-email');if(!b)return;const v=t.value.trim();
  if(!v||EMAIL_RE.test(v)){b.hidden=true;b.dataset.tone='';b.innerHTML=''}else{b.hidden=false;b.dataset.tone='hint';b.innerHTML='<span>รูปแบบอีเมลไม่ถูกต้อง (เช่น name@gmail.com)</span>'}});
 document.addEventListener('input',e=>{const t=e.target;if(t.id!=='f-code')return;t.value=t.value.replace(/\D/g,'').slice(0,6);if(t.value.length===6)t.form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))});
-async function enterApp(user){USER=user;await loadApp()}
+async function enterApp(user){USER=user;liveStart();await loadApp()}
 async function doSignOut(del){try{if(del)await Auth.deleteAccount();else await Auth.signOut()}catch(err){console.warn('signout',err);toast(AU_MSG.unknown);return}
  while(LAYERS.length)popLayer();closePop();destroyCal('main');destroyCal('habit');DETAIL=null;S.items=[];CH={list:[],cur:null};TM=null;USER=null;
  Object.assign(UI,{tab:'today',date:TODAY,type:'all',weekOff:0,loading:true,error:null});UI.auth={status:'out',screen:'welcome',email:'',cool:0};$('auth').dataset.screen='';render();if(del)toast('ลบบัญชีแล้ว')}
