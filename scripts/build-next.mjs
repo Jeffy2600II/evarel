@@ -102,7 +102,7 @@ try {
     if (existsSync(SRC27)) {
       const A = join(OUT, 'app27');
       mkdirSync(A, { recursive: true });
-      const html = readFileSync(SRC27, 'utf8').replace(/https:\/\/ordivel-api-forge\.nontakorn2600\.workers\.dev\/api/, API[env]);
+      const html = readFileSync(SRC27, 'utf8').replace(/https:\/\/ordivel-api-forge\.nontakorn2600\.workers\.dev\/api/, API[env] + '/api');
       writeFileSync(join(A, 'index.html'), html);
       if (existsSync(join(PUB, 'icons'))) cpSync(join(PUB, 'icons'), join(A, 'icons'), { recursive: true });
       if (existsSync(join(OUT, 'sw.js'))) cpSync(join(OUT, 'sw.js'), join(A, 'sw.js'));
