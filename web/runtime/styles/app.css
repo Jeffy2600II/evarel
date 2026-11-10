@@ -51,7 +51,7 @@
   --tw-contain-size: ;
   --tw-contain-layout: ;
   --tw-contain-paint: ;
-  --tw-contain-style: ;
+  --tw-contain-style: 
 }
 
 ::backdrop{
@@ -105,40 +105,40 @@
   --tw-contain-size: ;
   --tw-contain-layout: ;
   --tw-contain-paint: ;
-  --tw-contain-style: ;
+  --tw-contain-style: 
 }
 
 .container{
-  width:100%;
+  width:100%
 }
 
 @media (min-width: 640px){
   .container{
-    max-width:640px;
+    max-width:640px
   }
 }
 
 @media (min-width: 768px){
   .container{
-    max-width:768px;
+    max-width:768px
   }
 }
 
 @media (min-width: 1024px){
   .container{
-    max-width:1024px;
+    max-width:1024px
   }
 }
 
 @media (min-width: 1280px){
   .container{
-    max-width:1280px;
+    max-width:1280px
   }
 }
 
 @media (min-width: 1536px){
   .container{
-    max-width:1536px;
+    max-width:1536px
   }
 }
 
@@ -152,12 +152,12 @@
   transition-property:opacity;
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration:300ms;
-  transition-timing-function:cubic-bezier(.22,1,.36,1);
+  transition-timing-function:cubic-bezier(.22,1,.36,1)
 }
 
 .ev-scrim[data-open="true"]{
   pointer-events:auto;
-  opacity:1;
+  opacity:1
 }
 
 .ev-sheet{
@@ -184,16 +184,16 @@
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration:420ms;
   transition-timing-function:cubic-bezier(.22,1,.36,1);
-  will-change:transform;
+  will-change:transform
 }
 
 .ev-sheet[data-open="true"]{
   --tw-translate-y:0px;
-  transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
 }
 
 .ev-sheet[data-drag="true"]{
-  transition-property:none;
+  transition-property:none
 }
 
 /* .ev-page: v15 — ย้ายไปเป็น CSS ธรรมดาด้านล่าง (โมชันแบบ fade-through + scale ใช้เฉพาะ transform/opacity) */
@@ -210,17 +210,17 @@
   opacity:0;
   transition-property:opacity;
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration:200ms;
+  transition-duration:200ms
 }
 
 .ev-dialog[data-open="true"]{
   pointer-events:auto;
-  opacity:1;
+  opacity:1
 }
 
 .ev-dialog-card{
   display:grid;
-  width:min(100%, 340px);
+  width:min(100%,340px);
   --tw-scale-x:.95;
   --tw-scale-y:.95;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -234,13 +234,13 @@
   transition-property:transform;
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration:300ms;
-  transition-timing-function:cubic-bezier(.34,1.56,.64,1);
+  transition-timing-function:cubic-bezier(.34,1.56,.64,1)
 }
 
 .ev-dialog[data-open="true"] .ev-dialog-card{
   --tw-scale-x:1;
   --tw-scale-y:1;
-  transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
 }
 
 .ev-pop{
@@ -262,7 +262,7 @@
   transition-property:opacity,transform;
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration:200ms;
-  transition-timing-function:cubic-bezier(.34,1.56,.64,1);
+  transition-timing-function:cubic-bezier(.34,1.56,.64,1)
 }
 
 .ev-pop[data-open="true"]{
@@ -270,7 +270,7 @@
   --tw-scale-x:1;
   --tw-scale-y:1;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-  opacity:1;
+  opacity:1
 }
 
 .ev-drawer-scrim{
@@ -283,22 +283,22 @@
   opacity:0;
   transition-property:opacity;
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration:300ms;
+  transition-duration:300ms
 }
 
 .ev-drawer-scrim[data-open="true"]{
   pointer-events:auto;
-  opacity:1;
+  opacity:1
 }
 
 .ev-drawer{
   position:absolute;
   top:0px;
   bottom:0px;
-  left:max(0px, calc(50% - var(--col-max) / 2));
+  left:max(0px,calc(50% - var(--col-max) / 2));
   z-index:3;
   display:flex;
-  width:min(86vw, 330px) !important;
+  width:min(86vw,330px) !important;
   max-width:none !important;
   --tw-translate-x:-102%;
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -312,7 +312,7 @@
   transition-property:transform;
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration:360ms;
-  transition-timing-function:cubic-bezier(.22,1,.36,1);
+  transition-timing-function:cubic-bezier(.22,1,.36,1)
 }
 
 .ev-drawer[data-open="true"]{
@@ -320,11 +320,11 @@
   transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   --tw-shadow:0 0 40px rgba(0,0,0,.22);
   --tw-shadow-colored:0 0 40px var(--tw-shadow-color);
-  box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
 }
 
 .ev-drawer[data-drag="true"]{
-  transition-property:none;
+  transition-property:none
 }
 
 .ev-composer{
@@ -342,80 +342,80 @@
   padding-right:0.625rem;
   --tw-shadow:0 8px 30px rgba(20,20,30,.12),0 0 0 1px var(--c-line);
   --tw-shadow-colored:0 8px 30px var(--tw-shadow-color), 0 0 0 1px var(--tw-shadow-color);
-  box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
 }
 
 .visible{
-  visibility:visible;
+  visibility:visible
 }
 
 .static{
-  position:static;
+  position:static
 }
 
 .fixed{
-  position:fixed;
+  position:fixed
 }
 
 .absolute{
-  position:absolute;
+  position:absolute
 }
 
 .block{
-  display:block;
+  display:block
 }
 
 .inline-block{
-  display:inline-block;
+  display:inline-block
 }
 
 .inline{
-  display:inline;
+  display:inline
 }
 
 .flex{
-  display:flex;
+  display:flex
 }
 
 .table{
-  display:table;
+  display:table
 }
 
 .grid{
-  display:grid;
+  display:grid
 }
 
 .hidden{
-  display:none;
+  display:none
 }
 
 .grow{
-  flex-grow:1;
+  flex-grow:1
 }
 
 .transform{
-  transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
 }
 
 .resize{
-  resize:both;
+  resize:both
 }
 
 .flex-wrap{
-  flex-wrap:wrap;
+  flex-wrap:wrap
 }
 
 .outline{
-  outline-style:solid;
+  outline-style:solid
 }
 
 .blur{
   --tw-blur:blur(8px);
-  filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+  filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)
 }
 
 .filter{
-  filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+  filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)
 }
 
 .transition{
@@ -423,14 +423,42 @@
   transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
   transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration:150ms;
+  transition-duration:150ms
 }
 
-/* Path: web/runtime/styles/design.css | Purpose: CSS ของเดโมที่ Master ออกแบบ คัดลอกตรงทั้งก้อนจาก archive/design/Evarel v24.html (style type=text/tailwindcss; แก้ชื่อไฟล์อ้างอิงตาม D-004 — ไม่มีไฟล์ master-demo-v24.html)
+/* Path: web/runtime/styles/design.css | Purpose: CSS ของเดโม Master (มาตรฐานใหม่: Ordivel v27) คัดลอกตรงทั้งก้อนจาก archive/design/Ordivel-v27.html
+   Master สั่ง 10 พ.ย. 2026: ยึดเดโม v27 เป็นแหล่งความจริงเดียว ทุกอย่างต้องตามโค้ด/หน้าตาของเดโมนี้
    Used by: scripts/build-css.mjs คอมไพล์ด้วย Tailwind CLI เป็น web/runtime/styles/app.css | แก้ที่นี่ไม่แก้ app.css | ห้ามแก้ค่าดีไซน์เองต้องสั่งจาก Master */
 
-/* Path: archive/design/Evarel v24.html (สายเดโม v2→v7→v12→v24; ชื่อ master-demo-v3 ที่เคยอ้างไม่มีไฟล์จริง — แก้ตาม D-004) | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนรวมอยู่ในส่วน TOKENS ของไฟล์นี้ (เดิมแยกเป็น tokens.css)
-   Used by: เป็นแบบอ้างอิงให้ agent ย้ายเข้าเว็บแอป (ส่วน CSS → app.css, ส่วน JS แยกตามหัวข้อ "MODULE:") */
+:root{
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+
+html{
+  scroll-padding-top:env(safe-area-inset-top,0px)
+}
+
+body{
+  margin:0;
+  padding:0;
+  font:14px -apple-system,BlinkMacSystemFont,sans-serif;
+  background:#fff;
+  color:#000
+}
+
+img{
+  max-width:100%
+}
+
+[hidden]:not([hidden=until-found i]){
+  display:none!important
+}
+
+/* Path: design/master-demo-v3.html | Purpose: เดโมต้นแบบ UX ระดับแอป (ไฟล์เดียว) — โทเคนตรงกับ app/styles/tokens.css
+   Used by: เป็นแบบอ้างอิงให้ agent ย้ายเข้า app/ (ส่วน CSS → app.css, ส่วน JS แยกตามหัวข้อ "MODULE:") */
 
 /* ============ TOKENS ============ */
 
@@ -448,12 +476,11 @@
   --c-accent-soft:#EEF2FF;
   --c-accent-2:#6366F1;
   --c-on-accent:#fff;
-  --c-ok:#18A66A;
-  --c-on-ok:#fff;
-  --c-on-fill:#fff;
   --c-ink-a:#3A2FF5;
   --c-ink-b:#473CFA;
   --c-ink-c:#4136FF;
+  --c-ok:#18A66A;
+  --c-on-ok:#fff;
   --c-warn:#E8890C;
   --c-danger:#E5484D;
   --c-danger-soft:#FDECEC;
@@ -491,13 +518,13 @@
     --c-accent-soft:#23234A;
     --c-accent-2:#8386F6;
     --c-on-accent:#0E0E12;
+    --c-ink-a:#232C80;
+    --c-ink-b:#37419F;
+    --c-ink-c:#515CCC;
     --shadow:none;
     --shadow-fab:0 6px 20px rgba(0,0,0,.5);
     --c-danger-soft:#3A1E21;
-    --c-warn-soft:#3A2D14;
-    --c-ink-a:#232C80;
-    --c-ink-b:#37419F;
-    --c-ink-c:#515CCC
+    --c-warn-soft:#3A2D14
   }
 }
 
@@ -514,13 +541,13 @@
   --c-accent-soft:#23234A;
   --c-accent-2:#8386F6;
   --c-on-accent:#0E0E12;
+  --c-ink-a:#232C80;
+  --c-ink-b:#37419F;
+  --c-ink-c:#515CCC;
   --shadow:none;
   --shadow-fab:0 6px 20px rgba(0,0,0,.5);
   --c-danger-soft:#3A1E21;
-  --c-warn-soft:#3A2D14;
-  --c-ink-a:#232C80;
-  --c-ink-b:#37419F;
-  --c-ink-c:#515CCC
+  --c-warn-soft:#3A2D14
 }
 
 @property --p{
@@ -1821,7 +1848,7 @@ ul{
   width:22px;
   height:22px;
   border-radius:50%;
-  background:var(--c-on-fill);
+  background:#fff;
   box-shadow:0 1px 3px rgba(0,0,0,.25);
   transition:transform .25s var(--spring)
 }
@@ -1981,7 +2008,7 @@ body{
   border-radius:var(--r-pill);
   border:0;
   background:var(--c-danger);
-  color:var(--c-on-fill);
+  color:#fff;
   font:600 15px var(--font)
 }
 
@@ -2430,12 +2457,10 @@ body{
 
 .ev-ringnum small{
   font-size:14px;
-  opacity:.9;
+  opacity:.6;
   font-weight:600;
   letter-spacing:0
 }
-
-/* หน่วย % .6 = 2.94:1 บนการ์ดสรุป ไม่ผ่าน -> .9 = 4.70:1 */
 
 .ev-chart{
   display:flex;
@@ -2520,10 +2545,8 @@ body{
 .ev-sec-head .ev-group span{
   margin-left:6px;
   font-weight:500;
-  opacity:.9
+  opacity:.7
 }
-
-/* เดโม v24 ใช้ .7 = 3.06:1 บนการ์ดขาว ไม่ผ่าน WCAG 1.4.3 (ต้อง 4.5:1) | .9 = 4.62:1 ผ่าน และยังจางกว่าหัวข้อ | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 */
 
 .ev-link-btn{
   width:32px;
@@ -2685,7 +2708,7 @@ body{
 
 .fc .ev-fcday.st-done .ev-dnum{
   background:var(--c-ok);
-  color:var(--c-on-fill)
+  color:#fff
 }
 
 .fc .ev-fcday.st-part .ev-dnum{
@@ -2787,7 +2810,7 @@ body{
 
 .fc .fc-event.ev-fc-class{
   background:var(--c-accent);
-  color:var(--c-on-fill)
+  color:#fff
 }
 
 .fc .fc-event.ev-fc-event{
@@ -2857,13 +2880,6 @@ body{
 .ev-weekbar b{
   font-size:15px;
   font-weight:600
-}
-
-/* แถบสัปดาห์เลื่อนเข้า/ออก 28px ด้วย translateX: ทางขวา (wkL) ดันความกว้างเอกสารเกินจอชั่วคราว ทางซ้าย (wkR) ไม่ทำเพราะเบราว์เซอร์ไม่นับพื้นที่ล้นด้านซ้าย
-   ตัดการล้นแนวนอนที่ตัวห่อแท็บ (.ev-app = #app ซึ่งเป็นพ่อโดยตรงของ .ev-week) ด้วย clip: ไม่สร้าง scroll container และไม่ตัดแกนตั้ง (ปุ่มวันที่ที่ยก translateY(-2px) กับเงายังอยู่) อนิเมชั่นเล่นเหมือนเดิมทุกพิกเซล */
-
-.ev-app{
-  overflow-x:clip
 }
 
 .ev-week[data-dir="1"]{
@@ -3231,8 +3247,8 @@ body[data-auth="out"] .ev-app,body[data-auth="out"] .ev-nav,body[data-auth="out"
   content:"";
   width:10px;
   height:5px;
-  border-left:2.5px solid var(--c-on-fill);
-  border-bottom:2.5px solid var(--c-on-fill);
+  border-left:2.5px solid #fff;
+  border-bottom:2.5px solid #fff;
   transform:translateY(-1px) rotate(-45deg)
 }
 
@@ -3303,42 +3319,6 @@ body[data-auth="out"] .ev-app,body[data-auth="out"] .ev-nav,body[data-auth="out"
   height:56px;
   color:var(--c-accent);
   animation:breathe 2s ease-in-out infinite
-}
-
-.ev-splash-note{
-  font-size:13px;
-  color:var(--c-muted)
-}
-
-.ev-splash .ev-spin-splash{
-  width:22px;
-  height:22px;
-  border-width:2.5px;
-  color:var(--c-accent)
-}
-
-/* สแปลชบูตแบบนิ่ง: อยู่ใน HTML ตั้งแต่ไบต์แรก (ก่อน JS โหลด) — จอดับขาวตอนกลับจาก Google หรือเปิดแอปครั้งต่อไป
-   โชว์ด้วยสคริปต์หัวหน้าเมื่อมีเซสชัน/token รออยู่ เครื่องยนต์พร้อมแล้วเรียก evBootHide() คืน (เฟดผ่าน opacity, pointer-events:none ตลอด) */
-
-#ev-boot{
-  position:fixed;
-  inset:0;
-  z-index:80;
-  display:grid;
-  place-items:center;
-  background:var(--c-bg);
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .24s var(--ease)
-}
-
-#ev-boot[data-on="1"]{
-  opacity:1
-}
-
-#ev-boot .ev-splash{
-  margin:0;
-  animation:none
 }
 
 /* หัวหน้าแบบย่อ: ใช้ร่วมกันทุกหน้า auth ให้หน้าตาเป็นชุดเดียวกับหน้าต้อนรับ */
@@ -3867,7 +3847,7 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
 }
 
 /* ============ v16: DESIGN PASS — พื้นที่โปร่งขึ้น · นิ่งขึ้น · โค้งมนขึ้น · มี "วงแหวน" เป็นลายเซ็น ============
-   แนวคิด: Evarel = วงโคจร (ดูโลโก้) — วงแหวนบาง ๆ ปรากฏซ้ำอย่างเงียบ ๆ ในจุดสำคัญ (การ์ดสรุป · หน้า AI · ปุ่มเพิ่ม) แทนการตกแต่งเยอะ
+   แนวคิด: Ordivel = วงโคจร (ดูโลโก้) — วงแหวนบาง ๆ ปรากฏซ้ำอย่างเงียบ ๆ ในจุดสำคัญ (การ์ดสรุป · หน้า AI · ปุ่มเพิ่ม) แทนการตกแต่งเยอะ
    - สีกลางอมม่วงอ่อน ๆ เข้ากับสีหลัก (แทนเทาเย็น) · แยกพื้นผิวด้วย "โทนสี" มากกว่าเส้นขอบ/เงา
    - ระยะห่างเพิ่มจาก 16→20 · มุมการ์ด 26→32 · น้ำหนักตัวอักษรเบาลง (700→600) · ความสูงบรรทัดเพิ่ม (ภาษาไทยอ่านสบายขึ้น)
    - แอนิเมชั่นลดการเด้ง (overshoot) ให้นิ่ง · ใช้ transform/opacity เท่านั้นเหมือนเดิม */
@@ -3880,6 +3860,12 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
   --r-card:32px;
   --r-sheet:38px;
   --nav-h:64px;
+  /* v26 radius scale: โค้งมนมากขึ้นในทุกจุดรอง (ปุ่ม/ชิป/ไทล์) — การ์ดใหญ่คง 32 ไว้เพื่อไม่ให้ลายเซ็นเปลี่ยน */
+  --r-xs:12px;
+  --r-s:16px;
+  --r-m:22px;
+  --r-l:28px;
+  --r-xl:34px;
   --c-bg:#F5F4F9;
   --c-surface:#fff;
   --c-text:#1C1B26;
@@ -3889,7 +3875,10 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
   --c-accent-soft:#EEF2FF;
   --shadow:0 1px 2px rgba(40,30,90,.04);
   --spring:cubic-bezier(.3,1.2,.5,1);
-  --c-halo:rgba(79,70,229,.05)
+  --c-halo:rgba(79,70,229,.05);
+  /* v26 เงานุ่ม 2 ชั้น: เส้นขอบจาง + พื้นลอย — ทำให้การ์ดดูมีมิติแบบแอปจริง (TickTick/Things) */
+  --shadow-s:0 1px 2px rgba(40,30,90,.05),0 6px 18px rgba(40,30,90,.05);
+  --shadow-m:0 2px 6px rgba(40,30,90,.07),0 16px 36px rgba(40,30,90,.11)
 }
 
 @media (prefers-color-scheme:dark){
@@ -3902,7 +3891,9 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
     --c-fill:#232230;
     --c-accent-soft:#23234A;
     --shadow:none;
-    --c-halo:rgba(129,140,248,.07)
+    --c-halo:rgba(129,140,248,.07);
+    --shadow-s:0 0 0 1px rgba(255,255,255,.05);
+    --shadow-m:0 12px 34px rgba(0,0,0,.4)
   }
 }
 
@@ -3915,11 +3906,15 @@ html[data-perf="lite"] .ev-dial[data-run="true"],html[data-perf="lite"] .ev-skel
   --c-fill:#232230;
   --c-accent-soft:#23234A;
   --shadow:none;
-  --c-halo:rgba(129,140,248,.07)
+  --c-halo:rgba(129,140,248,.07);
+  --shadow-s:0 0 0 1px rgba(255,255,255,.05);
+  --shadow-m:0 12px 34px rgba(0,0,0,.4)
 }
 
 html[data-perf="lite"]{
-  --shadow:none
+  --shadow:none;
+  --shadow-s:none;
+  --shadow-m:none
 }
 
 body{
@@ -3984,7 +3979,65 @@ body{
   box-shadow:0 14px 34px rgba(79,70,229,.2)
 }
 
-/* DD-1 1 พ.ย. 2026: hex ม่วงเดิม (#4B2FF5/#6446FF/#8466FF) ย้ายไปอ้าง --c-ink-* จุดเดียวกับ v17 */
+/* v26: การ์ดสรุปหน้าวันนี้เป็นวงแหวน (Habitify: daily progress ring + รายการ) */
+
+.ev-sum-ring{
+  position:relative;
+  width:112px;
+  height:112px;
+  flex:none
+}
+
+.ev-sum-ring svg{
+  width:100%;
+  height:100%;
+  transform:rotate(-90deg)
+}
+
+.ev-sum-ring circle{
+  fill:none;
+  stroke-width:8
+}
+
+.ev-sum-ring .rg-bg{
+  stroke:var(--c-on-ink-soft)
+}
+
+.ev-sum-ring .rg{
+  stroke:#fff;
+  stroke-linecap:round;
+  transition:stroke-dashoffset 1s var(--ease)
+}
+
+.ev-sum-ringnum{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  font-weight:700;
+  letter-spacing:-1px
+}
+
+.ev-sum-ringnum small{
+  font-size:14px;
+  opacity:.65;
+  font-weight:600;
+  letter-spacing:0
+}
+
+.ev-cheer{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600
+}
+
+.ev-cheer svg{
+  width:18px;
+  height:18px;
+  color:#FFD666
+}
 
 .ev-card[data-tone="ink"]::before{
   content:"";
@@ -4001,13 +4054,13 @@ body{
 
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]) .ev-card[data-tone="ink"]{
-    background:linear-gradient(150deg,var(--c-ink-a),var(--c-ink-b) 60%,var(--c-ink-c));
+    background:linear-gradient(150deg,#2D2380,#43379F 60%,#5F51CC);
     box-shadow:none
   }
 }
 
 :root[data-theme="dark"] .ev-card[data-tone="ink"]{
-  background:linear-gradient(150deg,var(--c-ink-a),var(--c-ink-b) 60%,var(--c-ink-c));
+  background:linear-gradient(150deg,#2D2380,#43379F 60%,#5F51CC);
   box-shadow:none
 }
 
@@ -4530,10 +4583,8 @@ body{
 
 .ev-sum-num small{
   font-size:18px;
-  opacity:.9
+  opacity:.7
 }
-
-/* ตัวส่วน (/2) .7 = 3.45:1 บนมุมสว่างสุดของการ์ด ไม่ผ่าน -> .9 = 4.70:1 */
 
 .ev-sum-lab{
   font-size:13px;
@@ -4737,7 +4788,7 @@ body{
 
 .ev-btn-solid-danger{
   background:var(--c-danger-fill);
-  color:var(--c-on-fill)
+  color:#fff
 }
 
 /* กรอบสีเหลือง: ให้เส้น วงกลม ปุ่ม และข้อความรองในกรอบอ่านชัด */
@@ -4767,393 +4818,7 @@ body{
   background:linear-gradient(150deg,var(--c-ink-a) 0%,var(--c-ink-b) 55%,var(--c-ink-c) 100%)
 }
 
-/* ปลาย #6D50FF -> #5836FF (ลด L 0.05 คงเฉดเดิม): ข้อความ "ถัดไป" บนมุมสว่างสุดวัดจากพิกเซลจริงได้ 3.73:1 ไม่ผ่าน -> 4.70:1 ผ่าน WCAG 1.4.3 | Master อนุญาตแก้ค่าดีไซน์ 23 ต.ค. 2026 | DD-1 1 พ.ย. 2026: ม่วง→indigo --c-ink-* = #3A2FF5/#473CFA/#4136FF (hue-shift คงความสว่างเดิม) ขาวบนปลายสว่างสุดคิดตามสูตร = 6.57:1 สูงกว่าเดิม */
-
-/* ============ v19: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ · อวาตาร์โปรไฟล์ระบบกลาง ============
-   ความสูง: JS วัดก่อน/หลังเปลี่ยนเนื้อหา แล้ว transition เฉพาะ height ชั่วครู่ (.34s) แล้วคืนเป็น auto — ไม่มี animation ค้างตลอดเวลา
-   เนื้อหา: เปลี่ยนขั้นตอน (เลือกประเภท ↔ ฟอร์ม) แต่ละรายการไหลเข้าทีละนิดด้วย transform+opacity เท่านั้น · โหมดประหยัดเครื่องตัดทั้งหมด */
-
-.ev-sheet[data-resize]{
-  transition:transform .46s cubic-bezier(.05,.7,.1,1),height .34s cubic-bezier(.22,1,.36,1)
-}
-
-.ev-sheet[data-resize] .ev-sheet-body{
-  overflow:hidden
-}
-
-@keyframes sheetIn{
-  from{
-    opacity:0;
-    transform:translate3d(0,12px,0)
-  }
-}
-
-.ev-sheet .ev-in{
-  animation:sheetIn .34s var(--ease) both
-}
-
-.ev-sheet[data-stage] .ev-in{
-  animation:none
-}
-
-.ev-sheet[data-stage] .ev-form>*,.ev-sheet[data-stage] .ev-types>*{
-  animation:sheetIn .42s var(--ease) both
-}
-
-.ev-sheet[data-stage] .ev-form>*:nth-child(2),.ev-sheet[data-stage] .ev-types>*:nth-child(2){
-  animation-delay:45ms
-}
-
-.ev-sheet[data-stage] .ev-form>*:nth-child(3),.ev-sheet[data-stage] .ev-types>*:nth-child(3){
-  animation-delay:90ms
-}
-
-.ev-sheet[data-stage] .ev-form>*:nth-child(4),.ev-sheet[data-stage] .ev-types>*:nth-child(4){
-  animation-delay:135ms
-}
-
-.ev-sheet[data-stage] .ev-form>*:nth-child(5){
-  animation-delay:180ms
-}
-
-.ev-sheet[data-stage] .ev-form>*:nth-child(n+6){
-  animation-delay:225ms
-}
-
-html[data-perf="lite"] .ev-sheet[data-stage] .ev-form>*,html[data-perf="lite"] .ev-sheet[data-stage] .ev-types>*{
-  animation:none
-}
-
-html[data-perf="lite"] .ev-sheet .ev-in{
-  animation-duration:.2s
-}
-
-.ev-avatar{
-  display:grid;
-  place-items:center;
-  flex:none;
-  line-height:1;
-  width:var(--sz,42px);
-  height:var(--sz,42px);
-  font-size:calc(var(--sz,42px)*.4);
-  font-weight:600;
-  color:var(--c-on-fill);
-  background:var(--av,var(--c-accent))
-}
-
-/* ============ v20: ช่องเวลามีสถานะ · ปฏิทินโปร่งแบบ native · Today/สถิตินิ่งและโล่งสบาย ============ */
-
-.ev-tbox-w{
-  display:flex;
-  align-items:center;
-  gap:8px
-}
-
-.ev-tbox-h{
-  font-size:12px;
-  color:var(--c-muted)
-}
-
-.ev-tbox{
-  position:relative;
-  display:inline-flex;
-  align-items:center;
-  height:36px;
-  padding:0 14px;
-  border-radius:var(--r-pill);
-  background:var(--c-accent-soft);
-  color:var(--c-accent-text);
-  font-weight:600;
-  font-size:14px;
-  overflow:hidden;
-  cursor:pointer
-}
-
-.ev-tbox[data-empty="true"]{
-  background:var(--c-fill);
-  color:var(--c-muted);
-  box-shadow:inset 0 0 0 1.5px var(--c-line)
-}
-
-.ev-tbox input{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  max-width:none;
-  opacity:0;
-  cursor:pointer;
-  font-size:16px
-}
-
-html[data-settled] #app .ev-in,html[data-settled] .ev-page .ev-in,html[data-settled] #app.ev-enter>*,html[data-settled] #app.ev-enter .ev-list-item,html[data-settled] #app.ev-enter .ev-bars i,html[data-settled] .ev-page .ev-page-scroll>*{
-  animation:none!important
-}
-
-.ev-icon,.ev-icon *,.ev-set-row small,.ev-set-row small *,.ev-link-btn svg{
-  animation:none!important
-}
-
-body{
-  line-height:1.5;
-  letter-spacing:0
-}
-
-.ev-empty-note{
-  padding:10px 14px;
-  border-radius:14px;
-  background:var(--c-fill);
-  color:var(--c-muted);
-  font-size:13px
-}
-
-.ev-tx{
-  width:30px;
-  height:30px;
-  border-radius:50%;
-  border:0;
-  background:var(--c-fill);
-  color:var(--c-muted);
-  font-size:12px;
-  cursor:pointer
-}
-
-.ev-main{
-  gap:20px;
-  padding-bottom:24px
-}
-
-.ev-card{
-  padding:22px
-}
-
-.ev-sum{
-  padding:28px;
-  gap:20px
-}
-
-.ev-sum-num{
-  font-size:56px
-}
-
-.ev-sum-lab{
-  font-size:14px
-}
-
-.ev-next{
-  margin-top:2px;
-  font-size:14px
-}
-
-.ev-group{
-  padding:22px 0 6px;
-  font-size:12.5px
-}
-
-.ev-list-item{
-  padding:16px 0;
-  gap:14px;
-  animation:none!important
-}
-
-.ev-list-item .ev-sub{
-  margin-top:3px
-}
-
-.ev-ringbox{
-  width:132px;
-  height:132px
-}
-
-.ev-sum-row{
-  gap:26px
-}
-
-.ev-row2{
-  gap:20px
-}
-
-.ev-big{
-  margin-top:6px
-}
-
-.ev-chart{
-  gap:10px;
-  margin-top:22px
-}
-
-.ev-col{
-  grid-template-rows:auto 130px auto;
-  gap:10px
-}
-
-.ev-col-track{
-  max-width:30px;
-  background:var(--c-fill)
-}
-
-.ev-stats3{
-  gap:12px
-}
-
-.ev-stats3 b{
-  font-size:24px
-}
-
-.ev-fc-wrap{
-  background:transparent;
-  box-shadow:none;
-  padding:4px 0
-}
-
-.fc .fc-daygrid-day-frame{
-  min-height:68px;
-  padding:6px 0
-}
-
-.ev-dnum{
-  width:34px;
-  height:34px;
-  font-size:15px
-}
-
-.fc .fc-day-disabled,.fc .fc-daygrid-day.fc-day-other,.fc .fc-daygrid-day-bg .fc-non-business{
-  background:transparent!important
-}
-
-.ev-sheet .ev-sheet-foot,.ev-sheet .ev-sheet-foot *,.ev-sheet h2,.ev-sheet h2 *{
-  animation:none!important
-}
-
-.fc .fc-col-header-cell-cushion{
-  padding:10px 0;
-  font-size:13px
-}
-
-.fc .fc-timegrid-slot{
-  height:60px
-}
-
-.fc .fc-event{
-  border-radius:12px
-}
-
-#agenda .ev-card{
-  padding:22px
-}
-
-/* ===== หน้า AI: พื้นหลังโปร่งไล่สีที่ "ตัวคอนเทนเนอร์เอง" (Master สั่ง 22 ต.ค. 2026) =====
-   หลักการ: ไม่เพิ่มเอฟเฟกต์ ไม่ใช้ ::before/::after · แก้ background ของคอนเทนเนอร์ต้นทางโดยตรง (ถูกสุดต่อ GPU: ชั้นเดียว ไม่มี blend/filter/blur)
-   · แถบบน .ev-aibar และ dock ล่าง .ev-aidock ลอยทับเนื้อแชท (เนื้อเลื่อนใต้ได้) พื้นหลังไล่จากสีพื้นไปโปร่งสนิท ไม่มีจุดไหนทึบเกินจำเป็น
-   · กรอบพิมพ์ .ev-composer ไม่ถูกแตะแม้แต่พร็อพเพอร์ตี้เดียว (กรอบ/เงา/มุม/padding/margin เดิมทุกค่า)
-   · dock ยกตามคีย์บอร์ดด้วย --kb (kbSync) จึงไม่ต้องรอเบราว์เซอร์เลื่อนหน้าเอง */
-
-.ev-page[data-page="ai"]{
-  --ai-bar-h:calc(env(safe-area-inset-top,0px) + 62px);
-  --ai-dock-h:calc(108px + env(safe-area-inset-bottom,0px))
-}
-
-.ev-page[data-page="ai"] .ev-aibar{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  z-index:10;
-  pointer-events:none;
-  background:linear-gradient(to bottom,color-mix(in srgb,var(--c-bg) 86%,transparent) calc(100% - 22px),transparent 100%)
-}
-
-.ev-page[data-page="ai"] .ev-aibar>*{
-  pointer-events:auto
-}
-
-.ev-page[data-page="ai"] .ev-aidock{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:var(--kb,0px);
-  z-index:10;
-  pointer-events:none;
-  padding-top:20px;
-  background:linear-gradient(to top,color-mix(in srgb,var(--c-bg) 86%,transparent) calc(100% - 20px),transparent 100%);
-  transition:bottom .22s var(--ease)
-}
-
-.ev-page[data-page="ai"] .ev-aidock>.ev-composer{
-  pointer-events:auto
-}
-
-/* เนื้อแชทเลื่อนใต้แถบ: เว้นบน/ล่างเท่าความสูงแถบ เพื่อให้หน้าแรกพอดีจอและ hero อยู่กึ่งกลางพื้นที่ที่เห็นจริง */
-
-.ev-page[data-page="ai"] .ev-page-scroll{
-  padding-top:var(--ai-bar-h);
-  padding-bottom:var(--ai-dock-h);
-  scroll-padding-bottom:var(--ai-dock-h)
-}
-
-.ev-page[data-page="ai"] #aiBody{
-  justify-content:center
-}
-
-.ev-page[data-page="ai"] .ev-ai-hello{
-  margin:0;
-  padding:0 8px 8px
-}
-
-/* กึ่งกลางวงแหวน = กึ่งกลางไอคอน (ไอคอน 56px อยู่บนสุดของ hero เมื่อ padding-top = 0 → y = 28px) */
-
-.ev-page[data-page="ai"] .ev-ai-hello::before{
-  top:28px
-}
-
-/* วงแหวน halo กว้างสุด 2×(66+98)=328px ต้องไม่เกินความกว้างคอลัมน์ ไม่งั้นโดนขอบตัด: ลดชั้นนอกสุดให้พอดีจอแคบ */
-
-@media (max-width:420px){
-  .ev-page[data-page="ai"] .ev-ai-hello::before{
-    box-shadow:0 0 0 26px var(--c-halo),0 0 0 54px var(--c-halo),0 0 0 84px var(--c-halo)
-  }
-}
-
-/* ===== หน้า AI: ลำดับชั้น (z-index) เดียวทั้งหน้า =====
-   ต้นเหตุเดิม: bar/dock = 3 เท่ากับ drawer และ scrim = 2 ต่ำกว่า จึงกดปุ่มบน bar/dock ทะลุ scrim ได้ · สเกลใหม่: เนื้อ 1 < bar/dock 10 < scrim 20 < drawer 30
-   isolation แยก stacking context ของหน้า AI ออกจากชั้นนอก (sheet 24 / scrim 23 / dialog) ไม่ปะปนกัน */
-
-.ev-page[data-page="ai"]{
-  isolation:isolate
-}
-
-.ev-page[data-page="ai"] .ev-page-scroll{
-  position:relative;
-  z-index:1
-}
-
-.ev-page[data-page="ai"] .ev-drawer-scrim{
-  z-index:20
-}
-
-.ev-page[data-page="ai"] .ev-drawer{
-  z-index:30
-}
-
-/* scrim เปิดอยู่ = รับทุกการแตะทั้งจอ (รวมพื้นที่ bar/dock) เพราะมันอยู่เหนือทั้งสอง */
-
-/* ===== ระยะแชท + ความกว้างบับเบิล AI (Master สั่ง 22 ต.ค. 2026) ===== */
-
-.ev-page[data-page="ai"] .ev-chat{
-  padding-top:20px;
-  padding-bottom:8px
-}
-
-.ev-page[data-page="ai"] .ev-disc{
-  margin:6px 4px 30px
-}
-
-.ev-page[data-page="ai"] .ev-bubble-ai{
-  max-width:100%;
-  width:-moz-fit-content;
-  width:fit-content;
-  justify-self:start
-}
+/* ===== v25: Markdown ในบับเบิล AI (คัดจากระบบจริง) ===== */
 
 .ev-page[data-page="ai"] .ev-bubble-ai.ev-md{
   width:100%;
@@ -5366,25 +5031,1571 @@ body{
   transform:scale(.88)
 }
 
-[data-act="settings"]:active{
-  transform:scale(.92)
+/* ============ v19: bottom sheet ปรับความสูงนุ่ม + เนื้อหาเข้าเป็นจังหวะ · อวาตาร์โปรไฟล์ระบบกลาง ============
+   ความสูง: JS วัดก่อน/หลังเปลี่ยนเนื้อหา แล้ว transition เฉพาะ height ชั่วครู่ (.34s) แล้วคืนเป็น auto — ไม่มี animation ค้างตลอดเวลา
+   เนื้อหา: เปลี่ยนขั้นตอน (เลือกประเภท ↔ ฟอร์ม) แต่ละรายการไหลเข้าทีละนิดด้วย transform+opacity เท่านั้น · โหมดประหยัดเครื่องตัดทั้งหมด */
+
+.ev-sheet[data-resize]{
+  transition:transform .46s cubic-bezier(.05,.7,.1,1),height .34s cubic-bezier(.22,1,.36,1)
 }
 
-[data-act="date"]:active{
-  transform:scale(.94)
+.ev-sheet[data-resize] .ev-sheet-body{
+  overflow:hidden
 }
 
-.ev-nav button .pill{
-  transition:background var(--t-fast) var(--ease),transform .3s var(--spring)
+@keyframes sheetIn{
+  from{
+    opacity:0;
+    transform:translate3d(0,12px,0)
+  }
 }
 
-.ev-nav button:active .pill{
-  transform:scale(.92);
+.ev-sheet .ev-in{
+  animation:sheetIn .34s var(--ease) both
+}
+
+.ev-sheet[data-stage] .ev-in{
+  animation:none
+}
+
+.ev-sheet[data-stage] .ev-form>*,.ev-sheet[data-stage] .ev-types>*{
+  animation:sheetIn .42s var(--ease) both
+}
+
+.ev-sheet[data-stage] .ev-form>*:nth-child(2),.ev-sheet[data-stage] .ev-types>*:nth-child(2){
+  animation-delay:45ms
+}
+
+.ev-sheet[data-stage] .ev-form>*:nth-child(3),.ev-sheet[data-stage] .ev-types>*:nth-child(3){
+  animation-delay:90ms
+}
+
+.ev-sheet[data-stage] .ev-form>*:nth-child(4),.ev-sheet[data-stage] .ev-types>*:nth-child(4){
+  animation-delay:135ms
+}
+
+.ev-sheet[data-stage] .ev-form>*:nth-child(5){
+  animation-delay:180ms
+}
+
+.ev-sheet[data-stage] .ev-form>*:nth-child(n+6){
+  animation-delay:225ms
+}
+
+html[data-perf="lite"] .ev-sheet[data-stage] .ev-form>*,html[data-perf="lite"] .ev-sheet[data-stage] .ev-types>*{
+  animation:none
+}
+
+html[data-perf="lite"] .ev-sheet .ev-in{
+  animation-duration:.2s
+}
+
+.ev-avatar{
+  display:grid;
+  place-items:center;
+  flex:none;
+  line-height:1;
+  width:var(--sz,42px);
+  height:var(--sz,42px);
+  font-size:calc(var(--sz,42px)*.4);
+  font-weight:600;
+  color:#fff;
+  background:var(--av,var(--c-accent))
+}
+
+/* ============ v20: ช่องเวลามีสถานะ · ปฏิทินโปร่งแบบ native · Today/สถิตินิ่งและโล่งสบาย ============ */
+
+.ev-tbox-w{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+
+.ev-tbox-h{
+  font-size:12px;
+  color:var(--c-muted)
+}
+
+.ev-tbox{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  height:36px;
+  padding:0 14px;
+  border-radius:var(--r-pill);
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text);
+  font-weight:600;
+  font-size:14px;
+  overflow:hidden;
+  cursor:pointer
+}
+
+.ev-tbox[data-empty="true"]{
+  background:var(--c-fill);
+  color:var(--c-muted);
+  box-shadow:inset 0 0 0 1.5px var(--c-line)
+}
+
+.ev-tbox input{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  max-width:none;
+  opacity:0;
+  cursor:pointer;
+  font-size:16px
+}
+
+html[data-settled] #app .ev-in,html[data-settled] .ev-page .ev-in,html[data-settled] #app.ev-enter>*,html[data-settled] #app.ev-enter .ev-list-item,html[data-settled] #app.ev-enter .ev-bars i,html[data-settled] .ev-page .ev-page-scroll>*{
+  animation:none!important
+}
+
+.ev-icon,.ev-icon *,.ev-set-row small,.ev-set-row small *,.ev-link-btn svg{
+  animation:none!important
+}
+
+body{
+  line-height:1.5;
+  letter-spacing:0
+}
+
+.ev-empty-note{
+  padding:10px 14px;
+  border-radius:14px;
+  background:var(--c-fill);
+  color:var(--c-muted);
+  font-size:13px
+}
+
+.ev-tx{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  border:0;
+  background:var(--c-fill);
+  color:var(--c-muted);
+  font-size:12px;
+  cursor:pointer
+}
+
+.ev-main{
+  gap:20px;
+  padding-bottom:24px
+}
+
+.ev-card{
+  padding:22px
+}
+
+.ev-sum{
+  padding:28px;
+  gap:20px
+}
+
+.ev-sum-num{
+  font-size:56px
+}
+
+.ev-sum-lab{
+  font-size:14px
+}
+
+.ev-next{
+  margin-top:2px;
+  font-size:14px
+}
+
+.ev-group{
+  padding:22px 0 6px;
+  font-size:12.5px
+}
+
+.ev-list-item{
+  padding:16px 0;
+  gap:14px;
+  animation:none!important
+}
+
+.ev-list-item .ev-sub{
+  margin-top:3px
+}
+
+.ev-ringbox{
+  width:132px;
+  height:132px
+}
+
+.ev-sum-row{
+  gap:26px
+}
+
+.ev-row2{
+  gap:20px
+}
+
+.ev-big{
+  margin-top:6px
+}
+
+.ev-chart{
+  gap:10px;
+  margin-top:22px
+}
+
+.ev-col{
+  grid-template-rows:auto 130px auto;
+  gap:10px
+}
+
+.ev-col-track{
+  max-width:30px;
   background:var(--c-fill)
 }
 
-.ev-nav button[aria-current="page"]:active .pill{
-  background:var(--c-accent-soft)
+.ev-stats3{
+  gap:12px
+}
+
+.ev-stats3 b{
+  font-size:24px
+}
+
+.ev-fc-wrap{
+  background:transparent;
+  box-shadow:none;
+  padding:4px 0
+}
+
+.fc .fc-daygrid-day-frame{
+  min-height:68px;
+  padding:6px 0
+}
+
+.ev-dnum{
+  width:34px;
+  height:34px;
+  font-size:15px
+}
+
+.fc .fc-day-disabled,.fc .fc-daygrid-day.fc-day-other,.fc .fc-daygrid-day-bg .fc-non-business{
+  background:transparent!important
+}
+
+.ev-sheet .ev-sheet-foot,.ev-sheet .ev-sheet-foot *,.ev-sheet h2,.ev-sheet h2 *{
+  animation:none!important
+}
+
+.fc .fc-col-header-cell-cushion{
+  padding:10px 0;
+  font-size:13px
+}
+
+.fc .fc-timegrid-slot{
+  height:60px
+}
+
+.fc .fc-event{
+  border-radius:12px
+}
+
+#agenda .ev-card{
+  padding:22px
+}
+
+/* ============ v26: คอมโพเนนต์ใหม่ (อ้างอิงตัวอย่างจริง) ============
+   ช่องวันที่แบบแท่ง (Habitify New Habit: start date เป็นแถวหลัก) · ชิปวันด่วน
+   ไทล์ติ๊กวงใหญ่ 64px (Streaks big-button) · เปลวไฟ streak · ฉลองครบวัน */
+
+.ev-dbox{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  height:40px;
+  padding:0 16px 0 14px;
+  border-radius:var(--r-pill);
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text);
+  font-weight:600;
+  font-size:14.5px;
+  overflow:hidden;
+  cursor:pointer;
+  white-space:nowrap
+}
+
+.ev-dbox svg{
+  width:17px;
+  height:17px;
+  flex:none
+}
+
+.ev-dbox[data-empty="true"]{
+  background:var(--c-fill);
+  color:var(--c-muted);
+  box-shadow:inset 0 0 0 1.5px var(--c-line-ctl)
+}
+
+.ev-dbox input{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  max-width:none;
+  opacity:0;
+  cursor:pointer;
+  font-size:16px
+}
+
+.ev-qd{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap
+}
+
+.ev-qd button{
+  height:34px;
+  padding:0 15px;
+  border-radius:var(--r-pill);
+  border:0;
+  background:var(--c-fill);
+  color:var(--c-text);
+  font:600 13.5px var(--font);
+  transition:background var(--t-fast),color var(--t-fast),transform var(--t-fast) var(--ease)
+}
+
+.ev-qd button:active{
+  transform:scale(.94)
+}
+
+.ev-qd button[aria-pressed="true"]{
+  background:var(--c-accent);
+  color:var(--c-on-accent)
+}
+
+.ev-set .ev-qd button{
+  background:var(--c-surface);
+  box-shadow:inset 0 0 0 1.5px var(--c-line-ctl)
+}
+
+.ev-set .ev-qd button[aria-pressed="true"]{
+  background:var(--c-accent);
+  color:var(--c-on-accent);
+  box-shadow:none
+}
+
+/* ไทล์กิจวัตร: ติ๊กวงใหญ่ 64px + วงแหวนความคืบหน้า (นับเป้า/จับเวลา) + เปลวไฟ streak */
+
+.ev-tiles{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.ev-tile{
+  position:relative;
+  display:grid;
+  justify-items:center;
+  gap:9px;
+  padding:18px 10px 14px;
+  border-radius:var(--r-card);
+  background:var(--c-bg);
+  box-shadow:inset 0 0 0 1px var(--c-line);
+  transition:transform var(--t-fast) var(--ease)
+}
+
+.ev-tile:active{
+  transform:scale(.97)
+}
+
+.ev-tile[data-done="true"]{
+  background:var(--c-accent-soft);
+  box-shadow:inset 0 0 0 1.5px transparent
+}
+
+.ev-tilebtn{
+  --p:0;
+  position:relative;
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  border:0;
+  padding:0;
+  display:grid;
+  place-items:center;
+  background:conic-gradient(var(--c-ok) calc(var(--p)*1%),var(--c-line) 0);
+  transition:transform var(--t-fast) var(--ease)
+}
+
+.ev-tilebtn:active{
+  transform:scale(.9)
+}
+
+.ev-tilebtn::before{
+  content:"";
+  position:absolute;
+  inset:5px;
+  border-radius:50%;
+  background:var(--c-surface);
+  transition:background var(--t-fast)
+}
+
+.ev-tilebtn>span,.ev-tilebtn>svg{
+  position:relative
+}
+
+.ev-tilebtn svg{
+  width:26px;
+  height:26px;
+  color:var(--c-line-ctl);
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transition:color var(--t-fast)
+}
+
+.ev-tilebtn>span{
+  font:700 17px var(--font);
+  font-variant-numeric:tabular-nums;
+  color:var(--c-text)
+}
+
+.ev-tilebtn[aria-checked="true"]::before{
+  background:var(--c-ok)
+}
+
+.ev-tilebtn[aria-checked="true"] svg{
+  color:var(--c-on-ok)
+}
+
+.ev-tilebtn[aria-checked="true"]>span{
+  color:var(--c-on-ok)
+}
+
+.ev-tilebtn[data-pop="true"]{
+  animation:pop .45s var(--spring)
+}
+
+.ev-tilebtn:disabled{
+  opacity:.45
+}
+
+.ev-tile .n{
+  font-size:14px;
+  font-weight:600;
+  line-height:1.35;
+  text-align:center;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden
+}
+
+.ev-tile .s{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:12.5px;
+  color:var(--c-muted);
+  font-weight:500
+}
+
+.ev-tile .s .fl{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  color:var(--c-warn-text);
+  font-weight:700
+}
+
+.ev-tile .s .fl svg{
+  width:13px;
+  height:13px;
+  fill:currentColor;
+  stroke:none
+}
+
+.ev-tile .s .fl[data-zero="true"]{
+  color:var(--c-muted)
+}
+
+.ev-tile .st{
+  position:absolute;
+  top:10px;
+  right:10px;
+  display:flex;
+  gap:0
+}
+
+.ev-tile .st button{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  border:0;
+  background:var(--c-surface);
+  box-shadow:inset 0 0 0 1.5px var(--c-line-ctl);
+  color:var(--c-text);
+  font:700 15px/1 var(--font);
+  display:grid;
+  place-items:center
+}
+
+.ev-tile .st button:disabled{
+  opacity:.4
+}
+
+.ev-tile .st b{
+  min-width:30px;
+  display:grid;
+  place-items:center;
+  font-size:13px;
+  font-weight:700;
+  font-variant-numeric:tabular-nums
+}
+
+/* จุดเริ่ม section: หัวหน้ามีจุดสี + จำนวน */
+
+.ev-sec-head h3{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+
+.ev-sec-head h3 .cnt{
+  display:inline-grid;
+  place-items:center;
+  min-width:24px;
+  height:24px;
+  padding:0 7px;
+  border-radius:var(--r-pill);
+  background:var(--c-fill);
+  color:var(--c-muted);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0
+}
+
+.ev-po{
+  height:36px;
+  padding:0 14px;
+  border-radius:var(--r-pill);
+  border:0;
+  background:var(--c-surface);
+  color:var(--c-warn-text);
+  font:600 13px var(--font);
+  box-shadow:inset 0 0 0 1.5px var(--warn-line);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:transform var(--t-fast) var(--ease)
+}
+
+.ev-po:active{
+  transform:scale(.94)
+}
+
+.ev-po svg{
+  width:15px;
+  height:15px
+}
+
+/* v26: จุดสีประจำประเภทในหน้ารายการ + เปลวไฟในสถิติรายละเอียด */
+
+.ev-badge[data-t="habit"]{
+  background:rgba(24,166,106,.13);
+  color:var(--c-ok-text)
+}
+
+.ev-badge[data-t="task"]{
+  background:var(--c-warn-soft);
+  color:var(--c-warn-text)
+}
+
+.ev-badge[data-t="event"]{
+  background:var(--c-fill);
+  color:var(--c-text)
+}
+
+.ev-badge[data-t="class"]{
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text)
+}
+
+.ev-stats3 b svg{
+  width:16px;
+  height:16px;
+  fill:var(--c-warn);
+  margin-right:3px;
+  vertical-align:-1px
+}
+
+/* ============ v27: ฟอร์มแยกการ์ดตามหมวด · สถิติแบบรายวัน (ไม่ใช้เปอร์เซ็นต์/แถบ) ============ */
+
+.ev-sect{
+  display:grid;
+  gap:16px;
+  padding:18px;
+  border-radius:24px;
+  background:var(--c-fill);
+  min-width:0
+}
+
+.ev-sect-h{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px
+}
+
+.ev-sect-h b{
+  display:block;
+  font-size:15px
+}
+
+.ev-sect-h small{
+  display:block;
+  margin-top:2px;
+  font-size:12.5px;
+  color:var(--c-muted)
+}
+
+.ev-sect:has(.ev-sect-h:only-child) .ev-sect-h{
+  margin:0
+}
+
+.ev-fld{
+  display:grid;
+  gap:10px;
+  min-width:0
+}
+
+.ev-two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.ev-sect .ev-seg{
+  background:var(--c-line)
+}
+
+.ev-sect .ev-qd button{
+  background:var(--c-surface);
+  box-shadow:inset 0 0 0 1.5px var(--c-line-ctl)
+}
+
+.ev-sect .ev-qd button[aria-pressed="true"]{
+  background:var(--c-accent);
+  color:var(--c-on-accent);
+  box-shadow:none
+}
+
+.ev-tf{
+  position:relative;
+  display:grid;
+  gap:2px;
+  padding:10px 14px;
+  border-radius:16px;
+  background:var(--c-surface);
+  box-shadow:inset 0 0 0 1.5px var(--c-line-ctl);
+  overflow:hidden;
+  cursor:pointer
+}
+
+.ev-tf span{
+  font-size:12px;
+  color:var(--c-muted);
+  font-weight:600
+}
+
+.ev-tf b{
+  font-size:17px;
+  font-variant-numeric:tabular-nums
+}
+
+.ev-tf input{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  max-width:none;
+  opacity:0;
+  font-size:16px;
+  cursor:pointer
+}
+
+.ev-cust{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap
+}
+
+.ev-cust .ev-seg{
+  flex:1;
+  min-width:150px
+}
+
+.ev-in2{
+  height:44px;
+  padding:0 12px;
+  border-radius:14px;
+  border:0;
+  background:var(--c-surface);
+  box-shadow:inset 0 0 0 1.5px var(--c-line-ctl);
+  font:500 15px var(--font);
+  color:var(--c-text);
+  min-width:0;
+  flex:1
+}
+
+.ev-num{
+  width:72px;
+  flex:none;
+  text-align:center
+}
+
+.ev-po-block{
+  width:100%;
+  justify-content:center;
+  margin:12px 0 4px
+}
+
+.ev-wk{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px 6px;
+  margin-top:16px
+}
+
+.ev-wk>div{
+  display:grid;
+  justify-items:center;
+  gap:6px;
+  font-size:12.5px;
+  color:var(--c-muted);
+  font-weight:600
+}
+
+.ev-wkh{
+  font-size:12px!important
+}
+
+.ev-dot{
+  width:100%;
+  max-width:40px;
+  aspect-ratio:1;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:var(--c-fill);
+  color:var(--c-muted);
+  font-size:13px;
+  font-weight:700;
+  font-variant-numeric:tabular-nums
+}
+
+.ev-dot svg{
+  width:55%;
+  height:55%;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:3;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+.ev-dot[data-s="full"]{
+  background:var(--c-ok);
+  color:var(--c-on-ok)
+}
+
+.ev-dot[data-s="part"]{
+  background:rgba(24,166,106,.28);
+  color:var(--c-text)
+}
+
+.ev-dot[data-s="off"],.ev-dot[data-s="future"]{
+  background:transparent;
+  box-shadow:inset 0 0 0 1.5px var(--c-line);
+  color:var(--c-line-ctl)
+}
+
+.ev-wk [data-today="true"] .ev-dot{
+  box-shadow:0 0 0 2px var(--c-surface),0 0 0 4px var(--c-accent)
+}
+
+.ev-legend{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:16px;
+  font-size:12.5px;
+  color:var(--c-muted)
+}
+
+.ev-legend span{
+  display:inline-flex;
+  align-items:center;
+  gap:6px
+}
+
+.ev-legend i,.ev-trail i{
+  display:block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:var(--c-fill);
+  box-shadow:inset 0 0 0 1.5px var(--c-line-ctl)
+}
+
+.ev-legend [data-s="full"],.ev-trail [data-s="full"]{
+  background:var(--c-ok);
+  box-shadow:none
+}
+
+.ev-legend [data-s="part"],.ev-trail [data-s="part"]{
+  background:rgba(24,166,106,.35);
+  box-shadow:none
+}
+
+.ev-trail{
+  display:grid;
+  grid-template-columns:repeat(7,12px);
+  gap:5px;
+  margin-top:10px
+}
+
+.ev-trail[data-m="true"]{
+  grid-template-columns:repeat(14,10px);
+  gap:4px
+}
+
+.ev-trail[data-m="true"] i{
+  width:10px;
+  height:10px
+}
+
+.ev-trail i{
+  width:12px;
+  height:12px
+}
+
+.ev-trail [data-s="off"],.ev-trail [data-s="future"]{
+  background:transparent;
+  box-shadow:inset 0 0 0 1px var(--c-line)
+}
+
+.ev-trail [data-s="today"]{
+  box-shadow:inset 0 0 0 2px var(--c-accent)
+}
+
+/* ============ v27b: ธีมสว่างสะอาด — พื้นขาวเป็นหลัก · การ์ดแยกด้วยเส้นบาง ไม่ใช้พื้นเทา · ฟ้าสด · หัวข้อหนักแน่น ============ */
+
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --r-card:22px;
+    --c-bg:#fff;
+    --c-surface:#fff;
+    --c-text:#0B1020;
+    --c-fill:#F3F5F9;
+    --c-line:#E8EBF1;
+    --c-muted:#566074;
+    --c-line-ctl:#8790A3;
+    --c-accent:#2F56F0;
+    --c-accent-text:#2446D8;
+    --c-accent-soft:#EAF0FF;
+    --c-accent-2:#4A6DFF;
+    --c-ink-a:#2548E6;
+    --c-ink-b:#2F56F0;
+    --c-ink-c:#4B7BFF;
+    --shadow:0 0 0 1px #E8EBF1,0 1px 3px rgba(16,24,40,.05);
+    --shadow-fab:0 8px 22px rgba(47,86,240,.32);
+    --warn-surface:#FFFBF3
+  }
+}
+
+:root[data-theme="light"]{
+  --r-card:22px;
+  --c-bg:#fff;
+  --c-surface:#fff;
+  --c-text:#0B1020;
+  --c-fill:#F3F5F9;
+  --c-line:#E8EBF1;
+  --c-muted:#566074;
+  --c-line-ctl:#8790A3;
+  --c-accent:#2F56F0;
+  --c-accent-text:#2446D8;
+  --c-accent-soft:#EAF0FF;
+  --c-accent-2:#4A6DFF;
+  --c-ink-a:#2548E6;
+  --c-ink-b:#2F56F0;
+  --c-ink-c:#4B7BFF;
+  --shadow:0 0 0 1px #E8EBF1,0 1px 3px rgba(16,24,40,.05);
+  --shadow-fab:0 8px 22px rgba(47,86,240,.32);
+  --warn-surface:#FFFBF3
+}
+
+.ev-week button{
+  background:var(--c-fill)
+}
+
+.ev-week button[aria-pressed="true"]{
+  background:var(--c-accent)
+}
+
+.ev-group{
+  color:var(--c-text);
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:.01em
+}
+
+.ev-sect{
+  background:var(--c-surface);
+  box-shadow:inset 0 0 0 1px var(--c-line)
+}
+
+.ev-sect .ev-seg{
+  background:var(--c-fill)
+}
+
+.ev-sect-h b{
+  font-size:16px;
+  font-weight:700
+}
+
+.ev-btn-primary{
+  font-weight:700;
+  font-size:16px;
+  height:54px
+}
+
+.ev-dot{
+  background:var(--c-fill)
+}
+
+.ev-nav{
+  box-shadow:0 8px 28px rgba(16,24,40,.10),0 0 0 1px var(--c-line)
+}
+
+/* ============ v27c: soft — มุมโค้งใหญ่ · เงานุ่มกระจาย · พื้นช่องกรอกเป็นสีอ่อน (แรงบันดาลใจ: Discord mobile, Material 3 Expressive) ============ */
+
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --r-card:28px;
+    --r-sheet:34px;
+    --c-fill:#F4F6FB;
+    --c-line:#EDF0F6;
+    --shadow:0 0 0 1px rgba(16,24,40,.035),0 2px 4px rgba(16,24,40,.03),0 12px 28px rgba(16,24,40,.06)
+  }
+}
+
+:root[data-theme="light"]{
+  --r-card:28px;
+  --r-sheet:34px;
+  --c-fill:#F4F6FB;
+  --c-line:#EDF0F6;
+  --shadow:0 0 0 1px rgba(16,24,40,.035),0 2px 4px rgba(16,24,40,.03),0 12px 28px rgba(16,24,40,.06)
+}
+
+.ev-main{
+  gap:16px
+}
+
+.ev-card{
+  padding:20px
+}
+
+.ev-list-item:last-child{
+  border-bottom:0
+}
+
+.ev-sect{
+  border-radius:26px;
+  padding:20px;
+  box-shadow:inset 0 0 0 1px var(--c-line),0 8px 20px rgba(16,24,40,.04)
+}
+
+.ev-in2,.ev-tf{
+  border-radius:18px
+}
+
+.ev-title-input{
+  height:56px;
+  padding:0 18px;
+  border:0;
+  border-radius:20px;
+  background:var(--c-fill);
+  font-size:18px
+}
+
+.ev-title-input:focus{
+  box-shadow:inset 0 0 0 2px var(--c-accent)
+}
+
+.ev-week button{
+  border-radius:22px
+}
+
+.ev-week button[aria-pressed="true"]{
+  box-shadow:0 8px 16px rgba(47,86,240,.28)
+}
+
+.ev-tile{
+  box-shadow:none;
+  background:var(--c-fill)
+}
+
+.ev-nav{
+  box-shadow:0 12px 32px rgba(16,24,40,.12),0 0 0 1px var(--c-line)
+}
+
+.ev-btn-primary{
+  box-shadow:0 8px 18px rgba(47,86,240,.25)
+}
+
+.ev-sheet h2{
+  font-weight:700
+}
+
+/* ============ v27d: โครงสร้าง — หัวข้อกลุ่มชัด · ตัวหัวหน้าจอหนักแน่น ============ */
+
+.ev-title{
+  font-size:30px;
+  font-weight:800;
+  letter-spacing:-.8px
+}
+
+.ev-main>.ev-group{
+  padding:10px 4px 0;
+  margin:0
+}
+
+.ev-badge{
+  border-radius:14px
+}
+
+.ev-card[data-tone="ink"]{
+  border-radius:30px
+}
+
+/* ============ v27e: เบาบางขึ้น — เส้นขอบอ่อน · ส่วนกิจวัตรไม่ซ้อนการ์ด · ชิปมองเห็นบนพื้นขาว (ตรวจจากภาพเรนเดอร์จริง) ============ */
+
+.ev-flat{
+  padding:4px 2px 0
+}
+
+.ev-flat .ev-sec-head{
+  margin-bottom:14px
+}
+
+.ev-sum-ringnum{
+  display:none
+}
+
+.ev-card[data-tone="ink"]::before{
+  opacity:.45
+}
+
+.ev-sect .ev-filters button{
+  background:var(--c-fill);
+  color:var(--c-text)
+}
+
+.ev-sect .ev-filters button[aria-pressed="true"]{
+  background:var(--c-accent);
+  color:var(--c-on-accent)
+}
+
+.ev-tf,.ev-in2{
+  box-shadow:inset 0 0 0 1.5px var(--c-line)
+}
+
+.ev-sect .ev-qd button{
+  box-shadow:inset 0 0 0 1.5px var(--c-line)
+}
+
+.ev-sect .ev-qd button[aria-pressed="true"]{
+  box-shadow:none
+}
+
+.ev-cust input[type="date"]{
+  flex:1 1 100%
+}
+
+.ev-cust .ev-seg{
+  min-width:120px
+}
+
+.ev-cust .ev-btn-sm{
+  flex:none
+}
+
+.ev-num{
+  width:64px
+}
+
+.ev-filters button{
+  background:var(--c-fill)
+}
+
+.ev-filters button[aria-pressed="true"]{
+  background:var(--c-text);
+  color:var(--c-bg)
+}
+
+.ev-sum-ring{
+  display:none
+}
+
+.ev-sect .ev-qd button{
+  background:var(--c-fill);
+  box-shadow:none
+}
+
+.ev-sect .ev-qd button[aria-pressed="true"]{
+  background:var(--c-accent)
+}
+
+/* ============ v27f: เหมือนแอป — การ์ดงานแยกใบ · แตะทั้งใบ · กดค้างเปิดเมนู · ไม่เลือกข้อความ/ไม่ไฮไลต์ ============ */
+
+html{
+  overscroll-behavior-y:none;
+  -webkit-tap-highlight-color:transparent
+}
+
+body{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+       user-select:none;
+  -webkit-touch-callout:none
+}
+
+input,textarea{
+  -webkit-user-select:text;
+  -moz-user-select:text;
+       user-select:text
+}
+
+[data-lp]{
+  touch-action:manipulation;
+  cursor:pointer;
+  transition:transform .16s var(--ease,ease),background-color .2s
+}
+
+[data-lp]:active{
+  transform:scale(.975)
+}
+
+.ev-card:has(>.ev-sec-head+ul),.ev-flat{
+  background:none;
+  box-shadow:none;
+  padding:0;
+  border-radius:0
+}
+
+.ev-card:has(>.ev-sec-head+ul)>.ev-sec-head,.ev-flat>.ev-sec-head{
+  margin:0 2px 12px
+}
+
+.ev-card:has(>.ev-sec-head+ul)>ul,.ev-cards{
+  display:grid;
+  gap:10px;
+  margin:0;
+  padding:0;
+  list-style:none
+}
+
+.ev-card:has(>.ev-sec-head+ul)>ul>.ev-list-item,.ev-cards>.ev-list-item{
+  background:var(--c-surface);
+  border:0;
+  border-radius:22px;
+  padding:14px 16px;
+  min-height:68px;
+  box-shadow:var(--shadow);
+  gap:14px
+}
+
+.ev-card:has(>.ev-sec-head+ul)>ul>.ev-list-item[data-state="done"],.ev-cards>.ev-list-item[data-state="done"]{
+  background:var(--c-fill);
+  box-shadow:none
+}
+
+.ev-list-item[data-state="done"] .grow>b{
+  text-decoration:line-through;
+  color:var(--c-muted);
+  font-weight:500
+}
+
+.ev-hint{
+  margin:-6px 2px 12px;
+  font-size:13px;
+  color:var(--c-muted)
+}
+
+.ev-flat[data-tone="late"] .ev-cards>.ev-list-item{
+  box-shadow:var(--shadow),inset 4px 0 0 var(--c-warn)
+}
+
+.ev-sec-head .cnt[data-late]{
+  background:var(--c-warn-soft);
+  color:var(--c-warn)
+}
+
+/* ============ v27g: ทอสต์แบบการ์ดลอย · ปุ่มกดแล้วยุบ · ทั้งแถวเป็นเป้ากด (ปุ่มที่ปิดอยู่ส่งการกดให้แถว) ============ */
+
+.ev-toast{
+  background:var(--c-surface);
+  color:var(--c-text);
+  border-radius:22px;
+  padding:8px 8px 8px 12px;
+  gap:12px;
+  justify-content:flex-start;
+  box-shadow:0 14px 36px rgba(16,24,40,.16),0 0 0 1px var(--c-line)
+}
+
+.ev-toast>span{
+  flex:1;
+  font-size:14.5px;
+  font-weight:600;
+  line-height:1.35
+}
+
+.ev-toast-ic{
+  flex:none;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text)
+}
+
+.ev-toast-ic svg{
+  width:17px;
+  height:17px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.6;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+
+.ev-toast[data-kind="error"] .ev-toast-ic{
+  background:var(--c-danger-soft);
+  color:var(--c-danger)
+}
+
+.ev-toast button{
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text);
+  font-weight:700;
+  height:36px
+}
+
+.ev-toast::after{
+  left:16px;
+  right:16px;
+  bottom:5px;
+  width:auto;
+  height:3px;
+  border-radius:2px;
+  background:var(--c-accent);
+  opacity:.35
+}
+
+[data-lp] button:disabled{
+  pointer-events:none
+}
+
+[data-act="detail"].ev-next{
+  cursor:pointer
+}
+
+.ev-list-item[data-lp]>svg:last-child{
+  color:var(--c-line-ctl);
+  flex:none
+}
+
+.ev-btn-primary:active,.ev-btn-ghost:active,.ev-chip-btn:active,.ev-filters button:active,.ev-week button:active,.ev-qd button:active,.ev-icon-btn:active,.ev-tilebtn:active,.ev-check:active{
+  transform:scale(.95)
+}
+
+/* ============ v27h: มาตรฐาน — WCAG 2.2 AA (โฟกัสเห็นชัด 2.4.7/2.4.11 · เป้าแตะ 2.5.8 · คอนทราสต์ 1.4.3 · ลดการเคลื่อนไหว 2.3.3) ============ */
+
+:focus-visible{
+  outline:3px solid var(--c-accent);
+  outline-offset:3px;
+  border-radius:12px
+}
+
+.ev-group .cnt{
+  color:var(--c-text)
+}
+
+button,[role="button"],[data-act]{
+  min-height:24px
+}
+
+.ev-hd{
+  display:contents
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important
+  }
+}
+
+/* ============ v27i: ลดความรกทางสายตา — แถวสรุป + ชีตย่อย · ตัวเลือกแบบลิสต์ ============ */
+
+.ev-sect-row{
+  padding:6px
+}
+
+.ev-srow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  min-height:56px;
+  padding:0 14px;
+  border:0;
+  background:none;
+  border-radius:20px;
+  font:600 15px var(--font);
+  color:var(--c-text);
+  text-align:left
+}
+
+.ev-srow b{
+  margin-left:auto;
+  font-weight:500;
+  color:var(--c-muted);
+  text-align:right;
+  font-size:14.5px;
+  min-width:0
+}
+
+.ev-srow svg{
+  flex:none;
+  color:var(--c-line-ctl)
+}
+
+.ev-srow:active{
+  background:var(--c-fill)
+}
+
+.ev-remlist{
+  display:grid;
+  gap:8px
+}
+
+.ev-remrow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-height:48px;
+  padding:0 6px 0 14px;
+  border-radius:16px;
+  background:var(--c-fill)
+}
+
+.ev-remrow i{
+  display:grid;
+  place-items:center;
+  color:var(--c-accent-text)
+}
+
+.ev-remrow i svg,.ev-remrow button svg{
+  width:18px;
+  height:18px
+}
+
+.ev-remrow b{
+  flex:1;
+  font-weight:600;
+  font-size:15px
+}
+
+.ev-remrow button{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:none;
+  color:var(--c-muted);
+  display:grid;
+  place-items:center
+}
+
+.ev-addrow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:48px;
+  border:0;
+  border-radius:16px;
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text);
+  font:700 15px var(--font)
+}
+
+.ev-addrow svg{
+  width:18px;
+  height:18px
+}
+
+.ev-addrow:disabled{
+  opacity:.45
+}
+
+.ev-opts{
+  display:grid;
+  gap:2px
+}
+
+.ev-opt{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:56px;
+  padding:0 16px;
+  border:0;
+  border-radius:18px;
+  background:none;
+  font:600 16px var(--font);
+  color:var(--c-text);
+  text-align:left
+}
+
+.ev-opt svg{
+  color:var(--c-accent);
+  width:22px;
+  height:22px
+}
+
+.ev-opt[aria-pressed="true"]{
+  background:var(--c-accent-soft);
+  color:var(--c-accent-text)
+}
+
+.ev-opt:active{
+  background:var(--c-fill)
+}
+
+#sheetBody>.ev-form:has(>.ev-opts){
+  gap:14px
+}
+
+.ev-form .ev-fld .ev-filters,.ev-sect .ev-fld .ev-filters,.ev-sect>.ev-filters{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  overflow:visible
+}
+
+.ev-form .ev-filters button{
+  min-width:0;
+  min-height:44px;
+  padding:0;
+  justify-content:center;
+  background:var(--c-fill);
+  color:var(--c-text)
+}
+
+.ev-form .ev-filters button[aria-pressed="true"]{
+  background:var(--c-accent);
+  color:var(--c-on-accent)
+}
+
+/* ============ v27j: ป๊อปอัปแบบ Google Calendar · วิทยุเลือก · สวิตช์แจ้งเตือน ============ */
+
+.ev-dlg-body{
+  display:grid;
+  gap:12px;
+  max-height:62vh;
+  overflow:auto;
+  padding:0
+}
+
+.ev-dialog-card h3{
+  margin:0 0 6px;
+  font-size:18px;
+  font-weight:700
+}
+
+.ev-dialog-card .ev-opts{
+  margin:0 -8px
+}
+
+.ev-radio{
+  flex:none;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  box-shadow:inset 0 0 0 2px var(--c-line-ctl);
+  display:grid;
+  place-items:center;
+  transition:box-shadow .15s
+}
+
+.ev-opt{
+  gap:16px;
+  justify-content:flex-start
+}
+
+.ev-opt[aria-pressed="true"]{
+  background:none;
+  color:var(--c-text)
+}
+
+.ev-opt[aria-pressed="true"] .ev-radio{
+  box-shadow:inset 0 0 0 7px var(--c-accent)
+}
+
+.ev-dlg-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:6px
+}
+
+.ev-linkbtn{
+  margin-right:auto;
+  border:0;
+  background:none;
+  color:var(--c-accent-text);
+  font:700 15px var(--font);
+  min-height:44px;
+  padding:0 8px
+}
+
+.ev-dialog-card .ev-dlg-actions .ev-opt{
+  margin-right:auto;
+  min-height:44px;
+  padding:0 8px;
+  font-size:15px;
+  color:var(--c-accent-text)
+}
+
+.ev-dialog-card .ev-dlg-actions .ev-opt .ev-radio{
+  display:none
+}
+
+.ev-addrow{
+  min-height:44px;
+  font-size:14.5px
 }
 
 /* Path: web/runtime/styles/extra.css | Purpose: สไตล์เฉพาะแอปจริงที่เดโมไม่มี (ฟอนต์ @font-face แบบเสิร์ฟเอง + ชิป/แถบโควตา AI) | Used by: scripts/build-css.mjs */
