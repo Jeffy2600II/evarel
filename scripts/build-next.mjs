@@ -97,24 +97,14 @@ try {
   /* ===== แอปเดโม v27 (พรีวิว /app27) — Master สั่ง 10 พ.ย. 2026 ให้ยึดเดโม v27 เป็นมาตรฐาน =====
      ต้นทางเก็บที่ web/app27/index.html (เดโมที่ต่อ API จริงแล้ว) แล้วคัดลอกเข้า out/app27 พร้อมไอคอน + sw ของบิลด์นี้
      ไม่ทับหน้าแรกเดิม: เปิดเฉพาะ /app27/ เพื่อให้ตรวจก่อนสลับ */
-  {
-    const SRC27 = join(root, 'web/app27/index.html');
-    if (existsSync(SRC27)) {
-      const A = join(OUT, 'app27');
-      mkdirSync(A, { recursive: true });
-      const html = readFileSync(SRC27, 'utf8').replace(/https:\/\/ordivel-api-forge\.nontakorn2600\.workers\.dev\/api/, API[env] + '/api');
-      writeFileSync(join(A, 'index.html'), html);
-      if (existsSync(join(PUB, 'icons'))) cpSync(join(PUB, 'icons'), join(A, 'icons'), { recursive: true });
-      if (existsSync(join(OUT, 'sw.js'))) cpSync(join(OUT, 'sw.js'), join(A, 'sw.js'));
-      cpSync(join(OUT, 'release.json'), join(A, 'release.json'));
-    }
-  }
   /* ===== หน้าแรก = แอปเดโม v27 (Master สั่ง 10 พ.ย. 2026: ยึดเดโม v27 เป็นเว็บจริง ไม่ใช่แค่ CSS) =====
      บิลด์ Next ยังทำหน้าที่ผลิต sw.js/ไอคอน/manifest แต่ index.html ที่เสิร์ฟเป็นตัวแอป v27 ที่ต่อ API จริงแล้ว */
   if (process.env.APP27_ROOT !== '0') {
     const SRC27 = join(root, 'web/app27/index.html');
     if (existsSync(SRC27)) {
-      const html = readFileSync(SRC27, 'utf8').replace(/https:\/\/ordivel-api-forge\.nontakorn2600\.workers\.dev\/api/, API[env] + '/api');
+      const html = readFileSync(SRC27, 'utf8')
+        .replace(/https:\/\/ordivel-api-forge\.nontakorn2600\.workers\.dev\/api/, API[env] + '/api')
+        .replace('</head>', `<script>window.__EV_VERSION__="${REL_VERSION}";window.__EV_ASSETS="${ASSET_V}";</script></head>`);
       writeFileSync(join(OUT, 'index.html'), html);
       const A = join(OUT, 'app27');
       mkdirSync(A, { recursive: true });
