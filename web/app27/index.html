@@ -1148,20 +1148,13 @@ const seed=()=>({items:[
 const USAGE_LIMITS={calls:40,tokens:60000},USAGE_LOW=.2,USAGE_KEY='evarel-demo-usage',AI_REPLY_MS=750;
 const limitErr=(reason,resetAt)=>Object.assign(new Error('limit'),{code:'limit',reason,resetAt});
 function nextBkkMidnightISO(now=new Date()){const b=new Date(+now+7*3600000);return new Date(Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate()+1)-7*3600000).toISOString()}
-const SIM_PRESETS={normal:{calls:6,tokens:7200},low:{calls:34,tokens:30000},out:{calls:40,tokens:41000}};
-const bkkDay=()=>new Date(Date.now()+7*3600000).toISOString().slice(0,10);
-const freshUsage=sim=>({...SIM_PRESETS[sim&&sim!=='global'?sim:'normal'],sim:sim||'normal',day:bkkDay()});
-const mockUsage=()=>{let u=null;try{u=JSON.parse(LS.getItem(uk(USAGE_KEY)))}catch(err){console.warn('usage',err)}
- if(!u||typeof u.calls!=='number'||((!u.sim||u.sim==='normal')&&u.day!==bkkDay()))return freshUsage('normal');return u};
-const saveMockUsage=u=>{try{LS.setItem(uk(USAGE_KEY),JSON.stringify({...u,day:u.day||bkkDay()}))}catch(err){console.warn('usage save',err)}};
-function usageView(u){const L=USAGE_LIMITS,reason=u.calls>=L.calls?'calls':u.tokens>=L.tokens?'tokens':undefined;
- return {resetAt:nextBkkMidnightISO(),blocked:!!reason,...(reason?{reason}:{}),calls:{used:u.calls,limit:L.calls,remaining:Math.max(0,L.calls-u.calls)},tokens:{used:u.tokens,limit:L.tokens,remaining:Math.max(0,L.tokens-u.tokens)}}}
-const MockAi={
- async usage(){await wait(250);return usageView(mockUsage())},
- async chat(text){await wait(AI_REPLY_MS);const u=mockUsage();if(u.sim==='global')throw limitErr('global',nextBkkMidnightISO());
-  if(u.calls>=USAGE_LIMITS.calls||u.tokens>=USAGE_LIMITS.tokens)throw limitErr(u.calls>=USAGE_LIMITS.calls?'calls':'tokens',nextBkkMidnightISO());
-  u.calls++;u.tokens+=300+text.length*8;saveMockUsage(u);return {...aiReply(text),usage:usageView(u)}},
- async setSim(sim){saveMockUsage({...SIM_PRESETS[sim==='global'?'normal':sim],sim})}};
+
+
+
+
+
+
+
 const HttpAi=base=>({
  async usage(){const r=await fetch(`${base}/ai/quota`,{credentials:'include'});if(!r.ok)return {unknown:true};const j=await r.json();return j&&j.calls&&j.tokens?j:{unknown:true}},
  async chat(text){const r=await fetch(`${base}/ai/chat`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})}).catch(()=>{throw Object.assign(new Error('network'),{code:'network'})});
@@ -1235,31 +1228,18 @@ async function syncChanges(prev,next){const ch=diffItems(prev,next);if(!ch.upser
 /* ===== MODULE: data/auth — จุดต่อระบบบัญชี: เปลี่ยน `Auth` ตัวเดียว (UI ไม่รู้ว่าล็อกอินทำงานอย่างไร) =====
    สัญญา adapter: session():User|null · signInGoogle() · signInEmail(email,pw) · signUp({name,email,password}) · sendReset(email) · signOut() · deleteAccount()
    error ต้องโยก code: invalid_credentials | email_taken | network | unknown — ของจริง: เก็บ session เป็น httpOnly cookie, แฮชรหัสผ่านฝั่ง Server (Argon2/bcrypt) */
-const USERS_KEY='evarel-demo-users',SESSION_KEY='evarel-demo-session',AUTH_DELAY_MS=700;
+
 const authErr=code=>Object.assign(new Error(code),{code});
-const readUsers=()=>{try{return JSON.parse(LS.getItem(USERS_KEY))||[]}catch(err){console.warn('users',err);return []}};
-const writeUsers=u=>LS.setItem(USERS_KEY,JSON.stringify(u));
-const pubUser=u=>({id:u.id,name:u.name,email:u.email,provider:u.provider});
-async function hashPw(p){try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('evarel-demo:'+p));return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(err){console.warn('subtle unavailable',err);let h=5381;for(const ch of p)h=(h*33)^ch.charCodeAt(0);return 'weak'+(h>>>0)}}
-const DEMO_GOOGLE={name:'Nontakorn',email:'demo.user@gmail.com'};
-const newId=()=>'u_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const CODE_TTL_MS=600000,CODE_MAX_TRIES=5,PENDING={};/* รหัสที่รอยืนยัน (ของจริงเก็บแฮชที่ Server) */
-const genCode=()=>String(crypto.getRandomValues(new Uint32Array(1))[0]%1000000).padStart(6,'0');
-function issueCode(email,type,extra={}){const code=genCode();PENDING[email]={type,code,exp:Date.now()+CODE_TTL_MS,tries:0,...extra};return code}
-const MockAuth={
- async session(){const id=LS.getItem(SESSION_KEY),u=id&&readUsers().find(x=>x.id===id);return u?pubUser(u):null},
- async signInGoogle(){await wait(AUTH_DELAY_MS);const us=readUsers();let u=us.find(x=>x.email===DEMO_GOOGLE.email);if(!u){u={id:newId(),...DEMO_GOOGLE,provider:'google'};us.push(u);writeUsers(us)}LS.setItem(SESSION_KEY,u.id);return pubUser(u)},
- async signInEmail(email,pw){await wait(AUTH_DELAY_MS);const e=email.trim().toLowerCase(),u=readUsers().find(x=>x.email===e&&x.provider==='email');if(!u||u.hash!==await hashPw(pw))throw authErr('invalid_credentials');LS.setItem(SESSION_KEY,u.id);return pubUser(u)},
- async signUp({name,email,password}){await wait(AUTH_DELAY_MS);const e=email.trim().toLowerCase();if(readUsers().some(x=>x.email===e))throw authErr('email_taken');return {pending:true,email:e,demoCode:issueCode(e,'signup',{name,hash:await hashPw(password)})}},
- async sendReset(email){await wait(AUTH_DELAY_MS);const e=email.trim().toLowerCase(),u=readUsers().find(x=>x.email===e&&x.provider==='email');return {pending:true,email:e,demoCode:u?issueCode(e,'recovery'):undefined}},/* ตอบเหมือนกันไม่ว่ามีบัญชีหรือไม่ */
- async resend(email,type){await wait(AUTH_DELAY_MS);const p=PENDING[email];return {demoCode:p?issueCode(email,type,p.type==='signup'?{name:p.name,hash:p.hash}:{}):undefined}},
- async verifyCode(email,code,type){await wait(AUTH_DELAY_MS/2);const p=PENDING[email];if(!p||p.type!==type)throw authErr('code_none');if(p.tries>=CODE_MAX_TRIES)throw authErr('code_locked');if(Date.now()>p.exp)throw authErr('code_expired');
-  if(p.code!==code){p.tries++;throw authErr(p.tries>=CODE_MAX_TRIES?'code_locked':'code_invalid')}
-  if(type==='signup'){const us=readUsers(),u={id:newId(),name:p.name,email,provider:'email',hash:p.hash};us.push(u);writeUsers(us);delete PENDING[email];LS.setItem(SESSION_KEY,u.id);return pubUser(u)}
-  p.verified=true;return {verified:true}},
- async resetPassword(email,code,password){await wait(AUTH_DELAY_MS);const p=PENDING[email];if(!p||p.type!=='recovery'||!p.verified||p.code!==code)throw authErr('code_none');const us=readUsers(),u=us.find(x=>x.email===email);if(u){u.hash=await hashPw(password);writeUsers(us)}delete PENDING[email];return {ok:true}},
- async signOut(){LS.removeItem(SESSION_KEY)},
- async deleteAccount(){const id=LS.getItem(SESSION_KEY);writeUsers(readUsers().filter(x=>x.id!==id));[STORE_KEY,CHATS_KEY,TIMER_KEY].forEach(k=>LS.removeItem(`${k}:${id}`));LS.removeItem(SESSION_KEY)}};
+
+
+
+
+
+
+/* รหัสที่รอยืนยัน (ของจริงเก็บแฮชที่ Server) */
+
+
+
 const HttpAuth=base=>{const call=(p,o={})=>fetch(`${base}${p}`,{credentials:'include',headers:{'Content-Type':'application/json'},...o}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw authErr(j.code||'unknown');return j}).catch(err=>{throw err.code?err:authErr('network')});
  const post=(p,b)=>call(p,{method:'POST',body:b?JSON.stringify(b):undefined});
  return {session:()=>fetch(`${base}/auth/me`,{credentials:'include'}).then(r=>r.ok?r.json():null),signInGoogle:idToken=>post('/auth/google',{idToken}),signInEmail:(email,password)=>post('/auth/login',{email,password}),signUp:b=>post('/auth/signup',b),sendReset:email=>post('/auth/forgot',{email}),verifyCode:(email,code,type)=>post('/auth/verify',{email,code,type}),resend:(email,type)=>post('/auth/resend',{email,type}),resetPassword:(email,code,password)=>post('/auth/reset',{email,code,password}),signOut:()=>post('/auth/logout'),deleteAccount:()=>call('/auth/me',{method:'DELETE'})}};
@@ -1307,7 +1287,7 @@ const Auth=RealAuth;
    if(!r.ok)throw authErr('oauth_failed');
    const j=await r.json();Tok.set(j);return j.user};
 
-const DEMO=Auth===MockAuth;
+
 /* ===== MODULE: ui/profile — ระบบโปรไฟล์กลาง: อวาตาร์สร้างอัตโนมัติจากชื่อ/อีเมล (ตัวอักษรแรก + สีประจำคน) · ทุกหน้าเรียก avatarHTML() ที่เดียว ไม่ต้องออกแบบซ้ำ ===== */
 const AV_HUES=[250,268,286,306,330,352,12,24,162,176,190,204,222],THAI_LEAD=/^[เแโใไ]+/;
 const hashStr=s=>{let h=2166136261;for(const ch of String(s)){h^=ch.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0};
@@ -1716,10 +1696,10 @@ function lockInfo(){if(AI.notice?.kind==='limit')return AI.notice;const v=UI.usa
 function limitBanner(){const L=lockInfo();if(!L)return '';const g=L.reason==='global';
  const title=g?'ตอนนี้มีผู้ใช้จำนวนมาก':L.reason==='tokens'?'บทสนทนายาวถึงขีดจำกัดของวันนี้แล้ว':'ถึงขีดจำกัดการถามของวันนี้แล้ว';
  const sub=g?'ระบบเต็มชั่วคราว ลองใหม่อีกครั้งในอีกสักครู่':`ใช้ได้อีกครั้ง${whenText(L.resetAt)} (${bkkClock(L.resetAt)} น.)`;
- return `<div class="ev-limit" role="status" data-key="limit"><span class="ev-limit-ic">${icon('clock')}</span><div class="grow"><b>${title}</b><span>${sub}</span></div>${DEMO?'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-demo-reset">รีเซ็ต</button>':g?'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-retry-global">ลองใหม่</button>':'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">รายละเอียด</button>'}</div>`}
+ return `<div class="ev-limit" role="status" data-key="limit"><span class="ev-limit-ic">${icon('clock')}</span><div class="grow"><b>${title}</b><span>${sub}</span></div>g?'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-retry-global">ลองใหม่</button>':'<button type="button" class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">รายละเอียด</button>'}</div>`}
 function noticeHTML(){const n=AI.notice;if(!n)return '';
  if(n.kind==='error')return `<div class="ev-notice" data-key="notice"><b>ส่งข้อความไม่สำเร็จ</b><span>ตรวจสอบการเชื่อมต่อแล้วลองใหม่ ข้อความของคุณยังอยู่ในช่องพิมพ์</span><div><button class="ev-btn-primary ev-btn-sm" data-act="ai-retry">ส่งอีกครั้ง</button></div></div>`;
- const g=n.reason==='global';return `<div class="ev-notice" data-key="notice"><b>ข้อความนี้ยังไม่ได้ส่ง</b><span>${g?'ระบบเต็มชั่วคราว ข้อความของคุณยังอยู่ในช่องพิมพ์ ลองส่งใหม่ในอีกสักครู่':`ถึงขีดจำกัดการใช้งานแล้ว ข้อความของคุณยังอยู่ในช่องพิมพ์ ส่งได้อีกครั้ง${whenText(n.resetAt)}`}</span><div class="ev-row" style="gap:8px;flex-wrap:wrap">${DEMO?'<button class="ev-btn-primary ev-btn-sm" data-act="ai-demo-reset">รีเซ็ตเดโม</button>':''}<button class="ev-btn-ghost ev-btn-sm" data-act="add">เพิ่มรายการเอง</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">ดูการใช้งาน</button></div></div>`}
+ const g=n.reason==='global';return `<div class="ev-notice" data-key="notice"><b>ข้อความนี้ยังไม่ได้ส่ง</b><span>${g?'ระบบเต็มชั่วคราว ข้อความของคุณยังอยู่ในช่องพิมพ์ ลองส่งใหม่ในอีกสักครู่':`ถึงขีดจำกัดการใช้งานแล้ว ข้อความของคุณยังอยู่ในช่องพิมพ์ ส่งได้อีกครั้ง${whenText(n.resetAt)}`}</span><div class="ev-row" style="gap:8px;flex-wrap:wrap"><button class="ev-btn-ghost ev-btn-sm" data-act="add">เพิ่มรายการเอง</button><button class="ev-btn-ghost ev-btn-sm" data-act="ai-usage">ดูการใช้งาน</button></div></div>`}
 function composerHTML(){const L=lockInfo(),ph=L?(L.reason==='global'?'ระบบเต็มชั่วคราว ลองใหม่ในอีกสักครู่':`ใช้ได้อีกครั้ง ${bkkClock(L.resetAt)} น.`):'ถาม AI…';
  return `${limitBanner()}<textarea id="aiText" rows="1" placeholder="${ph}" aria-label="ข้อความถึง AI" ${L?'disabled':''}></textarea><div class="ev-composer-bar"><button type="button" class="ev-plus" data-act="ai-plus" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวช่วยพิมพ์" ${L?'disabled':''}>${icon('plus')}</button><button class="ev-send" data-empty="true" aria-label="ส่ง" ${L?'disabled':''}>${icon('send')}</button></div>`}
 function paintComposer(){const f=$('aiForm');if(!f)return;f.dataset.locked=String(!!lockInfo());patch(f,composerHTML());const t=$('aiText');if(t&&AI.draft&&!t.value)t.value=AI.draft;aiAutosize()}
@@ -1819,7 +1799,7 @@ function settingsHTML(){const [st,note]=notifInfo(),total=countNotifiable(S.item
  return `<div class="ev-page-bar"><button class="ev-icon-btn" data-flat data-act="close" aria-label="กลับ">${icon('back')}</button><h2>ตั้งค่า</h2></div><div class="ev-page-scroll">
  <section class="ev-card ev-row" style="gap:14px">${avatarHTML({size:56})}<div class="grow"><b>${esc(USER?.name||'ผู้ใช้')}</b><p class="ev-sub" style="overflow:hidden;text-overflow:ellipsis">${esc(USER?.email||'')}</p></div><span class="ev-chip ev-chip-g">${USER?.provider==='google'?`${GLOGO}Google`:`${icon('mail')}อีเมล`}</span></section>
  <section class="ev-card" id="usageWrap">${usageCardHTML()}</section>
- ${DEMO?`<section class="ev-card"><b>จำลองสถานะ (เฉพาะเดโม)</b><p class="ev-sub" style="margin:4px 0 12px">ลองดูหน้าตาเมื่อใกล้ถึงหรือถึงขีดจำกัดการใช้งาน</p>${seg('sim-set',[['normal','ปกติ'],['low','ใกล้เต็ม'],['out','เต็มแล้ว'],['global','ระบบเต็ม']],mockUsage().sim)}</section>`:''}
+ 
  <h2 class="ev-group">การแสดงผล</h2><section class="ev-card"><b>ธีม</b><div style="margin-top:12px">${seg('theme',[['auto','ตามเครื่อง'],['light','สว่าง'],['dark','มืด']],themeNow())}</div></section>
   <section class="ev-card"><b>อนิเมชั่น</b><p class="ev-sub">อัตโนมัติจะลดเอฟเฟกต์เองเมื่อเครื่องไม่ลื่น</p><div style="margin-top:12px">${seg('perf',[['auto','อัตโนมัติ'],['full','เต็มรูปแบบ'],['lite','ประหยัดเครื่อง']],perfPref())}</div></section>
  <h2 class="ev-group">การใช้งาน</h2><section class="ev-card"><div class="ev-stat"><div><b>การแจ้งเตือน</b><p class="ev-sub">${note}</p></div><span class="ev-chip" data-state="${st==='พร้อมรับ'?'done':''}">${st}</span></div>${canReg?`<button class="ev-btn-primary ev-btn-block" style="margin-top:12px" data-act="notify">${Notification.permission==='granted'?'ลงทะเบียนเครื่องนี้':'อนุญาตการแจ้งเตือน'}</button>`:''}
@@ -1992,10 +1972,8 @@ const ACTIONS={
  'ai-usage':()=>{sheetMode='usage';openSheet('การใช้งาน AI',`<div id="usageSheet">${usageCardHTML()}</div><p class="ev-sub" style="margin-top:12px">ขีดจำกัดต่อวันช่วยให้บริการเสถียรสำหรับทุกคน</p>`);growBars(sheet);refreshUsage();return NR},
  'ai-retry':()=>{const t=AI.draft;AI.notice=null;aiRefresh();if(t)aiSend(t);return NR},
  'ai-retry-global':()=>{AI.notice=null;aiRefresh();paintComposer();return NR},
- 'ai-demo-reset':()=>{MockAi.setSim('normal').then(()=>{AI.notice=null;return refreshUsage()}).then(()=>{aiRefresh();paintComposer();paintSettings();toast('รีเซ็ตการใช้งานเดโมแล้ว')});return NR},
- 'usage-refresh':()=>{UI.usage=null;paintUsage();refreshUsage();return NR},
- 'sim-set':async id=>{await MockAi.setSim(id);AI.notice=null;await refreshUsage();paintSettings();return NR},
- 'ai-ok':id=>{const m=aiMsg(id);if(!m?.card)return NR;const p=m.card.p;commit('',()=>S.items.push(mk({...p,id:Date.now()})),true);m.card.status='added';saveCH();aiRefresh();return NR},
+  'usage-refresh':()=>{UI.usage=null;paintUsage();refreshUsage();return NR},
+  'ai-ok':id=>{const m=aiMsg(id);if(!m?.card)return NR;const p=m.card.p;commit('',()=>S.items.push(mk({...p,id:Date.now()})),true);m.card.status='added';saveCH();aiRefresh();return NR},
  'ai-no':id=>{const m=aiMsg(id);if(m?.card){m.card.status='cancelled';saveCH();aiRefresh()}return NR},
  'ai-edit':id=>{const p=aiMsg(id)?.card?.p;if(!p)return NR;openForm(p.type);Object.assign(D,{title:p.title,start:p.start,time:p.time});renderForm();return NR},
  tstart:id=>{const it=find(id);if(!it||isFuture(UI.fdate)){toast('ยังไม่ถึงวัน จึงจับเวลาไม่ได้');return NR}TM={id:it.id,date:UI.fdate,startedAt:Date.now(),acc:0};saveTM();refreshFocus();haptic();return NR},
@@ -2073,7 +2051,7 @@ const eyeBtn=id=>`<button type="button" class="ev-icon-btn" data-flat data-act="
 const fld=(label,name,type,extra='',after='')=>`<div class="ev-ifield"><label for="f-${name}">${label}</label><div class="ev-pw"><input class="ev-input" id="f-${name}" name="${name}" type="${type}" ${extra}>${after}</div><div class="ev-field-err" id="e-${name}" hidden></div></div>`;
 const EMAIL_X='autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="name@gmail.com"';
 const submitBtn=l=>`<button class="ev-btn-auth" data-kind="accent" type="submit" data-label="${l}"><span>${l}</span></button>`;
-const demoCodeNote=()=>DEMO&&UI.auth.demoCode?`<div class="ev-banner" style="background:var(--c-accent-soft);color:var(--c-accent-text);animation:none">เดโม: รหัสของคุณคือ <b id="demoCode">${UI.auth.demoCode}</b> (ของจริงจะส่งทางอีเมล)</div>`:'';
+
 const AUTH_VIEWS={
  welcome:()=>`<div class="ev-hero">${RINGS}<div class="ev-brand">${EV_MARK}<b>Ordivel</b><span class="ev-tag">จัดการกิจวัตรและชีวิตให้ง่ายขึ้น</span></div></div>
   <div class="ev-auth-body"><div><h1 class="ev-auth-title">เริ่มต้นใช้งาน</h1><p class="ev-sub" style="margin-top:6px">ติ๊ก นับ จับเวลา และดูความต่อเนื่องของนิสัย ทั้งหมดในที่เดียว</p></div>
@@ -2088,7 +2066,7 @@ const AUTH_VIEWS={
   <div class="ev-ifield"><label class="ev-check-row"><input type="checkbox" class="ev-cb" name="terms"><span>ฉันยอมรับ <button type="button" data-act="au-terms" data-id="terms">ข้อกำหนด</button> และ <button type="button" data-act="au-terms" data-id="privacy">นโยบายความเป็นส่วนตัว</button></span></label><div class="ev-field-err" id="e-terms" hidden></div></div>${submitBtn('สร้างบัญชี')}</form><p class="ev-auth-sw">มีบัญชีอยู่แล้ว? <button data-act="au-go" data-id="login">เข้าสู่ระบบ</button></p>`,
  forgot:()=>`${heroS('login')}<div><h1 class="ev-auth-title">ลืมรหัสผ่าน</h1><p class="ev-sub" style="margin-top:6px">ใส่อีเมลที่ใช้สมัคร เราจะส่งรหัส 6 หลักไปให้</p></div>
   <form class="ev-form ev-authform" data-kind="forgot" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('อีเมล','email','email',EMAIL_X)}${submitBtn('ส่งรหัส')}</form>`,
- code:()=>`${heroS(UI.auth.codeType==='recovery'?'forgot':'signup')}<div><h1 class="ev-auth-title">ใส่รหัส 6 หลัก</h1><p class="ev-sub" style="margin-top:6px">เราส่งรหัสไปที่ <b>${esc(UI.auth.email)}</b> ใส่รหัสเพื่อ${UI.auth.codeType==='recovery'?'ตั้งรหัสผ่านใหม่':'ยืนยันอีเมล'} (หมดอายุใน 10 นาที)</p></div>${demoCodeNote()}
+ code:()=>`${heroS(UI.auth.codeType==='recovery'?'forgot':'signup')}<div><h1 class="ev-auth-title">ใส่รหัส 6 หลัก</h1><p class="ev-sub" style="margin-top:6px">เราส่งรหัสไปที่ <b>${esc(UI.auth.email)}</b> ใส่รหัสเพื่อ${UI.auth.codeType==='recovery'?'ตั้งรหัสผ่านใหม่':'ยืนยันอีเมล'} (หมดอายุใน 10 นาที)</p></div>
   <form class="ev-form ev-authform" data-kind="code" novalidate><div class="ev-banner" id="form-err" role="alert" hidden></div>${fld('รหัส 6 หลัก','code','text','inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="000000" style="text-align:center;letter-spacing:.5em;font-size:24px;font-weight:600;height:60px"')}${submitBtn('ยืนยัน')}</form>
   <button class="ev-btn-auth" data-kind="google" id="resendBtn" data-act="au-resend" disabled></button>`,
  newpw:()=>`<div><h1 class="ev-auth-title">ตั้งรหัสผ่านใหม่</h1><p class="ev-sub" style="margin-top:6px">ตั้งรหัสผ่านใหม่ให้บัญชี <b>${esc(UI.auth.email)}</b></p></div>

@@ -87,7 +87,20 @@ def main() -> int:
     fd, fa = funcs(demo), funcs(app)
     # ฟังก์ชันที่ตั้งใจถอด (ตัวจำลองของเดโม) — ต้องประกาศไว้ ไม่ใช่เงียบ ๆ
     ALLOW_REMOVE = {'LocalAdapter': 'ตัวเก็บข้อมูลลง localStorage ถูกถอดตามดีไซน์ (ข้อมูลอยู่ที่เซิร์ฟเวอร์)',
-                    'MockAuth': 'บัญชีจำลอง', 'MockAi': 'AI จำลอง'}
+                    'MockAuth': 'บัญชีจำลอง', 'MockAi': 'AI จำลอง',
+                    'USERS_KEY': 'ที่เก็บบัญชีจำลอง', 'SESSION_KEY': 'session ของบัญชีจำลอง',
+                    'AUTH_DELAY_MS': 'หน่วงเวลาปลอมของบัญชีจำลอง', 'readUsers': 'อ่านบัญชีจำลอง',
+                    'writeUsers': 'เขียนบัญชีจำลอง', 'pubUser': 'แปลงบัญชีจำลอง',
+                    'DEMO_GOOGLE': 'โปรไฟล์ Google ปลอม', 'newId': 'สร้าง id ปลอม',
+                    'CODE_TTL_MS': 'อายুরหัสของบัญชีจำลอง', 'CODE_MAX_TRIES': 'จำนวนครั้งรหัสจำลอง',
+                    'PENDING': 'รหัสยืนยันที่เก็บในเครื่อง', 'hashPw': 'แฮชรหัสฝั่งเครื่อง (ของจริงทำที่เซิร์ฟเวอร์)',
+                    'issueCode': 'ออกรหัสยืนยันฝั่งเครื่อง', 'genCode': 'สร้างรหัสฝั่งเครื่อง', 'code': 'ตัวแปรรหัสของบัญชีจำลอง',
+                    'buf': 'ตัวแปรภายในของ hashPw', 'DEMO': 'ธงโหมดเดโม',
+                    'SIM_PRESETS': 'ชุดตัวเลขจำลองการใช้ AI', 'freshUsage': 'สร้างค่าการใช้ปลอม',
+                    'mockUsage': 'อ่านค่าการใช้ปลอม', 'saveMockUsage': 'บันทึกค่าการใช้ปลอม',
+                    'usageView': 'แปลงค่าการใช้ของเดโม', 'bkkDay': 'วันของเดโม',
+                    'USAGE_KEY': 'กุญแจเก็บค่าการใช้ปลอม', 'AI_REPLY_MS': 'หน่วงคำตอบ AI ของเดโม',
+                    'demoCodeNote': 'แบนเนอร์โชว์รหัสยืนยันบนจอ (ของจริงส่งทางอีเมล)'}
     lost = sorted(fd - fa - set(ALLOW_REMOVE))
     check('STRUCT', f'ฟังก์ชันเดโมอยู่ครบ ({len(fd)})', not lost, f'หาย {len(lost)}: {", ".join(lost[:8])}' if lost else '')
 
